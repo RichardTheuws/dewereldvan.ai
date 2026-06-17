@@ -8,6 +8,7 @@ import pytest
 from app.config import settings
 from app.email import get_email_sender
 from app.email.base import EmailMessage, EmailSendError
+from app.email.cloudflare_sender import CloudflareEmailSender
 from app.email.console import ConsoleEmailSender
 from app.email.resend_sender import ResendEmailSender
 
@@ -93,3 +94,46 @@ def test_fake_email_sender_records_and_can_fail(fake_email):
     fake_email.fail = True
     with pytest.raises(EmailSendError):
         fake_email.send(_msg())
+
+
+def test_factory_cloudflare_without_creds_raises(monkeypatch):
+    monkeypatch.setattr(settings, "email_backend", "cloudflare")
+    monkeypatch.setattr(settings, "cloudflare_account_id", None)
+    monkeypatch.setattr(settings, "cloudflare_api_token", None)
+    with pytest.raises(RuntimeError):
+        get_email_sender()
+
+
+def test_factory_cloudflare_with_creds_returns_cloudflare(monkeypatch):
+    monkeypatch.setattr(settings, "email_backend", "cloudflare")
+    monkeypatch.setattr(settings, "cloudflare_account_id", "acct123")
+    monkeypatch.setattr(settings, "cloudflare_api_token", "cf_test_token")
+    sender = get_email_sender()
+    assert isinstance(sender, CloudflareEmailSender)  # type only — no network call
+
+
+def test_cloudflare_non_2xx_raises_email_send_error(monkeypatch):
+    """Non-2xx Cloudflare response surfaces as EmailSendError (no silent fail)."""
+
+    class _FakeResponse:
+        status_code = 403
+        text = '{"errors":[{"message":"Unable to authenticate request"}]}'
+
+    import app.email.cloudflare_sender as cf
+
+    monkeypatch.setattr(cf.httpx, "post", lambda *a, **k: _FakeResponse())
+    sender = CloudflareEmailSender("acct123", "cf_test_token", "noreply@dewereldvan.ai")
+    with pytest.raises(EmailSendError):
+        sender.send(_msg())
+
+
+def test_cloudflare_network_error_raises_email_send_error(monkeypatch):
+    import app.email.cloudflare_sender as cf
+
+    def _boom(*args, **kwargs):
+        raise cf.httpx.ConnectError("geen verbinding")
+
+    monkeypatch.setattr(cf.httpx, "post", _boom)
+    sender = CloudflareEmailSender("acct123", "cf_test_token", "noreply@dewereldvan.ai")
+    with pytest.raises(EmailSendError):
+        sender.send(_msg())

@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.6.0] - 2026-06-17
+### Added
+- `CloudflareEmailSender` (`app/email/cloudflare_sender.py`): productie-e-mail via de
+  Cloudflare Email Service REST-API (`/accounts/{id}/email/sending/send`), achter dezelfde
+  `EmailSender`-interface. Selecteerbaar via `EMAIL_BACKEND=cloudflare`.
+- Config: `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN` (token-permissie "Email Sending: Edit").
+- Tests: factory-selectie + failure-surfacing (non-2xx + netwerkfout) voor de Cloudflare-backend.
+### Notes
+- Activatie wacht op: Email Service per-account aanzetten (beta) + verzenddomein onboarden
+  (SPF/DKIM) + de "Email Sending: Edit"-scope op het CF-token. Tot dan blijft `console` actief.
+
 ## [0.5.0] - 2026-06-17
 ### Added
 - Teaser/coming-soon-pagina (`teaser/`): self-contained "kosmische diepte"-landing —

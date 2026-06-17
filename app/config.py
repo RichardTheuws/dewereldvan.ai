@@ -13,8 +13,10 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://app:app@postgres:5432/dewereldvan"
     secret_key: str  # REQUIRED, no default — session signing + token salt
     base_url: str = "https://dewereldvan.ai"
-    email_backend: str = "console"  # "console" | "resend"
+    email_backend: str = "console"  # "console" | "resend" | "cloudflare"
     resend_api_key: str | None = None
+    cloudflare_account_id: str | None = None
+    cloudflare_api_token: str | None = None  # needs "Email Sending: Edit" permission
     email_from: str = "dewereldvan.ai <noreply@dewereldvan.ai>"
     magic_link_ttl_min: int = 15
     pending_expiry_days: int = 14
