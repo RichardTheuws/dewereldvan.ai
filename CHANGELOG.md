@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.5.0] - 2026-06-17
+### Added
+- Teaser/coming-soon-pagina (`teaser/`): self-contained "kosmische diepte"-landing —
+  canvas-constellatie (driftende sterren die verbindingslijnen vormen), nebula-mesh,
+  Fraunces + JetBrains Mono + Spline Sans, roterende maker-rollen, e-mailwachtlijst.
+- Minimale teaser-service (FastAPI + SQLite): serveert de pagina, `/healthz`, en
+  `/api/waitlist` (e-mailvalidatie, idempotent via UNIQUE).
+- Docker-compose (teaser + cloudflared) voor de M4.
+### Deployed
+- **Live op https://dewereldvan.ai** — self-host op M4 achter een eigen Cloudflare Tunnel
+  `dewereldvan-teaser` (los van `n8n-tunnel`), ingress + DNS (apex + www) via de CF API.
+### Decided
+- E-mail definitief via **Cloudflare Email Service** (Workers Paid actief) i.p.v. Resend —
+  één vendor voor DNS + tunnel + e-mail, laagste op-last. Zie context/decisions.md.
+
 ## [0.4.0] - 2026-06-17
 ### Security
 - CSRF-bescherming op alle state-changing requests (`app/csrf.py`): per-sessie

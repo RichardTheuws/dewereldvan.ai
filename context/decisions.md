@@ -87,8 +87,40 @@ incrementeel.
 
 ---
 
-## [OPEN] Transactionele e-mailprovider
+## [2026-06-17] Transactionele e-mail via Cloudflare Email Service
 
 **Context**: Magic-link + goedkeurings-notificaties vereisen betrouwbare e-mailbezorging.
-**Status**: nog te beslissen vóór Fase 1. Kandidaten: Resend, Postmark, of eigen SMTP-relay.
-Beslis op deliverability + kosten + AVG (EU-verwerking). Richards veto/voorkeur gewenst.
+Domein staat op Cloudflare; kerneis is laagste op-last + één vendor waar mogelijk.
+
+**Beslissing**: **Cloudflare Email Service** (public beta sinds apr 2026) via de HTTPS REST-API
+(`POST /accounts/{id}/email/sending/send`), aanroepbaar vanaf de FastAPI-app op de M4 — geen
+Workers-code nodig. Workers Paid-plan staat aan ($5/mnd, 3.000 mails inbegrepen). SPF/DKIM
+worden automatisch op het domein gezet.
+
+**Alternatieven**:
+- Resend (€0 free tier): afgewezen — tweede vendor + tweede secret/dashboard voor marginale
+  besparing; tegen de "één-vendor, lage op-last"-eis. (Adapter blijft in code als fallback.)
+- Eigen SMTP-relay: afgewezen — deliverability + onderhoud zelf dragen.
+
+**Gevolgen**: E-mail loopt via dezelfde API-token-infra als DNS + tunnel. Email-Sending-scope
+op het token moet nog rond (zone werkt, sending-endpoint gaf nog 10001) + domein onboarden —
+af te ronden bij het aansluiten van Fase 1. Dev gebruikt de console-outbox.
+
+---
+
+## [2026-06-17] Teaser live op M4 achter eigen Cloudflare Tunnel
+
+**Context**: Community vast warm maken vóór het platform af is, zonder op de M4-deploy van de
+volledige app te wachten.
+
+**Beslissing**: Losse, minimale teaser-service (`teaser/`, FastAPI + SQLite-wachtlijst) op de
+M4, geëxposeerd via een **eigen** tunnel `dewereldvan-teaser` (níét de bestaande `n8n-tunnel`),
+DNS (apex + www) via de Cloudflare API. Live op https://dewereldvan.ai.
+
+**Alternatieven**:
+- Cloudflare Pages: afgewezen — token mist Pages/D1-scopes + tweede stack; tunnel hergebruikt
+  de scopes die er al zijn.
+- Wachten op volledige app-deploy: afgewezen — vertraagt het warmmaken nodeloos.
+
+**Gevolgen**: Throwaway/transitioneel. Bij go-live van het platform neemt de volledige app de
+tunnel-ingress over en migreren we de wachtlijst-adressen naar de `member`-tabel.
