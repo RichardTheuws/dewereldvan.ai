@@ -1,0 +1,29 @@
+# Claude Code
+.claude/settings.local.json
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Docker / data
+postgres-data/
+*.sqlite3
