@@ -1,0 +1,5 @@
+{# htmx delete response: the targeted row is replaced by nothing (removed),
+   and the status block is updated out-of-band so completeness stays in sync. #}
+<div id="profiel-status" hx-swap-oob="true">
+  {% include "profiles/_status_inner.html" %}
+</div>

@@ -1,0 +1,43 @@
+{# A single member row in the admin queue. After approve/reject/suspend the
+   server swaps this row in place (hx-swap="outerHTML"). `message` (optional)
+   shows the result of the last action. #}
+<tr id="member-{{ member.id }}" class="border-b border-slate-100">
+  <td class="px-3 py-2">
+    <p class="text-sm font-medium text-slate-800">{{ member.name }}</p>
+    <p class="text-xs text-slate-500">{{ member.email }}</p>
+  </td>
+  <td class="px-3 py-2">
+    <span class="rounded px-2 py-0.5 text-xs font-medium
+      {% if member.status.value == 'pending' %}bg-amber-100 text-amber-800
+      {% elif member.status.value == 'approved' %}bg-emerald-100 text-emerald-800
+      {% elif member.status.value == 'suspended' %}bg-slate-200 text-slate-700
+      {% else %}bg-red-100 text-red-800{% endif %}">
+      {{ member.status.value }}
+    </span>
+    {% if message %}<span class="ml-2 text-xs text-slate-500">{{ message }}</span>{% endif %}
+  </td>
+  <td class="px-3 py-2 text-right">
+    {% if member.status.value == 'pending' %}
+      <button class="rounded bg-emerald-600 px-3 py-1 text-xs text-white hover:bg-emerald-700"
+              hx-post="/admin/members/{{ member.id }}/approve"
+              hx-target="#member-{{ member.id }}" hx-swap="outerHTML">
+        Goedkeuren
+      </button>
+      <button class="rounded border border-red-300 px-3 py-1 text-xs text-red-700 hover:bg-red-50"
+              hx-post="/admin/members/{{ member.id }}/reject"
+              hx-target="#member-{{ member.id }}" hx-swap="outerHTML"
+              hx-confirm="Deze aanmelding weigeren?">
+        Weigeren
+      </button>
+    {% elif member.status.value == 'approved' %}
+      <button class="rounded border border-slate-300 px-3 py-1 text-xs text-slate-700 hover:bg-slate-50"
+              hx-post="/admin/members/{{ member.id }}/suspend"
+              hx-target="#member-{{ member.id }}" hx-swap="outerHTML"
+              hx-confirm="Dit lid schorsen?">
+        Schorsen
+      </button>
+    {% else %}
+      <span class="text-xs text-slate-400">—</span>
+    {% endif %}
+  </td>
+</tr>

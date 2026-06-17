@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Goedkeuringen — dewereldvan.ai{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold text-slate-900">Aanmeldingen</h1>
+  <p class="mt-1 text-sm text-slate-600">
+    Leden die wachten op goedkeuring. Goedkeuren of weigeren met één klik.
+  </p>
+
+  {% if pending %}
+  <table class="mt-6 w-full overflow-hidden rounded-lg border border-slate-200 bg-white">
+    <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+      <tr>
+        <th class="px-3 py-2">Lid</th>
+        <th class="px-3 py-2">Status</th>
+        <th class="px-3 py-2 text-right">Actie</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for member in pending %}
+        {% include "admin/_member_row.html" %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="mt-6 rounded-lg border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+    Geen openstaande aanmeldingen.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

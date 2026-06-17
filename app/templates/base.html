@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}dewereldvan.ai{% endblock %}</title>
+  {# Members-only, admin, auth and edit pages set noindex via this block. #}
+  {% block robots %}{% endblock %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 flex flex-col"
+      hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  <header class="border-b border-slate-200 bg-white">
+    <nav class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="font-semibold text-lg tracking-tight">dewereldvan<span class="text-emerald-600">.ai</span></a>
+      <div class="flex items-center gap-4 text-sm">
+        {% set member = request.session.get("member_id") %}
+        {% if member %}
+          <a href="/profiel/bewerken" class="hover:text-emerald-700">Profiel</a>
+          {% if request.session.get("is_admin") %}
+            <a href="/admin/queue" class="hover:text-emerald-700">Queue</a>
+          {% endif %}
+          <form action="/logout" method="post" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="hover:text-emerald-700">Uitloggen</button>
+          </form>
+        {% else %}
+          <a href="/login" class="hover:text-emerald-700">Inloggen</a>
+          <a href="/register" class="rounded bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">Registreren</a>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-4xl mx-auto w-full px-4 py-8 flex-1">
+    {% include "_flash.html" %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="max-w-4xl mx-auto px-4 py-4 text-xs text-slate-500">
+      dewereldvan.ai — een plek voor wie we zijn, wat we maken en waar we naar zoeken.
+    </div>
+  </footer>
+</body>
+</html>

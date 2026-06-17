@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.display_name }} — dewereldvan.ai{% endblock %}
+{# Members-only profiles must not be indexed; public ones are indexable. #}
+{% block robots %}{% if noindex %}<meta name="robots" content="noindex">{% endif %}{% endblock %}
+{% block content %}
+<article class="max-w-2xl mx-auto space-y-6">
+
+  <header class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-slate-900">{{ profile.display_name }}</h1>
+    {% if is_owner %}
+    <a href="/profiel/bewerken" class="text-sm text-emerald-700 hover:underline">Bewerken</a>
+    {% endif %}
+  </header>
+
+  {% if profile.bio %}
+  <section>
+    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Over</h2>
+    <p class="mt-1 whitespace-pre-line text-slate-700">{{ profile.bio }}</p>
+  </section>
+  {% endif %}
+
+  {% if profile.makes_summary %}
+  <section>
+    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Wat ik maak</h2>
+    <p class="mt-1 whitespace-pre-line text-slate-700">{{ profile.makes_summary }}</p>
+  </section>
+  {% endif %}
+
+  {% if profile.offerings %}
+  <section>
+    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Aanbod</h2>
+    <ul class="mt-2 space-y-2">
+      {% for item in profile.offerings %}
+      <li class="rounded border border-slate-200 bg-white px-3 py-2">
+        <p class="text-sm font-medium text-slate-800">{{ item.title }}</p>
+        {% if item.description %}<p class="text-xs text-slate-500">{{ item.description }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if profile.needs %}
+  <section>
+    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Waar ik naar zoek</h2>
+    <ul class="mt-2 space-y-2">
+      {% for item in profile.needs %}
+      <li class="rounded border border-slate-200 bg-white px-3 py-2">
+        <p class="text-sm font-medium text-slate-800">{{ item.title }}</p>
+        {% if item.description %}<p class="text-xs text-slate-500">{{ item.description }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if profile.tags %}
+  <section>
+    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Tags</h2>
+    <div class="mt-2 flex flex-wrap gap-2">
+      {% for tag in profile.tags %}
+      <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">{{ tag.name }}</span>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</article>
+{% endblock %}

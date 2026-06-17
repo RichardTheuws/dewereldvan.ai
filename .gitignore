@@ -27,3 +27,4 @@ venv/
 # Docker / data
 postgres-data/
 *.sqlite3
+data/outbox/

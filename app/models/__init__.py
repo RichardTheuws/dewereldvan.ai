@@ -1,0 +1,40 @@
+"""Model package — single import point for Base, all models, and enums.
+
+Alembic's env.py and the FEATURES layer import everything from here so that
+all mappers are registered on a single metadata before use.
+"""
+
+from __future__ import annotations
+
+from app.models.audit import AuditLog
+from app.models.base import (
+    AuditAction,
+    Base,
+    MemberRole,
+    MemberStatus,
+    TimestampMixin,
+    Visibility,
+)
+from app.models.magic_link import MagicLinkToken
+from app.models.member import Member
+from app.models.need import Need
+from app.models.offering import Offering
+from app.models.profile import Profile
+from app.models.tag import Tag, profile_tag
+
+__all__ = [
+    "Base",
+    "TimestampMixin",
+    "MemberStatus",
+    "MemberRole",
+    "Visibility",
+    "AuditAction",
+    "Member",
+    "MagicLinkToken",
+    "Profile",
+    "Tag",
+    "profile_tag",
+    "Offering",
+    "Need",
+    "AuditLog",
+]

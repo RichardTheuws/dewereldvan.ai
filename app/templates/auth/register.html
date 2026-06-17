@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Registreren — dewereldvan.ai{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<section class="max-w-md mx-auto">
+  <h1 class="text-2xl font-bold text-slate-900">Word lid</h1>
+  <p class="mt-2 text-sm text-slate-600">
+    Vul je naam en e-mailadres in. Een beheerder bekijkt je aanmelding;
+    daarna kun je inloggen via een e-maillink (geen wachtwoord nodig).
+  </p>
+
+  {% if error %}
+  <div class="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <form method="post" action="/register" class="mt-6 space-y-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div>
+      <label for="name" class="block text-sm font-medium text-slate-700">Naam</label>
+      <input id="name" name="name" type="text" required maxlength="120"
+             value="{{ name | default('') }}"
+             class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+    </div>
+    <div>
+      <label for="email" class="block text-sm font-medium text-slate-700">E-mailadres</label>
+      <input id="email" name="email" type="email" required maxlength="320"
+             value="{{ email | default('') }}"
+             class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+    </div>
+    <button type="submit"
+            class="w-full rounded-md bg-emerald-600 px-4 py-2.5 text-white font-medium hover:bg-emerald-700">
+      Aanmelden
+    </button>
+  </form>
+
+  <p class="mt-4 text-sm text-slate-500">
+    Al lid? <a href="/login" class="text-emerald-700 hover:underline">Inloggen</a>
+  </p>
+</section>
+{% endblock %}

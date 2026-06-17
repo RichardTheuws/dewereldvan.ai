@@ -1,0 +1,22 @@
+[project]
+name = "dewereldvan"
+version = "0.2.0"
+description = "dewereldvan.ai — ledenplatform (profielen, directory, matchmaking, community)"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = [
+    "B008",   # FastAPI Depends() in defaults is idiomatic
+    "UP042",  # str+Enum is the contract-mandated form (stores .value via native_enum=False)
+]

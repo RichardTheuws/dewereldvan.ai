@@ -28,12 +28,27 @@ Dit project gebruikt uitgebreide context-documentatie:
 - **Auth**: passwordless magic-link (signed tokens), server-side sessions
 - **Infra**: Docker Compose, Cloudflare Tunnel (`cloudflared`), transactionele e-mail
 
-## Quick Start
-> Nog niet geïmplementeerd — start ná goedkeuring van docs/PRD.md (Fase 0).
+## Quick Start (Fase 0 — fundering staat)
 ```bash
-# (komt in Fase 0)
-docker compose up -d
+cp .env.example .env          # vul SECRET_KEY (openssl rand -hex 32) en TUNNEL_TOKEN
+docker compose up -d --build  # web + postgres + cloudflared
+# migraties draaien automatisch bij start (CMD: alembic upgrade head)
+curl -s http://localhost:8000/healthz   # → {"status":"ok"} (binnen het compose-netwerk)
 ```
+
+### Lokaal ontwikkelen zonder Docker
+```bash
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env          # zet SECRET_KEY; EMAIL_BACKEND=console schrijft naar data/outbox/
+export DATABASE_URL=postgresql+psycopg://app:app@localhost:5432/dewereldvan
+alembic upgrade head
+uvicorn app.main:app --reload
+pytest                        # SQLite in-memory, geen Postgres nodig
+```
+
+E-mail in dev (`EMAIL_BACKEND=console`) wordt gelogd én naar `data/outbox/` geschreven
+(per bericht een `.txt` + een gecombineerde `outbox.log`) zodat magic-links klikbaar zijn.
 
 ## Deployment
 Self-hosted op `server-mini` (M4) via Docker Compose, geëxposeerd met Cloudflare Tunnel.

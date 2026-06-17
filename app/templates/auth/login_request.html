@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Inloggen — dewereldvan.ai{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<section class="max-w-md mx-auto">
+  <h1 class="text-2xl font-bold text-slate-900">Inloggen</h1>
+  <p class="mt-2 text-sm text-slate-600">
+    Vul je e-mailadres in. We sturen je een eenmalige inloglink — geen
+    wachtwoord nodig.
+  </p>
+
+  {% if error %}
+  <div class="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <form method="post" action="/login" class="mt-6 space-y-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div>
+      <label for="email" class="block text-sm font-medium text-slate-700">E-mailadres</label>
+      <input id="email" name="email" type="email" required maxlength="320"
+             value="{{ email | default('') }}"
+             class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
+    </div>
+    <button type="submit"
+            class="w-full rounded-md bg-emerald-600 px-4 py-2.5 text-white font-medium hover:bg-emerald-700">
+      Stuur inloglink
+    </button>
+  </form>
+
+  <p class="mt-4 text-sm text-slate-500">
+    Nog geen lid? <a href="/register" class="text-emerald-700 hover:underline">Aanmelden</a>
+  </p>
+</section>
+{% endblock %}

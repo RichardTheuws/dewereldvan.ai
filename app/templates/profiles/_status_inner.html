@@ -1,0 +1,22 @@
+{# Inner markup of the profile status block (completeness + visibility badge).
+   Shared by _completeness.html (normal swap) and _row_deleted.html (OOB). #}
+{% if error %}
+<p class="mb-2 text-sm text-red-700">{{ error }}</p>
+{% endif %}
+<div class="flex items-center justify-between">
+  <span class="text-sm font-medium text-slate-700">Profiel ingevuld</span>
+  <span class="text-sm font-semibold text-emerald-700">{{ profile.completeness }}%</span>
+</div>
+<div class="mt-1 h-2 w-full rounded-full bg-slate-200">
+  <div class="h-2 rounded-full bg-emerald-500" style="width: {{ profile.completeness }}%"></div>
+</div>
+<p class="mt-2 text-xs text-slate-500">
+  Zichtbaarheid:
+  {% if profile.visibility.value == "public" %}
+    <span class="rounded bg-emerald-100 px-1.5 py-0.5 font-medium text-emerald-800">Openbaar</span>
+    &mdash; je profiel is voor iedereen zichtbaar en vindbaar.
+  {% else %}
+    <span class="rounded bg-slate-200 px-1.5 py-0.5 font-medium text-slate-700">Alleen leden</span>
+    &mdash; alleen ingelogde leden zien je profiel (niet vindbaar in zoekmachines).
+  {% endif %}
+</p>
