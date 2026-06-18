@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.9.1] - 2026-06-18
+### Fixed
+- **Profielbouwer: vervolgvraag "verdween" na het done-event** — de done-bubbel
+  her-extraheerde de tekst uit `final` (de laatste pause_turn-iteratie), die na een
+  web_fetch-loop leeg kan zijn -> lege "…"-bubbel. De `/stream`-generator accumuleert nu
+  de gestreamde tekst-deltas en gebruikt die als fallback, zodat de reply zichtbaar blijft.
+
 ## [0.9.0] - 2026-06-18
 ### Added (Ervaring-laag E1-E4 + wacht-UX)
 - **Feedback overal** (E1): altijd-bereikbare "✦ deel je gedachte"-affordance (htmx-paneel),

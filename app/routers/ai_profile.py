@@ -262,6 +262,7 @@ async def stream(
         # De producer-task signaleert einde door alle kanalen te sluiten -> alle
         # drains lopen leeg -> we breken eruit (of het wall-clock-vangnet grijpt).
         text_done = think_done = tool_done = False
+        streamed_parts: list[str] = []  # accumuleer tekst-deltas voor de done-bubbel
         while not (text_done and think_done and tool_done):
             # Absolute wall-clock vangnet (zoals de oude _Channel.get-timeout):
             # blokkeert ``stream_turn`` oncontroleerbaar (SDK/netwerk-stall zonder
@@ -300,6 +301,7 @@ async def stream(
                     # as plain text. This closes the prompt-injection -> DOM-XSS
                     # path and makes the live bubble match the final autoescaped
                     # bubble (no markup flash). BYTE-IDENTIEK aan het oude gedrag.
+                    streamed_parts.append(item)
                     yield _sse_event("delta", str(escape(item)))
                     continue
 
@@ -336,6 +338,11 @@ async def stream(
             )
         else:
             assistant_text = _extract_text(getattr(final, "content", None))
+            # De volledige reply kan over meerdere pause_turn-iteraties zijn
+            # gestreamd; ``final`` (laatste iteratie) mist 'm dan, waardoor de
+            # done-bubbel een lege "…" toonde en de vervolgvraag "verdween". Val
+            # terug op de tekst die het lid ECHT zag stromen.
+            streamed_text = "".join(streamed_parts).strip()
             ai_conversation.append_turn(
                 db, member, "assistant", getattr(final, "content", assistant_text)
             )
@@ -343,7 +350,7 @@ async def stream(
             html = _render_str(
                 request,
                 "ai/_chat_message.html",
-                {"role": "assistant", "text": assistant_text or "…"},
+                {"role": "assistant", "text": assistant_text or streamed_text or "…"},
             )
         yield _sse_event("done", html)
 
