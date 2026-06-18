@@ -38,9 +38,26 @@ class Settings(BaseSettings):
     # Factory switch for the ImageGenerator backend (net als email_backend).
     ai_image_backend: str = "fal"  # "fal" | "noop"
 
+    # --- Profielfoto-upload (L1) ---
+    # Opslag-subdir onder het /app/data-volume (geen apart volume nodig).
+    upload_dir: str = "data/uploads"  # UPLOAD_DIR
+    upload_url_prefix: str = "/uploads"  # serveer-pad (StaticFiles-mount)
+    max_upload_bytes: int = 6 * 1024 * 1024  # 6 MB hard cap (server-hervalidatie)
+    allowed_image_types: str = "image/jpeg,image/png,image/webp"
+    photo_output_px: int = 512  # vierkante crop-zijde (ronde weergave via CSS)
+    rate_limit_photo_per_hour: int = 12  # per lid
+
     @property
     def admin_email_set(self) -> set[str]:
         return {e.strip().lower() for e in self.admin_emails.split(",") if e.strip()}
+
+    @property
+    def allowed_image_type_set(self) -> set[str]:
+        return {
+            t.strip().lower()
+            for t in self.allowed_image_types.split(",")
+            if t.strip()
+        }
 
 
 # Module singleton; deps import this. Tests override via env in conftest.

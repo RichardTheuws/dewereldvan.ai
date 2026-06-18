@@ -1,0 +1,51 @@
+{# Eén lid = een ster/kaart in de constellatie. Hover onthult headline +
+   kernbeeld + gloed-lift; klik → /leden/{slug}. Respecteert emphasis: `person`
+   → foto/naam groot; `projects` → projectbeeld groot, persoon compact;
+   `balanced` → gelijk. Verwacht: `profile`, `emphasis_class`, `photo_for`
+   (callables uit de route-context). Geen logica in de template behalve het
+   plakken van de modifier-class. #}
+{% set photo = photo_for(profile) %}
+{% set ecls = emphasis_class(profile) %}
+{% set _first_project = profile.offerings[0] if profile.offerings else None %}
+{% set _proj_img = (_first_project.image_url | safe_url) if _first_project else '' %}
+<a class="member-star {{ ecls }}" href="/leden/{{ profile.slug }}"
+   data-reveal style="--d:{{ loop.index0 * 60 if loop is defined else 0 }}ms">
+
+  {# Beeld-laag: bij `projects`-emphasis toont het kaart-beeld het project,
+     anders de profielfoto/cover; initialen als laatste fallback. #}
+  <div class="member-star__visual">
+    {% if ecls == "emphasis-projects" and _proj_img %}
+    <img class="member-star__cover" src="{{ _proj_img }}" alt="" loading="lazy">
+    {% elif photo.url %}
+    {% set _src = photo.url | safe_url %}
+    {% if _src %}<img class="member-star__cover" src="{{ _src }}" alt="" loading="lazy">{% endif %}
+    {% else %}
+    <span class="member-star__initials" aria-hidden="true">{{ photo.initials }}</span>
+    {% endif %}
+    {% if ecls != "emphasis-projects" %}
+    {% set _avatar = photo.url | safe_url if photo.url else '' %}
+    <span class="member-star__avatar {% if not _avatar %}member-star__avatar--initials{% endif %}">
+      {% if _avatar %}<img src="{{ _avatar }}" alt="" loading="lazy">{% else %}{{ photo.initials }}{% endif %}
+    </span>
+    {% endif %}
+  </div>
+
+  <div class="member-star__body">
+    <div class="member-star__name">{{ profile.display_name }}</div>
+    {% if profile.headline %}
+    <div class="member-star__headline">{{ profile.headline }}</div>
+    {% endif %}
+
+    {% if ecls == "emphasis-projects" and _first_project %}
+    <div class="member-star__meta">{{ _first_project.title }}</div>
+    {% endif %}
+
+    {% if profile.tags %}
+    <div class="member-star__tags">
+      {% for tag in profile.tags[:3] %}<span class="chip">{{ tag.name }}</span>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <span class="member-star__pull" aria-hidden="true">Bekijk →</span>
+</a>

@@ -3,6 +3,57 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.8.5] - 2026-06-18
+### Fixed (AI-profielbouw — live-bugs, gediagnosticeerd op productie)
+- **Profielbouwer hing ("..."): `web_fetch`-resultaten teruggespeeld met `citations`**
+  gaven `400 Extra inputs are not permitted`. Nieuwe `_strip_citations()` verwijdert het
+  veld uit `web_fetch_tool_result`/`web_search_tool_result`-blokken vóór elke API-call
+  (stream-loop, pause_turn-replay, finalize). Pause-replay dumpt Pydantic-blokken naar dict.
+- **`url_not_allowed` op links na een komma**: de URL-regex pakte de trailing komma mee
+  (`theuws.com,`), die belandde in `allowed_domains` en matchte nooit → de meeste links
+  werden geweigerd. `_member_domains` stript nu trailing leestekens uit de host. (Géén
+  botbescherming/robots — bewezen via productie-diagnose: alle 5 sites halen nu op, 0 fouten.)
+- **System-prompt forceert nu het ophalen van ELKE opgegeven link** en verbiedt het lui
+  als "onbereikbaar" bestempelen zonder een echte `error_code`.
+
+## [0.8.4] - 2026-06-18
+### Added (Publieke ledenpagina + profielverrijking + SEO — L1-L4)
+- Magische profielfoto-upload, prominentie-keuze (persoon↔projecten), kosmische publieke
+  ledenpagina (`/leden`, constellatie), detailpagina's per persoon én project
+  (`/projecten/{slug}`), SEO/linkwaarde (slugs + 301, OG/Twitter, JSON-LD, sitemap, robots).
+  Migratie `0004_ledenpagina` (additief). Zie ook de review-fixes hieronder.
+### Fixed
+- **Prominentie zichtbaar op de detailpagina** (`cosmic.css`): `emphasis-person`
+  schaalt nu de hero-foto (208px) + naam/headline zichtbaar op t.o.v. `balanced`,
+  en `emphasis-projects` tempert de headline — de drie keuzes zijn op
+  `/leden/{slug}` voelbaar verschillend (PRD L1 / styleguide-toetssteen). Op mobiel
+  blijft person groter maar getemperd (148px).
+- **AI-regenerate behoudt project-slugs + 301** (`ai_profile.py`): `_persist_draft`
+  reconcilieert offerings nu op positie i.p.v. clear+recreate. Een gewijzigde
+  projecttitel loopt via `offering_slug.rename_to` (schrijft slug-historie + houdt
+  het 301-pad live); een ongewijzigde titel houdt exact dezelfde slug. Geen verlies
+  van geïndexeerde `/projecten/{slug}`-URL's of linkwaarde meer.
+- **301-redirect lekt niet langer het bestaan van besloten projecten**
+  (`projects.py` + `offering_slug.py`): de historische-slug-301 past nu dezelfde
+  `can_view`-poort toe als de directe tak (via nieuwe `redirect_offering`), zodat
+  het statusverschil (301 vs 404) het bestaan/slug van een geschorst/besloten
+  project niet meer prijsgeeft aan anonieme bezoekers.
+- **Foto-upload-cap is nu echt 6 MB** (`photo.py`): de route parst de multipart
+  expliciet met `max_part_size=max_upload_bytes`, zodat Starlette's impliciete
+  1 MB-default een normale telefoonfoto (>1 MB) niet meer kapt met een rauwe
+  framework-fout; te grote parts vallen in de vriendelijke NL-400.
+- **Dubbel `style`-attribuut** (`members/index.html`, `profiles/view.html`,
+  `projects/view.html`): de reveal-delay (`--d`) is samengevoegd in het bestaande
+  `style`, zodat de gestaggerde entrance van lede + footer niet meer op 0ms valt.
+- **Migratie/model-drift** (`0004_ledenpagina.py`): `profile.emphasis` is nu
+  `VARCHAR(8)` (was 20), exact gelijk aan het model — geen `alembic check`-drift.
+
+### Tests
+- `tests/test_photo_route.py` (nieuw): HTTP-laag-dekking voor de multipart-grens —
+  een ~2 MB foto slaagt, een >6 MB part geeft de vriendelijke 400.
+- `tests/test_ai_profile_routes.py`: regenerate-met-titelwijziging behoudt de
+  offering-rij + slug en levert een echte 301 op de oude `/projecten/{slug}`.
+
 ## [0.8.3] - 2026-06-18
 ### Docs
 - **`docs/PRD-ledenpagina.md`** — PRD voor publieke ledenpagina (kosmische constellatie van leden),

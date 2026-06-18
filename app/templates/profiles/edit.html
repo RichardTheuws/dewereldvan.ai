@@ -27,6 +27,15 @@
     {% include "profiles/_completeness.html" %}
   </section>
 
+  {# --- Profielfoto + prominentie (kosmische widgets in een donker paneel) --- #}
+  <section class="cosmic rounded-2xl p-6" style="background:var(--bg-1);border:1px solid var(--line)">
+    <h2 class="section-title mb-4">Profielfoto</h2>
+    {% include "profiles/_photo_upload.html" %}
+    <div class="mt-10">
+      {% include "profiles/_emphasis_choice.html" %}
+    </div>
+  </section>
+
   {# --- Profile fields --- #}
   <section class="rounded-lg border border-slate-200 bg-white p-5">
     <h2 class="text-lg font-semibold text-slate-900">Over jou</h2>

@@ -9,7 +9,7 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin, Visibility
+from app.models.base import Base, ProfileEmphasis, TimestampMixin, Visibility
 
 if TYPE_CHECKING:
     from app.models.member import Member
@@ -48,6 +48,16 @@ class Profile(Base, TimestampMixin):
     consented_public_at: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True
     )
+    # Layout-prominentie (PRD L1): person | projects | balanced (default).
+    emphasis: Mapped[ProfileEmphasis] = mapped_column(
+        SQLEnum(ProfileEmphasis, name="profile_emphasis", native_enum=False),
+        default=ProfileEmphasis.balanced,
+        nullable=False,
+    )
+    # Pad/URL naar de geüploade profielfoto (relatief, bv. "/uploads/<naam>.webp").
+    # Het beeld zelf staat op het /app/data-volume; alleen het pad in de DB.
+    # None => fallback (AI-cover of initialen).
+    photo_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     # AI-native profielbouw (F1-F3). All additive; default to "no AI build yet".
     headline: Mapped[str | None] = mapped_column(String(200), nullable=True)
     cover_image_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)

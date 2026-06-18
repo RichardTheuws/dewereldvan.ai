@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /profiel/
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+
+Sitemap: {{ base_url }}/sitemap.xml

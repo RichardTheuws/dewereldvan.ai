@@ -5,23 +5,23 @@
 
    Visibility (PRD §4, enforced in the route): members-only profiles arrive with
    `noindex=True` and are login-gated before reaching this template; public
-   profiles are indexable and get OG tags. OG metadata is emitted ONLY for public
-   profiles to avoid leaking members-only data into link unfurls. #}
+   profiles are indexable and get OG + JSON-LD. SEO metadata is emitted ONLY for
+   public profiles (via _seo_head.html) to avoid leaking members-only data into
+   link unfurls.
+
+   Emphasis (PRD L1) stuurt de layout-prominentie via `emphasis_cls`
+   (emphasis-person | emphasis-projects | emphasis-balanced) op de identity-
+   sectie: person → foto/headline/bio groot; projects → projecten eerst, persoon
+   compact; balanced → de gelijke, bestaande volgorde. #}
 {% set is_public = not noindex %}
+{% set ecls = emphasis_cls %}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ profile.headline or profile.display_name }} — dewereldvan.ai</title>
-  {% if noindex %}
-  <meta name="robots" content="noindex">
-  {% else %}
-  <meta name="description" content="{{ (profile.headline or profile.bio or profile.display_name) | striptags | truncate(160) }}">
-  <meta property="og:type" content="profile">
-  <meta property="og:title" content="{{ profile.display_name }} — {{ profile.headline or 'dewereldvan.ai' }}">
-  <meta property="og:description" content="{{ (profile.bio or profile.headline or '') | striptags | truncate(200) }}">
-  {% if profile.cover_image_url %}<meta property="og:image" content="{{ profile.cover_image_url }}">{% endif %}
-  <meta property="og:url" content="{{ request.base_url | string | trim('/') }}/leden/{{ profile.slug }}">
-  {% endif %}
+  {% set seo_title = (profile.headline or profile.display_name) ~ " — dewereldvan.ai" %}
+  {% set seo_desc = profile.headline or profile.bio or profile.display_name %}
+  {% set og_type = "profile" %}
+  {% include "_seo_head.html" %}
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,7 +36,7 @@
 <body class="cosmic">
   {% include "profiles/_cosmic_bg.html" %}
 
-  <div class="wrap wrap--narrow">
+  <div class="wrap wrap--narrow {{ ecls }}">
     <header class="c-head" data-reveal style="--d:60ms">
       <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
       <div class="links">
@@ -44,7 +44,7 @@
         <a class="link" href="/profiel/ai/bouwen">Bewerken met AI</a>
         <a class="link" href="/profiel/bewerken">Handmatig</a>
         {% else %}
-        <span class="muted">{% if is_public %}openbaar profiel{% else %}ledenprofiel{% endif %}</span>
+        <a class="link" href="/leden">Alle makers</a>
         {% endif %}
       </div>
     </header>
@@ -59,24 +59,39 @@
         {% endif %}
       </section>
 
-      {# ---- Identity ---- #}
-      <section class="mt-8" data-reveal style="--d:240ms">
-        <div class="display-name">{{ profile.display_name }}</div>
-        <h1 class="headline mt-2">{{ profile.headline or profile.display_name }}</h1>
-        {% if profile.tags %}
-        <div class="mt-5">{% set tags = profile.tags %}{% include "profiles/_cosmic_tags.html" %}</div>
-        {% endif %}
+      {# ---- Identity (foto-hero + emphasis) ---- #}
+      <section class="profile-identity mt-8" data-reveal style="--d:240ms">
+        <div class="profile-identity__photo">
+          {% set _src = photo.url | safe_url if photo.url else '' %}
+          <div class="photo-ring photo-ring--hero" data-kind="{{ photo.kind }}">
+            {% if _src %}
+            <img class="photo-ring__img" src="{{ _src }}" alt="Profielfoto van {{ profile.display_name }}">
+            {% else %}
+            <span class="photo-ring__initials" aria-hidden="true">{{ photo.initials }}</span>
+            {% endif %}
+            <span class="photo-ring__halo" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div class="profile-identity__text">
+          <div class="display-name">{{ profile.display_name }}</div>
+          <h1 class="headline mt-2">{{ profile.headline or profile.display_name }}</h1>
+          {% if profile.tags %}
+          <div class="mt-5">{% set tags = profile.tags %}{% include "profiles/_cosmic_tags.html" %}</div>
+          {% endif %}
+        </div>
       </section>
 
-      {# ---- Bio ---- #}
+      {# Sectie-blokken als macro's, zodat emphasis de volgorde kan sturen. #}
+      {% macro section_bio() %}
       {% if profile.bio %}
       <section class="mt-12" data-reveal style="--d:340ms">
         <div class="section-title mb-3">Over</div>
         <p class="lede" style="max-width:58ch;white-space:pre-line">{{ profile.bio }}</p>
       </section>
       {% endif %}
+      {% endmacro %}
 
-      {# ---- Roles / affiliations ---- #}
+      {% macro section_roles() %}
       {% set roles = profile.profile_links | selectattr('kind.value', 'equalto', 'affiliation') | list %}
       {% if roles %}
       <section class="mt-14" data-reveal style="--d:400ms">
@@ -86,28 +101,40 @@
         </div>
       </section>
       {% endif %}
+      {% endmacro %}
 
-      {# ---- Projects: offerings + build-kind links ---- #}
+      {% macro section_projects() %}
       {% set builds = profile.profile_links | selectattr('kind.value', 'equalto', 'build') | list %}
       {% if profile.offerings or builds %}
-      <section class="mt-14" data-reveal style="--d:460ms">
+      <section class="mt-14 profile-projects" data-reveal style="--d:460ms">
         <div class="section-title mb-4">Wat ik maak</div>
         <div class="grid">
-          {% for item in profile.offerings %}{% include "profiles/_cosmic_project_card.html" %}{% endfor %}
+          {% for item in profile.offerings %}
+            {% if item.slug %}
+            {# Eigen rijke projectpagina (linkwaarde) — klik gaat naar /projecten/{slug}. #}
+            <a class="card" href="/projecten/{{ item.slug }}">
+              {% set _img = item.image_url | safe_url %}
+              {% if _img %}<img class="thumb" src="{{ _img }}" alt="" loading="lazy">{% endif %}
+              <div class="card-label">{{ item.title }}</div>
+              {% if item.description %}<div class="card-desc">{{ item.description }}</div>{% endif %}
+              <div class="card-url">dewereldvan.ai/projecten/{{ item.slug }}</div>
+            </a>
+            {% else %}
+            {% include "profiles/_cosmic_project_card.html" %}
+            {% endif %}
+          {% endfor %}
           {% for item in builds %}{% include "profiles/_cosmic_project_card.html" %}{% endfor %}
         </div>
       </section>
-      {% endif %}
-
-      {# ---- Fallback: legacy "wat ik maak" summary ---- #}
-      {% if not profile.offerings and not builds and profile.makes_summary %}
+      {% elif profile.makes_summary %}
       <section class="mt-14" data-reveal style="--d:460ms">
         <div class="section-title mb-3">Wat ik maak</div>
         <p class="lede" style="max-width:58ch;white-space:pre-line">{{ profile.makes_summary }}</p>
       </section>
       {% endif %}
+      {% endmacro %}
 
-      {# ---- Seeking ---- #}
+      {% macro section_seeking() %}
       {% if profile.needs %}
       <section class="mt-14" data-reveal style="--d:520ms">
         <div class="section-title mb-4">Waar ik naar zoek</div>
@@ -121,12 +148,27 @@
         </div>
       </section>
       {% endif %}
+      {% endmacro %}
+
+      {# Emphasis stuurt de volgorde: projects → projecten naar voren; person/
+         balanced → bio eerst. Alle blokken blijven aanwezig (geen content-verlies). #}
+      {% if ecls == "emphasis-projects" %}
+        {{ section_projects() }}
+        {{ section_bio() }}
+        {{ section_roles() }}
+        {{ section_seeking() }}
+      {% else %}
+        {{ section_bio() }}
+        {{ section_roles() }}
+        {{ section_projects() }}
+        {{ section_seeking() }}
+      {% endif %}
 
     </main>
 
-    <footer class="c-head" style="border-top:1px solid var(--line)" data-reveal style="--d:600ms">
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:600ms" data-reveal>
       <span class="muted">© 2026 dewereldvan.ai</span>
-      <a class="link" href="/">terug naar de wereld</a>
+      <a class="link" href="/leden">terug naar de makers</a>
     </footer>
   </div>
 

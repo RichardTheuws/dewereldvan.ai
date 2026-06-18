@@ -1,0 +1,32 @@
+{# Herbruikbaar SEO-head-blok voor de publieke kosmische pagina's (leden +
+   projecten). Geparametriseerd; emit OG/Twitter/JSON-LD ALLEEN voor publiek-
+   indexeerbare content (besloten => noindex, geen unfurl-datalek).
+
+   Verwacht in de context:
+   - noindex      (bool)            : zo ja → <meta robots noindex>, geen OG/LD.
+   - canonical    (str)             : absolute canonical URL.
+   - seo_title    (str)             : <title> + og:title.
+   - seo_desc     (str|None)        : meta description + og:description.
+   - og_type      (str)             : "profile" | "website".
+   - og_image     (str|None)        : absolute beeld-URL (optioneel).
+   - jsonld       (dict|None)       : schema.org payload (alleen publiek).
+#}
+<title>{{ seo_title }}</title>
+{% if noindex %}
+<meta name="robots" content="noindex">
+{% else %}
+<link rel="canonical" href="{{ canonical }}">
+{% if seo_desc %}<meta name="description" content="{{ seo_desc | striptags | truncate(160) }}">{% endif %}
+<meta property="og:type" content="{{ og_type }}">
+<meta property="og:title" content="{{ seo_title }}">
+{% if seo_desc %}<meta property="og:description" content="{{ seo_desc | striptags | truncate(200) }}">{% endif %}
+<meta property="og:url" content="{{ canonical }}">
+{% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}
+<meta name="twitter:card" content="{% if og_image %}summary_large_image{% else %}summary{% endif %}">
+<meta name="twitter:title" content="{{ seo_title }}">
+{% if seo_desc %}<meta name="twitter:description" content="{{ seo_desc | striptags | truncate(200) }}">{% endif %}
+{% if og_image %}<meta name="twitter:image" content="{{ og_image }}">{% endif %}
+{% if jsonld %}
+<script type="application/ld+json">{{ jsonld | tojson | safe }}</script>
+{% endif %}
+{% endif %}

@@ -1,0 +1,38 @@
+{# Prominentie-keuze (PRD L1): persoon ↔ projecten ↔ balans. Drie kosmische
+   opties; klik post direct naar /profiel/emphasis (htmx, CSRF via hx-headers) en
+   swapt zichzelf met de nieuwe gekozen-staat. Gedeeld door de AI-bouwflow én de
+   bewerkpagina. Verwacht: `profile`, optioneel `saved`. #}
+{% set current = profile.emphasis.value %}
+<div id="emphasis-choice" class="emphasis-choice">
+  <div class="section-title mb-1">Wat zetten we in de spotlight?</div>
+  <p class="lede text-sm mb-4" style="max-width:52ch">
+    Vooral jóú (trainer, spreker, beleidsmaker) of vooral je werk (bouwer, SaaS)?
+    Dit stuurt hoe groot je foto en je projecten op je pagina komen.
+  </p>
+
+  <div class="emphasis-options" role="group" aria-label="Prominentie-keuze">
+    {% set opts = [
+      ("person",   "Vooral ik",       "Foto, kopregel en bio groot. Projecten secundair."),
+      ("balanced", "In balans",        "Gelijke aandacht voor wie je bent én wat je maakt."),
+      ("projects", "Vooral mijn werk", "Projectkaarten met beeld groot. Jij compact erbij.")
+    ] %}
+    {% for value, title, desc in opts %}
+    <form hx-post="/profiel/emphasis"
+          hx-target="#emphasis-choice"
+          hx-swap="outerHTML">
+      <input type="hidden" name="emphasis" value="{{ value }}">
+      <button type="submit"
+              class="emphasis-opt {% if current == value %}is-active{% endif %}"
+              aria-pressed="{{ 'true' if current == value else 'false' }}">
+        <span class="emphasis-opt__glyph emphasis-opt__glyph--{{ value }}" aria-hidden="true"></span>
+        <span class="emphasis-opt__title">{{ title }}</span>
+        <span class="emphasis-opt__desc">{{ desc }}</span>
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+
+  {% if saved %}
+  <p class="photo-ring__msg photo-ring__msg--ok mt-3" role="status">Opgeslagen. ✦</p>
+  {% endif %}
+</div>

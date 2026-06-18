@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Projectdetailpagina (L3) — rijke kosmische pagina per offering. Standalone
+   cosmic-document. Zichtbaarheid spiegelt de eigenaar-profielpoort (in de route):
+   een project van een besloten/geschorst lid komt hier nooit; publiek =
+   indexeerbaar met OG + JSON-LD. Verwacht: `offering`, `profile` (de maker),
+   `noindex`, `is_owner`, `canonical`, `jsonld`, `og_image`. #}
+{% set _ext = offering.url | safe_url %}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set seo_title = offering.title ~ " — dewereldvan.ai" %}
+  {% set seo_desc = offering.description or (offering.title ~ ", een project van " ~ profile.display_name) %}
+  {% set og_type = "website" %}
+  {% include "_seo_head.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
+
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+      <div class="links">
+        <a class="link" href="/leden">Alle makers</a>
+        {% if is_owner %}<a class="link" href="/profiel/bewerken">Bewerken</a>{% endif %}
+      </div>
+    </header>
+
+    <main class="flex-1 pb-20">
+
+      {# ---- Project-hero ---- #}
+      <section class="cover mt-2" data-reveal style="--d:140ms">
+        {% set _img = offering.image_url | safe_url %}
+        {% if _img %}<img src="{{ _img }}" alt="">{% endif %}
+      </section>
+
+      <section class="mt-8" data-reveal style="--d:240ms">
+        <div class="eyebrow eyebrow--plain">Project</div>
+        <h1 class="headline mt-3">{{ offering.title }}</h1>
+        <div class="mt-4 display-name">
+          door
+          <a class="text-link" href="/leden/{{ profile.slug }}">{{ profile.display_name }}</a>
+        </div>
+      </section>
+
+      {% if offering.description %}
+      <section class="mt-10" data-reveal style="--d:340ms">
+        <div class="section-title mb-3">Over dit project</div>
+        <p class="lede" style="max-width:58ch;white-space:pre-line">{{ offering.description }}</p>
+      </section>
+      {% endif %}
+
+      {# ---- Externe link naar de echte site ---- #}
+      {% if _ext %}
+      <section class="mt-10" data-reveal style="--d:420ms">
+        <a class="btn" href="{{ _ext }}" target="_blank" rel="noopener nofollow">
+          Bekijk het live →
+        </a>
+        <div class="card-url mt-3">{{ _ext }}</div>
+      </section>
+      {% endif %}
+
+      {# ---- De maker (peer-koppeling terug naar het profiel) ---- #}
+      <section class="mt-14" data-reveal style="--d:500ms">
+        <div class="section-title mb-4">De maker</div>
+        <a class="card" href="/leden/{{ profile.slug }}"
+           style="display:flex;gap:16px;align-items:center">
+          {% set _pic = (profile.photo_url or profile.cover_image_url) | safe_url %}
+          {% if _pic %}
+          <img class="thumb" style="width:72px;height:72px;margin:0;flex:none;border-radius:50%;object-fit:cover" src="{{ _pic }}" alt="" loading="lazy">
+          {% endif %}
+          <div class="flex-1 min-w-0">
+            <div class="card-label">{{ profile.display_name }}</div>
+            {% if profile.headline %}<div class="card-desc">{{ profile.headline }}</div>{% endif %}
+          </div>
+          <span class="member-star__pull" aria-hidden="true">Bekijk →</span>
+        </a>
+      </section>
+
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:600ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/leden">terug naar de makers</a>
+    </footer>
+  </div>
+
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

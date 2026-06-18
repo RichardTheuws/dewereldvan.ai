@@ -44,6 +44,21 @@
       <div class="bubble bubble--system mt-8">AI-profielbouw staat momenteel uit.</div>
       {% endif %}
 
+      {# ---- Profielfoto (magisch, los van de AI-flow) ---- #}
+      <section class="mt-12" data-reveal style="--d:440ms">
+        <div class="section-title mb-3">Je gezicht</div>
+        <p class="lede text-sm mb-5" style="max-width:52ch">
+          Een foto maakt je profiel meteen menselijk. Sleep 'm erin — wij doen de
+          rest (ronde crop, en we strippen locatie/camera-data voor je privacy).
+        </p>
+        {% include "profiles/_photo_upload.html" %}
+      </section>
+
+      {# ---- Prominentie-keuze (emphasis) ---- #}
+      <section class="mt-12" data-reveal style="--d:480ms">
+        {% include "profiles/_emphasis_choice.html" %}
+      </section>
+
       {# ---- Chat ---- #}
       <section class="mt-10" data-reveal style="--d:500ms">
         <div id="chat" class="chat-stream">

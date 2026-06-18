@@ -24,7 +24,16 @@ from app.config import settings
 from app.csrf import CSRFMiddleware, get_csrf_token
 from app.db import engine
 from app.deps import _RedirectToLogin
-from app.routers import admin, ai_profile, auth, profiles
+from app.routers import (
+    admin,
+    ai_profile,
+    auth,
+    members,
+    photo,
+    profiles,
+    projects,
+    seo,
+)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -92,6 +101,18 @@ def create_app() -> FastAPI:
     app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+    # Profielfoto's (L1) worden door de app vanaf het /app/data-volume geserveerd
+    # — geen aparte webserver. UPLOAD_DIR valt onder het bestaande data-volume;
+    # we maken de subdir aan zodat de mount altijd een geldige directory heeft.
+    upload_dir = Path(settings.upload_dir)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    app.mount(
+        settings.upload_url_prefix,
+        StaticFiles(directory=str(upload_dir)),
+        name="uploads",
+    )
+
     app.state.templates = templates
 
     _register_core_routes(app)
@@ -102,6 +123,11 @@ def create_app() -> FastAPI:
     app.include_router(profiles.router)
     app.include_router(admin.router)
     app.include_router(ai_profile.router)
+    # Ledenpagina-feature (L1-L4): stubs nu, bodies door SERVICES/ROUTES+UI.
+    app.include_router(members.router)
+    app.include_router(projects.router)
+    app.include_router(photo.router)
+    app.include_router(seo.router)
 
     return app
 

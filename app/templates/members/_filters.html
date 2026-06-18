@@ -1,0 +1,27 @@
+{# Filter/zoek-balk voor de constellatie. Mono-labels + glas-inputs (bestaande
+   .cosmic input-focus-gloed). htmx: bij wijziging GET /leden → #grid met het
+   _grid.html-fragment. `hx-push-url` houdt de gefilterde URL deelbaar +
+   indexeerbaar. Verwacht: `tag`, `maakt`, `zoekt` (huidige waarden). #}
+<form class="member-filters"
+      hx-get="/leden"
+      hx-target="#grid"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+      hx-trigger="input changed delay:250ms from:input, search delay:50ms from:input"
+      role="search" aria-label="Leden filteren">
+  <div class="member-filters__field">
+    <label class="field-label" for="f-tag">Tag</label>
+    <input id="f-tag" name="tag" type="search" value="{{ tag or '' }}"
+           placeholder="bijv. zorg, beleid, agents" autocomplete="off">
+  </div>
+  <div class="member-filters__field">
+    <label class="field-label" for="f-maakt">Wat ik maak</label>
+    <input id="f-maakt" name="maakt" type="search" value="{{ maakt or '' }}"
+           placeholder="bijv. SaaS, model, tool" autocomplete="off">
+  </div>
+  <div class="member-filters__field">
+    <label class="field-label" for="f-zoekt">Waar ik zoek</label>
+    <input id="f-zoekt" name="zoekt" type="search" value="{{ zoekt or '' }}"
+           placeholder="bijv. co-founder, pilot, data" autocomplete="off">
+  </div>
+</form>

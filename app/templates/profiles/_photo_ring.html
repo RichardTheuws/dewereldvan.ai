@@ -1,0 +1,37 @@
+{# htmx-swap-doel: de profielfoto "gematerialiseerd" in een sterren-ring.
+   Verwacht: `photo` (dict van photo_service.photo_or_initials met kind/url/
+   initials), optioneel `error`, `materialized`, `removed`, `profile`.
+
+   Fallback-keten (§3.8): geüploade foto → AI-cover → initialen. De ronde crop is
+   puur CSS (border-radius:50%); de gloed-ring is een box-shadow. Bij een verse
+   upload (`materialized`) speelt een korte materialisatie-animatie — uit onder
+   prefers-reduced-motion (zie cosmic.css). #}
+<div id="photo-ring" class="photo-ring-wrap">
+  <div class="photo-ring {% if materialized %}is-materializing{% endif %}"
+       data-kind="{{ photo.kind }}">
+    {% set _src = photo.url | safe_url if photo.url else '' %}
+    {% if _src %}
+    <img class="photo-ring__img" src="{{ _src }}" alt="Profielfoto" loading="lazy">
+    {% else %}
+    <span class="photo-ring__initials" aria-hidden="true">{{ photo.initials }}</span>
+    {% endif %}
+    <span class="photo-ring__halo" aria-hidden="true"></span>
+  </div>
+
+  {% if error %}
+  <p class="photo-ring__msg photo-ring__msg--err" role="alert">{{ error }}</p>
+  {% elif materialized %}
+  <p class="photo-ring__msg photo-ring__msg--ok" role="status">Daar ben je. ✦</p>
+  {% elif removed %}
+  <p class="photo-ring__msg" role="status">Foto verwijderd — je valt nu terug op je cover of initialen.</p>
+  {% endif %}
+
+  {% if photo.kind == "photo" %}
+  <form class="photo-ring__remove"
+        hx-post="/profiel/foto/verwijderen"
+        hx-target="#photo-ring"
+        hx-swap="outerHTML">
+    <button class="text-link" type="submit">Foto verwijderen</button>
+  </form>
+  {% endif %}
+</div>

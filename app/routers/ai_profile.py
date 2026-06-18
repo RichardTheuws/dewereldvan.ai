@@ -36,7 +36,7 @@ from app.db import get_db
 from app.deps import image_generator, require_member
 from app.models import Member, Offering, Profile, ProfileLink, ProfileLinkKind
 from app.schemas.ai_profile import AcceptForm, ChatMessageForm
-from app.services import ai_conversation, profile_service
+from app.services import ai_conversation, offering_slug, profile_service
 from app.services import ai_profile as ai_service
 from app.services import visibility as visibility_service
 
@@ -77,6 +77,8 @@ def build_page(
     messages = ai_conversation.load_messages(db, member)
     turns = _renderable_turns(messages)
     has_draft = bool(profile.ai_enriched)
+    from app.services import photo_service
+
     return _render(
         request,
         "ai/build.html",
@@ -86,6 +88,7 @@ def build_page(
             "has_history": bool(turns),
             "has_draft": has_draft,
             "ai_enabled": settings.ai_enrich_enabled,
+            "photo": photo_service.photo_or_initials(profile),
         },
     )
 
@@ -375,8 +378,12 @@ def _persist_draft(
     - ``roles``           -> ProfileLink kind=affiliation.
     - ``tags``            -> profile tags (via profile_service).
 
-    Replaces previously AI-generated offerings/links (a regenerate should not pile
-    up duplicates) but never touches ``visibility``.
+    Offerings worden op positie *gereconcilieerd* (niet clear+recreate): een
+    bestaand project op index *i* blijft dezelfde rij — bij een gewijzigde titel
+    loopt het via ``offering_slug.rename_to`` zodat de oude ``/projecten/{slug}``
+    een 301 naar de nieuwe houdt (linkwaarde-behoud), bij een ongewijzigde titel
+    blijft de slug exact gelijk. Zo wist een regenerate nooit de slug-historie en
+    breekt geen geïndexeerde project-URL. ``visibility`` blijft ongemoeid.
     """
     profile.headline = draft.headline
     if draft.bio:
@@ -390,19 +397,8 @@ def _persist_draft(
     ]
     profile.ai_source_text = "\n\n".join(t for t in user_texts if t) or None
 
-    # Projects -> offerings (replace the existing set).
-    profile.offerings.clear()
-    db.flush()
-    for i, project in enumerate(draft.projects):
-        profile.offerings.append(
-            Offering(
-                title=project.name,
-                description=project.description,
-                url=project.url,
-                image_url=project.image_url,
-                position=i,
-            )
-        )
+    # Projects -> offerings, gereconcilieerd op positie (behoud rij + slug-historie).
+    _reconcile_offerings(db, profile, draft.projects)
 
     # Roles -> profile_links (affiliation).
     profile.profile_links.clear()
@@ -431,6 +427,50 @@ def _persist_draft(
 
     profile_service.recompute_completeness(profile)
     db.flush()
+
+
+def _reconcile_offerings(
+    db: Session, profile: Profile, projects: list
+) -> None:
+    """Match bestaande offerings op positie met de nieuwe draft-projecten.
+
+    Per index *i*: hergebruik de bestaande rij (behoud id + slug-historie). Is de
+    titel gewijzigd → ``offering_slug.rename_to`` (schrijft de oude slug in de
+    history-tabel + houdt het 301-pad live). Is de titel gelijk → de slug blijft
+    onveranderd. Extra projecten worden nieuw aangemaakt (krijgen een verse slug);
+    weggevallen projecten worden verwijderd (delete-orphan). De 301-machinerie
+    wordt zo daadwerkelijk langs het publiceer-/regenerate-pad gebruikt.
+    """
+    existing = sorted(profile.offerings, key=lambda o: (o.position, o.id or 0))
+
+    for i, project in enumerate(projects):
+        if i < len(existing):
+            offering = existing[i]
+            if (offering.title or "") != project.name:
+                # Titel wijzigt → rename_to legt de oude slug vast voor de 301.
+                offering_slug.rename_to(db, offering, project.name)
+            offering.description = project.description
+            offering.url = project.url
+            offering.image_url = project.image_url
+            offering.position = i
+        else:
+            offering = Offering(
+                title=project.name,
+                description=project.description,
+                url=project.url,
+                image_url=project.image_url,
+                position=i,
+            )
+            profile.offerings.append(offering)
+
+    # Weggevallen projecten (de staart) verwijderen.
+    for offering in existing[len(projects):]:
+        profile.offerings.remove(offering)
+
+    db.flush()
+    # Garandeer een slug op elke (ook nieuwe) offering.
+    for offering in profile.offerings:
+        offering_slug.ensure_slug(db, offering)
 
 
 def _make_need(seeking: str, position: int):

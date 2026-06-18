@@ -1,0 +1,31 @@
+{# htmx-doel: de gefilterde sterren-grid (innerHTML van #grid). Toont de
+   constellatie van leden, of een kosmische lege-/geen-resultaten-staat. Verwacht:
+   `profiles`, `emphasis_class`, `photo_for`, en de filterwaarden `tag/maakt/zoekt`
+   (om te onderscheiden: nog niemand vs. niets-gevonden). #}
+{% if profiles %}
+<div class="constellation">
+  {% for profile in profiles %}
+    {% include "members/_member_star.html" %}
+  {% endfor %}
+</div>
+{% else %}
+{% set _filtered = (tag or maakt or zoekt) %}
+<div class="constellation-empty" data-reveal>
+  <span class="constellation-empty__spark" aria-hidden="true">✦</span>
+  {% if _filtered %}
+  <div class="headline" style="font-size:clamp(1.6rem,4vw,2.4rem)">Geen ster op deze coördinaten.</div>
+  <p class="lede mt-3" style="max-width:46ch;margin-inline:auto">
+    Niemand matcht (nog) op deze filters. Stel je zoektocht bij — of kom later
+    terug, de constellatie groeit.
+  </p>
+  <a class="btn btn--ghost mt-6" href="/leden">Toon alle makers</a>
+  {% else %}
+  <div class="headline" style="font-size:clamp(1.6rem,4vw,2.4rem)">Nog geen lichtbronnen.</div>
+  <p class="lede mt-3" style="max-width:46ch;margin-inline:auto">
+    De eerste makers zetten zo hun profiel publiek. Wees jij een van de eerste
+    sterren in deze constellatie.
+  </p>
+  <a class="btn mt-6" href="/profiel/ai/bouwen">Bouw je profiel</a>
+  {% endif %}
+</div>
+{% endif %}

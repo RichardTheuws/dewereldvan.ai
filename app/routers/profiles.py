@@ -21,7 +21,13 @@ from app.db import get_db
 from app.deps import current_member, require_member
 from app.models import Member, Profile
 from app.schemas.profile import NeedForm, OfferingForm, ProfileForm, VisibilityForm
-from app.services import profile_service
+from app.services import (
+    emphasis_service,
+    offering_slug,
+    photo_service,
+    profile_service,
+    seo_service,
+)
 from app.services import visibility as visibility_service
 
 router = APIRouter(tags=["profiles"])
@@ -39,6 +45,7 @@ def _edit_context(request: Request, profile: Profile, **extra) -> dict:
     ctx = {
         "profile": profile,
         "tags_string": _tags_string(profile),
+        "photo": photo_service.photo_or_initials(profile),
     }
     ctx.update(extra)
     return ctx
@@ -134,6 +141,8 @@ def add_offering(
     item = profile_service.add_offering(
         db, profile, title=data.title, description=data.description
     )
+    # Geef het nieuwe project meteen een stabiele slug (/projecten/{slug}).
+    offering_slug.ensure_slug(db, item)
     db.commit()
     return _render(
         request,
@@ -276,12 +285,36 @@ def view_profile(
         # Logged in but not allowed (should be rare) -> hide existence.
         return _render(request, "404.html", status_code=404)
 
+    # Garandeer stabiele project-slugs voor de detail-links (idempotent; raakt
+    # bestaande slugs niet aan). Een backfill miste de na-migratie aangemaakte
+    # offerings; dit dicht dat gat op de read-zonder dubbele DDL.
+    changed = False
+    for off in profile.offerings:
+        if not off.slug:
+            offering_slug.ensure_slug(db, off)
+            changed = True
+    if changed:
+        db.commit()
+
+    noindex = visibility_service.is_noindex(profile)
     return _render(
         request,
         "profiles/view.html",
         {
             "profile": profile,
-            "noindex": visibility_service.is_noindex(profile),
+            "noindex": noindex,
             "is_owner": viewer is not None and viewer.id == profile.member_id,
+            "photo": photo_service.photo_or_initials(profile),
+            "emphasis_cls": emphasis_service.emphasis_class(profile),
+            "canonical": seo_service.canonical_url(f"/leden/{profile.slug}"),
+            # JSON-LD + OG-beeld alleen voor publiek-indexeerbare profielen.
+            "jsonld": None if noindex else seo_service.jsonld_person(profile),
+            "og_image": (
+                None
+                if noindex
+                else seo_service.absolute_url(
+                    profile.photo_url or profile.cover_image_url
+                )
+            ),
         },
     )

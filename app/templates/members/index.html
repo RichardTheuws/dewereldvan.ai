@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Publieke ledenpagina (L2) — kosmische constellatie van publieke leden.
+   Standalone cosmic-document (extendt base.html NIET): bezit zelf <body
+   class="cosmic">, includet de achtergrond-partials en het constellatie-canvas.
+   Indexeerbaar (publieke showcase + linkwaarde). Filter/zoek via htmx; elke ster
+   is een lid dat boven het levende #stars-canvas zweeft. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = false %}
+  {% set seo_title = "De makers — dewereldvan.ai" %}
+  {% set seo_desc = "De scherpste AI-makers van Nederland en België. Ontdek wie ze zijn, wat ze maken en waar ze naar zoeken." %}
+  {% set og_type = "website" %}
+  {% set og_image = none %}
+  {% set jsonld = none %}
+  {% include "_seo_head.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
+
+  <div class="wrap">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+      <div class="links">
+        {% if request.session.get("member_id") %}
+        <a class="link" href="/profiel/ai/bouwen">Mijn profiel</a>
+        {% else %}
+        <a class="link" href="/login">Inloggen</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">De constellatie</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">De makers.</h1>
+        <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
+          Een levend netwerk van de scherpste AI-mensen van NL &amp; BE. Elke ster
+          is iemand die bouwt, denkt of vormgeeft. Beweeg eroverheen — klik door
+          naar wie je raakt.
+        </p>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:480ms">
+        {% include "members/_filters.html" %}
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:560ms">
+        <div id="grid">
+          {% include "members/_grid.html" %}
+        </div>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:640ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

@@ -344,6 +344,90 @@ def test_make_draft_persists_without_changing_visibility(
         s.close()
 
 
+def test_regenerate_renamed_project_keeps_slug_and_301s(
+    make_client, seed, monkeypatch, SessionTest
+):
+    """Een regenerate die een projecttitel wijzigt mag de slug-historie niet wissen.
+
+    De offerings worden op positie gereconcilieerd: dezelfde rij blijft bestaan en
+    ``rename_to`` legt de oude slug vast, zodat de oude ``/projecten/{slug}`` een
+    301 naar de nieuwe geeft (linkwaarde-behoud) i.p.v. een 404 na clear+recreate.
+    """
+    from app.models import AiChatTurn, Member
+    from app.services import ai_profile as ai_service
+    from app.services.profile_service import get_or_create_profile
+
+    s = SessionTest()
+    s.add(
+        AiChatTurn(
+            member_id=seed["approved"], role="user", content_json='"Ik bouw dingen."'
+        )
+    )
+    s.commit()
+    s.close()
+
+    def _draft(name: str) -> DraftProfile:
+        return DraftProfile(
+            headline="Maker",
+            bio="Ik bouw.",
+            roles=[],
+            projects=[
+                DraftProject(
+                    name=name, url="https://p", description="Een project", image_url=None
+                )
+            ],
+            seeking=None,
+            tags=[],
+        )
+
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+
+    # Eerste generatie: project "Oude Projectnaam".
+    monkeypatch.setattr(
+        ai_service, "finalize_draft", lambda messages, **kw: _draft("Oude Projectnaam")
+    )
+    resp = client.post("/profiel/ai/maak-draft", headers={"X-CSRF-Token": token})
+    assert resp.status_code == 200
+
+    s = SessionTest()
+    try:
+        member = s.get(Member, seed["approved"])
+        profile = get_or_create_profile(s, member)
+        assert len(profile.offerings) == 1
+        old_slug = profile.offerings[0].slug
+        old_offering_id = profile.offerings[0].id
+    finally:
+        s.close()
+    assert old_slug == "oude-projectnaam"
+
+    # Regenerate met gewijzigde titel — zelfde positie, dus dezelfde rij + 301.
+    monkeypatch.setattr(
+        ai_service,
+        "finalize_draft",
+        lambda messages, **kw: _draft("Nieuwe Projectnaam"),
+    )
+    resp = client.post("/profiel/ai/maak-draft", headers={"X-CSRF-Token": token})
+    assert resp.status_code == 200
+
+    s = SessionTest()
+    try:
+        member = s.get(Member, seed["approved"])
+        profile = get_or_create_profile(s, member)
+        # Eén project, dezelfde rij (id behouden), nieuwe slug.
+        assert len(profile.offerings) == 1
+        assert profile.offerings[0].id == old_offering_id
+        new_slug = profile.offerings[0].slug
+    finally:
+        s.close()
+    assert new_slug == "nieuwe-projectnaam"
+
+    # De oude slug 301't nu naar de nieuwe (history-tabel daadwerkelijk gevuld).
+    redirect = client.get(f"/projecten/{old_slug}", follow_redirects=False)
+    assert redirect.status_code == 301
+    assert redirect.headers["location"] == f"/projecten/{new_slug}"
+
+
 def test_make_draft_without_conversation_is_rejected(make_client, seed):
     client = make_client(seed["approved"])
     token = _csrf(client)

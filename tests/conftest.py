@@ -31,6 +31,11 @@ os.environ.setdefault("CONSOLE_EMAIL_DIR", _OUTBOX)
 # Point the (lazily-connected) production engine at an in-memory SQLite DB too,
 # so importing app.db / app.main never tries to reach Postgres.
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+# Profielfoto-opslag naar een wegwerp-tmpdir (nooit naar de echte data/uploads).
+# Móet vóór de app-import, want app.config.settings is een module-singleton en
+# app/storage/photos.py resolvet UPLOAD_DIR op import (zoals CONSOLE_EMAIL_DIR).
+_UPLOAD_DIR = tempfile.mkdtemp(prefix="dwv-uploads-")
+os.environ.setdefault("UPLOAD_DIR", _UPLOAD_DIR)
 
 import pytest  # noqa: E402
 from app.email.base import EmailMessage  # noqa: E402
@@ -39,6 +44,10 @@ from app.models import (  # noqa: E402
     Member,
     MemberRole,
     MemberStatus,
+    Offering,
+    Profile,
+    ProfileEmphasis,
+    Visibility,
 )
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import Session, sessionmaker  # noqa: E402
@@ -123,6 +132,90 @@ def make_member(db):
         db.add(member)
         db.flush()
         return member
+
+    return _make
+
+
+@pytest.fixture
+def make_profile(db):
+    """Factory: create + flush a Profile for a member at a chosen visibility.
+
+    ``profile.slug`` is NOT NULL; we derive it from the display name (with a
+    numeric suffix on collision) so factory-built fixtures are valid without the
+    caller having to think about slugs. ``visibility`` / ``emphasis`` are
+    settable so the visibility-poort and emphasis-layout tests can pick the
+    exact state they need.
+    """
+    from app.security import slugify, unique_slug
+
+    def _make(
+        member: Member,
+        *,
+        display_name: str | None = None,
+        visibility: Visibility = Visibility.public,
+        emphasis: ProfileEmphasis = ProfileEmphasis.balanced,
+        bio: str | None = None,
+        makes_summary: str | None = None,
+        headline: str | None = None,
+    ) -> Profile:
+        name = display_name or member.name or member.email.split("@", 1)[0]
+
+        def _slug_taken(candidate: str) -> bool:
+            from sqlalchemy import select
+
+            return (
+                db.scalar(select(Profile.id).where(Profile.slug == candidate))
+                is not None
+            )
+
+        profile = Profile(
+            member_id=member.id,
+            slug=unique_slug(name or slugify(member.email), _slug_taken),
+            display_name=name,
+            visibility=visibility,
+            emphasis=emphasis,
+            bio=bio,
+            makes_summary=makes_summary,
+            headline=headline,
+        )
+        db.add(profile)
+        db.flush()
+        return profile
+
+    return _make
+
+
+@pytest.fixture
+def make_offering(db):
+    """Factory: create + flush an Offering ("project") on a profile.
+
+    ``ensure_slug`` is intentionally NOT called here so slug-generation tests can
+    observe the unset state; route/sitemap tests that need a slug call
+    ``offering_slug.ensure_slug`` themselves (mirrors production write paths).
+    """
+
+    def _make(
+        profile: Profile,
+        *,
+        title: str = "Een project",
+        description: str | None = None,
+        url: str | None = None,
+        image_url: str | None = None,
+    ) -> Offering:
+        offering = Offering(
+            title=title,
+            description=description,
+            url=url,
+            image_url=image_url,
+            position=len(profile.offerings),
+        )
+        # Append via de relationship (niet via profile_id in de constructor) zodat
+        # de in-session ``profile.offerings``-collectie consistent blijft — anders
+        # ziet een query die dezelfde identity-mapped Profile teruggeeft een
+        # verouderde lege collectie (mirror van profile_service.add_offering).
+        profile.offerings.append(offering)
+        db.flush()
+        return offering
 
     return _make
 

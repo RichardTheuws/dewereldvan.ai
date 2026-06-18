@@ -13,6 +13,7 @@ from app.models.base import (
     Base,
     MemberRole,
     MemberStatus,
+    ProfileEmphasis,
     ProfileLinkKind,
     TimestampMixin,
     Visibility,
@@ -21,6 +22,7 @@ from app.models.magic_link import MagicLinkToken
 from app.models.member import Member
 from app.models.need import Need
 from app.models.offering import Offering
+from app.models.offering_slug_history import OfferingSlugHistory
 from app.models.profile import Profile
 from app.models.profile_link import ProfileLink
 from app.models.tag import Tag, profile_tag
@@ -32,6 +34,7 @@ __all__ = [
     "MemberRole",
     "Visibility",
     "AuditAction",
+    "ProfileEmphasis",
     "ProfileLinkKind",
     "Member",
     "MagicLinkToken",
@@ -40,6 +43,7 @@ __all__ = [
     "Tag",
     "profile_tag",
     "Offering",
+    "OfferingSlugHistory",
     "Need",
     "AuditLog",
     "AiChatTurn",

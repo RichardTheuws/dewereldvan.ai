@@ -50,6 +50,21 @@ class AuditAction(str, enum.Enum):
     member_rejected = "member_rejected"
     member_suspended = "member_suspended"
     visibility_changed = "visibility_changed"
+    # Foto-upload spoor (AVG) + grondslag voor de upload-rate-limit (per lid,
+    # glijdend uur-venster). VARCHAR-enum → additieve waarde, geen migratie nodig.
+    photo_uploaded = "photo_uploaded"
+
+
+class ProfileEmphasis(str, enum.Enum):
+    """Layout-prominentie van een profiel/ledenkaart (PRD L1).
+
+    Gevraagd in de AI-bouwflow én bewerkbaar; stuurt welke laag groot getoond
+    wordt op de profielpagina en de ledenkaart.
+    """
+
+    person = "person"  # foto/headline/bio groot, projecten secundair
+    projects = "projects"  # projectkaarten-met-beeld groot, persoon compact
+    balanced = "balanced"  # gelijk (default)
 
 
 class ProfileLinkKind(str, enum.Enum):
