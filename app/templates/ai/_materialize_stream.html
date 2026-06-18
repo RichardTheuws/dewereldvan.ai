@@ -2,13 +2,17 @@
    GEEN chat-bubbel: dit is de levende-flow. Het toont het gloeiende "AI aan het
    werk"-paneel (live redenering + fetch-status), en activeert de SSE-verbinding
    op de gedeelde voorouder #materialisatie zodat de per-veld `f-*`-events de
-   slots IN de profielvorm laten materialiseren (de slots dragen sse-swap="f-…"
-   in live.html). De terminerende `done` ruimt het paneel op en meldt klaar.
+   slots IN de profielvorm laten materialiseren. De terminerende `done` ruimt het
+   paneel op en meldt klaar.
 
    De verbinding zit op #materialisatie (voorouder van zowel dit paneel als
-   #profielvorm) i.p.v. op dit fragment: alleen zo zijn de slot-sse-swap-elementen
-   nakomelingen van de EventSource (htmx-ext-sse bindt sse-swap aan de dichtstbij-
-   zijnde sse-connect-voorouder). #}
+   #profielvorm) i.p.v. op dit fragment. KRITIEK: htmx-ext-sse bindt een sse-swap
+   alleen aan de EventSource op het moment dat het element wordt verwerkt MÉT een
+   sse-connect-voorouder. De slots in #profielvorm bestaan al vóór sse-connect →
+   ze binden niet. Daarom dragen de f-*-bindingen niet op de slots maar op de
+   VERSE proxy-elementen hieronder (samen met dit fragment toegevoegd ná
+   sse-connect, net als de werkende done/reasoning-swaps); elk swapt zijn slot
+   via hx-target. #}
 {% set sid = range(100000, 999999) | random %}
 <div id="sse-{{ sid }}" data-sse-host>
   {% include "ai/_reasoning_panel.html" %}
@@ -20,6 +24,19 @@
   {# Terminerend done-event: ruim het paneel op (leeg) + meld klaar. #}
   <div sse-swap="done" hx-target="#sse-{{ sid }}" hx-swap="outerHTML"
        style="display:none"></div>
+
+  {# Per-veld materialisatie-proxies. KRITIEK: deze elementen worden VERS toegevoegd
+     (samen met dit fragment, ná sse-connect) en binden dáárom WÉL aan de EventSource —
+     net als de done/reasoning-swaps hierboven. De slots in #profielvorm bestaan al
+     vóór sse-connect en binden niet; daarom dragen ZIJ geen sse-swap meer en swappen
+     deze proxies hun slot via hx-target zodra het bijbehorende f-*-event landt. De
+     verse #slot-* krijgt class field--materializing -> de afterSwap-handler animeert. #}
+  <div sse-swap="f-headline" hx-target="#slot-headline" hx-swap="outerHTML" style="display:none"></div>
+  <div sse-swap="f-bio"      hx-target="#slot-bio"      hx-swap="outerHTML" style="display:none"></div>
+  <div sse-swap="f-roles"    hx-target="#slot-roles"    hx-swap="outerHTML" style="display:none"></div>
+  <div sse-swap="f-projects" hx-target="#slot-projects" hx-swap="outerHTML" style="display:none"></div>
+  <div sse-swap="f-seeking"  hx-target="#slot-seeking"  hx-swap="outerHTML" style="display:none"></div>
+  <div sse-swap="f-tags"     hx-target="#slot-tags"     hx-swap="outerHTML" style="display:none"></div>
 </div>
 
 <script>

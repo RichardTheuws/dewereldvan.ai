@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.10.1] - 2026-06-18
+### Fixed (live browser-walkthrough op de preview — kern-bug gevangen)
+- **Live materialisatie swapte niet in beeld**: het profiel verscheen pas ná een herlaad
+  i.p.v. live tijdens/na de stream. Oorzaak: htmx-ext-sse bindt een `sse-swap` alleen aan de
+  EventSource op verwerk-moment mét een `sse-connect`-voorouder; de slots in `#profielvorm`
+  bestaan al vóór `sse-connect` en bonden daarom nooit (de `done`/`reasoning`-swaps werkten wél
+  omdat die vers in het stream-fragment zitten). Fix: de `f-*`-bindingen verplaatst van de
+  vooraf-gerenderde slots naar **verse proxy-elementen in `_materialize_stream.html`** (binden
+  net als `done`), elk met `hx-target` naar zijn slot — per-veld choreografie + animatie blijven.
+  Engine, persistentie en inline-edit waren al correct; alleen de live-swap was stuk.
+- **Projecten-volgorde**: `_projects.html` itereert nu `offerings | sort(position)` (review-bevinding #5).
+- Geverifieerd op de preview: echte Opus 4.8-generatie uit 5 links → rijk, gegrond profiel dat nu
+  live materialiseert (kopregel, 4 projecten, 2 rollen, bio, 10 tags).
+
 ## [0.10.0] - 2026-06-18
 ### Added (AI-profielbouw als één levende flow — VISION-profielbouw uitgevoerd)
 - **Levende profielbouw** (`ai/live.html` + slot-partials): je profiel **materialiseert

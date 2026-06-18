@@ -4,7 +4,7 @@
      class="slot slot--text field {% if materializing %}field--materializing{% endif %} {% if not profile.bio %}slot--ask{% endif %}"
      tabindex="0" role="button"
      aria-label="{% if profile.bio %}Bewerk over jou{% else %}Bio: nog leeg, klik om aan te vullen{% endif %}"
-     sse-swap="f-bio" hx-swap="outerHTML"
+     hx-swap="outerHTML"
      hx-get="/profiel/ai/veld/bio/bewerken"
      hx-target="#slot-bio"
      hx-trigger="click, keyup[key=='Enter']">

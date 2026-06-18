@@ -1,12 +1,13 @@
 {# Hele projecten-sectie (.grid) + "+ project toevoegen". Vervangt #slot-projects
-   als geheel (sse-swap f-projects bij materialisatie, en na add/delete). #}
+   als geheel (bij materialisatie via de f-projects-proxy in _materialize_stream,
+   en na add/delete). #}
 <div id="slot-projects"
      class="field profile-projects {% if materializing %}field--materializing{% endif %}"
-     sse-swap="f-projects" hx-target="#slot-projects" hx-swap="outerHTML">
+     hx-target="#slot-projects" hx-swap="outerHTML">
   <div class="section-title mb-4">Wat ik maak</div>
   {% if profile.offerings %}
   <div class="grid">
-    {% for item in profile.offerings %}{% include "ai/slots/_offering_card.html" with context %}{% endfor %}
+    {% for item in profile.offerings | sort(attribute='position') %}{% include "ai/slots/_offering_card.html" with context %}{% endfor %}
   </div>
   {% else %}
   <p class="slot--empty slot--ask" style="display:block">Nog geen projecten — voeg er één toe</p>

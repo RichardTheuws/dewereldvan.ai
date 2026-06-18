@@ -10,10 +10,12 @@
    zoals de oude build.html. De profielvorm wordt uit DB-staat gerendeerd, dus een
    herlaad herstelt idempotent (materialisatie is altijd gepersisteerd vóór swap).
 
-   #materialisatie draagt hx-ext="sse" en omvat ZOWEL #denkpaneel als #profielvorm,
-   zodat de per-veld f-*-events (sse-swap op de slots) de echte voorouder-
-   EventSource vinden. De verbinding wordt pas geopend wanneer een bericht wordt
-   gestuurd (POST /bericht zet sse-connect op #materialisatie). #}
+   #materialisatie draagt hx-ext="sse" en omvat ZOWEL #denkpaneel als #profielvorm.
+   De per-veld f-*-events swappen de slots via verse proxy-elementen in het
+   stream-fragment (_materialize_stream.html) — niet via sse-swap op de slots zelf:
+   die bestaan al vóór sse-connect en zouden niet binden. De verbinding wordt pas
+   geopend wanneer een bericht wordt gestuurd (POST /bericht zet sse-connect op
+   #materialisatie). #}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">

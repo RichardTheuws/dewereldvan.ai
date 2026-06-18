@@ -6,7 +6,7 @@
      class="slot slot--text field {% if materializing %}field--materializing{% endif %} {% if not profile.headline %}slot--ask{% endif %} {% if uncertain and profile.headline %}uncertain{% endif %}"
      tabindex="0" role="button"
      aria-label="{% if profile.headline %}Bewerk kopregel{% else %}Kopregel: nog leeg, klik om aan te vullen{% endif %}"
-     sse-swap="f-headline" hx-swap="outerHTML"
+     hx-swap="outerHTML"
      hx-get="/profiel/ai/veld/headline/bewerken"
      hx-target="#slot-headline"
      hx-trigger="click, keyup[key=='Enter']">

@@ -4,7 +4,7 @@
      class="slot field {% if materializing %}field--materializing{% endif %} {% if not profile.tags %}slot--ask{% endif %}"
      tabindex="0" role="button"
      aria-label="{% if profile.tags %}Bewerk tags{% else %}Tags: nog leeg, klik om aan te vullen{% endif %}"
-     sse-swap="f-tags" hx-swap="outerHTML"
+     hx-swap="outerHTML"
      hx-get="/profiel/ai/veld/tags/bewerken"
      hx-target="#slot-tags"
      hx-trigger="click, keyup[key=='Enter']">

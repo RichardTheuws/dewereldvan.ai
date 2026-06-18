@@ -5,7 +5,7 @@
      class="slot slot--text field {% if materializing %}field--materializing{% endif %} {% if not _need %}slot--ask{% endif %} {% if uncertain and _need %}uncertain{% endif %}"
      tabindex="0" role="button"
      aria-label="{% if _need %}Bewerk waar je naar zoekt{% else %}Waar je naar zoekt: nog leeg, klik om aan te vullen{% endif %}"
-     sse-swap="f-seeking" hx-swap="outerHTML"
+     hx-swap="outerHTML"
      hx-get="/profiel/ai/veld/seeking/bewerken"
      hx-target="#slot-seeking"
      hx-trigger="click, keyup[key=='Enter']">
