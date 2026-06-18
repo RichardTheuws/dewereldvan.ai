@@ -50,6 +50,7 @@ from app.services import (
     members_service,
     nudge_service,
     photo_service,
+    profile_service,
     roadmap_service,
 )
 
@@ -162,12 +163,33 @@ def _load_roadmap_board(db: Session, params: dict, member_id, is_admin) -> tuple
     }
 
 
+def _load_profile_builder(db: Session, params: dict, member_id, is_admin):
+    """De levende profielbouw IN de canvas (Agent-Shell A). Hergebruikt de
+    ai_profile-materialisatie 1:1: zelfde #materialisatie-host + #profielvorm +
+    /profiel/ai/bericht. Alleen een ingelogd lid (geen anon-profiel)."""
+    if member_id is None:
+        return None
+    member = db.get(Member, member_id)
+    if member is None:
+        return None
+    profile = profile_service.get_or_create_profile(db, member)
+    db.commit()
+    return "concierge/_profile_builder.html", {
+        "profile": profile,
+        "photo": photo_service.photo_or_initials(profile),
+        "emphasis_cls": f"emphasis-{profile.emphasis.value}",
+        "ai_enabled": settings.ai_enrich_enabled,
+        "uncertain": bool(profile.ai_enriched),
+    }
+
+
 _SURFACE_LOADERS = {
     "members_grid": _load_members_grid,
     "member_detail": _load_member_detail,
     "profile_view": _load_member_detail,
     "ideas_list": _load_ideas_list,
     "roadmap_board": _load_roadmap_board,
+    "profile_builder": _load_profile_builder,
 }
 
 # Vertaal een ``navigate``-url naar een in-stroom surface voor ingelogde leden.

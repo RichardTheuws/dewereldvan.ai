@@ -112,6 +112,11 @@
         if (node.dataset.surface !== undefined) {
           node.setAttribute('tabindex', '-1');
           try { node.focus({ preventScroll: false }); } catch (e2) {}
+          // De profielbouw-surface bevat een geneste hx-ext="sse"-host + een
+          // hx-post-form; verwerk 'm expliciet zodat die bindingen actief worden.
+          if (node.dataset.surface === 'profile_builder') {
+            try { window.htmx && htmx.process(node); } catch (e3) {}
+          }
         }
         var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
         if (reduce) return;

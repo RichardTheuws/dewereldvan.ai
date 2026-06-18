@@ -1,0 +1,51 @@
+{# Levende profielbouw IN de canvas (Agent-Shell variant A). Hergebruikt de
+   ai_profile-materialisatie 1:1: het veld post naar /profiel/ai/bericht, dat de
+   SSE op #materialisatie opent en de per-veld f-*-events de #slot-* in #profielvorm
+   laat materialiseren. GEEN publiceer-/reset-/verwijder-blokken hier (progressive
+   disclosure — die leven op de volledige bewerkpagina); een nieuw lid ziet alleen
+   het veld + het profiel dat zich opbouwt, niet een lege skeleton vol beheer.
+
+   Drempel-verlagende opener (eigenaar-copy): begin met een link — de AI scant 'm. #}
+<div class="profile-builder">
+  <div class="profile-builder__intro">
+    <span class="profile-builder__eyebrow"><span aria-hidden="true">✦</span> je profiel</span>
+    <p class="profile-builder__lead">
+      Heb je een website? Dan scan ik die vast om te weten wie je bent. Als je liever
+      direct wat meer informatie geeft kun je er gerust wat bij vertellen (of meerdere
+      links delen, github etc. mag ook).
+    </p>
+  </div>
+
+  {% if not ai_enabled %}
+  <div class="bubble bubble--system mt-4">AI-profielbouw staat momenteel even uit.</div>
+  {% endif %}
+
+  {# Invoer-dok: post naar de bestaande ai_profile-route; antwoord opent de SSE. #}
+  <form class="concierge-form profile-builder__form mt-4"
+        hx-post="/profiel/ai/bericht"
+        hx-target="#denkpaneel"
+        hx-swap="innerHTML"
+        autocomplete="off"
+        hx-on::after-request="if(event.detail.successful){this.reset();var t=this.querySelector('textarea');if(t)t.focus();}">
+    <textarea name="message" rows="2" required
+              class="concierge-form__input profile-builder__input"
+              aria-label="Je website, links, of een paar zinnen over jezelf"
+              placeholder="https://jouwsite.nl — of plak je GitHub/LinkedIn, of vertel kort wie je bent…"></textarea>
+    <button class="btn profile-builder__go" type="submit"
+            {% if not ai_enabled %}disabled{% endif %}>Bouw mee ✦</button>
+  </form>
+
+  {# Materialisatie: denkpaneel + levende profielvorm onder één EventSource.
+     Zelfde structuur als ai/live.html, zodat de bestaande stream 1:1 werkt. #}
+  <div id="materialisatie" class="profile-builder__stage mt-6" hx-ext="sse">
+    <div id="denkpaneel" aria-live="polite"></div>
+    <p id="materialisatie-status" class="muted text-sm mt-3" aria-live="polite"></p>
+    <div class="mt-6" data-reveal style="--d:120ms">
+      {% include "ai/_live_form.html" %}
+    </div>
+  </div>
+
+  {# Power-user / later: de volledige bewerkpagina (publiceren, zichtbaarheid,
+     opnieuw beginnen, verwijderen) blijft één klik weg — maar niet in beeld nu. #}
+  <a class="profile-builder__full" href="/profiel/ai/bouwen">alles bijschaven & publiceren →</a>
+</div>

@@ -317,6 +317,30 @@ def test_chips_route_renders_at_least_roadmap(make_client, SessionTest):
     assert "canvas-chip" in resp.text
 
 
+def test_load_profile_builder_for_member(SessionTest):
+    m = Member(email="pb@x.nl", name="Bouwer", status=MemberStatus.approved)
+    s = SessionTest()
+    s.add(m)
+    s.commit()
+    mid = m.id
+    s.close()
+    db2 = SessionTest()
+    loaded = cr._load_profile_builder(db2, {}, mid, False)
+    db2.close()
+    assert loaded is not None
+    template, ctx = loaded
+    assert template == "concierge/_profile_builder.html"
+    assert ctx["profile"].member_id == mid
+
+
+def test_load_profile_builder_anon_is_none(SessionTest):
+    db2 = SessionTest()
+    try:
+        assert cr._load_profile_builder(db2, {}, None, False) is None
+    finally:
+        db2.close()
+
+
 def test_normal_page_keeps_single_overlay_host(make_client, SessionTest):
     """Een gewone (anonieme) kosmische pagina draagt de overlay-host óók exact 1×."""
     body = make_client(None).get("/leden").text

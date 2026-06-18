@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.16.0] - 2026-06-19
+### Added (conversationele profielbouw in de canvas — variant A, eerste deel)
+PRD: `docs/PRD-conversationele-profielbouw.md`. Doel: profielbouw mag niet voelen als werk.
+- **`profile_builder`-surface**: de levende profielbouw start nu ÍN de canvas (geen paginawissel) —
+  de agent materialiseert de builder in-stroom. Hergebruikt de bestaande `ai_profile`-materialisatie
+  1:1 (`#materialisatie`-host + `#profielvorm` + `/profiel/ai/bericht`), zónder de
+  publiceer-/reset-/verwijder-beheerblokken (progressive disclosure — die blijven op de volledige
+  bewerkpagina, één klik weg). Drempel-verlagende opener: *"Heb je een website? Dan scan ik die vast om
+  te weten wie je bent…"* (één link i.p.v. een formulier).
+- **Agent-tuning**: de system-prompt kent nu de `surface`-tool en de regel dat een brede toon-intent
+  GEEN filter vraagt — "laat de makers zien" → `surface(members_grid)` zonder filter; "bouw mijn
+  profiel" → `surface(profile_builder)`. Lost de live-waargenomen tegenstrijdigheid op ("ik kan niet
+  zonder filter" + tóch een kaart).
+- Tests voor de `profile_builder`-loader (lid → builder-template; anon → niets). 432 tests groen.
+
 ## [0.15.1] - 2026-06-19
 ### Fixed (canvas-chat: dubbele rand + verdwijnende reply — live op preview gevangen)
 - **Dubbele border om het invoerveld**: de globale `.cosmic input`-regel (border + background +

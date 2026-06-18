@@ -2660,3 +2660,37 @@
   .canvas-fallback__route { transition: none !important; }
 }
 
+
+/* ---- Profielbouw in de canvas (Agent-Shell A) ---- */
+.profile-builder { display: block; }
+.profile-builder__eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.profile-builder__eyebrow span[aria-hidden] { color: var(--gold); }
+.profile-builder__lead {
+  margin-top: 8px;
+  max-width: 60ch;
+  color: var(--text);
+  line-height: 1.6;
+}
+.profile-builder__form { align-items: flex-end; }
+.profile-builder__input {
+  resize: vertical;
+  min-height: 2.8em;
+  line-height: 1.5;
+}
+.profile-builder__go { flex: none; align-self: flex-end; }
+.profile-builder__stage:empty { margin-top: 0; }
+.profile-builder__full {
+  display: inline-block;
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.16s ease;
+}
+.profile-builder__full:hover { color: var(--text); }
