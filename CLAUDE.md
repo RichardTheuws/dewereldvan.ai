@@ -23,7 +23,11 @@ nice-to-have maar de kern van het product.
   `app/static/cosmic.css` en de teaser-identiteit; introduceer geen tweede look.
 - **Slim, niet alleen mooi.** De interface helpt actief: feedback geven kan overal, suggesties worden
   aangeboden, AI assisteert. "Superslim" is onderdeel van het ontwerp, geen feature-vinkje.
-- Bij twijfel: kies de meer verrassende, meer verfijnde optie — ook als dat meer bouwwerk is.
+- **Verbaas door de ERVARING en de INTELLIGENTIE, niet door zweverige taal.** De visuele identiteit is
+  kosmisch en verfijnd; de **woorden zijn eenvoudig, direct en to the point** — in-app schrijven we
+  gewone, heldere taal (geen "je ster is verschenen", wél "Welkom"). Geen auto-redirects vermomd als
+  "ervaring": een onboarding is een moment waar de maker zélf doorklikt.
+- Bij twijfel: kies de meer verrassende, meer verfijnde optie — maar altijd helder en bruikbaar.
 
 ## Context
 Dit project gebruikt uitgebreide context-documentatie:

@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.9.2] - 2026-06-18
+### Changed
+- **Onboarding `/welkom` herschreven** tot een echte onboarding i.p.v. een auto-doorverwijspagina:
+  geen auto-redirect meer (de maker klikt zelf "Aan de slag →"), de domein-woordgrap "Welkom in de
+  wereld van AI", en eenvoudige, directe copy ("Laten we aan jouw stukje van die wereld werken")
+  zonder zweverigheid. Kosmische visuele identiteit blijft.
+- **Toon vastgelegd: in-app taal is eenvoudig, direct en to the point — niet zweverig/poëtisch.**
+  Aangepast in `docs/STYLEGUIDE.md` (§3 microcopy + anti-patterns) en het ervaringsmandaat in
+  `CLAUDE.md`: verbazen door de ervaring en de intelligentie, niet door bloemrijke woorden;
+  geen auto-redirects vermomd als "ervaring".
+
 ## [0.9.1] - 2026-06-18
 ### Fixed
 - **Profielbouwer: vervolgvraag "verdween" na het done-event** — de done-bubbel

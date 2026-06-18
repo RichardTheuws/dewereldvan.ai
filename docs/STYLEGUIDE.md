@@ -68,10 +68,16 @@ mag. Niet centreren "omdat het moet".
 ---
 
 ## 3. Microcopy & toon
-- **Nederlands.** Warm-zelfverzekerd, direct, een tikje episch — nooit corporate of klef.
+- **Nederlands. Eenvoudig, direct, to the point** — warm-menselijk, nooit corporate of klef,
+  en **niet zweverig of poëtisch**. In-app schrijven we gewone, heldere taal. De verbazing zit in
+  de **ervaring en de intelligentie**, niet in bloemrijke woorden.
+  - ❌ "Je ster is verschenen", "de rest verbindt vanzelf", "het universum wacht op je"
+  - ✅ "Welkom", "Laten we aan jouw profiel werken", "Je profiel staat zo klaar"
 - Spreek de maker aan als peer ("Vertel wie je bent", niet "Vul uw gegevens in").
-- Korte, rake teksten. Verras ook in copy (een rake zin > drie nette zinnen).
-- Lege staten, succes-staten en fouten krijgen óók de behandeling — juist daar verras je.
+- Korte, concrete zinnen: zeg wat er gebeurt en wat de volgende stap is.
+- Een **woordgrap die past** mag (dewereldvan.ai = "de wereld van AI") — maar nooit ten koste van
+  helderheid.
+- Lege staten, succes-staten en fouten krijgen óók aandacht — helder en behulpzaam.
 
 ---
 
@@ -101,7 +107,7 @@ Verplicht meegenomen in elk relevant scherm:
 - [ ] Fraunces + JetBrains Mono + Spline Sans correct ingezet
 - [ ] Gechoreografeerde entrance + doordachte hover/focus
 - [ ] `prefers-reduced-motion`, contrast, toetsenbord, responsive OK
-- [ ] Microcopy verrast en spreekt de maker als peer aan
+- [ ] Microcopy is eenvoudig, direct en to the point (niet zweverig); spreekt de maker als peer aan
 - [ ] Een slimme hulp aanwezig (feedback/suggestie/AI) waar relevant
 - [ ] Lege/fout/succes-staten ook af
 - [ ] Geen tweede look geïntroduceerd; `cosmic.css`-tokens hergebruikt
@@ -114,3 +120,5 @@ Verplicht meegenomen in elk relevant scherm:
 - Inter/Roboto/Arial als sierfont. Platte solide achtergrond zonder sfeer.
 - "We fixen de styling later" — styling is geen latere fase, het is de feature.
 - Een tweede, afwijkende huisstijl introduceren. Toegankelijkheid opofferen voor effect.
+- **Zweverig/poëtisch taalgebruik** ("je ster is verschenen", "het universum wacht"). In-app = eenvoudig en to the point.
+- **Auto-redirects als "ervaring"** (een pagina die je na X seconden wegklikt). Een onboarding is een moment waar de maker zélf doorklikt, geen doorverwijspagina.
