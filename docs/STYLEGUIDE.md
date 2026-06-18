@@ -86,11 +86,13 @@ Verplicht meegenomen in elk relevant scherm:
 
 ---
 
-## 5. Toegankelijkheid (verrassing ≠ ontoegankelijk)
+## 5. Toegankelijkheid & vindbaarheid (verrassing ≠ ontoegankelijk of onvindbaar)
 - `prefers-reduced-motion` altijd gehonoreerd. Voldoende contrast (tekst op donker).
 - Volledige toetsenbordbediening, zichtbare focus-states (de cyaan gloed telt mee), aria waar nodig.
 - Responsive: de ervaring is even sterk op mobiel (de meeste leden delen via WhatsApp → mobiel first-touch).
-- `noindex` + login-gating voor besloten content; OG-tags alleen voor publieke profielen.
+- **Linkwaarde/SEO is een expliciet doel** voor publieke content (leden + projecten): schone, stabiele
+  slugs + canonical URLs, OG/Twitter-tags, JSON-LD (`Person`/`CreativeWork`), `sitemap.xml` + `robots.txt`.
+  Alleen publieke content indexeerbaar; besloten = `noindex` + login-gated. Zie `docs/PRD-ledenpagina.md`.
 
 ---
 
