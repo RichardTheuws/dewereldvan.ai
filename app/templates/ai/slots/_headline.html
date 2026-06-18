@@ -1,0 +1,35 @@
+{# Lees-slot: kopregel. Klik/Enter -> swap naar het edit-formulier (self-swap
+   patroon, à la _emphasis_choice.html). `profile` verwacht; optioneel
+   `uncertain` (AI-afgeleid, nog te checken) en `materializing` (verse landing).
+   Geen content-verlies: leeg veld valt terug op een "vul aan"-affordance. #}
+<div id="slot-headline"
+     class="slot slot--text field {% if materializing %}field--materializing{% endif %} {% if not profile.headline %}slot--ask{% endif %} {% if uncertain and profile.headline %}uncertain{% endif %}"
+     tabindex="0" role="button"
+     aria-label="{% if profile.headline %}Bewerk kopregel{% else %}Kopregel: nog leeg, klik om aan te vullen{% endif %}"
+     sse-swap="f-headline" hx-swap="outerHTML"
+     hx-get="/profiel/ai/veld/headline/bewerken"
+     hx-target="#slot-headline"
+     hx-trigger="click, keyup[key=='Enter']">
+  {% if profile.headline %}
+  <h1 class="headline">{{ profile.headline }}</h1>
+  {% if uncertain %}
+  <span class="uncertain__dot" aria-hidden="true">✦</span>
+  <div class="uncertain__hint">
+    Dit leidde ik af — klopt het?
+    <span class="uncertain__act">
+      <button type="button" class="btn btn--sm"
+              hx-post="/profiel/ai/veld/headline/bevestig"
+              hx-target="#slot-headline" hx-swap="outerHTML"
+              onclick="event.stopPropagation()">Klopt</button>
+      <button type="button" class="btn btn--sm btn--ghost"
+              hx-get="/profiel/ai/veld/headline/bewerken"
+              hx-target="#slot-headline" hx-swap="outerHTML"
+              onclick="event.stopPropagation()">Aanpassen</button>
+    </span>
+  </div>
+  {% endif %}
+  {% else %}
+  <p class="slot--empty">Nog geen kopregel — tik om er één te schrijven</p>
+  {% endif %}
+  <span class="field-edit-hint" aria-hidden="true">✎</span>
+</div>

@@ -1,0 +1,23 @@
+{# Edit-formulier voor één project (offering). PATCH -> projectkaart. Esc/Annuleer
+   -> lees-kaart. Verwacht `item` (Offering). #}
+<form id="offering-{{ item.id }}" class="slot-edit field-edit"
+      hx-patch="/profiel/ai/offering/{{ item.id }}"
+      hx-target="#offering-{{ item.id }}" hx-swap="outerHTML"
+      hx-on::after-swap="this.querySelector('input')?.focus()">
+  <label class="field-label" for="off-title-{{ item.id }}">Projectnaam</label>
+  <input id="off-title-{{ item.id }}" name="title" type="text" maxlength="160"
+         autofocus value="{{ item.title or '' }}" placeholder="Naam van je project">
+  <label class="field-label mt-3" for="off-url-{{ item.id }}">Link (optioneel)</label>
+  <input id="off-url-{{ item.id }}" name="url" type="url" maxlength="1000"
+         value="{{ item.url or '' }}" placeholder="https://…">
+  <label class="field-label mt-3" for="off-desc-{{ item.id }}">Omschrijving (optioneel)</label>
+  <textarea id="off-desc-{{ item.id }}" name="description" rows="2" maxlength="2000"
+            placeholder="Wat is het, en wat doet het?">{{ item.description or '' }}</textarea>
+  <input type="hidden" name="image_url" value="{{ item.image_url or '' }}">
+  <div class="field-edit__actions">
+    <button class="btn btn--sm" type="submit">Bewaar</button>
+    <button class="btn btn--sm btn--ghost" type="button"
+            hx-get="/profiel/ai/offering/{{ item.id }}"
+            hx-target="#offering-{{ item.id }}" hx-swap="outerHTML">Annuleer</button>
+  </div>
+</form>

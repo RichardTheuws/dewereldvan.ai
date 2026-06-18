@@ -1,0 +1,16 @@
+{# Eén projectkaart in de bewerkbare vorm. Includet de publieke
+   _cosmic_project_card.html (byte-identiek aan profiles/view.html) en wikkelt er
+   een edit-affordance + ✕ omheen. Verwacht `item` (Offering). #}
+<div id="offering-{{ item.id }}" class="slot slot--card field">
+  <button type="button" class="slot__edit-zone"
+          aria-label="Bewerk project {{ item.title }}"
+          hx-get="/profiel/ai/offering/{{ item.id }}/bewerken"
+          hx-target="#offering-{{ item.id }}" hx-swap="outerHTML">
+    <span class="field-edit-hint" aria-hidden="true">✎</span>
+  </button>
+  {% include "profiles/_cosmic_project_card.html" %}
+  <button type="button" class="slot__delete" aria-label="Verwijder project {{ item.title }}"
+          hx-delete="/profiel/ai/offering/{{ item.id }}"
+          hx-target="#offering-{{ item.id }}" hx-swap="outerHTML"
+          hx-confirm="Dit project verwijderen?">✕</button>
+</div>

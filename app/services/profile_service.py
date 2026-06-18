@@ -12,11 +12,46 @@ every save so the stored value never drifts from the data.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Need, Offering, Profile, Tag
+from app.models import (
+    Need,
+    Offering,
+    Profile,
+    ProfileLink,
+    ProfileLinkKind,
+    Tag,
+)
 from app.security import slugify, unique_slug
+from app.services import offering_slug
+
+if TYPE_CHECKING:  # pragma: no cover — typing only, avoids a runtime import cycle
+    from app.services.ai_profile import DraftProfile
+
+
+def _safe_url(value: str | None) -> str | None:
+    """Mirror ``app.main.safe_url`` without importing the app (no import cycle).
+
+    Returns the URL only when it is an ``http(s)``/relative URL, else ``None``.
+    Blocks ``javascript:``/``data:``/``vbscript:`` schemes from reaching an
+    ``href``/``src`` sink, exactly like the template ``safe_url`` filter. Unlike
+    the filter (which returns ``""`` for templates), this returns ``None`` so a
+    rejected URL clears the column instead of storing an empty string.
+    """
+    if not value:
+        return None
+    stripped = value.strip()
+    if not stripped:
+        return None
+    head = stripped.split("/", 1)[0]
+    if ":" in head:
+        scheme = head.split(":", 1)[0].strip().lower()
+        if scheme not in ("http", "https"):
+            return None
+    return stripped
 
 # Scoring weights — must sum to 100.
 _W_BIO = 25
@@ -172,3 +207,174 @@ def remove_need(db: Session, profile: Profile, need_id: int) -> bool:
     recompute_completeness(profile)
     db.flush()
     return True
+
+
+# --------------------------------------------------------------------------- #
+# Per-veld inline-edit helpers (levende profielbouw — SPEC §A.2/§A.4)          #
+# --------------------------------------------------------------------------- #
+
+
+def update_offering(
+    db: Session,
+    profile: Profile,
+    offering_id: int,
+    *,
+    title: str | None = None,
+    description: str | None = None,
+    url: str | None = None,
+    image_url: str | None = None,
+) -> Offering | None:
+    """Patch one offering iff it belongs to ``profile``; ``None`` → route 404.
+
+    A title change runs through ``offering_slug.rename_to`` (records the old slug
+    for a 301 so an indexed ``/projecten/{slug}`` keeps working) and always
+    ``ensure_slug`` (guarantees a stable slug). ``url``/``image_url`` are passed
+    through the same ``safe_url`` guard as the public view, so a ``javascript:``
+    URL is rejected (stored as ``None``) and never reaches an ``href``/``src``.
+    Only provided (non-``None``) fields are touched.
+    """
+    offering = db.get(Offering, offering_id)
+    if offering is None or offering.profile_id != profile.id:
+        return None
+
+    if title is not None:
+        new_title = title.strip()[:160]
+        if new_title and new_title != (offering.title or ""):
+            offering_slug.rename_to(db, offering, new_title)
+        elif new_title:
+            offering.title = new_title
+        # An empty title is ignored (title is NOT NULL); keep the existing one.
+    if description is not None:
+        offering.description = description.strip() or None
+    if url is not None:
+        offering.url = _safe_url(url)
+    if image_url is not None:
+        offering.image_url = _safe_url(image_url)
+
+    offering_slug.ensure_slug(db, offering)
+    recompute_completeness(profile)
+    db.flush()
+    return offering
+
+
+# --------------------------------------------------------------------------- #
+# Draft persistence (verhuisd uit ai_profile-router — SPEC §F.1, één bron)     #
+# --------------------------------------------------------------------------- #
+
+
+def _extract_text(content) -> str:
+    """Trek de zichtbare tekst uit een content-blok (string of blok-lijst)."""
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        parts: list[str] = []
+        for block in content:
+            if isinstance(block, dict) and block.get("type") == "text":
+                parts.append(str(block.get("text", "")))
+            elif isinstance(block, str):
+                parts.append(block)
+        return "".join(parts).strip()
+    return ""
+
+
+def _make_need(seeking: str, position: int) -> Need:
+    return Need(title=seeking[:160], description=None, position=position)
+
+
+def _reconcile_offerings(db: Session, profile: Profile, projects: list) -> None:
+    """Match bestaande offerings op positie met de nieuwe draft-projecten.
+
+    Per index *i*: hergebruik de bestaande rij (behoud id + slug-historie). Is de
+    titel gewijzigd → ``offering_slug.rename_to`` (legt de oude slug vast voor de
+    301). Is de titel gelijk → de slug blijft onveranderd. Extra projecten worden
+    nieuw aangemaakt; weggevallen projecten worden verwijderd (delete-orphan).
+    """
+    existing = sorted(profile.offerings, key=lambda o: (o.position, o.id or 0))
+
+    for i, project in enumerate(projects):
+        if i < len(existing):
+            offering = existing[i]
+            if (offering.title or "") != project.name:
+                offering_slug.rename_to(db, offering, project.name)
+            offering.description = project.description
+            offering.url = project.url
+            offering.image_url = project.image_url
+            offering.position = i
+        else:
+            offering = Offering(
+                title=project.name,
+                description=project.description,
+                url=project.url,
+                image_url=project.image_url,
+                position=i,
+            )
+            profile.offerings.append(offering)
+
+    for offering in existing[len(projects):]:
+        profile.offerings.remove(offering)
+
+    db.flush()
+    for offering in profile.offerings:
+        offering_slug.ensure_slug(db, offering)
+
+
+def persist_draft(
+    db: Session,
+    profile: Profile,
+    draft: DraftProfile,
+    *,
+    source_messages: list[dict],
+) -> None:
+    """Map ``DraftProfile`` onto the data model as a DRAFT (visibility ONGEWIJZIGD).
+
+    Single source of truth shared by the levende-flow stream (Fase 2) and the
+    transitional ``maak-draft`` route (SPEC §F.1). Identical logic to the old
+    ``ai_profile._persist_draft``:
+
+    - ``headline``/``bio`` -> profile columns.
+    - ``projects``        -> Offering (gereconcilieerd op positie; slug-historie
+      blijft behouden → geen kapotte ``/projecten/{slug}`` na regenerate).
+    - ``roles``           -> ProfileLink kind=affiliation (clear + rebuild).
+    - ``seeking``         -> a single Need (append iff non-empty, geen dubbele).
+    - ``tags``            -> profile tags.
+
+    ``visibility`` blijft ongemoeid (auto-publiceren gebeurt NOOIT).
+    """
+    profile.headline = draft.headline
+    if draft.bio:
+        profile.bio = draft.bio
+    profile.ai_enriched = True
+
+    user_texts = [
+        _extract_text(m.get("content"))
+        for m in source_messages
+        if m.get("role") == "user"
+    ]
+    profile.ai_source_text = "\n\n".join(t for t in user_texts if t) or None
+
+    _reconcile_offerings(db, profile, draft.projects)
+
+    profile.profile_links.clear()
+    db.flush()
+    for i, role in enumerate(draft.roles):
+        profile.profile_links.append(
+            ProfileLink(
+                label=role.label,
+                url=role.url,
+                description=role.description,
+                image_url=role.image_url,
+                kind=ProfileLinkKind.affiliation,
+                position=i,
+            )
+        )
+
+    if draft.seeking:
+        existing = {(n.title or "").strip() for n in profile.needs}
+        if draft.seeking.strip() not in existing:
+            profile.needs.append(_make_need(draft.seeking, len(profile.needs)))
+
+    if draft.tags:
+        set_tags(db, profile, ", ".join(draft.tags))
+
+    recompute_completeness(profile)
+    db.flush()

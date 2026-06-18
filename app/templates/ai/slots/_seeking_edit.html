@@ -1,0 +1,19 @@
+{# Edit-formulier voor seeking (primaire Need). PATCH -> lees-slot. Esc annuleert. #}
+{% set _need = profile.needs[0] if profile.needs else None %}
+<form id="slot-seeking" class="slot-edit field-edit"
+      hx-patch="/profiel/ai/veld/seeking"
+      hx-target="#slot-seeking" hx-swap="outerHTML"
+      hx-on::after-swap="this.querySelector('textarea')?.focus()">
+  <label class="field-label" for="edit-seeking">Waar je naar zoekt</label>
+  <textarea id="edit-seeking" name="value" rows="2" maxlength="2000"
+            autofocus
+            placeholder="Wat je zoekt: mensen, projecten, kansen…"
+            hx-get="/profiel/ai/veld/seeking" hx-target="#slot-seeking"
+            hx-swap="outerHTML" hx-trigger="keyup[key=='Escape']">{% if _need %}{{ _need.title }}{% endif %}</textarea>
+  <div class="field-edit__actions">
+    <button class="btn btn--sm" type="submit">Bewaar</button>
+    <button class="btn btn--sm btn--ghost" type="button"
+            hx-get="/profiel/ai/veld/seeking"
+            hx-target="#slot-seeking" hx-swap="outerHTML">Annuleer</button>
+  </div>
+</form>

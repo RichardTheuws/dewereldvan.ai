@@ -1,0 +1,90 @@
+{# Geretourneerd door POST /profiel/ai/bericht, geswapt in #denkpaneel.
+   GEEN chat-bubbel: dit is de levende-flow. Het toont het gloeiende "AI aan het
+   werk"-paneel (live redenering + fetch-status), en activeert de SSE-verbinding
+   op de gedeelde voorouder #materialisatie zodat de per-veld `f-*`-events de
+   slots IN de profielvorm laten materialiseren (de slots dragen sse-swap="f-…"
+   in live.html). De terminerende `done` ruimt het paneel op en meldt klaar.
+
+   De verbinding zit op #materialisatie (voorouder van zowel dit paneel als
+   #profielvorm) i.p.v. op dit fragment: alleen zo zijn de slot-sse-swap-elementen
+   nakomelingen van de EventSource (htmx-ext-sse bindt sse-swap aan de dichtstbij-
+   zijnde sse-connect-voorouder). #}
+{% set sid = range(100000, 999999) | random %}
+<div id="sse-{{ sid }}" data-sse-host>
+  {% include "ai/_reasoning_panel.html" %}
+
+  {# "AI schrijft…"-regel: tekst-deltas landen hier (geen losse chat-bubbel). #}
+  <div class="bubble bubble--assistant" data-answer sse-swap="delta" hx-swap="beforeend"
+       aria-live="polite" aria-atomic="false" style="display:none"></div>
+
+  {# Terminerend done-event: ruim het paneel op (leeg) + meld klaar. #}
+  <div sse-swap="done" hx-target="#sse-{{ sid }}" hx-swap="outerHTML"
+       style="display:none"></div>
+</div>
+
+<script>
+  (function () {
+    var host = document.getElementById('sse-{{ sid }}');
+    if (!host) return;
+    var root = document.getElementById('materialisatie');
+    if (!root) return;
+
+    // (Her)activeer de SSE-verbinding op de gedeelde voorouder. Sluit een vorige
+    // verbinding eerst (nieuwe vraag = nieuwe stream) zodat oude f-*-events geen
+    // stale slots meer raken.
+    if (root.getAttribute('sse-connect')) {
+      root.removeAttribute('sse-connect');
+      try { htmx.process(root); } catch (e) {}
+    }
+    root.setAttribute('sse-connect', '/profiel/ai/stream');
+    root.setAttribute('sse-close', 'done');
+    try { htmx.process(root); } catch (e) {}
+
+    // Materialisatie-cleanup + paneel-overgang. We luisteren op de voorouder
+    // (waar de EventSource leeft) zodat we ALLE events zien, ook die voor de
+    // slots in #profielvorm.
+    if (!root.dataset.matBound) {
+      root.dataset.matBound = '1';
+      root.addEventListener('htmx:sseMessage', function (e) {
+        if (!e.detail) return;
+        var type = e.detail.type;
+
+        if (type === 'delta') {
+          // Eerste delta: onthul de "AI schrijft…"-regel; markeer het paneel als
+          // 'settled' (niet verwijderen — reasoning/fetch komen ná de deltas).
+          var panel = root.querySelector('[data-reasoning]');
+          if (panel) panel.classList.add('reasoning--settled');
+          var ans = root.querySelector('[data-answer]');
+          if (ans) ans.style.display = '';
+        } else if (type === 'fetch') {
+          var line = root.querySelector('.reasoning__fetch');
+          if (!line) return;
+          var host2 = '', state = 'ok';
+          try { var d = JSON.parse(e.detail.data); host2 = d.host || ''; state = d.state || 'ok'; }
+          catch (err) { return; }
+          var raw = line.lastChild;
+          if (raw && raw.nodeType === 3) line.removeChild(raw);
+          var row = document.createElement('div');
+          var isErr = state === 'err';
+          row.className = 'fetch-line fetch-line--' + (isErr ? 'err' : 'ok');
+          row.textContent = '✦ ' + (host2 || 'bron') + ' ophalen ' + (isErr ? '✗' : '✓');
+          line.appendChild(row);
+        }
+      });
+
+      // Wanneer een veld-fragment landt: speel de materialisatie-animatie en zet
+      // 'm daarna op 'ready' (één keer per keyframe). prefers-reduced-motion ->
+      // de CSS dooft de animatie; we zetten alsnog 'ready' direct.
+      root.addEventListener('htmx:afterSwap', function (e) {
+        var el = e.target;
+        if (!el || !el.classList || !el.classList.contains('field--materializing')) return;
+        var done = function () { el.classList.remove('field--materializing'); el.classList.add('field--ready'); };
+        var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+        if (reduce) { done(); return; }
+        var fired = false;
+        el.addEventListener('animationend', function () { if (!fired) { fired = true; done(); } }, { once: true });
+        setTimeout(function () { if (!fired) { fired = true; done(); } }, 900);
+      });
+    }
+  })();
+</script>

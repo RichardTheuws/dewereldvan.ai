@@ -1,0 +1,18 @@
+{# Lees-slot: bio ("Over"). Klik/Enter -> edit. Geen onzekerheids-marker op bio
+   (alleen headline + seeking, per §3 van het contract). #}
+<div id="slot-bio"
+     class="slot slot--text field {% if materializing %}field--materializing{% endif %} {% if not profile.bio %}slot--ask{% endif %}"
+     tabindex="0" role="button"
+     aria-label="{% if profile.bio %}Bewerk over jou{% else %}Bio: nog leeg, klik om aan te vullen{% endif %}"
+     sse-swap="f-bio" hx-swap="outerHTML"
+     hx-get="/profiel/ai/veld/bio/bewerken"
+     hx-target="#slot-bio"
+     hx-trigger="click, keyup[key=='Enter']">
+  <div class="section-title mb-3">Over</div>
+  {% if profile.bio %}
+  <p class="lede" style="max-width:58ch;white-space:pre-line">{{ profile.bio }}</p>
+  {% else %}
+  <p class="slot--empty">Vertel kort wie je bent</p>
+  {% endif %}
+  <span class="field-edit-hint" aria-hidden="true">✎</span>
+</div>

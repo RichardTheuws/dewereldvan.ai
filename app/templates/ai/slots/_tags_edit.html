@@ -1,0 +1,19 @@
+{# Edit-formulier voor tags (komma-gescheiden). PATCH -> lees-slot. Esc annuleert. #}
+<form id="slot-tags" class="slot-edit field-edit"
+      hx-patch="/profiel/ai/veld/tags"
+      hx-target="#slot-tags" hx-swap="outerHTML"
+      hx-on::after-swap="this.querySelector('input')?.focus()">
+  <label class="field-label" for="edit-tags">Tags (komma-gescheiden)</label>
+  <input id="edit-tags" name="value" type="text" maxlength="1000"
+         autofocus
+         value="{{ profile.tags | map(attribute='name') | join(', ') }}"
+         placeholder="bijv. AI, zorg, ontwerp"
+         hx-get="/profiel/ai/veld/tags" hx-target="#slot-tags"
+         hx-swap="outerHTML" hx-trigger="keyup[key=='Escape']">
+  <div class="field-edit__actions">
+    <button class="btn btn--sm" type="submit">Bewaar</button>
+    <button class="btn btn--sm btn--ghost" type="button"
+            hx-get="/profiel/ai/veld/tags"
+            hx-target="#slot-tags" hx-swap="outerHTML">Annuleer</button>
+  </div>
+</form>

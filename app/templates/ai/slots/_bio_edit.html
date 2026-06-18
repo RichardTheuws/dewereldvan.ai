@@ -1,0 +1,18 @@
+{# Edit-formulier voor de bio. PATCH -> lees-slot. Esc annuleert. #}
+<form id="slot-bio" class="slot-edit field-edit"
+      hx-patch="/profiel/ai/veld/bio"
+      hx-target="#slot-bio" hx-swap="outerHTML"
+      hx-on::after-swap="this.querySelector('textarea')?.focus()">
+  <label class="field-label" for="edit-bio">Over jou</label>
+  <textarea id="edit-bio" name="value" rows="6" maxlength="4000"
+            autofocus
+            placeholder="Wie ben je, wat drijft je?"
+            hx-get="/profiel/ai/veld/bio" hx-target="#slot-bio"
+            hx-swap="outerHTML" hx-trigger="keyup[key=='Escape']">{{ profile.bio or '' }}</textarea>
+  <div class="field-edit__actions">
+    <button class="btn btn--sm" type="submit">Bewaar</button>
+    <button class="btn btn--sm btn--ghost" type="button"
+            hx-get="/profiel/ai/veld/bio"
+            hx-target="#slot-bio" hx-swap="outerHTML">Annuleer</button>
+  </div>
+</form>

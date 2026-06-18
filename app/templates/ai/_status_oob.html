@@ -1,0 +1,6 @@
+{# Out-of-band completeness-fragment, mee-geswapt na elke mutatie. Vervangt de
+   inhoud van #profiel-status zonder de hoofd-swap te storen. Hergebruikt het
+   bestaande _status_inner.html (completeness + zichtbaarheid). #}
+<div id="profiel-status" hx-swap-oob="innerHTML">
+  {% include "profiles/_status_inner.html" %}
+</div>

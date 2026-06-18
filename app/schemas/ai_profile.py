@@ -52,6 +52,77 @@ class AcceptForm(BaseModel):
     consent: bool = False
 
 
+# --- Per-veld inline-edit forms (levende profielbouw — SPEC §A.1-A.3) ---
+
+
+def _trunc(value: str, limit: int) -> str:
+    """Strip + hard-cap (te lange invoer afkappen i.p.v. 422, conform SPEC §A.1)."""
+    return (value or "").strip()[:limit]
+
+
+class FieldForm(BaseModel):
+    """Eén losse tekstwaarde voor een per-veld-patch (headline/bio/seeking/tags).
+
+    Lengte wordt door de route bepaald (verschilt per veld); hier alleen strip.
+    Lege waarde is geldig — de route beslist of dat 'wissen' of 'vul aan' betekent.
+    """
+
+    value: str = ""
+
+    @field_validator("value")
+    @classmethod
+    def _strip(cls, value: str) -> str:
+        return (value or "").strip()
+
+
+class OfferingPatchForm(BaseModel):
+    """Inline-patch van één offering (project). Lengtes conform het model."""
+
+    title: str = ""
+    description: str = ""
+    url: str = ""
+    image_url: str = ""
+
+    @field_validator("title")
+    @classmethod
+    def _cap_title(cls, value: str) -> str:
+        return _trunc(value, 160)
+
+    @field_validator("url", "image_url")
+    @classmethod
+    def _cap_url(cls, value: str) -> str:
+        return _trunc(value, 1000)
+
+    @field_validator("description")
+    @classmethod
+    def _strip_desc(cls, value: str) -> str:
+        return (value or "").strip()
+
+
+class ProfileLinkForm(BaseModel):
+    """Inline-form voor één rol/affiliatie (ProfileLink kind=affiliation)."""
+
+    label: str = ""
+    url: str = ""
+    description: str = ""
+    image_url: str = ""
+
+    @field_validator("label")
+    @classmethod
+    def _cap_label(cls, value: str) -> str:
+        return _trunc(value, 200)
+
+    @field_validator("url", "image_url")
+    @classmethod
+    def _cap_url(cls, value: str) -> str:
+        return _trunc(value, 1000)
+
+    @field_validator("description")
+    @classmethod
+    def _strip_desc(cls, value: str) -> str:
+        return (value or "").strip()
+
+
 # --- Structured-output spiegel (Anthropic PROFILE_SCHEMA) ---
 
 

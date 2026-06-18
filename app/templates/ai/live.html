@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Levende profielbouw — één kosmisch document. Tekst -> het profiel
+   materialiseert zich live in de echte profielvorm (à la profiles/view.html) ->
+   daarna volledig inline bijschaven. Geen chat-ping-pong, geen aparte preview,
+   geen apart bewerk-formulier.
+
+   Standalone cosmic-doc (extend base.html NIET): herhaalt zelf htmx + htmx-ext-sse
+   + Tailwind + fonts + cosmic.css + hx-headers (CSRF) + robots:noindex, exact
+   zoals de oude build.html. De profielvorm wordt uit DB-staat gerendeerd, dus een
+   herlaad herstelt idempotent (materialisatie is altijd gepersisteerd vóór swap).
+
+   #materialisatie draagt hx-ext="sse" en omvat ZOWEL #denkpaneel als #profielvorm,
+   zodat de per-veld f-*-events (sse-swap op de slots) de echte voorouder-
+   EventSource vinden. De verbinding wordt pas geopend wanneer een bericht wordt
+   gestuurd (POST /bericht zet sse-connect op #materialisatie). #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bouw je profiel met AI — dewereldvan.ai</title>
+  <meta name="robots" content="noindex">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  {# Zonder JS de entrance-gate openen, anders blijft de hele vorm onzichtbaar. #}
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+
+  <div class="wrap wrap--narrow {{ emphasis_cls }}">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+      <div class="links">
+        <a class="link" href="/leden/{{ profile.slug }}">Mijn profiel</a>
+        <a class="link" href="/profiel/bewerken">Handmatig bewerken</a>
+      </div>
+    </header>
+
+    <main class="flex-1 pb-16">
+      <div class="eyebrow" data-reveal style="--d:160ms">Profielbouw &nbsp;·&nbsp; met AI</div>
+      <h1 class="headline mt-5" data-reveal style="--d:260ms">Vertel je verhaal.</h1>
+      <p class="lede mt-5 max-w-xl" data-reveal style="--d:380ms">
+        Schrijf in je eigen woorden wie je bent en wat je maakt — plak gerust links
+        naar je werk, projecten of organisaties. Je profiel verschijnt hieronder en
+        bouwt zich op terwijl je vertelt. Daarna pas je alles aan door erop te
+        klikken. <b>Niets wordt gepubliceerd</b> tot jij het zelf bevestigt.
+      </p>
+
+      {% if not ai_enabled %}
+      <div class="bubble bubble--system mt-8">AI-profielbouw staat momenteel uit.</div>
+      {% endif %}
+
+      {# ---- Invoer-dok ---- #}
+      <section class="mt-10" id="invoer" data-reveal style="--d:460ms">
+        <form class="flex gap-3 items-end"
+              hx-post="/profiel/ai/bericht"
+              hx-target="#denkpaneel"
+              hx-swap="innerHTML"
+              hx-on::after-request="if(event.detail.successful){this.reset();this.querySelector('textarea').focus();}">
+          <div class="flex-1">
+            <label class="field-label" for="message">Vertel over jezelf</label>
+            <textarea id="message" name="message" rows="3" required
+                      placeholder="Bijv. Ik ben Sanne, ik bouw AI-tools voor de zorg. Mijn werk: https://…"></textarea>
+          </div>
+          <button class="btn" type="submit" {% if not ai_enabled %}disabled{% endif %}>Bouw mee</button>
+        </form>
+      </section>
+
+      {# ---- Materialisatie: denkpaneel + levende profielvorm onder één EventSource ---- #}
+      <div id="materialisatie" hx-ext="sse">
+        {# Gloeiend "AI aan het werk"-paneel + tekst-deltas verschijnen hier. #}
+        <div id="denkpaneel" class="mt-8" aria-live="polite"></div>
+
+        {# a11y: een poliete melding wanneer de vorm klaar is. #}
+        <p id="materialisatie-status" class="muted text-sm mt-4" aria-live="polite"></p>
+
+        {# De echte, bewerkbare profielvorm (uit DB-staat). #}
+        <div class="mt-8" data-reveal style="--d:560ms">
+          {% include "ai/_live_form.html" %}
+        </div>
+      </div>
+
+      {# ---- Publiceer-dok ---- #}
+      <section class="mt-16" data-reveal style="--d:660ms">
+        <hr class="rule mb-8">
+        {% include "ai/_publish_panel.html" %}
+      </section>
+
+      {# ---- Opnieuw beginnen (AVG-reset) ---- #}
+      <div class="mt-12">
+        <form action="/profiel/ai/opnieuw" method="post"
+              onsubmit="return confirm('Het gesprek en de concept-velden van deze AI-sessie worden gewist. Doorgaan?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="btn btn--ghost" type="submit">Opnieuw beginnen</button>
+        </form>
+      </div>
+
+      {# Verborgen completeness-anker voor OOB-updates na elke mutatie. #}
+      <div id="profiel-status" class="sr-only" aria-hidden="true">
+        {% include "profiles/_status_inner.html" %}
+      </div>
+    </main>
+  </div>
+
+  {% include "_feedback_affordance.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

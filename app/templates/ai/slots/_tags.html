@@ -1,0 +1,17 @@
+{# Lees-slot: tags (chips). Klik/Enter -> edit. Hergebruikt _cosmic_tags.html
+   zodat het byte-identiek is aan de publieke profielvorm. #}
+<div id="slot-tags"
+     class="slot field {% if materializing %}field--materializing{% endif %} {% if not profile.tags %}slot--ask{% endif %}"
+     tabindex="0" role="button"
+     aria-label="{% if profile.tags %}Bewerk tags{% else %}Tags: nog leeg, klik om aan te vullen{% endif %}"
+     sse-swap="f-tags" hx-swap="outerHTML"
+     hx-get="/profiel/ai/veld/tags/bewerken"
+     hx-target="#slot-tags"
+     hx-trigger="click, keyup[key=='Enter']">
+  {% if profile.tags %}
+  {% set tags = profile.tags %}{% include "profiles/_cosmic_tags.html" %}
+  {% else %}
+  <p class="slot--empty">Nog geen tags — tik om er toe te voegen</p>
+  {% endif %}
+  <span class="field-edit-hint" aria-hidden="true">✎</span>
+</div>

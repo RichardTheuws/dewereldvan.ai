@@ -1,0 +1,34 @@
+{# Publiceer-dok. Zichtbaarheid + AVG-consent + knop. Delegeert naar de bestaande
+   zichtbaarheidsflow (POST /profiel/ai/publiceren). Bij ConsentRequired swapt de
+   route dit blok terug met `error`. Nooit auto-publiceren — bewuste stap. #}
+<div id="publiceren" class="space-y-4">
+  {% if error %}
+  <div class="bubble bubble--refusal mb-4">{{ error }}</div>
+  {% endif %}
+  <form class="space-y-4" action="/profiel/ai/publiceren" method="post"
+        hx-post="/profiel/ai/publiceren"
+        hx-target="#publiceren" hx-swap="outerHTML">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div class="section-title">Publiceren</div>
+    <p class="lede text-sm max-w-lg">
+      Kies wie je profiel mag zien. Openbaar betekent: voor iedereen zichtbaar en
+      vindbaar in zoekmachines.
+    </p>
+    <div>
+      <label class="field-label" for="pub-visibility">Zichtbaarheid</label>
+      <select id="pub-visibility" name="visibility">
+        <option value="members" {% if profile.visibility.value == 'members' %}selected{% endif %}>Alleen leden</option>
+        <option value="public" {% if profile.visibility.value == 'public' %}selected{% endif %}>Openbaar</option>
+      </select>
+    </div>
+    <label class="flex items-start gap-3 text-sm muted">
+      <input type="checkbox" name="consent" value="on" style="width:auto;margin-top:4px"
+             {% if profile.consented_public_at %}checked{% endif %}>
+      <span>
+        Ik geef toestemming om mijn profiel (naam, kopregel, bio en wat ik maak/zoek)
+        openbaar en vindbaar te maken. Verplicht om openbaar te zetten.
+      </span>
+    </label>
+    <button class="btn" type="submit">Publiceer mijn profiel</button>
+  </form>
+</div>

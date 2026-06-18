@@ -1,0 +1,20 @@
+{# Hele rollen-sectie (.grid) + "+ rol toevoegen". Vervangt #slot-roles als geheel
+   (sse-swap f-roles bij materialisatie, en na add/delete). #}
+{% set roles = profile.profile_links | selectattr('kind.value', 'equalto', 'affiliation') | list %}
+<div id="slot-roles"
+     class="field {% if materializing %}field--materializing{% endif %}"
+     sse-swap="f-roles" hx-target="#slot-roles" hx-swap="outerHTML">
+  <div class="section-title mb-4">Rollen &amp; affiliaties</div>
+  {% if roles %}
+  <div class="grid">
+    {% for link in roles %}{% include "ai/slots/_role_card.html" with context %}{% endfor %}
+  </div>
+  {% else %}
+  <p class="slot--empty slot--ask" style="display:block">Nog geen rollen</p>
+  {% endif %}
+  <form class="mt-4"
+        hx-post="/profiel/ai/rol"
+        hx-target="#slot-roles" hx-swap="outerHTML">
+    <button class="btn btn--ghost btn--sm" type="submit">+ rol toevoegen</button>
+  </form>
+</div>

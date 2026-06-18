@@ -1,0 +1,10 @@
+{# Payload van het terminerende SSE `done`-event. Vervangt de SSE-host (#sse-…)
+   door niets (paneel weg) en meldt — via OOB — dat de vorm klaar is. Bij een
+   nette faal-tak (`message`) tonen we die in het denkpaneel i.p.v. de klaar-melding
+   (de profielvorm blijft bruikbaar). #}
+{% if message %}
+<div class="bubble bubble--system">{{ message }}</div>
+{% endif %}
+<p id="materialisatie-status" hx-swap-oob="innerHTML">
+  {% if message %}{{ message }}{% else %}Je profiel is opgesteld. Loop het na en pas aan waar nodig.{% endif %}
+</p>

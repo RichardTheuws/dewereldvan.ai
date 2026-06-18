@@ -1,0 +1,17 @@
+{# Eén rolkaart in de bewerkbare vorm. Includet de publieke _cosmic_link_card.html
+   (byte-identiek aan profiles/view.html) en wikkelt er een edit-affordance + ✕
+   omheen. Verwacht `link` (ProfileLink). Klik op de kaart -> edit; ✕ -> verwijder.
+   De ✕-knop stopt de klik-propagatie zodat hij niet de edit triggert. #}
+<div id="role-{{ link.id }}" class="slot slot--card field">
+  <button type="button" class="slot__edit-zone"
+          aria-label="Bewerk rol {{ link.label }}"
+          hx-get="/profiel/ai/rol/{{ link.id }}/bewerken"
+          hx-target="#role-{{ link.id }}" hx-swap="outerHTML">
+    <span class="field-edit-hint" aria-hidden="true">✎</span>
+  </button>
+  {% include "profiles/_cosmic_link_card.html" %}
+  <button type="button" class="slot__delete" aria-label="Verwijder rol {{ link.label }}"
+          hx-delete="/profiel/ai/rol/{{ link.id }}"
+          hx-target="#role-{{ link.id }}" hx-swap="outerHTML"
+          hx-confirm="Deze rol verwijderen?">✕</button>
+</div>

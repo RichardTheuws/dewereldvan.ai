@@ -99,6 +99,24 @@ def _seed_turn(SessionTest, member_id: int) -> None:
     s.close()
 
 
+def _mock_finalize(monkeypatch):
+    """Mock de Fase-2 ``finalize_draft`` zodat de levende-flow materialiseert.
+
+    Sinds de levende-flow draait de SSE-handler na ``stream_turn`` ook
+    ``finalize_draft`` (Fase 2). De wacht-UX-tests gaan over Fase 1
+    (reasoning/fetch/delta); we mocken Fase 2 met een geldige draft zodat de stream
+    netjes doorloopt tot ``done`` zonder de SDK te raken.
+    """
+    from app.services import ai_profile as ai_service
+    from app.services.ai_profile import DraftProfile
+
+    draft = DraftProfile(
+        headline="Maker", bio="Ik bouw.", roles=[], projects=[],
+        seeking="medebouwers", tags=["ai"],
+    )
+    monkeypatch.setattr(ai_service, "finalize_draft", lambda messages, **kw: draft)
+
+
 # --------------------------------------------------------------------------- #
 # delta/done intact — regressie-guard                                         #
 # --------------------------------------------------------------------------- #
@@ -118,6 +136,7 @@ def test_stream_still_emits_deltas_and_done(make_client, seed, monkeypatch, Sess
         return _Final()
 
     monkeypatch.setattr(ai_service, "stream_turn", _fake_stream_turn)
+    _mock_finalize(monkeypatch)
 
     client = make_client(seed["approved"])
     with client.stream("GET", "/profiel/ai/stream") as resp:
@@ -148,6 +167,7 @@ def test_stream_emits_reasoning_when_thinking_present(make_client, seed, monkeyp
         return _Final()
 
     monkeypatch.setattr(ai_service, "stream_turn", _fake_stream_turn)
+    _mock_finalize(monkeypatch)
 
     client = make_client(seed["approved"])
     with client.stream("GET", "/profiel/ai/stream") as resp:
@@ -174,6 +194,7 @@ def test_stream_without_thinking_falls_back_to_delta_done(
         return _Final()
 
     monkeypatch.setattr(ai_service, "stream_turn", _fake_stream_turn)
+    _mock_finalize(monkeypatch)
 
     client = make_client(seed["approved"])
     with client.stream("GET", "/profiel/ai/stream") as resp:
@@ -203,6 +224,7 @@ def test_stream_emits_fetch_events(make_client, seed, monkeypatch, SessionTest):
         return _Final()
 
     monkeypatch.setattr(ai_service, "stream_turn", _fake_stream_turn)
+    _mock_finalize(monkeypatch)
 
     client = make_client(seed["approved"])
     with client.stream("GET", "/profiel/ai/stream") as resp:

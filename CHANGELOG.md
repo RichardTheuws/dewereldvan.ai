@@ -3,6 +3,36 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.10.0] - 2026-06-18
+### Added (AI-profielbouw als één levende flow — VISION-profielbouw uitgevoerd)
+- **Levende profielbouw** (`ai/live.html` + slot-partials): je profiel **materialiseert
+  zich live in de echte kosmische profielvorm** terwijl je vertelt (per-veld `f-*` SSE-events:
+  headline → bio → rollen → projecten → "wat ik zoek" → tags), met de wait-UX (reasoning + per-link
+  fetch) eronder. Vervangt de oude 3-staps (chat-bubbels → aparte preview → bewerk-formulier).
+- **Volledig inline bijschaven**: klik-op-veld-om-te-bewerken op elk veld (self-swap-patroon),
+  met **onzekerheids-markers** op afgeleide velden ("Dit leidde ik af — klopt het?" → Klopt/Aanpassen)
+  en "vul aan"-markers op lege velden. Per-veld persist-endpoints voor headline/bio/seeking/tags +
+  offerings + rollen (`PATCH`/`POST`/`DELETE`), met eigendoms-check, CSRF en `safe_url`-guard.
+- **Nieuwe service**: `profile_link_service` (volledige rol/affiliatie-CRUD) + `profile_service.persist_draft`
+  / `update_offering` als één bron van waarheid voor de draft-persist en inline-edit.
+- De enrichment/draft-engine (`stream_turn`/`finalize_draft` + alle AVG/hallucinatie-guards) is
+  **ongewijzigd hergebruikt**; alleen de ervaring eromheen is nieuw. Spec: `docs/SPEC-living-profielbouw.md`.
+### Fixed (integratie-review op de levende flow — adversarieel geverifieerd)
+- **Publiceren brak via htmx**: het publiceer-paneel onderschepte de POST en swapte de hele
+  303-redirect-body in het mini-paneeltje. Nu: `HX-Redirect` voor htmx (de browser navigeert echt),
+  303-fallback voor no-JS.
+- **Stille data-loss bij "wat ik zoek"-edit**: het bewerken van `seeking` deed `needs.clear()` en wiste
+  via delete-orphan **alle** needs. Nu wordt alleen de primaire need (needs[0]) vervangen.
+- **Twee bronnen van waarheid weggewerkt**: de router delegeert nu naar de services (geen inline-duplicaten),
+  zodat de service-tests echte productie-code dekken (geen vals-groen). Ongebruikte `update_need` + tests verwijderd.
+### Changed
+- **Styleguide-gat gedicht**: ontbrekende cosmic.css-classes voor de kaart-edit-overlay, verwijderknop,
+  lege-staten en de seeking-kaart toegevoegd (één kosmische look, reduced-motion-veilig).
+- De vervangen chat-templates (`build.html`, `_message_sent`, `_chat_message`, `_draft_preview`,
+  `_draft_card_link`) verwijderd.
+- **Tests**: regressietests voor de htmx-publish, seeking-behoudt-overige-needs en rol-eigendom/kind-guard;
+  volledige suite groen (277 passed).
+
 ## [0.9.5] - 2026-06-18
 ### Docs
 - **`docs/VISION-profielbouw.md`** — noord-ster voor de profielbouw: het profiel bouwt zichtbaar

@@ -1,0 +1,38 @@
+{# Lees-slot: "Waar ik naar zoek" — de primaire Need (needs[0]). Klik/Enter ->
+   edit. AI-afgeleid -> onzekerheids-marker (zoals headline). #}
+{% set _need = profile.needs[0] if profile.needs else None %}
+<div id="slot-seeking"
+     class="slot slot--text field {% if materializing %}field--materializing{% endif %} {% if not _need %}slot--ask{% endif %} {% if uncertain and _need %}uncertain{% endif %}"
+     tabindex="0" role="button"
+     aria-label="{% if _need %}Bewerk waar je naar zoekt{% else %}Waar je naar zoekt: nog leeg, klik om aan te vullen{% endif %}"
+     sse-swap="f-seeking" hx-swap="outerHTML"
+     hx-get="/profiel/ai/veld/seeking/bewerken"
+     hx-target="#slot-seeking"
+     hx-trigger="click, keyup[key=='Enter']">
+  <div class="section-title mb-3">Waar ik naar zoek</div>
+  {% if _need %}
+  <div class="seeking">
+    <div class="card-label">{{ _need.title }}</div>
+    {% if _need.description %}<p class="card-desc mt-1">{{ _need.description }}</p>{% endif %}
+  </div>
+  {% if uncertain %}
+  <span class="uncertain__dot" aria-hidden="true">✦</span>
+  <div class="uncertain__hint">
+    Dit leidde ik af — klopt het?
+    <span class="uncertain__act">
+      <button type="button" class="btn btn--sm"
+              hx-post="/profiel/ai/veld/seeking/bevestig"
+              hx-target="#slot-seeking" hx-swap="outerHTML"
+              onclick="event.stopPropagation()">Klopt</button>
+      <button type="button" class="btn btn--sm btn--ghost"
+              hx-get="/profiel/ai/veld/seeking/bewerken"
+              hx-target="#slot-seeking" hx-swap="outerHTML"
+              onclick="event.stopPropagation()">Aanpassen</button>
+    </span>
+  </div>
+  {% endif %}
+  {% else %}
+  <p class="slot--empty">Waar zoek je naar?</p>
+  {% endif %}
+  <span class="field-edit-hint" aria-hidden="true">✎</span>
+</div>

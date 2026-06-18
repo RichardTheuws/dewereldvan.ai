@@ -1,0 +1,23 @@
+{# Edit-formulier voor één rol. PATCH -> rolkaart. Esc/Annuleer -> lees-kaart.
+   Verwacht `link` (ProfileLink). #}
+<form id="role-{{ link.id }}" class="slot-edit field-edit"
+      hx-patch="/profiel/ai/rol/{{ link.id }}"
+      hx-target="#role-{{ link.id }}" hx-swap="outerHTML"
+      hx-on::after-swap="this.querySelector('input')?.focus()">
+  <label class="field-label" for="role-label-{{ link.id }}">Rol of affiliatie</label>
+  <input id="role-label-{{ link.id }}" name="label" type="text" maxlength="200"
+         autofocus value="{{ link.label or '' }}" placeholder="Bijv. CTO bij Acme">
+  <label class="field-label mt-3" for="role-url-{{ link.id }}">Link (optioneel)</label>
+  <input id="role-url-{{ link.id }}" name="url" type="url" maxlength="1000"
+         value="{{ link.url or '' }}" placeholder="https://…">
+  <label class="field-label mt-3" for="role-desc-{{ link.id }}">Omschrijving (optioneel)</label>
+  <textarea id="role-desc-{{ link.id }}" name="description" rows="2" maxlength="2000"
+            placeholder="Wat doe je daar?">{{ link.description or '' }}</textarea>
+  <input type="hidden" name="image_url" value="{{ link.image_url or '' }}">
+  <div class="field-edit__actions">
+    <button class="btn btn--sm" type="submit">Bewaar</button>
+    <button class="btn btn--sm btn--ghost" type="button"
+            hx-get="/profiel/ai/rol/{{ link.id }}"
+            hx-target="#role-{{ link.id }}" hx-swap="outerHTML">Annuleer</button>
+  </div>
+</form>

@@ -1,0 +1,49 @@
+{# De bewerkbare, levende profielvorm. Spiegelt de macro-structuur + emphasis-
+   volgorde van profiles/view.html, maar elke sectie is een inline-bewerkbaar
+   "slot" (klik op een veld -> mini-form -> per-veld endpoint -> terug naar de
+   gerenderde vorm). Wordt in #profielvorm gerendeerd door live.html, en als geheel
+   (her)gerenderd door de overgangsroute POST /profiel/ai/maak-draft.
+
+   Identity (foto + naam + kopregel + tags) bovenaan; daarna emphasis-gestuurde
+   secties. `profile`, `photo`, `emphasis_cls` verwacht; optioneel `uncertain`
+   (AI-afgeleide velden dragen de "klopt het?"-marker). #}
+<div id="profielvorm">
+
+  {# ---- Identity (foto-hero + naam + kopregel + tags) ---- #}
+  <section class="profile-identity mt-2" data-reveal style="--d:140ms">
+    <div class="profile-identity__photo" id="photo-slot">
+      {% include "profiles/_photo_upload.html" %}
+    </div>
+    <div class="profile-identity__text">
+      <div class="display-name">{{ profile.display_name }}</div>
+      {% include "ai/slots/_headline.html" %}
+      <div class="mt-5">{% include "ai/slots/_tags.html" %}</div>
+    </div>
+  </section>
+
+  {# ---- Prominentie-keuze (emphasis) ---- #}
+  <section class="mt-10" data-reveal style="--d:220ms">
+    {% include "profiles/_emphasis_choice.html" %}
+  </section>
+
+  {# Sectie-macro's, zodat emphasis de volgorde stuurt (geen content-verlies). #}
+  {% macro s_bio() %}
+  <section class="mt-12" data-reveal style="--d:340ms">{% include "ai/slots/_bio.html" %}</section>
+  {% endmacro %}
+  {% macro s_roles() %}
+  <section class="mt-14" data-reveal style="--d:400ms">{% include "ai/slots/_roles.html" %}</section>
+  {% endmacro %}
+  {% macro s_projects() %}
+  <section class="mt-14" data-reveal style="--d:460ms">{% include "ai/slots/_projects.html" %}</section>
+  {% endmacro %}
+  {% macro s_seeking() %}
+  <section class="mt-14" data-reveal style="--d:520ms">{% include "ai/slots/_seeking.html" %}</section>
+  {% endmacro %}
+
+  {% if emphasis_cls == "emphasis-projects" %}
+    {{ s_projects() }}{{ s_bio() }}{{ s_roles() }}{{ s_seeking() }}
+  {% else %}
+    {{ s_bio() }}{{ s_roles() }}{{ s_projects() }}{{ s_seeking() }}
+  {% endif %}
+
+</div>

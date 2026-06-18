@@ -1,23 +1,32 @@
-"""AI-native profielbouw routes (F1-F3).
+"""AI-native, *levende* profielbouw routes (één flow).
 
-Flow (zie bouwcontract §4):
+Eén levende flow (zie ``docs/SPEC-living-profielbouw.md``):
 
-1. ``GET  /profiel/ai/bouwen``    — kosmische chat-bouwpagina (bestaande turns).
-2. ``POST /profiel/ai/bericht``   — lid stuurt bericht; persist user-turn, start
-   de (synchrone) Anthropic-stream in een thread, render een SSE-container.
-3. ``GET  /profiel/ai/stream``    — SSE: tekst-deltas + terminerend ``done``-event
-   met de gerenderde assistant-bubbel.
-4. ``POST /profiel/ai/maak-draft``— stap-2 structured output -> persist DRAFT op
-   het profiel (headline/bio/offerings/profile_links/needs/tags), ``ai_enriched``,
-   ``ai_source_text``. Zet NOOIT ``visibility``.
-5. ``POST /profiel/ai/cover``     — F2: cover via ImageGenerator (faalt gracieus).
-6. ``POST /profiel/ai/draft/bewerken`` — lid bewerkt de draft-velden (htmx).
-7. ``POST /profiel/ai/publiceren``— delegeert naar de bestaande zichtbaarheidsflow
-   (consent vereist voor public), wist de conversatie, redirect naar het profiel.
-8. ``POST /profiel/ai/opnieuw``   — nieuwe sessie (wis turns + ai-flags).
+    tekst → het profiel materialiseert zich live in de echte kosmische profielvorm
+    → daarna volledig inline bijschaven.
 
-Alle routes draaien onder ``require_member`` (ingelogd + approved); CSRF loopt via
-``hx-headers`` in ``base.html``. Auto-publiceren gebeurt NOOIT.
+Geen chat-ping-pong, geen aparte draft-preview, geen apart bewerk-formulier.
+
+Routes (alle onder ``require_member`` — ingelogd + approved; CSRF via ``hx-headers``):
+
+1. ``GET  /profiel/ai/bouwen``      — ``ai/live.html`` uit DB-staat (idempotent herstel).
+2. ``POST /profiel/ai/bericht``     — persist user-turn, render ``ai/_materialize_stream.html``
+   (SSE-host; GEEN chat-bubbel) in ``#denkpaneel``.
+3. ``GET  /profiel/ai/stream``      — SSE: Fase 1 (reasoning/fetch/delta, ongewijzigd),
+   dan Fase 2 (``finalize_draft`` → persist → per-veld ``f-*``-events die de
+   profielvorm sectie-voor-sectie materialiseren), tot ``done``.
+4. ``POST /profiel/ai/cover``       — cover via ImageGenerator (faalt gracieus).
+5. Per-veld inline-edit endpoints (headline/bio/seeking/tags + offerings + rollen):
+   GET ``…/bewerken`` → edit-form, GET ``…`` → lees-slot (cancel), PATCH → persist +
+   lees-slot, POST/DELETE voor toevoegen/verwijderen. Marker-``bevestig``.
+6. ``POST /profiel/ai/maak-draft``  — OVERGANG: rendert de levende vorm (``_live_form``)
+   i.p.v. de oude preview; verdwijnt zodra de stream-variant groen test.
+7. ``POST /profiel/ai/publiceren``  — delegeert naar de zichtbaarheidsflow (consent
+   voor public), wist de conversatie, 303 naar het profiel.
+8. ``POST /profiel/ai/opnieuw``     — nieuwe sessie (AVG-reset: turns + ai-flags + cover).
+
+Auto-publiceren gebeurt NOOIT. SSE-deltas worden HTML-escaped (anti-XSS). URL-velden
+lopen door ``safe_url``. Eigendoms-check op elke ``{id}`` (anders 404).
 """
 
 from __future__ import annotations
@@ -25,9 +34,14 @@ from __future__ import annotations
 import json
 import logging
 
-from fastapi import APIRouter, Depends, Form, Request, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import (
+    HTMLResponse,
+    RedirectResponse,
+    Response,
+    StreamingResponse,
+)
 from markupsafe import escape
 from sqlalchemy.orm import Session
 
@@ -35,15 +49,49 @@ from app.ai import ImageGenerator, cover_prompt
 from app.config import settings
 from app.db import get_db
 from app.deps import image_generator, require_member
-from app.models import Member, Offering, Profile, ProfileLink, ProfileLinkKind
+from app.models import (
+    Member,
+    Need,
+    Offering,
+    Profile,
+    ProfileLink,
+    ProfileLinkKind,
+)
 from app.schemas.ai_profile import AcceptForm, ChatMessageForm
-from app.services import ai_conversation, offering_slug, profile_service
+from app.services import (
+    ai_conversation,
+    offering_slug,
+    photo_service,
+    profile_link_service,
+    profile_service,
+)
 from app.services import ai_profile as ai_service
 from app.services import visibility as visibility_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["ai-profile"])
+
+def safe_url(value: str | None) -> str:
+    """Lazy proxy naar de gedeelde ``safe_url``-filter (vermijdt circulaire import).
+
+    ``app.main`` importeert deze router bij opstart, dus we kunnen ``safe_url`` niet
+    op module-niveau uit ``app.main`` halen; lazy import binnen de call is veilig.
+    """
+    from app.main import safe_url as _safe_url
+
+    return _safe_url(value)
+
+
+# Velden die per-veld bewerkbaar zijn als losse tekst-slots.
+_TEXT_FIELDS = {"headline", "bio", "seeking", "tags"}
+# Maximale lengtes (spiegelen het datamodel / contract §A.1).
+_MAXLEN = {"headline": 200, "bio": 4000, "seeking": 2000, "tags": 1000}
+
+
+# --------------------------------------------------------------------------- #
+# Render helpers                                                              #
+# --------------------------------------------------------------------------- #
 
 
 def _render(request: Request, name: str, ctx: dict | None = None, **kw) -> HTMLResponse:
@@ -54,15 +102,29 @@ def _render_str(request: Request, name: str, ctx: dict | None = None) -> str:
     """Render a template to a plain string (for embedding in an SSE event)."""
     tmpl = request.app.state.templates.get_template(name)
     context = {"request": request, **(ctx or {})}
-    # Mirror the csrf context-processor so partials that need the token work.
     from app.csrf import get_csrf_token
 
     context.setdefault("csrf_token", get_csrf_token(request))
     return tmpl.render(context)
 
 
+def _emphasis_cls(profile: Profile) -> str:
+    return f"emphasis-{profile.emphasis.value}"
+
+
+def _form_ctx(request: Request, profile: Profile, **extra) -> dict:
+    """Gedeelde context voor de levende vorm + slots."""
+    return {
+        "request": request,
+        "profile": profile,
+        "photo": photo_service.photo_or_initials(profile),
+        "emphasis_cls": _emphasis_cls(profile),
+        **extra,
+    }
+
+
 # --------------------------------------------------------------------------- #
-# 1. Build page                                                               #
+# 1. Living build page                                                        #
 # --------------------------------------------------------------------------- #
 
 
@@ -72,56 +134,27 @@ def build_page(
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
-    """De kosmische chat-bouwpagina; herlaadt bestaande turns."""
+    """De levende profielbouw-pagina; rendert de profielvorm uit DB-staat.
+
+    Idempotent herstel: alles wat de stream materialiseert is gepersisteerd, dus
+    een herlaad toont exact de huidige staat (geen verloren werk).
+    """
     profile = profile_service.get_or_create_profile(db, member)
     db.commit()
-    messages = ai_conversation.load_messages(db, member)
-    turns = _renderable_turns(messages)
-    has_draft = bool(profile.ai_enriched)
-    from app.services import photo_service
-
     return _render(
         request,
-        "ai/build.html",
-        {
-            "profile": profile,
-            "turns": turns,
-            "has_history": bool(turns),
-            "has_draft": has_draft,
-            "ai_enabled": settings.ai_enrich_enabled,
-            "photo": photo_service.photo_or_initials(profile),
-        },
+        "ai/live.html",
+        _form_ctx(
+            request,
+            profile,
+            ai_enabled=settings.ai_enrich_enabled,
+            uncertain=bool(profile.ai_enriched),
+        ),
     )
 
 
-def _renderable_turns(messages: list[dict]) -> list[dict]:
-    """Reduceer Anthropic-messages tot wat we in de chat tonen (tekst-only)."""
-    out: list[dict] = []
-    for m in messages:
-        text = _extract_text(m.get("content"))
-        if not text:
-            continue
-        out.append({"role": m.get("role", "assistant"), "text": text})
-    return out
-
-
-def _extract_text(content) -> str:
-    """Trek de zichtbare tekst uit een content-blok (string of blok-lijst)."""
-    if isinstance(content, str):
-        return content.strip()
-    if isinstance(content, list):
-        parts: list[str] = []
-        for block in content:
-            if isinstance(block, dict) and block.get("type") == "text":
-                parts.append(str(block.get("text", "")))
-            elif isinstance(block, str):
-                parts.append(block)
-        return "".join(parts).strip()
-    return ""
-
-
 # --------------------------------------------------------------------------- #
-# 2. Member message -> start stream                                           #
+# 2. Member message -> open the materialize stream                            #
 # --------------------------------------------------------------------------- #
 
 
@@ -132,18 +165,12 @@ def post_message(
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
-    """Persist het lid-bericht en render de SSE-container voor het AI-antwoord.
-
-    Het zware werk (de agentische Anthropic-turn) gebeurt in de GET ``/stream``-
-    handler; deze POST legt alleen de user-turn vast en geeft een fragment terug
-    dat (a) de lid-bubbel toont en (b) een ``EventSource`` opent via de htmx
-    ``sse``-extensie.
-    """
+    """Persist het lid-bericht en open de SSE-materialisatie (geen chat-bubbel)."""
     if not settings.ai_enrich_enabled:
         return _render(
             request,
-            "ai/_chat_message.html",
-            {"role": "system", "text": "AI-profielbouw staat momenteel uit."},
+            "ai/_materialize_done.html",
+            {"message": "AI-profielbouw staat momenteel uit."},
             status_code=200,
         )
 
@@ -152,24 +179,22 @@ def post_message(
     except ValueError:
         return _render(
             request,
-            "ai/_chat_message.html",
-            {"role": "system", "text": "Typ eerst een bericht."},
+            "ai/_materialize_done.html",
+            {"message": "Typ eerst iets over jezelf."},
             status_code=400,
         )
 
-    # Rate-limit per lid (telt user-turns in een uur-venster).
     try:
         ai_service.check_enrich_rate_limit(db, member)
     except ai_service.EnrichmentRateLimited:
         return _render(
             request,
-            "ai/_chat_message.html",
+            "ai/_materialize_done.html",
             {
-                "role": "system",
-                "text": (
+                "message": (
                     "Je hebt het uur-limiet bereikt. Probeer het over een uur "
                     "opnieuw."
-                ),
+                )
             },
             status_code=429,
         )
@@ -177,15 +202,11 @@ def post_message(
     ai_conversation.append_turn(db, member, "user", data.message)
     db.commit()
 
-    return _render(
-        request,
-        "ai/_message_sent.html",
-        {"user_text": data.message},
-    )
+    return _render(request, "ai/_materialize_stream.html", {})
 
 
 # --------------------------------------------------------------------------- #
-# 3. SSE stream — runs the agentic turn, streams deltas, persists assistant   #
+# 3. SSE stream — Fase 1 (reasoning/fetch/delta) + Fase 2 (materialize fields) #
 # --------------------------------------------------------------------------- #
 
 
@@ -202,22 +223,20 @@ async def stream(
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ):
-    """Server-Sent Events: tekst-deltas, dan een ``done``-event met de bubbel.
+    """Server-Sent Events voor de levende-flow.
 
-    De sync Anthropic-SDK draait in een threadpool (``stream_turn`` blokkeert),
-    waarbij elke delta in een queue wordt geduwd; de async generator pompt die
-    queue leeg naar de browser. Na afloop wordt de assistant-turn gepersisteerd
-    (volledige content incl. tool/thinking-blokken) en de finale bubbel als
-    ``done``-event gerenderd. ``refusal`` wordt netjes afgevangen (geen
-    ``content[0]`` zonder ``stop_reason``-check).
+    Fase 1 (ongewijzigd t.o.v. de chat-flow): ``reasoning``/``fetch``/``delta``.
+    De tekst-deltas worden geescaped (anti-XSS). De assistant-turn wordt vóór
+    Fase 2 gepersisteerd zodat ``finalize_draft`` de complete history ziet.
+
+    Fase 2 (zelfde threadpool-context, na de stream): ``finalize_draft`` →
+    ``profile_service.persist_draft`` → ``db.refresh`` → per veld een uniek-benoemd ``f-*``-event
+    met het serverside slot-fragment, met een korte choreografie-pauze ertussen.
+
+    Faal-takken (nooit een kapotte vorm): refusal/rate-limit/exception/timeout →
+    ``done`` met een nette melding; de profielvorm blijft de vorige (DB-)staat.
     """
     messages = ai_conversation.load_messages(db, member)
-    # Drie aparte _Channel-instanties — het bestaande sentinel/timeout-protocol
-    # blijft per kanaal ongewijzigd. ``text_ch`` voert de bestaande tekst-deltas
-    # (byte-identiek), ``think_ch`` de live-redenering (reasoning) en ``tool_ch``
-    # de per-link fetch-status (STRETCH). De thinking/tool-kanalen zijn additief:
-    # oude clients negeren de extra event-soorten, en stream_turn valt zonder
-    # callbacks terug op exact het oude gedrag.
     text_ch = ai_conversation._Channel()
     think_ch = ai_conversation._Channel()
     tool_ch = ai_conversation._Channel()
@@ -231,22 +250,26 @@ async def stream(
                 on_thinking=think_ch.send,
                 on_tool_event=lambda e: tool_ch.send(json.dumps(e)),
             )
-        except Exception:  # noqa: BLE001 — surface as a system message, no traceback
+        except Exception:  # noqa: BLE001 — surface as a friendly message, no traceback
             logger.exception("AI stream_turn faalde voor member %s", member_id)
             return None
         finally:
-            # Sluit ALLE kanalen zodat geen enkele drain-lus blijft hangen.
             text_ch.close()
             think_ch.close()
             tool_ch.close()
 
     async def _gen():
         if not settings.ai_enrich_enabled:
-            yield _sse_event("done", "")
+            yield _sse_event(
+                "done",
+                _render_str(
+                    request,
+                    "ai/_materialize_done.html",
+                    {"message": "AI-profielbouw staat momenteel uit."},
+                ),
+            )
             return
 
-        # Kick off the blocking producer CONCURRENTLY (as a task, so it actually
-        # runs while we drain deltas) and stream deltas as they arrive.
         import asyncio
         import time
 
@@ -255,20 +278,9 @@ async def stream(
         task = asyncio.ensure_future(run_in_threadpool(_run))
         deadline = time.monotonic() + CHANNEL_TIMEOUT_SEC
 
-        # Eén drain-lus over de drie kanalen via korte, niet-blokkerende polls
-        # (blokkerende channel-read off de event-loop met korte timeout, zodat we
-        # tussen de kanalen kunnen rouleren). De reasoning- en fetch-events worden
-        # additief uitgestuurd; ``delta`` blijft exact zoals voorheen (geescaped).
-        # De producer-task signaleert einde door alle kanalen te sluiten -> alle
-        # drains lopen leeg -> we breken eruit (of het wall-clock-vangnet grijpt).
         text_done = think_done = tool_done = False
-        streamed_parts: list[str] = []  # accumuleer tekst-deltas voor de done-bubbel
+        streamed_parts: list[str] = []
         while not (text_done and think_done and tool_done):
-            # Absolute wall-clock vangnet (zoals de oude _Channel.get-timeout):
-            # blokkeert ``stream_turn`` oncontroleerbaar (SDK/netwerk-stall zonder
-            # dat de finally->close() draait), dan flipt ``task.done()`` nooit en
-            # zou deze lus eindeloos pollen. Na CHANNEL_TIMEOUT_SEC breken we eruit
-            # zodat de SSE-verbinding + threadpool-worker niet permanent vastzitten.
             if time.monotonic() > deadline:
                 logger.warning(
                     "AI stream-drain timeout (%.0fs) voor member %s; stop.",
@@ -276,7 +288,6 @@ async def stream(
                     member_id,
                 )
                 break
-            # Thinking eerst surfacen (de wacht-UX-redenering loopt vóór de tekst).
             if not think_done:
                 item = await run_in_threadpool(think_ch.get, 0.02)
                 if item is None and task.done() and think_ch.q.empty():
@@ -296,19 +307,10 @@ async def stream(
                 if item is None and task.done() and text_ch.q.empty():
                     text_done = True
                 elif item is not None:
-                    # Escape each delta so the live-stream bubble (htmx sse-swap
-                    # inserts the payload as HTML, not text) renders model output
-                    # as plain text. This closes the prompt-injection -> DOM-XSS
-                    # path and makes the live bubble match the final autoescaped
-                    # bubble (no markup flash). BYTE-IDENTIEK aan het oude gedrag.
                     streamed_parts.append(item)
                     yield _sse_event("delta", str(escape(item)))
                     continue
 
-        # Normaal is de task hier al klaar (sentinel-terminatie). Brak de lus af op
-        # het wall-clock-vangnet terwijl de producer nog hangt, dan zou ``await
-        # task`` opnieuw blokkeren — vang dat af met een korte grace en val terug
-        # op de "er ging iets mis"-bubbel i.p.v. de SSE-respons te laten hangen.
         if task.done():
             final = await task
         else:
@@ -317,49 +319,126 @@ async def stream(
             except TimeoutError:
                 final = None
 
-        # Decide the final bubble + persist the assistant turn.
+        # --- Fase 1 afronding: persisteer de assistant-turn (history compleet) ---
+        refused = False
         if final is None:
-            html = _render_str(
-                request,
-                "ai/_chat_message.html",
-                {"role": "system", "text": "Er ging iets mis. Probeer het opnieuw."},
+            done_msg = "Er ging iets mis. Probeer het opnieuw."
+            # Geen Fase 2 op een mislukte/lege turn.
+            yield _sse_event(
+                "done",
+                _render_str(
+                    request, "ai/_materialize_done.html", {"message": done_msg}
+                ),
             )
-        elif getattr(final, "stop_reason", None) == "refusal":
-            html = _render_str(
-                request,
-                "ai/_chat_message.html",
-                {
-                    "role": "refusal",
-                    "text": (
-                        "De assistent kon hier niet op ingaan. Herformuleer je "
-                        "vraag of geef andere informatie."
-                    ),
-                },
-            )
+            return
+        if getattr(final, "stop_reason", None) == "refusal":
+            refused = True
         else:
-            assistant_text = _extract_text(getattr(final, "content", None))
-            # De volledige reply kan over meerdere pause_turn-iteraties zijn
-            # gestreamd; ``final`` (laatste iteratie) mist 'm dan, waardoor de
-            # done-bubbel een lege "…" toonde en de vervolgvraag "verdween". Val
-            # terug op de tekst die het lid ECHT zag stromen.
-            streamed_text = "".join(streamed_parts).strip()
             ai_conversation.append_turn(
-                db, member, "assistant", getattr(final, "content", assistant_text)
+                db, member, "assistant", getattr(final, "content", "")
             )
             db.commit()
+
+        if refused:
+            yield _sse_event(
+                "done",
+                _render_str(
+                    request,
+                    "ai/_materialize_done.html",
+                    {
+                        "message": (
+                            "De assistent kon hier niet op ingaan. Herformuleer je "
+                            "vraag of geef andere informatie."
+                        )
+                    },
+                ),
+            )
+            return
+
+        # --- Fase 2: finalize_draft -> persist -> per-veld materialisatie ---
+        def _finalize() -> tuple[bool, str | None]:
+            """Run finalize + persist in de threadpool. Returns (ok, error_message)."""
+            fresh = ai_conversation.load_messages(db, member)
+            if not fresh:
+                return False, None
+            try:
+                draft = ai_service.finalize_draft(fresh)
+            except ai_service.EnrichmentRefused:
+                db.rollback()
+                return False, (
+                    "Het profiel kon niet opgesteld worden. Geef wat meer "
+                    "informatie en probeer opnieuw."
+                )
+            except ai_service.EnrichmentRateLimited:
+                db.rollback()
+                return False, (
+                    "Je hebt het uur-limiet bereikt. Probeer het over een uur "
+                    "opnieuw."
+                )
+            except Exception:  # noqa: BLE001
+                logger.exception("finalize_draft faalde voor member %s", member_id)
+                db.rollback()
+                return False, (
+                    "Er ging iets mis bij het opstellen. Probeer het opnieuw."
+                )
+            profile = profile_service.get_or_create_profile(db, member)
+            profile_service.persist_draft(db, profile, draft, source_messages=fresh)
+            db.commit()
+            db.refresh(profile)
+            return True, None
+
+        ok, err = await run_in_threadpool(_finalize)
+        if not ok:
+            yield _sse_event(
+                "done",
+                _render_str(
+                    request,
+                    "ai/_materialize_done.html",
+                    {"message": err or "Er ging iets mis bij het opstellen."},
+                ),
+            )
+            return
+
+        # Per veld een sectie laten materialiseren (choreografie).
+        profile = profile_service.get_or_create_profile(db, member)
+        slot_events = [
+            ("f-headline", "ai/slots/_headline.html", {"uncertain": True}),
+            ("f-bio", "ai/slots/_bio.html", {}),
+            ("f-roles", "ai/slots/_roles.html", {}),
+            ("f-projects", "ai/slots/_projects.html", {}),
+            ("f-seeking", "ai/slots/_seeking.html", {"uncertain": True}),
+            ("f-tags", "ai/slots/_tags.html", {}),
+        ]
+        for event, tmpl, extra in slot_events:
             html = _render_str(
                 request,
-                "ai/_chat_message.html",
-                {"role": "assistant", "text": assistant_text or streamed_text or "…"},
+                tmpl,
+                _form_ctx(request, profile, materializing=True, **extra),
             )
-        yield _sse_event("done", html)
+            yield _sse_event(event, html)
+            # Korte choreografie-pauze (begrensd door het wall-clock-vangnet).
+            import time as _t
+
+            await run_in_threadpool(_t.sleep, 0.08)
+
+        yield _sse_event(
+            "done", _render_str(request, "ai/_materialize_done.html", {})
+        )
 
     return StreamingResponse(_gen(), media_type="text/event-stream")
 
 
 # --------------------------------------------------------------------------- #
-# 4. Make draft (structured output -> persist)                                #
+# 4. Draft persist (één bron) + transition route                              #
 # --------------------------------------------------------------------------- #
+# De draft-persist (``DraftProfile`` -> datamodel) leeft als één bron in
+# ``profile_service.persist_draft`` (SPEC §F.1); zowel de stream-Fase-2 als de
+# overgangsroute ``maak-draft`` roepen die aan, zodat ze niet divergeren.
+# ``_make_need`` blijft lokaal voor de seeking-tekstslot-edit.
+
+
+def _make_need(seeking: str, position: int) -> Need:
+    return Need(title=seeking[:160], description=None, position=position)
 
 
 @router.post("/profiel/ai/maak-draft", response_class=HTMLResponse)
@@ -368,12 +447,17 @@ def make_draft(
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
-    """Stap 2: structured output -> persisteer als DRAFT (visibility ONGEWIJZIGD)."""
+    """OVERGANG: structured output -> persist DRAFT -> render de levende vorm.
+
+    Rendert ``ai/_live_form.html`` in ``#profielvorm`` (i.p.v. de oude preview).
+    Verdwijnt zodra de stream-variant (Fase 2 hierboven) groen test. Beide paden
+    delen ``profile_service.persist_draft`` zodat ze niet divergeren.
+    """
     if not settings.ai_enrich_enabled:
         return _render(
             request,
-            "ai/_draft_preview.html",
-            {"error": "AI-profielbouw staat momenteel uit.", "profile": None},
+            "ai/_materialize_done.html",
+            {"message": "AI-profielbouw staat momenteel uit."},
             status_code=200,
         )
 
@@ -382,11 +466,8 @@ def make_draft(
     if not messages:
         return _render(
             request,
-            "ai/_draft_preview.html",
-            {
-                "error": "Vertel eerst iets over jezelf in de chat hierboven.",
-                "profile": profile,
-            },
+            "ai/_materialize_done.html",
+            {"message": "Vertel eerst iets over jezelf hierboven."},
             status_code=400,
         )
 
@@ -396,13 +477,12 @@ def make_draft(
         db.rollback()
         return _render(
             request,
-            "ai/_draft_preview.html",
+            "ai/_materialize_done.html",
             {
-                "error": (
+                "message": (
                     "Het profiel kon niet opgesteld worden. Geef wat meer "
                     "informatie en probeer opnieuw."
-                ),
-                "profile": profile,
+                )
             },
             status_code=200,
         )
@@ -411,143 +491,23 @@ def make_draft(
         db.rollback()
         return _render(
             request,
-            "ai/_draft_preview.html",
-            {
-                "error": "Er ging iets mis bij het opstellen. Probeer het opnieuw.",
-                "profile": profile,
-            },
+            "ai/_materialize_done.html",
+            {"message": "Er ging iets mis bij het opstellen. Probeer het opnieuw."},
             status_code=200,
         )
 
-    _persist_draft(db, profile, draft, source_messages=messages)
+    profile_service.persist_draft(db, profile, draft, source_messages=messages)
     db.commit()
     db.refresh(profile)
     return _render(
         request,
-        "ai/_draft_preview.html",
-        {"profile": profile, "saved": True},
+        "ai/_live_form.html",
+        _form_ctx(request, profile, uncertain=True),
     )
 
 
-def _persist_draft(
-    db: Session,
-    profile: Profile,
-    draft: ai_service.DraftProfile,
-    *,
-    source_messages: list[dict],
-) -> None:
-    """Map ``DraftProfile`` onto the data model as a DRAFT.
-
-    - ``headline``/``bio`` -> profile columns.
-    - ``seeking``         -> a single Need (replaces AI-seeded needs is overkill;
-                             we append one if non-empty and not already present).
-    - ``projects``        -> Offering (url/image_url/description).
-    - ``roles``           -> ProfileLink kind=affiliation.
-    - ``tags``            -> profile tags (via profile_service).
-
-    Offerings worden op positie *gereconcilieerd* (niet clear+recreate): een
-    bestaand project op index *i* blijft dezelfde rij — bij een gewijzigde titel
-    loopt het via ``offering_slug.rename_to`` zodat de oude ``/projecten/{slug}``
-    een 301 naar de nieuwe houdt (linkwaarde-behoud), bij een ongewijzigde titel
-    blijft de slug exact gelijk. Zo wist een regenerate nooit de slug-historie en
-    breekt geen geïndexeerde project-URL. ``visibility`` blijft ongemoeid.
-    """
-    profile.headline = draft.headline
-    if draft.bio:
-        profile.bio = draft.bio
-    profile.ai_enriched = True
-    # Store the raw member text (the user turns) for audit / regenerate.
-    user_texts = [
-        _extract_text(m.get("content"))
-        for m in source_messages
-        if m.get("role") == "user"
-    ]
-    profile.ai_source_text = "\n\n".join(t for t in user_texts if t) or None
-
-    # Projects -> offerings, gereconcilieerd op positie (behoud rij + slug-historie).
-    _reconcile_offerings(db, profile, draft.projects)
-
-    # Roles -> profile_links (affiliation).
-    profile.profile_links.clear()
-    db.flush()
-    for i, role in enumerate(draft.roles):
-        profile.profile_links.append(
-            ProfileLink(
-                label=role.label,
-                url=role.url,
-                description=role.description,
-                image_url=role.image_url,
-                kind=ProfileLinkKind.affiliation,
-                position=i,
-            )
-        )
-
-    # Seeking -> a Need (only when non-empty; append, don't duplicate verbatim).
-    if draft.seeking:
-        existing = {(n.title or "").strip() for n in profile.needs}
-        if draft.seeking.strip() not in existing:
-            profile.needs.append(_make_need(draft.seeking, len(profile.needs)))
-
-    # Tags.
-    if draft.tags:
-        profile_service.set_tags(db, profile, ", ".join(draft.tags))
-
-    profile_service.recompute_completeness(profile)
-    db.flush()
-
-
-def _reconcile_offerings(
-    db: Session, profile: Profile, projects: list
-) -> None:
-    """Match bestaande offerings op positie met de nieuwe draft-projecten.
-
-    Per index *i*: hergebruik de bestaande rij (behoud id + slug-historie). Is de
-    titel gewijzigd → ``offering_slug.rename_to`` (schrijft de oude slug in de
-    history-tabel + houdt het 301-pad live). Is de titel gelijk → de slug blijft
-    onveranderd. Extra projecten worden nieuw aangemaakt (krijgen een verse slug);
-    weggevallen projecten worden verwijderd (delete-orphan). De 301-machinerie
-    wordt zo daadwerkelijk langs het publiceer-/regenerate-pad gebruikt.
-    """
-    existing = sorted(profile.offerings, key=lambda o: (o.position, o.id or 0))
-
-    for i, project in enumerate(projects):
-        if i < len(existing):
-            offering = existing[i]
-            if (offering.title or "") != project.name:
-                # Titel wijzigt → rename_to legt de oude slug vast voor de 301.
-                offering_slug.rename_to(db, offering, project.name)
-            offering.description = project.description
-            offering.url = project.url
-            offering.image_url = project.image_url
-            offering.position = i
-        else:
-            offering = Offering(
-                title=project.name,
-                description=project.description,
-                url=project.url,
-                image_url=project.image_url,
-                position=i,
-            )
-            profile.offerings.append(offering)
-
-    # Weggevallen projecten (de staart) verwijderen.
-    for offering in existing[len(projects):]:
-        profile.offerings.remove(offering)
-
-    db.flush()
-    # Garandeer een slug op elke (ook nieuwe) offering.
-    for offering in profile.offerings:
-        offering_slug.ensure_slug(db, offering)
-
-
-def _make_need(seeking: str, position: int):
-    from app.models import Need
-
-    return Need(title=seeking[:160], description=None, position=position)
-
-
 # --------------------------------------------------------------------------- #
-# 5. Cover (F2)                                                               #
+# 5. Cover (faalt gracieus)                                                    #
 # --------------------------------------------------------------------------- #
 
 
@@ -588,40 +548,354 @@ def generate_cover(
 
 
 # --------------------------------------------------------------------------- #
-# 6. Edit draft fields                                                        #
+# 6a. Per-veld inline-edit: tekst-slots (headline/bio/seeking/tags)           #
 # --------------------------------------------------------------------------- #
 
 
-@router.post("/profiel/ai/draft/bewerken", response_class=HTMLResponse)
-def edit_draft(
+def _slot_response(
+    request: Request, profile: Profile, naam: str, *, uncertain: bool = False
+) -> HTMLResponse:
+    """Render het lees-slot voor ``naam`` + een OOB completeness-update."""
+    body = _render_str(
+        request,
+        f"ai/slots/_{naam}.html",
+        _form_ctx(request, profile, uncertain=uncertain),
+    )
+    oob = _render_str(request, "ai/_status_oob.html", {"profile": profile})
+    return HTMLResponse(body + oob)
+
+
+@router.get("/profiel/ai/veld/{naam}/bewerken", response_class=HTMLResponse)
+def edit_field(
     request: Request,
-    headline: str = Form(""),
-    bio: str = Form(""),
-    seeking: str = Form(""),
-    tags: str = Form(""),
+    naam: str,
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
-    """Lid bewerkt de kern-draftvelden in de preview (htmx swap)."""
+    if naam not in _TEXT_FIELDS:
+        raise HTTPException(status_code=404)
     profile = profile_service.get_or_create_profile(db, member)
-    profile.headline = headline.strip() or None
-    profile.bio = bio.strip() or None
-    if tags.strip():
-        profile_service.set_tags(db, profile, tags)
-    # Seeking maps to the first/primary need; replace it.
-    seeking = seeking.strip()
-    profile.needs.clear()
+    return _render(
+        request, f"ai/slots/_{naam}_edit.html", _form_ctx(request, profile)
+    )
+
+
+@router.get("/profiel/ai/veld/{naam}", response_class=HTMLResponse)
+def read_field(
+    request: Request,
+    naam: str,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Cancel-render: terug naar het lees-slot (marker dooft op cancel niet weg)."""
+    if naam not in _TEXT_FIELDS:
+        raise HTTPException(status_code=404)
+    profile = profile_service.get_or_create_profile(db, member)
+    uncertain = naam in ("headline", "seeking") and bool(profile.ai_enriched)
+    return _render(
+        request,
+        f"ai/slots/_{naam}.html",
+        _form_ctx(request, profile, uncertain=uncertain),
+    )
+
+
+def _patch_text_field(db: Session, profile: Profile, naam: str, value: str) -> None:
+    """Pas één tekst-veld toe op het profiel (afkappen op max-lengte)."""
+    value = (value or "").strip()
+    if naam in _MAXLEN:
+        value = value[: _MAXLEN[naam]]
+    if naam == "headline":
+        profile.headline = value or None
+    elif naam == "bio":
+        profile.bio = value or None
+    elif naam == "seeking":
+        # Vervang ALLEEN de primaire Need (needs[0]); overige needs blijven behouden
+        # (``needs`` is delete-orphan — een ``clear()`` zou ze stil allemaal wissen).
+        primary = profile.needs[0] if profile.needs else None
+        if value:
+            if primary is not None:
+                primary.title = value[:160]
+                primary.description = None
+            else:
+                profile.needs.append(_make_need(value, 0))
+        elif primary is not None:
+            profile.needs.remove(primary)
+    elif naam == "tags":
+        profile_service.set_tags(db, profile, value)
+    profile_service.recompute_completeness(profile)
     db.flush()
-    if seeking:
-        profile.needs.append(_make_need(seeking, 0))
+
+
+@router.patch("/profiel/ai/veld/{naam}", response_class=HTMLResponse)
+def patch_field(
+    request: Request,
+    naam: str,
+    value: str = Form(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    if naam not in _TEXT_FIELDS:
+        raise HTTPException(status_code=404)
+    profile = profile_service.get_or_create_profile(db, member)
+    _patch_text_field(db, profile, naam, value)
+    db.commit()
+    db.refresh(profile)
+    # Na een bewuste edit verdwijnt de "afgeleid"-marker voor dit veld.
+    return _slot_response(request, profile, naam, uncertain=False)
+
+
+@router.post("/profiel/ai/veld/{naam}/bevestig", response_class=HTMLResponse)
+def confirm_field(
+    request: Request,
+    naam: str,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """"Klopt" — render het lees-slot zonder de onzekerheids-marker (geen wijziging)."""
+    if naam not in _TEXT_FIELDS:
+        raise HTTPException(status_code=404)
+    profile = profile_service.get_or_create_profile(db, member)
+    return _slot_response(request, profile, naam, uncertain=False)
+
+
+# --------------------------------------------------------------------------- #
+# 6b. Per-veld inline-edit: offerings (projecten)                             #
+# --------------------------------------------------------------------------- #
+
+
+def _owned_offering(db: Session, profile: Profile, offering_id: int) -> Offering:
+    offering = db.get(Offering, offering_id)
+    if offering is None or offering.profile_id != profile.id:
+        raise HTTPException(status_code=404)
+    return offering
+
+
+def _offering_card(request: Request, profile: Profile, item: Offering) -> HTMLResponse:
+    body = _render_str(
+        request, "ai/slots/_offering_card.html", {"request": request, "item": item}
+    )
+    oob = _render_str(request, "ai/_status_oob.html", {"profile": profile})
+    return HTMLResponse(body + oob)
+
+
+@router.post("/profiel/ai/offering", response_class=HTMLResponse)
+def add_offering_route(
+    request: Request,
+    title: str = Form(""),
+    description: str = Form(""),
+    url: str = Form(""),
+    image_url: str = Form(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Voeg een (leeg) project toe; her-render de hele projecten-sectie."""
+    profile = profile_service.get_or_create_profile(db, member)
+    offering = profile_service.add_offering(
+        db, profile, title=title.strip() or "Nieuw project", description=description.strip() or None
+    )
+    offering.url = safe_url(url) or None
+    offering.image_url = safe_url(image_url) or None
+    offering_slug.ensure_slug(db, offering)
     profile_service.recompute_completeness(profile)
     db.commit()
     db.refresh(profile)
-    return _render(
-        request,
-        "ai/_draft_preview.html",
-        {"profile": profile, "saved": True},
+    body = _render_str(
+        request, "ai/slots/_projects.html", _form_ctx(request, profile)
     )
+    oob = _render_str(request, "ai/_status_oob.html", {"profile": profile})
+    return HTMLResponse(body + oob)
+
+
+@router.get("/profiel/ai/offering/{offering_id}/bewerken", response_class=HTMLResponse)
+def edit_offering(
+    request: Request,
+    offering_id: int,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    profile = profile_service.get_or_create_profile(db, member)
+    item = _owned_offering(db, profile, offering_id)
+    return _render(
+        request, "ai/slots/_offering_edit.html", {"request": request, "item": item}
+    )
+
+
+@router.get("/profiel/ai/offering/{offering_id}", response_class=HTMLResponse)
+def read_offering(
+    request: Request,
+    offering_id: int,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    profile = profile_service.get_or_create_profile(db, member)
+    item = _owned_offering(db, profile, offering_id)
+    return _render(
+        request, "ai/slots/_offering_card.html", {"request": request, "item": item}
+    )
+
+
+@router.patch("/profiel/ai/offering/{offering_id}", response_class=HTMLResponse)
+def patch_offering(
+    request: Request,
+    offering_id: int,
+    title: str = Form(""),
+    description: str = Form(""),
+    url: str = Form(""),
+    image_url: str = Form(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    profile = profile_service.get_or_create_profile(db, member)
+    item = profile_service.update_offering(
+        db,
+        profile,
+        offering_id,
+        title=title,
+        description=description,
+        url=url,
+        image_url=image_url,
+    )
+    if item is None:
+        raise HTTPException(status_code=404)
+    db.commit()
+    db.refresh(profile)
+    db.refresh(item)
+    return _offering_card(request, profile, item)
+
+
+@router.delete("/profiel/ai/offering/{offering_id}", response_class=HTMLResponse)
+def delete_offering(
+    request: Request,
+    offering_id: int,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    profile = profile_service.get_or_create_profile(db, member)
+    if not profile_service.remove_offering(db, profile, offering_id):
+        raise HTTPException(status_code=404)
+    db.commit()
+    db.refresh(profile)
+    oob = _render_str(request, "ai/_status_oob.html", {"profile": profile})
+    return HTMLResponse(oob)
+
+
+# --------------------------------------------------------------------------- #
+# 6c. Per-veld inline-edit: rollen (ProfileLink kind=affiliation)             #
+# --------------------------------------------------------------------------- #
+
+
+def _owned_role(db: Session, profile: Profile, role_id: int) -> ProfileLink:
+    link = db.get(ProfileLink, role_id)
+    if (
+        link is None
+        or link.profile_id != profile.id
+        or link.kind is not ProfileLinkKind.affiliation
+    ):
+        raise HTTPException(status_code=404)
+    return link
+
+
+@router.post("/profiel/ai/rol", response_class=HTMLResponse)
+def add_role(
+    request: Request,
+    label: str = Form(""),
+    url: str = Form(""),
+    description: str = Form(""),
+    image_url: str = Form(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Voeg een (lege) rol toe; her-render de hele rollen-sectie."""
+    profile = profile_service.get_or_create_profile(db, member)
+    profile_link_service.add(
+        db,
+        profile,
+        label=label.strip() or "Nieuwe rol",
+        url=url,
+        description=description,
+        image_url=image_url,
+    )
+    db.commit()
+    db.refresh(profile)
+    body = _render_str(request, "ai/slots/_roles.html", _form_ctx(request, profile))
+    oob = _render_str(request, "ai/_status_oob.html", {"profile": profile})
+    return HTMLResponse(body + oob)
+
+
+@router.get("/profiel/ai/rol/{role_id}/bewerken", response_class=HTMLResponse)
+def edit_role(
+    request: Request,
+    role_id: int,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    profile = profile_service.get_or_create_profile(db, member)
+    link = _owned_role(db, profile, role_id)
+    return _render(
+        request, "ai/slots/_role_edit.html", {"request": request, "link": link}
+    )
+
+
+@router.get("/profiel/ai/rol/{role_id}", response_class=HTMLResponse)
+def read_role(
+    request: Request,
+    role_id: int,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    profile = profile_service.get_or_create_profile(db, member)
+    link = _owned_role(db, profile, role_id)
+    return _render(
+        request, "ai/slots/_role_card.html", {"request": request, "link": link}
+    )
+
+
+@router.patch("/profiel/ai/rol/{role_id}", response_class=HTMLResponse)
+def patch_role(
+    request: Request,
+    role_id: int,
+    label: str = Form(""),
+    url: str = Form(""),
+    description: str = Form(""),
+    image_url: str = Form(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    profile = profile_service.get_or_create_profile(db, member)
+    link = _owned_role(db, profile, role_id)  # 404 op vreemd id / niet-affiliation
+    profile_link_service.update(
+        db,
+        profile,
+        role_id,
+        label=label,
+        url=url,
+        description=description,
+        image_url=image_url,
+    )
+    db.commit()
+    db.refresh(profile)
+    db.refresh(link)
+    body = _render_str(
+        request, "ai/slots/_role_card.html", {"request": request, "link": link}
+    )
+    oob = _render_str(request, "ai/_status_oob.html", {"profile": profile})
+    return HTMLResponse(body + oob)
+
+
+@router.delete("/profiel/ai/rol/{role_id}", response_class=HTMLResponse)
+def delete_role(
+    request: Request,
+    role_id: int,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    profile = profile_service.get_or_create_profile(db, member)
+    _owned_role(db, profile, role_id)  # 404 op vreemd id / niet-affiliation
+    profile_link_service.remove(db, profile, role_id)
+    db.commit()
+    db.refresh(profile)
+    oob = _render_str(request, "ai/_status_oob.html", {"profile": profile})
+    return HTMLResponse(oob)
 
 
 # --------------------------------------------------------------------------- #
@@ -637,20 +911,18 @@ def publish(
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ):
-    """Bevestig de draft. Delegeert naar de bestaande zichtbaarheidsflow.
+    """Bevestig + publiceer. Delegeert naar de zichtbaarheidsflow (consent voor public).
 
     Zet zelf NOOIT ``visibility``; ``change_visibility`` dwingt consent af voor
-    ``public`` (AVG). Bij ``ConsentRequired`` toont de preview een nette melding.
-    Na succes: wis de conversatie en stuur door naar de publieke profielpagina.
+    ``public`` (AVG). Bij ``ConsentRequired`` swapt het publiceer-dok een melding.
+    Na succes: wis de conversatie + 303 naar de publieke profielpagina.
     """
     profile = profile_service.get_or_create_profile(db, member)
-    AcceptForm(consent=bool(consent))  # shape-validate the consent flag
+    AcceptForm(consent=bool(consent))
 
     from app.models import Visibility
 
-    target = (
-        Visibility.public if visibility == "public" else Visibility.members
-    )
+    target = Visibility.public if visibility == "public" else Visibility.members
     try:
         visibility_service.change_visibility(
             db, profile, target, actor=member, consent=bool(consent)
@@ -659,25 +931,27 @@ def publish(
         db.rollback()
         return _render(
             request,
-            "ai/_draft_preview.html",
+            "ai/_publish_panel.html",
             {
                 "profile": profile,
-                "error": (
-                    "Vink de toestemming aan om je profiel openbaar te maken."
-                ),
+                "error": "Vink de toestemming aan om je profiel openbaar te maken.",
             },
             status_code=400,
         )
 
     ai_conversation.clear_turns(db, member)
     db.commit()
-    return RedirectResponse(
-        url=f"/leden/{profile.slug}", status_code=status.HTTP_303_SEE_OTHER
-    )
+    # htmx onderschept de POST: geef een client-side redirect (HX-Redirect) zodat de
+    # browser écht navigeert i.p.v. de volledige profielpagina in het kleine
+    # publiceer-paneel te swappen. Native (no-JS) form-post valt terug op een 303.
+    target_url = f"/leden/{profile.slug}"
+    if request.headers.get("HX-Request"):
+        return Response(status_code=204, headers={"HX-Redirect": target_url})
+    return RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
 # --------------------------------------------------------------------------- #
-# 8. Restart                                                                   #
+# 8. Restart (AVG-reset)                                                       #
 # --------------------------------------------------------------------------- #
 
 
@@ -687,13 +961,7 @@ def restart(
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ):
-    """Wis de conversatie + AI-flags en begin een nieuwe bouw-sessie.
-
-    De knop belooft dat 'het gesprek en de concept-velden van deze AI-sessie
-    worden gewist', dus wissen we ook de opgeslagen ruwe lid-invoer
-    (``ai_source_text``) en de in deze sessie gegenereerde cover — anders blijft
-    persoonlijke tekst stilletjes in de DB staan (AVG-retentie).
-    """
+    """Wis de conversatie + AI-flags + cover en begin een nieuwe bouw-sessie."""
     profile = profile_service.get_or_create_profile(db, member)
     ai_conversation.clear_turns(db, member)
     profile.ai_enriched = False

@@ -1,0 +1,20 @@
+{# Edit-formulier voor de kopregel. PATCH -> swapt terug naar het lees-slot.
+   Esc annuleert (GET lees-slot). Autofocus bij swap-in. #}
+<form id="slot-headline" class="slot-edit field-edit"
+      hx-patch="/profiel/ai/veld/headline"
+      hx-target="#slot-headline" hx-swap="outerHTML"
+      hx-on::after-swap="this.querySelector('input')?.focus()">
+  <label class="field-label" for="edit-headline">Kopregel</label>
+  <input id="edit-headline" name="value" type="text" maxlength="200"
+         value="{{ profile.headline or '' }}"
+         autofocus
+         placeholder="Eén zin die je samenvat"
+         hx-get="/profiel/ai/veld/headline" hx-target="#slot-headline"
+         hx-swap="outerHTML" hx-trigger="keyup[key=='Escape']">
+  <div class="field-edit__actions">
+    <button class="btn btn--sm" type="submit">Bewaar</button>
+    <button class="btn btn--sm btn--ghost" type="button"
+            hx-get="/profiel/ai/veld/headline"
+            hx-target="#slot-headline" hx-swap="outerHTML">Annuleer</button>
+  </div>
+</form>
