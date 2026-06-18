@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint, func
+from sqlalchemy import DateTime, ForeignKey, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -40,3 +40,26 @@ class ConciergeNudgeDismissal(Base):
     )
 
     member: Mapped[Member] = relationship(back_populates="nudge_dismissals")
+
+
+class ConciergeTurn(Base):
+    """Agent-Shell conversation state (Fase 1) — one row per turn, plain text.
+
+    Stores ONLY plain ``str`` content (never tool_use/thinking blocks), so the
+    cross-turn history can never poison the Messages API with a non-replayable
+    block. ``concierge_state.append_turn`` enforces the non-empty + str invariant.
+    """
+
+    __tablename__ = "concierge_turn"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    member_id: Mapped[int] = mapped_column(
+        ForeignKey("member.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    role: Mapped[str] = mapped_column(String(20), nullable=False)  # "user" | "assistant"
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+
+    member: Mapped[Member] = relationship(back_populates="concierge_turns")

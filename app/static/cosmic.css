@@ -2507,3 +2507,143 @@
   .concierge-panel { opacity: 1; transform: none; filter: none; }
 }
 
+/* =========================================================================
+   Agent-Shell (Fase 1) — de levende canvas. Additief; hergebruikt de tokens
+   en de concierge-machinerie. Geen tweede palette.
+   ========================================================================= */
+.canvas { min-height: 100vh; padding-bottom: 96px; }
+.canvas-intro { margin-top: 40px; }
+/* Het primaire, altijd-zichtbare veld is een ruimere variant van .concierge-form. */
+.canvas-form { max-width: 620px; }
+.canvas-form .concierge-form__input { font-size: 17px; }
+.canvas-stream { margin-top: 28px; }
+
+/* Een surface-fragment is een NEUTRALE wrapper (geen eigen kaart-chrome dat het
+   grid/board dubbel omlijst) en spant de volle breedte van de resultaten-grid,
+   zodat een heel ledengrid/roadmap-board niet in één kolom wordt geperst. */
+.surface-card { grid-column: 1 / -1; display: block; }
+.surface-card:focus { outline: none; }
+.surface-card:focus-visible {
+  outline: 1px solid rgba(63, 210, 255, 0.5);
+  outline-offset: 6px;
+  border-radius: 14px;
+}
+
+/* Contextuele suggestie-chips — de "wegwijs zonder menu". */
+.canvas-suggesties { margin-top: 28px; }
+.canvas-suggesties:empty { margin-top: 0; }
+.canvas-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.canvas-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 999px;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.canvas-chip:hover { border-color: rgba(63, 210, 255, 0.4); }
+.canvas-chip__do {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 14px;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 999px 0 0 999px;
+}
+.canvas-chip__do:focus-visible {
+  outline: 1px solid rgba(63, 210, 255, 0.6);
+  outline-offset: 2px;
+}
+.canvas-chip__dismiss {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1;
+  padding: 8px 12px 8px 4px;
+  cursor: pointer;
+  border-radius: 0 999px 999px 0;
+}
+.canvas-chip__dismiss:hover { color: var(--text); }
+.canvas-chip__dismiss:focus-visible {
+  outline: 1px solid rgba(63, 210, 255, 0.6);
+  outline-offset: 2px;
+}
+
+/* Subtiele footer-fallback (escape-hatch). Klein, --muted, onderaan. */
+.canvas-fallback { margin-top: 56px; display: flex; flex-direction: column; gap: 12px; }
+.canvas-fallback__toggle {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 2px;
+  cursor: pointer;
+  width: fit-content;
+  opacity: 0.7;
+  transition: opacity 0.18s ease, color 0.18s ease;
+}
+.canvas-fallback__toggle:hover { opacity: 1; color: var(--text); }
+.canvas-fallback__toggle:focus-visible {
+  outline: 1px solid rgba(63, 210, 255, 0.5);
+  outline-offset: 3px;
+  opacity: 1;
+}
+.canvas-fallback__menu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+.canvas-fallback__route {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: color 0.16s ease;
+}
+.canvas-fallback__route:hover { color: var(--text); }
+.canvas-fallback__route:focus-visible {
+  outline: 1px solid rgba(63, 210, 255, 0.5);
+  outline-offset: 3px;
+  color: var(--text);
+}
+.canvas-fallback__route--out { color: var(--muted); opacity: 0.8; }
+.canvas-fallback__logout { display: inline; margin: 0; }
+
+@media (max-width: 640px) {
+  .canvas-form { max-width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-chip,
+  .canvas-fallback__toggle,
+  .canvas-fallback__route { transition: none !important; }
+}
+

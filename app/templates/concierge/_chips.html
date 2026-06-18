@@ -1,0 +1,29 @@
+{# Contextuele suggestie-chips (Agent-Shell Fase 1) — pure SQL, geen LLM. De
+   "wegwijs maken zonder menu": elke chip spreekt de agent aan (ask → in-stroom
+   surface) of is een echte link (navigate, bv. profiel afmaken op de AI-bouw-
+   pagina). Elke chip is focusbaar; ✕ verbergt 'm 30 dagen via de bestaande
+   dismiss-route.
+
+   Verwacht: ``chips`` = list[{kind, text, action, prompt?|url?}] (uit
+   ``_chip_view_model``). Geen chips → niets (geen vulling). #}
+{% if chips %}
+<ul class="canvas-chips" role="list">
+  {% for chip in chips %}
+  {% set cid = chip.kind | replace(":", "-") %}
+  <li class="canvas-chip" id="chip-{{ cid }}">
+    {% if chip.url %}
+    <a class="canvas-chip__do" href="{{ chip.url }}">{{ chip.action }} →</a>
+    {% else %}
+    <button type="button" class="canvas-chip__do"
+            data-canvas-ask="{{ chip.prompt }}">{{ chip.action }} →</button>
+    {% endif %}
+    <button type="button" class="canvas-chip__dismiss"
+            hx-post="/concierge/nudge/dismiss"
+            hx-vals='{"nudge_kind": "{{ chip.kind }}"}'
+            hx-target="#chip-{{ cid }}"
+            hx-swap="outerHTML"
+            aria-label="Verberg deze suggestie 30 dagen">✕</button>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}

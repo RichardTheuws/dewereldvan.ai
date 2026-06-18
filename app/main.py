@@ -24,7 +24,8 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from app.config import settings
 from app.csrf import CSRFMiddleware, get_csrf_token
 from app.db import engine, get_db
-from app.deps import _RedirectToLogin
+from app.deps import _RedirectToLogin, current_member
+from app.models import Member, MemberStatus
 from app.routers import (
     admin,
     ai_profile,
@@ -154,8 +155,18 @@ def create_app() -> FastAPI:
 def _register_core_routes(app: FastAPI) -> None:
     @app.get("/", response_class=HTMLResponse)
     def index(
-        request: Request, db: Session = Depends(get_db)
+        request: Request,
+        member: Member | None = Depends(current_member),
+        db: Session = Depends(get_db),
     ) -> HTMLResponse:
+        # Dual-shell (Agent-Shell Fase 1): een ingelogd, GOEDGEKEURD lid landt
+        # direct in de agent-canvas (geen navigatie/menu — de agent is de shell).
+        # Anoniem ÉN pending/geschorst krijgen de klassieke, crawlbare voordeur,
+        # zodat showcase/SEO + de publieke launch heel blijven.
+        if member is not None and member.status == MemberStatus.approved:
+            return templates.TemplateResponse(
+                request, "concierge/_canvas.html", {"member": member}
+            )
         # De voordeur toont één echt signaal (aantal publieke makers) + een
         # constellatie-preview. Eén poort-call (zelfde eager-load als /leden),
         # daarna in-memory tellen + slicen — geen tweede query.

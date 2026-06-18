@@ -77,7 +77,7 @@
           hx-target="#concierge-flow"
           hx-swap="innerHTML"
           autocomplete="off"
-          hx-on::after-request="if(event.detail.successful){var i=document.getElementById('concierge-input');if(i){i.value='';} var inst=document.getElementById('concierge-instant'); if(inst){inst.innerHTML='';}}">
+          hx-on::after-request="if(event.detail.successful){var i=document.getElementById('concierge-input');if(i){i.value='';} var inst=document.getElementById('concierge-instant'); if(inst){inst.innerHTML='';} var ov=document.getElementById('concierge-overlay'); var host=document.getElementById('concierge-materialisatie'); if(ov&&host&&!ov.contains(host)&&window.dwvConcierge){window.dwvConcierge.close();}}">
       <span class="concierge-form__spark" aria-hidden="true">✦</span>
       <input type="text" id="concierge-input" name="message"
              class="concierge-form__input"
@@ -98,13 +98,20 @@
        _nudge.html-fragment (of leeg). Eén nudge max; leeg = niets. #}
     <div id="concierge-nudge-slot"></div>
 
-    {# ---- De levende Concierge-flow (SSE) onder één EventSource ---- #}
+    {# ---- De levende Concierge-flow (SSE) onder één EventSource ----
+       Op de agent-canvas bezit de canvas-shell zélf de host-ids (zodat de stroom
+       zichtbaar centraal materialiseert, niet in deze verborgen overlay). Dan zet
+       de canvas `concierge_host_owned = true` en laten we dit blok weg — anders
+       zouden er TWEE #concierge-materialisatie/#concierge-flow/#concierge-results
+       in de DOM staan en pakt getElementById de verborgen kopie → lege preview. #}
+    {% if not concierge_host_owned %}
     <div id="concierge-materialisatie" hx-ext="sse">
       {# De stream-host (reasoning/delta) wordt hier ingeswapt door /concierge/bericht. #}
       <div id="concierge-flow" class="concierge-flow" aria-live="polite"></div>
       {# Echte makerkaarten vloeien hier in (verse proxy in _stream.html appendt). #}
       <div id="concierge-results" class="concierge-results"></div>
     </div>
+    {% endif %}
   </div>
 </div>
 

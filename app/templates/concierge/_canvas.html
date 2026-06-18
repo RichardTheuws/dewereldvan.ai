@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Agent-canvas (Agent-Shell Fase 1) — de LEVENDE shell voor een ingelogd,
+   goedgekeurd lid. GEEN _cosmic_nav: er is geen menu/links. Het lid landt direct
+   in de stroom, typt een vraag, en interfaces (ledengrid, makerkaart, ideeën,
+   roadmap) materialiseren in-stroom via de surface-tool. Login-gated → noindex.
+
+   Deze shell BEZIT de host-ids (#concierge-materialisatie/#concierge-flow/
+   #concierge-results) zodat de stroom zichtbaar-centraal materialiseert. Daarom
+   zet hij `concierge_host_owned = true` vóór de _concierge.html-include — die
+   levert dan alléén het ⌘K-oppervlak + JS (instant/nudge), GEEN tweede host-set
+   (anders pakt getElementById de verborgen kopie → lege preview). #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "De wereld van AI" %}
+  {% include "_seo_head.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  {# htmx + htmx-ext-sse SYNCHROON in de head: een lid opent direct in de stroom,
+     dus we leunen NIET op de lazy unpkg-bootstrap van _concierge.html. We zetten
+     de boot-flag zodat die bootstrap (en een dubbele sse-load) niet meer afgaat. #}
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+  <script>window.__dwvConciergeBoot = 1;</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" hx-headers='{"X-CSRF-Token": "{{ request.session.get("csrf_token", "") }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  {# Eén enkele polite live-region in de flow (#concierge-flow). GEEN aria-live op
+     <main> — dat zou nesten met de reasoning/flow-regions (dubbele announces). #}
+  <main role="main" aria-label="De wereld — agent-canvas" class="canvas wrap">
+    <section class="canvas-intro mt-10">
+      <div class="eyebrow" data-reveal style="--d:140ms">De wereld van AI</div>
+      <h1 class="headline mt-5" data-reveal style="--d:240ms">
+        Welkom{% if member and member.name %}, {{ member.name.split()[0] }}{% endif %}.
+      </h1>
+      <p class="lede mt-5" style="max-width:54ch;--d:360ms" data-reveal>
+        Vraag wat je wilt vinden of doen — begin gewoon te typen. Ik laat de
+        makers, ideeën en de roadmap hier zien.
+      </p>
+
+      {# Het primaire, altijd-zichtbare veld: opent dezelfde stroom als ⌘K. #}
+      <form class="concierge-form canvas-form mt-8" id="canvas-form"
+            data-reveal style="--d:460ms"
+            hx-post="/concierge/bericht"
+            hx-target="#concierge-flow"
+            hx-swap="innerHTML"
+            autocomplete="off"
+            hx-on::after-request="if(event.detail.successful){var i=this.querySelector('input[name=message]');if(i)i.value='';}">
+        <span class="concierge-form__spark" aria-hidden="true">✦</span>
+        <input type="text" name="message" class="concierge-form__input"
+               placeholder="Vraag de wereld iets, of begin te typen…"
+               aria-label="Vraag de wereld"
+               autocomplete="off" spellcheck="false" />
+        <button type="submit" class="concierge-form__go"
+                aria-label="Vraag het de concierge">↵</button>
+      </form>
+    </section>
+
+    {# De levende stroom (SSE) onder één EventSource — host bezeten door de canvas. #}
+    <div id="concierge-materialisatie" class="canvas-stream mt-10" hx-ext="sse">
+      <div id="concierge-flow" class="concierge-flow" role="status" aria-live="polite"></div>
+      <div id="concierge-results" class="concierge-results"></div>
+    </div>
+
+    {# Contextuele suggestie-chips (pure SQL, geen LLM) — de "wegwijs zonder menu".
+       Geladen bij open, en ververst ná elk antwoord (zie het canvas-script). #}
+    <div id="canvas-suggesties" class="canvas-suggesties mt-10"
+         role="group" aria-label="Suggesties"
+         hx-get="/concierge/chips" hx-trigger="load" hx-swap="innerHTML"></div>
+
+    {% include "concierge/_footer_fallback.html" %}
+  </main>
+
+  {% include "_feedback_affordance.html" %}
+
+  {# Het ⌘K-oppervlak + instant/nudge-JS als secundaire ingang. host_owned=true:
+     de overlay levert GEEN tweede host-id-set (de canvas bezit 'm al). #}
+  {% set concierge_host_owned = true %}
+  {% include "_concierge.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
+
+  <script>
+    (function () {
+      // Een suggestie-chip met [data-canvas-ask] spreekt de agent aan: vul het
+      // zichtbare canvas-veld en verstuur → de interface materialiseert in-stroom
+      // (geen paginawissel). navigate-chips zijn echte <a href> en gaan hier niet
+      // doorheen.
+      document.addEventListener('click', function (e) {
+        var ask = e.target.closest('[data-canvas-ask]');
+        if (!ask) return;
+        e.preventDefault();
+        var form = document.getElementById('canvas-form');
+        if (!form) return;
+        var input = form.querySelector('input[name=message]');
+        if (input) input.value = ask.getAttribute('data-canvas-ask');
+        form.requestSubmit();
+      });
+
+      // Ververs de suggestie-chips ná elk afgerond antwoord (done-event), zodat ze
+      // de nieuwe context volgen. Pure GET; faalt stil.
+      document.addEventListener('htmx:sseMessage', function (e) {
+        if (!e.detail || e.detail.type !== 'done') return;
+        var slot = document.getElementById('canvas-suggesties');
+        if (!slot || !window.htmx) return;
+        try {
+          htmx.ajax('GET', '/concierge/chips',
+            { target: '#canvas-suggesties', swap: 'innerHTML' });
+        } catch (err) { /* chips-refresh faalt stil */ }
+      });
+    })();
+  </script>
+</body>
+</html>

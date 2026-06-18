@@ -1,0 +1,54 @@
+{# Subtiele footer-fallback (Agent-Shell Fase 1) — de escape-hatch onder de canvas.
+   Eén klein, rustig glyph onderaan; klik/Enter opent een ingetogen menu met de
+   ECHTE routes. Bewust met volledige <a href>/form-POST: dit vangnet moet werken
+   ÓÓK als de agent/SSE faalt of JS uit staat — het omzeilt de agent volledig
+   (anders is het geen vangnet). Drievoudig doel: a11y (deterministische nav voor
+   toetsenbord/screenreader), faal-vangnet, en discoverability.
+
+   Visueel ondergeschikt aan de stroom (klein, --muted, onderaan); breekt de
+   levende-website-illusie niet, maar is er als je het zoekt. #}
+<div class="canvas-fallback" data-reveal style="--d:760ms">
+  <button type="button" class="canvas-fallback__toggle" id="canvas-fallback-toggle"
+          aria-expanded="false" aria-controls="canvas-fallback-menu"
+          aria-label="Menu — ga direct ergens heen">
+    <span aria-hidden="true">✦</span>
+    <span class="canvas-fallback__toggle-text">menu</span>
+  </button>
+
+  <nav class="canvas-fallback__menu" id="canvas-fallback-menu" aria-label="Snelmenu" hidden>
+    <a class="canvas-fallback__route" href="/leden">Makers</a>
+    <a class="canvas-fallback__route" href="/ideeen">Ideeën</a>
+    <a class="canvas-fallback__route" href="/roadmap">Roadmap</a>
+    <a class="canvas-fallback__route" href="/profiel/ai/bouwen">Mijn profiel</a>
+    {% if request.session.get("is_admin") %}
+    {# Operationeel: de admin houdt altijd toegang tot de goedkeur-queue, ook
+       zonder hoofdnav. Echte link (bypass de agent). #}
+    <a class="canvas-fallback__route canvas-fallback__route--admin" href="/admin/queue">Beheer</a>
+    {% endif %}
+    {# Uitloggen = POST (geen GET-link). Echte form met CSRF-veld → werkt zonder JS. #}
+    <form class="canvas-fallback__logout" method="post" action="/logout">
+      <input type="hidden" name="csrf_token" value="{{ request.session.get('csrf_token', '') }}">
+      <button type="submit" class="canvas-fallback__route canvas-fallback__route--out">Uitloggen</button>
+    </form>
+  </nav>
+
+  {# JS-uit: toon het menu sowieso (de toggle werkt dan niet). #}
+  <noscript><style>#canvas-fallback-menu{display:flex!important}</style></noscript>
+</div>
+
+<script>
+  (function () {
+    var t = document.getElementById('canvas-fallback-toggle');
+    var m = document.getElementById('canvas-fallback-menu');
+    if (!t || !m || t.dataset.bound) return;
+    t.dataset.bound = '1';
+    function setOpen(open) {
+      m.hidden = !open;
+      t.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    t.addEventListener('click', function () { setOpen(m.hidden); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !m.hidden) { setOpen(false); t.focus(); }
+    });
+  })();
+</script>

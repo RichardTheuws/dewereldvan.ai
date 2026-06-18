@@ -3,6 +3,44 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.15.0] - 2026-06-19
+### Added (Agent-Shell Fase 1 — de agent wordt de shell)
+De grootste pivot tot nu toe: voor **ingelogde, goedgekeurde leden** is de site geen website-met-
+navigatie meer maar een **levende agent-canvas**. Geen menu, geen links — je landt direct in de stroom,
+typt een vraag, en interfaces (ledengrid, makerkaart, ideeën, roadmap) **materialiseren in-stroom**.
+De anonieme/publieke kant houdt de klassieke crawlbare pagina's (showcase/SEO + publieke launch blijven
+heel). Eén engine, één kosmische identiteit — dit is een AUGMENT van de bestaande concierge, geen tweede stack.
+PRD: `docs/PRD-agent-shell.md`; build-spec: `docs/SPEC-agent-shell-fase1.md` (understand→design→red-team,
+6 blockers gesloten).
+
+- **`surface`-tool + vaste `SURFACE_REGISTRY`** (`concierge_service.py`): de agent materialiseert een
+  interface uit een **vaste registry** (members_grid/member_detail/ideas_list/roadmap_board/profile_view) —
+  het "gezet stramien per entiteit" tegen wildgroei. De engine produceert NOOIT HTML; ze stuurt een
+  gevalideerd `{view, params}`-signaal, de **router rendert server-side uit de DB** (grounding-poort
+  ongewijzigd). Param-keys whitelisted; alleen `str`/`int` door. Opus-4.8-contract onaangeroerd.
+- **Generiek `surface`-SSE-event** (`routers/concierge.py`): `_render_surface_by_signal` rendert elk
+  geregistreerd fragment in een **eigen `SessionLocal`** (thread-safe), in precies één
+  `<section class="surface-card">`-node. `navigate` wordt voor leden **in-stroom render** i.p.v.
+  paginawissel (`_nav_to_surface`, incl. `/leden/{slug}`); lege render valt terug op echte navigate.
+- **Persistente conversatie-state** (`concierge_state.py` + `concierge_turn`-tabel, migratie `0009`):
+  de agent houdt context over meerdere acties. **History-discipline**: nooit een lege/whitespace of
+  niet-`str` turn opgeslagen (voorkomt het permanente-400-vergiftigingspad bij refusal/tool-use-turns).
+  AVG: `concierge_turn` wordt expliciet gewist in `delete_member_completely`.
+- **Agent-canvas-shell** (`concierge/_canvas.html`): standalone kosmisch document zónder hoofdnav,
+  `noindex`, htmx+sse synchroon geladen, host mét `hx-ext="sse"`, zichtbaar primair invoerveld,
+  één live-region (niet op `<main>`). De root-route (`/`) kiest de shell op login+approved-state.
+- **Contextuele suggestie-chips** (`select_chips` + `GET /concierge/chips` + `_chips.html`): de
+  "wegwijs zonder menu" — pure SQL, ≤3 gegronde chips die de agent aanspreken (in-stroom) of een echte
+  link zijn; ververst na elk antwoord.
+- **Subtiele footer-fallback** (`concierge/_footer_fallback.html`): één klein glyph → ingetogen menu met
+  **echte `<a href>`/form-POST** dat de agent **omzeilt** — a11y-vangnet + faal-vangnet (werkt zonder
+  agent/SSE/JS) + discoverability. Admins houden hier de `Beheer`-link (goedkeur-queue).
+- **Tests** (`test_agent_shell_fase1.py` + uitbreidingen): registry-grens, param-whitelist/coercion,
+  single-node surface, grounding (besloten/verzonnen slug → niets), history-discipline, dual-shell-
+  routing (approved→canvas, pending→voordeur, admin→canvas+Beheer), single-host, `hx-ext`, één
+  live-region, footer-hrefs+`<noscript>`, `navigate→surface`, chip-selectie, surface-emit, AVG-wis,
+  `0009`-migratie round-trip. **430 tests groen.**
+
 ## [0.14.2] - 2026-06-18
 ### Added (kosmische invite-mail — zelfde stijl als de magic-link-mails)
 - **`emails/invite.html` + `render_invite()`**: de groep-invite-mail krijgt nu de verzorgde kosmische

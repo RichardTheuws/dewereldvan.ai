@@ -258,6 +258,101 @@ def select_nudge(
     return None  # geen sterke trigger → leeg, geen vulling.
 
 
+def select_chips(
+    db: Session,
+    viewer: Member | None,
+    *,
+    view: str | None = None,
+    last_seen: datetime | None = None,
+    dismissed_cookie_kinds: set[str] | None = None,
+    now: datetime | None = None,
+) -> list[Nudge]:
+    """Contextuele suggestie-chips voor de agent-canvas (Agent-Shell Fase 1).
+
+    Hoogstens **3** deterministische chips, pure SQL (géén LLM). Dit is de
+    "wegwijs maken zonder menu": de chips *zíjn* de navigatie. Aantallen komen
+    UITSLUITEND uit echte SQL-tellingen (een verzonnen aantal is dezelfde
+    hallucinatie-klasse als een verzonnen kaart).
+
+    Actie-conventie:
+      - ``ask:<prompt>``    → de chip spreekt de agent aan; die materialiseert de
+        interface IN-STROOM (geen paginawissel). Past bij "de agent is de shell".
+      - ``navigate:/pad``   → een echte link (bv. profiel afmaken op de AI-bouw-
+        pagina, een eigen rijke flow buiten de canvas).
+
+    Reeds weggeklikte kinds (DB voor leden, cookie-fallback) vallen af.
+    """
+    now = now or utcnow()
+    cookie_dismissed = dismissed_cookie_kinds or set()
+    dismissed = cookie_dismissed
+    if viewer is not None:
+        dismissed = _active_dismissals(db, viewer.id, now) | cookie_dismissed
+
+    chips: list[Nudge] = []
+
+    # 1. Tag-overlap (lid met profiel) → in-stroom introductie.
+    if viewer is not None:
+        candidate = _tag_overlap_candidate(db, viewer)
+        if candidate is not None:
+            profile, shared = candidate
+            kind = f"tag_overlap:{profile.slug}"
+            if kind not in dismissed and shared:
+                chips.append(
+                    Nudge(
+                        kind=kind,
+                        message=f"Stel je voor aan {profile.display_name}",
+                        action_label=f"stel je voor aan {profile.display_name}",
+                        action=f"ask:Stel me voor aan {profile.display_name}.",
+                        slug=profile.slug,
+                    )
+                )
+
+    # 2. Eigen profiel bijna af → echte link naar de AI-bouwpagina.
+    if (
+        viewer is not None
+        and viewer.profile is not None
+        and "profiel_bijna_af" not in dismissed
+    ):
+        pct = viewer.profile.completeness
+        if _COMPLETENESS_MIN <= pct < 100:
+            missing = _missing_label(viewer.profile)
+            if missing:
+                chips.append(
+                    Nudge(
+                        kind="profiel_bijna_af",
+                        message=f"Maak je profiel af — {missing} ontbreekt nog",
+                        action_label="maak je profiel af",
+                        action="navigate:/profiel/ai/bouwen",
+                    )
+                )
+
+    # 3. Makers in de gids (gegrond op een echte telling) → in-stroom ledengrid.
+    if "nieuwe_makers" not in dismissed:
+        count = _count_new_members(db, last_seen)
+        if count >= 1:
+            chips.append(
+                Nudge(
+                    kind="nieuwe_makers",
+                    message="Bekijk de makers",
+                    action_label="bekijk de makers",
+                    action="ask:Laat de makers zien.",
+                )
+            )
+
+    # 4. Roadmap (altijd beschikbaar, laagste prioriteit) → in-stroom board.
+    if "chip_roadmap" not in dismissed:
+        chips.append(
+            Nudge(
+                kind="chip_roadmap",
+                message="Bekijk de roadmap",
+                action_label="bekijk de roadmap",
+                action="ask:Laat de roadmap zien.",
+            )
+        )
+
+    return chips[:3]
+
+
 def _maybe_new_members_nudge(
     db: Session, last_seen: datetime | None
 ) -> Nudge | None:

@@ -29,6 +29,12 @@
      ná sse-connect verschijnt. #}
   <div sse-swap="card" hx-target="#concierge-results" hx-swap="beforeend" style="display:none"></div>
 
+  {# Verse proxy: elke `surface`-payload (server-side gerenderde interface uit de
+     vaste registry — ledengrid, makerkaart, ideeën, roadmap) vloeit in de stroom.
+     Zelfde verse-bind-discipline; NIET direct op #concierge-results binden (dat
+     bestaat al vóór sse-connect). #}
+  <div sse-swap="surface" hx-target="#concierge-results" hx-swap="beforeend" style="display:none"></div>
+
   {# Terminerend done-event: ruim deze SSE-host op (paneel weg). #}
   <div sse-swap="done" hx-target="#csse-{{ sid }}" hx-swap="outerHTML" style="display:none"></div>
 </div>
@@ -88,18 +94,25 @@
         }
       });
 
-      // Een net-ingevloeide kaart krijgt zijn materialisatie-animatie en daarna 'ready'.
+      // Een net-ingevloeid fragment (kaart óf surface-interface) krijgt zijn
+      // materialisatie-animatie. Surface-fragmenten worden bovendien focusbaar +
+      // ge-announced, zodat ze ook voor toetsenbord/screenreader aankomen (a11y).
+      // De surface-wrapper is altijd precies één node → lastElementChild klopt.
       root.addEventListener('htmx:afterSwap', function (e) {
         var el = e.target;
         if (!el || el.id !== 'concierge-results') return;
-        var card = el.lastElementChild;
-        if (!card || !card.classList || card.dataset.cmDone) return;
-        card.dataset.cmDone = '1';
+        var node = el.lastElementChild;
+        if (!node || !node.classList || node.dataset.cmDone) return;
+        node.dataset.cmDone = '1';
+        if (node.dataset.surface !== undefined) {
+          node.setAttribute('tabindex', '-1');
+          try { node.focus({ preventScroll: false }); } catch (e2) {}
+        }
         var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
         if (reduce) return;
-        card.classList.add('concierge-card--in');
-        card.addEventListener('animationend', function () {
-          card.classList.remove('concierge-card--in');
+        node.classList.add('concierge-card--in');
+        node.addEventListener('animationend', function () {
+          node.classList.remove('concierge-card--in');
         }, { once: true });
       });
     }

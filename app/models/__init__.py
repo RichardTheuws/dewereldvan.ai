@@ -20,7 +20,7 @@ from app.models.base import (
     TimestampMixin,
     Visibility,
 )
-from app.models.concierge import ConciergeNudgeDismissal
+from app.models.concierge import ConciergeNudgeDismissal, ConciergeTurn
 from app.models.feedback import Feedback
 from app.models.group_invite import GroupInvite
 from app.models.idea import Idea
@@ -58,6 +58,7 @@ __all__ = [
     "AuditLog",
     "AiChatTurn",
     "ConciergeNudgeDismissal",
+    "ConciergeTurn",
     "Feedback",
     "GroupInvite",
     "Idea",

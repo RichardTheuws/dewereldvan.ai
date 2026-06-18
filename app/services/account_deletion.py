@@ -9,7 +9,8 @@ Waarom EXPLICIET verwijderen i.p.v. op DB-cascade leunen
 --------------------------------------------------------
 De meeste FK's naar ``member.id`` zijn ``ON DELETE CASCADE`` (profile → offering/
 need/profile_link/profile_tag/offering_slug_history, magic_link_token, feedback,
-idea → idea_vote, idea_vote, concierge_nudge_dismissal, ai_chat_turn). Maar:
+idea → idea_vote, idea_vote, concierge_nudge_dismissal, concierge_turn,
+ai_chat_turn). Maar:
 
 - SQLite (de test-DB) handhaaft FK-cascades alleen met ``PRAGMA foreign_keys=ON``
   per connectie; de suite zet die pragma NIET. Op cascade leunen zou betekenen dat
@@ -34,6 +35,7 @@ from app.models import (
     AuditAction,
     AuditLog,
     ConciergeNudgeDismissal,
+    ConciergeTurn,
     Feedback,
     GroupInvite,
     Idea,
@@ -148,6 +150,7 @@ def delete_member_completely(db: Session, member: Member) -> None:
             ConciergeNudgeDismissal.member_id == member_id
         )
     )
+    db.execute(delete(ConciergeTurn).where(ConciergeTurn.member_id == member_id))
     db.execute(delete(AiChatTurn).where(AiChatTurn.member_id == member_id))
     db.execute(delete(MagicLinkToken).where(MagicLinkToken.member_id == member_id))
     db.execute(delete(Profile).where(Profile.member_id == member_id))

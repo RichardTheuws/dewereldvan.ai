@@ -371,6 +371,41 @@ def test_navigate_error_does_not_emit(db, install_loop):
 
 
 # --------------------------------------------------------------------------- #
+# Agent-Shell Fase 1: de surface-tool emit + registratie                       #
+# --------------------------------------------------------------------------- #
+
+
+def test_surface_tool_emits_on_surface(db, install_loop):
+    """Een surface-tool-call roept on_surface aan met {view, params} (geen render
+    in de engine — grounding-poort blijft in de router)."""
+    surf_use = _Block(
+        type="tool_use", id="s1", name="surface",
+        input={"view": "members_grid", "params": {"tag": "agents"}},
+    )
+    install_loop([
+        {"deltas": [], "stop_reason": "tool_use", "content": [surf_use]},
+        {"deltas": ["ok"], "stop_reason": "end_turn",
+         "content": [{"type": "text", "text": "ok"}]},
+    ])
+    signals: list[dict] = []
+    concierge_service.stream_concierge(
+        [{"role": "user", "content": "laat de makers zien"}],
+        lambda _t: None,
+        db=db,
+        on_surface=signals.append,
+    )
+    assert signals == [{"view": "members_grid", "params": {"tag": "agents"}}]
+
+
+def test_surface_tool_registered_with_contract():
+    """De surface-tool is geregistreerd; het Opus-contract blijft ongewijzigd
+    (geen sampling/budget-params worden door de tool-def geïntroduceerd)."""
+    names = [t["name"] for t in concierge_service.TOOLS]
+    assert "surface" in names
+    assert concierge_service.THINKING == {"type": "adaptive"}
+
+
+# --------------------------------------------------------------------------- #
 # m1: connect-kaart draagt de shared_tags-"waarom" mee als kaart-signaal.       #
 # --------------------------------------------------------------------------- #
 

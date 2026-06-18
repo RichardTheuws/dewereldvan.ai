@@ -146,9 +146,10 @@ def test_static_assets_served(client):
         assert ctype in r.headers.get("content-type", ""), path
 
 
-def test_home_admin_sees_beheer_link(client, SessionTest):
-    """Admin-state uit de sessie -> de nav toont de Beheer-link (overal, niet alleen
-    op /ideeen). Bewijst de sessie-gebaseerde admin-check in _cosmic_nav.html."""
+def test_home_admin_keeps_beheer_access(client, SessionTest):
+    """Agent-Shell: een approved admin landt op de canvas (geen hoofdnav), maar
+    houdt operationeel toegang tot de goedkeur-queue via de footer-fallback —
+    sessie-gebaseerde admin-check in concierge/_footer_fallback.html."""
     with SessionTest() as s:
         m = Member(
             email="admin@example.com",
@@ -165,6 +166,10 @@ def test_home_admin_sees_beheer_link(client, SessionTest):
     )
     resp = client.get("/")
     assert resp.status_code == 200
+    # Dual-shell: de agent-canvas, geen klassieke hoofdnav.
+    assert 'id="concierge-materialisatie"' in resp.text
+    assert 'aria-label="Hoofdnavigatie"' not in resp.text
+    # Operationeel vangnet: de Beheer-link blijft bereikbaar.
     assert "Beheer" in resp.text
     assert "/admin/queue" in resp.text
 
@@ -172,7 +177,10 @@ def test_home_admin_sees_beheer_link(client, SessionTest):
 # --------------------------------------------------------------------------- #
 # Ingelogd render                                                             #
 # --------------------------------------------------------------------------- #
-def test_home_logged_in_renders_member_doorway(client, SessionTest):
+def test_home_approved_member_lands_in_canvas(client, SessionTest):
+    """Agent-Shell (dual-shell): een ingelogd, GOEDGEKEURD lid landt direct in de
+    levende agent-canvas — geen hoofdnav/menu, login-gated (noindex), met het
+    zichtbare invoerveld en de SSE-host. Vervangt de oude index-voordeur."""
     with SessionTest() as s:
         m = Member(
             email="lid@example.com", name="Ingelogd Lid", status=MemberStatus.approved
@@ -185,11 +193,36 @@ def test_home_logged_in_renders_member_doorway(client, SessionTest):
     resp = client.get("/")
     assert resp.status_code == 200
     body = resp.text
-    assert "Naar mijn profiel" in body
-    assert "/profiel/ai/bouwen" in body
-    assert "Ontdek de makers" in body
-    # Ingelogd toont geen "Word lid"-CTA op de hero.
-    assert "Welkom in de wereld." in body
+    # De canvas-shell: SSE-host mét hx-ext, geen hoofdnav, login-gated.
+    assert 'id="concierge-materialisatie"' in body
+    assert 'hx-ext="sse"' in body
+    assert 'aria-label="Hoofdnavigatie"' not in body
+    assert "noindex" in body
+    # Het primaire, zichtbare veld + een eenvoudige welkomst (geen "Word lid").
+    assert 'id="canvas-form"' in body
+    assert "Welkom" in body
+    assert "Word lid" not in body
+
+
+def test_home_pending_member_gets_public_doorway(client, SessionTest):
+    """Dual-shell-grens: een nog niet goedgekeurd (pending) lid krijgt NIET de
+    canvas maar de klassieke, crawlbare voordeur (zonder KeyError op de context)."""
+    with SessionTest() as s:
+        m = Member(
+            email="wacht@example.com", name="Wachtend", status=MemberStatus.pending
+        )
+        s.add(m)
+        s.commit()
+        member_id = m.id
+
+    client.cookies.set("session", _session_cookie({"member_id": member_id}))
+    resp = client.get("/")
+    assert resp.status_code == 200
+    # De voordeur, niet de canvas: het zichtbare canvas-veld (#canvas-form) is
+    # canvas-only; de hoofdnav hoort juist bij de voordeur. (De verborgen
+    # concierge-overlay-host zit op élke pagina, dus die is geen discriminator.)
+    assert 'id="canvas-form"' not in resp.text
+    assert 'aria-label="Hoofdnavigatie"' in resp.text
 
 
 # --------------------------------------------------------------------------- #

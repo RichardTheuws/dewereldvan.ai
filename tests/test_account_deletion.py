@@ -39,6 +39,7 @@ def _seed_full_member(db, *, email: str, shared_tag=None):
     from app.models import (
         AiChatTurn,
         ConciergeNudgeDismissal,
+        ConciergeTurn,
         Feedback,
         Idea,
         IdeaVote,
@@ -93,6 +94,7 @@ def _seed_full_member(db, *, email: str, shared_tag=None):
     profile.tags = [unique_tag, shared_tag]
 
     db.add(AiChatTurn(member_id=member.id, role="user", content_json="{}"))
+    db.add(ConciergeTurn(member_id=member.id, role="user", content="hoi"))
     db.add(
         ConciergeNudgeDismissal(member_id=member.id, nudge_kind="tag_overlap:x")
     )
@@ -114,6 +116,7 @@ def test_delete_member_completely_removes_everything(db):
     from app.models import (
         AiChatTurn,
         ConciergeNudgeDismissal,
+        ConciergeTurn,
         Feedback,
         Idea,
         IdeaVote,
@@ -153,6 +156,7 @@ def test_delete_member_completely_removes_everything(db):
     assert db.get(Member, victim_id) is None
     assert _count(Profile, Profile.member_id) == 0
     assert _count(AiChatTurn, AiChatTurn.member_id) == 0
+    assert _count(ConciergeTurn, ConciergeTurn.member_id) == 0
     assert _count(ConciergeNudgeDismissal, ConciergeNudgeDismissal.member_id) == 0
     assert _count(Feedback, Feedback.member_id) == 0
     assert _count(Idea, Idea.member_id) == 0

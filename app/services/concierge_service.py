@@ -109,6 +109,19 @@ _EXPLAIN_TOPICS: dict[str, str] = {
     ),
 }
 
+# Vaste registry van interfaces die de agent in-stroom mag materialiseren
+# (Agent-Shell Fase 1). De waarde is de whitelist van toegestane param-keys —
+# alles daarbuiten wordt in ``tool_surface`` gedropt (anti-wildgroei + grounding).
+# De ENGINE kent alleen view-namen + param-keys; de router bezit de echte
+# template/loader-koppeling en rendert server-side uit de DB (grounding-poort).
+SURFACE_REGISTRY: dict[str, set[str]] = {
+    "members_grid": {"tag", "maakt", "zoekt"},
+    "member_detail": {"slug"},
+    "ideas_list": set(),
+    "roadmap_board": set(),
+    "profile_view": {"slug"},
+}
+
 # Tool-definities (Anthropic input_schema's). additionalProperties weglaten is ok;
 # we valideren strak in de handlers.
 TOOLS: list[dict] = [
@@ -179,6 +192,23 @@ TOOLS: list[dict] = [
             "compleetheid, ontbrekende velden en zichtbaarheid."
         ),
         "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "surface",
+        "description": (
+            "Materialiseer een interface in de stroom (gebruik dit i.p.v. naar een "
+            "pagina navigeren). view is een van: members_grid (params: tag?, "
+            "maakt?, zoekt?), member_detail (slug), ideas_list, roadmap_board, "
+            "profile_view (slug)."
+        ),
+        "input_schema": {
+            "type": "object",
+            "required": ["view"],
+            "properties": {
+                "view": {"type": "string", "enum": list(SURFACE_REGISTRY)},
+                "params": {"type": "object"},
+            },
+        },
     },
 ]
 
@@ -345,6 +375,30 @@ def tool_my_status(db: Session, viewer: Member | None) -> dict:
     }
 
 
+def tool_surface(args: dict) -> dict:
+    """``surface`` — valideer een interface-signaal (geen render hier).
+
+    De engine produceert NOOIT HTML: ze geeft alleen een gevalideerd
+    ``{view, params}``-signaal terug dat de router server-side uit de DB rendert
+    (grounding-poort). Onbekende view → fout. Alleen whitelisted param-keys met
+    een ``str``/``int``-waarde komen door (list/dict/None worden stil gedropt —
+    anti-wildgroei).
+    """
+    view = (args.get("view") or "").strip()
+    if view not in SURFACE_REGISTRY:
+        return {"error": f"Onbekende view: {view}."}
+    raw = args.get("params") or {}
+    if not isinstance(raw, dict):
+        raw = {}
+    allowed = SURFACE_REGISTRY[view]
+    params = {
+        k: str(v).strip()
+        for k, v in raw.items()
+        if k in allowed and isinstance(v, (str, int)) and str(v).strip()
+    }
+    return {"view": view, "params": params}
+
+
 def run_tool(
     db: Session,
     name: str,
@@ -371,6 +425,8 @@ def run_tool(
         return tool_explain(args), []
     if name == "my_status":
         return tool_my_status(db, viewer), []
+    if name == "surface":
+        return tool_surface(args), []
     return {"error": f"Onbekende tool: {name}."}, []
 
 
@@ -413,6 +469,7 @@ def stream_concierge(
     viewer: Member | None = None,
     on_card: Callable[[str], None] | None = None,
     on_navigate: Callable[[str], None] | None = None,
+    on_surface: Callable[[dict], None] | None = None,
     on_thinking: Callable[[str], None] | None = None,
     on_tool_event: Callable[[dict], None] | None = None,
     client: anthropic.Anthropic | None = None,
@@ -502,6 +559,19 @@ def stream_concierge(
                     and isinstance(result.get("url"), str)
                 ):
                     on_navigate(result["url"])
+                # Surface-signaal: de surface-tool levert een gevalideerd
+                # {view, params}; de router rendert het echte fragment server-side
+                # uit de DB (grounding blijft in de bron). De error-tak ({"error":})
+                # mist "view" en valt hier af → geen surface-event.
+                if (
+                    on_surface is not None
+                    and name == "surface"
+                    and isinstance(result, dict)
+                    and "view" in result
+                ):
+                    on_surface(
+                        {"view": result["view"], "params": result.get("params", {})}
+                    )
                 if on_tool_event is not None:
                     _emit_tool_event(name, result, on_tool_event)
 

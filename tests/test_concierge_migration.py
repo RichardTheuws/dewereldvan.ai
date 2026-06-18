@@ -75,3 +75,28 @@ def test_migration_downgrade_is_reversible(migrated):
     command.upgrade(cfg, "head")
     insp2 = inspect(engine)
     assert "concierge_nudge_dismissal" in insp2.get_table_names()
+
+
+def test_migration_0009_builds_concierge_turn(migrated):
+    """Agent-Shell Fase 1: 0009 maakt concierge_turn + index aan na upgrade(head)."""
+    engine, _ = migrated
+    insp = inspect(engine)
+    assert "concierge_turn" in insp.get_table_names()
+    cols = {c["name"] for c in insp.get_columns("concierge_turn")}
+    assert {"id", "member_id", "role", "content", "created_at"} <= cols
+    index_names = {ix["name"] for ix in insp.get_indexes("concierge_turn")}
+    assert "ix_concierge_turn_member_id" in index_names
+
+
+def test_migration_0009_downgrade_round_trip(migrated):
+    """0009 is reversibel: downgrade naar 0008 haalt concierge_turn weg; upgrade
+    bouwt 'm schoon terug (spiegelt de bestaande reversibiliteits-test)."""
+    engine, cfg = migrated
+    command.downgrade(cfg, "0008_widen_audit_action")
+    insp = inspect(engine)
+    assert "concierge_turn" not in insp.get_table_names()
+    # De voorafgaande concierge-laag blijft staan (alleen 0009 ging eraf).
+    assert "concierge_nudge_dismissal" in insp.get_table_names()
+    command.upgrade(cfg, "head")
+    insp2 = inspect(engine)
+    assert "concierge_turn" in insp2.get_table_names()

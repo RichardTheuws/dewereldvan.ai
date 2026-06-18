@@ -13,7 +13,7 @@ from app.models.base import Base, MemberRole, MemberStatus, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.ai_chat import AiChatTurn
-    from app.models.concierge import ConciergeNudgeDismissal
+    from app.models.concierge import ConciergeNudgeDismissal, ConciergeTurn
     from app.models.magic_link import MagicLinkToken
     from app.models.profile import Profile
 
@@ -63,5 +63,8 @@ class Member(Base, TimestampMixin):
         back_populates="member", cascade="all, delete-orphan"
     )
     nudge_dismissals: Mapped[list[ConciergeNudgeDismissal]] = relationship(
+        back_populates="member", cascade="all, delete-orphan"
+    )
+    concierge_turns: Mapped[list[ConciergeTurn]] = relationship(
         back_populates="member", cascade="all, delete-orphan"
     )
