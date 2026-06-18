@@ -3,6 +3,15 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.19.0] - 2026-06-19
+### Added (schrijf-surfaces Fase 2.2 — profiel-tekstvelden draften vanuit het gesprek)
+- **`draft_field`-tool** (`headline`/`bio`): "verander mijn kopregel naar …" / "pas mijn bio aan …" →
+  de agent stelt een voorgevulde nieuwe waarde voor; het lid bevestigt en het bestaande
+  `PATCH /profiel/ai/veld/{naam}` (whitelist `_TEXT_FIELDS` + maxlen + CSRF) commit. Zelfde
+  tonen-+-bevestigen-mechanisme als de offering/need/idee-drafts.
+- **Bewust gescopet**: `seeking` (overlapt met `draft_need` — de primaire need) en `tags` (vereist
+  append-semantiek; de agent kent de huidige tags niet) schuiven door naar later. 443 tests groen.
+
 ## [0.18.0] - 2026-06-19
 ### Added (schrijf-surfaces Fase 2.1 — de agent voert ledenacties uit, "tonen + 1-klik bevestigen")
 PRD: `docs/PRD-schrijf-surfaces.md` (variant A: constructief). De agent kan nu ledenacties

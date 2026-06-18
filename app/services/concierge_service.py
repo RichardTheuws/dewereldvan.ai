@@ -76,8 +76,10 @@ SYSTEM_PROMPT: str = (
     "ACTIES VOORSTELLEN (draft-tools): wil het lid iets TOEVOEGEN, gebruik dan een "
     "draft-tool — je SCHRIJFT NIETS, je stelt voor. 'voeg een project toe …' / "
     "'ik maak …' → draft_offering. 'ik zoek …' / 'ik ben op zoek naar …' → "
-    "draft_need. 'idee: …' / 'ik heb een idee …' → draft_idea. Vul de velden "
-    "(title, description/body) zo goed mogelijk in op basis van wat het lid zei; "
+    "draft_need. 'idee: …' / 'ik heb een idee …' → draft_idea. 'verander mijn "
+    "kopregel naar …' → draft_field (field=headline). 'pas mijn bio aan …' / "
+    "'schrijf mijn over-tekst …' → draft_field (field=bio). Vul de velden "
+    "(title, description/body, of value) zo goed mogelijk in op basis van wat het lid zei; "
     "het lid ziet een voorgevuld formulier en bevestigt of past aan. Verzin geen "
     "feiten — vat alleen samen wat het lid zelf vertelde. Voor openbaar maken of "
     "verwijderen heb je GEEN tool: verwijs het lid naar 'alles bijschaven & "
@@ -154,6 +156,12 @@ DRAFT_REGISTRY: dict[str, set[str]] = {
     "need": {"title", "description"},  # POST /profiel/need (NeedForm)
     "idea": {"title", "body"},  # POST /ideeen (IdeaForm)
 }
+
+# Profiel-tekstvelden die de agent mag voorstellen te WIJZIGEN (Fase 2.2). Bewust
+# alleen de zuivere "over mij"-teksten: ``seeking`` overlapt met draft_need (de
+# primaire need) en ``tags`` vereist append-semantiek (de agent kent de huidige
+# tags niet) → die schuiven door. PATCH /profiel/ai/veld/{naam}.
+DRAFT_FIELDS: set[str] = {"headline", "bio"}
 
 # Tool-definities (Anthropic input_schema's). additionalProperties weglaten is ok;
 # we valideren strak in de handlers.
@@ -286,6 +294,24 @@ TOOLS: list[dict] = [
             "properties": {
                 "title": {"type": "string"},
                 "body": {"type": "string"},
+            },
+        },
+    },
+    {
+        "name": "draft_field",
+        "description": (
+            "Stel een nieuwe waarde voor een profiel-tekstveld voor. field is "
+            "'headline' (kopregel, één regel) of 'bio' (over jou). Vul value met de "
+            "voorgestelde tekst op basis van wat het lid zei; het lid ziet een "
+            "voorgevuld veld en bevestigt of past aan. SCHRIJF NIETS. (Voor 'wat ik "
+            "zoek' gebruik je draft_need; voor projecten draft_offering.)"
+        ),
+        "input_schema": {
+            "type": "object",
+            "required": ["field", "value"],
+            "properties": {
+                "field": {"type": "string", "enum": list(DRAFT_FIELDS)},
+                "value": {"type": "string"},
             },
         },
     },
@@ -497,6 +523,20 @@ def tool_draft(entity: str, args: dict) -> dict:
     return {"draft": entity, "fields": fields}
 
 
+def tool_draft_field(args: dict) -> dict:
+    """``draft_field`` — valideer een voorgestelde tekstveld-wijziging (geen write).
+
+    Geeft ``{draft: "field", field, value}``; de router rendert een voorgevuld
+    veld dat naar ``PATCH /profiel/ai/veld/{field}`` post. Commit pas na de klik.
+    """
+    field = (args.get("field") or "").strip()
+    if field not in DRAFT_FIELDS:
+        return {"error": f"Onbekend veld: {field}."}
+    value = args.get("value")
+    value = str(value).strip() if isinstance(value, (str, int)) else ""
+    return {"draft": "field", "field": field, "value": value}
+
+
 def run_tool(
     db: Session,
     name: str,
@@ -531,6 +571,8 @@ def run_tool(
         return tool_draft("need", args), []
     if name == "draft_idea":
         return tool_draft("idea", args), []
+    if name == "draft_field":
+        return tool_draft_field(args), []
     return {"error": f"Onbekende tool: {name}."}, []
 
 
@@ -685,9 +727,9 @@ def stream_concierge(
                     and isinstance(result, dict)
                     and "draft" in result
                 ):
-                    on_surface(
-                        {"draft": result["draft"], "fields": result.get("fields", {})}
-                    )
+                    # Het hele draft-signaal door (create: {draft, fields};
+                    # veld-edit: {draft:"field", field, value}).
+                    on_surface(dict(result))
                 if on_tool_event is not None:
                     _emit_tool_event(name, result, on_tool_event)
 

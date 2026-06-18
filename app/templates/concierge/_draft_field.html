@@ -1,0 +1,25 @@
+{# Schrijf-surface (Fase 2.2): voorgestelde wijziging van een profiel-tekstveld
+   (headline/bio). De agent vulde de nieuwe waarde voor; het lid past evt. aan en
+   bevestigt. Post naar het BESTAANDE endpoint (PATCH /profiel/ai/veld/{field},
+   _TEXT_FIELDS + maxlen + CSRF). Bij succes vervangt het echte lees-slot deze
+   kaart. "laat maar" sluit zonder iets op te slaan (geen write zonder klik). #}
+<form class="concierge-draft"
+      hx-patch="/profiel/ai/veld/{{ field }}"
+      hx-target="closest .surface-card"
+      hx-swap="outerHTML">
+  <div class="concierge-draft__head">
+    <span aria-hidden="true">✦</span> {{ label }} — klopt het? Pas gerust aan.
+  </div>
+  {% if field == 'bio' %}
+  <textarea name="value" class="concierge-draft__field" rows="3" maxlength="4000"
+            aria-label="{{ label }}">{{ value }}</textarea>
+  {% else %}
+  <input name="value" class="concierge-draft__field" maxlength="200"
+         aria-label="{{ label }}" value="{{ value }}">
+  {% endif %}
+  <div class="concierge-draft__actions">
+    <button type="submit" class="btn">✦ Bijwerken</button>
+    <button type="button" class="btn btn--ghost btn--sm"
+            onclick="this.closest('.surface-card').remove()">laat maar</button>
+  </div>
+</form>

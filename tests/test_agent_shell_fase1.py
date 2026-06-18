@@ -98,6 +98,37 @@ def test_draft_partials_prefilled_and_post_to_existing_endpoints():
         assert "laat maar" in html
 
 
+def test_tool_draft_field_unknown_field_error():
+    # tags valt bewust buiten DRAFT_FIELDS (append-semantiek) → fout.
+    assert "error" in concierge_service.tool_draft_field({"field": "tags", "value": "x"})
+
+
+def test_tool_draft_field_valid():
+    r = concierge_service.tool_draft_field({"field": "headline", "value": "Bouwer van AI"})
+    assert r == {"draft": "field", "field": "headline", "value": "Bouwer van AI"}
+
+
+def test_draft_field_partial_prefilled_and_patches():
+    from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+    env = Environment(
+        loader=FileSystemLoader("app/templates"),
+        autoescape=select_autoescape(["html"]),
+    )
+    html = env.get_template("concierge/_draft_field.html").render(
+        field="headline", value="Bouwer van AI", label="Kopregel"
+    )
+    assert 'hx-patch="/profiel/ai/veld/headline"' in html
+    assert 'value="Bouwer van AI"' in html
+    assert "laat maar" in html
+    # bio → textarea-variant.
+    html2 = env.get_template("concierge/_draft_field.html").render(
+        field="bio", value="Over mij tekst", label="Over jou"
+    )
+    assert "<textarea" in html2
+    assert "Over mij tekst" in html2
+
+
 def test_surface_registry_matches_tool_enum():
     surf = next(t for t in concierge_service.TOOLS if t["name"] == "surface")
     enum = set(surf["input_schema"]["properties"]["view"]["enum"])

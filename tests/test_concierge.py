@@ -421,6 +421,29 @@ def test_draft_tool_emits_on_surface_without_writing(db, install_loop):
     ]
 
 
+def test_draft_field_tool_emits_field_and_value(db, install_loop):
+    """draft_field emit het volledige {draft:'field', field, value}-signaal."""
+    df_use = _Block(
+        type="tool_use", id="df1", name="draft_field",
+        input={"field": "headline", "value": "Bouwer van AI"},
+    )
+    install_loop([
+        {"deltas": [], "stop_reason": "tool_use", "content": [df_use]},
+        {"deltas": ["ok"], "stop_reason": "end_turn",
+         "content": [{"type": "text", "text": "ok"}]},
+    ])
+    signals: list[dict] = []
+    concierge_service.stream_concierge(
+        [{"role": "user", "content": "verander mijn kopregel"}],
+        lambda _t: None,
+        db=db,
+        on_surface=signals.append,
+    )
+    assert signals == [
+        {"draft": "field", "field": "headline", "value": "Bouwer van AI"}
+    ]
+
+
 def test_surface_tool_registered_with_contract():
     """De surface-tool is geregistreerd; het Opus-contract blijft ongewijzigd
     (geen sampling/budget-params worden door de tool-def geïntroduceerd)."""

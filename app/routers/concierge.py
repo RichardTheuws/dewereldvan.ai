@@ -198,7 +198,9 @@ _DRAFT_TEMPLATES = {
     "offering": "concierge/_draft_offering.html",
     "need": "concierge/_draft_need.html",
     "idea": "concierge/_draft_idea.html",
+    "field": "concierge/_draft_field.html",  # profiel-tekstveld (Fase 2.2)
 }
+_FIELD_LABELS = {"headline": "Kopregel", "bio": "Over jou"}
 
 # Vertaal een ``navigate``-url naar een in-stroom surface voor ingelogde leden.
 # /logout en alle overige paden → None (echte navigate, verlaat de canvas).
@@ -514,8 +516,14 @@ async def stream(
             tmpl = _DRAFT_TEMPLATES.get(entity)
             if tmpl is None:
                 return None  # registry-grens
-            fields = signal.get("fields") or {}
-            inner = _render_str(request, tmpl, {"fields": fields})
+            field = signal.get("field")
+            ctx = {
+                "fields": signal.get("fields") or {},
+                "field": field,
+                "value": signal.get("value", ""),
+                "label": _FIELD_LABELS.get(field, ""),
+            }
+            inner = _render_str(request, tmpl, ctx)
             return _wrap_surface("draft_" + entity, inner)
         view = signal.get("view") or ""
         params = signal.get("params") or {}
