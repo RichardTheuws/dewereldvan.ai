@@ -1,36 +1,69 @@
-{% extends "base.html" %}
-{% block title %}Inloggen — dewereldvan.ai{% endblock %}
-{% block robots %}<meta name="robots" content="noindex">{% endblock %}
-{% block content %}
-<section class="max-w-md mx-auto">
-  <h1 class="text-2xl font-bold text-slate-900">Inloggen</h1>
-  <p class="mt-2 text-sm text-slate-600">
-    Vul je e-mailadres in. We sturen je een eenmalige inloglink — geen
-    wachtwoord nodig.
-  </p>
+<!DOCTYPE html>
+<html lang="nl">
+{# Inloggen (A1) — standalone cosmic-document (extendt base.html NIET).
+   Passwordless magic-link. noindex + brand-only header. Het form, de exacte
+   csrf-hidden-input-volgorde en de anti-enumeratie-flow blijven intact. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Inloggen · dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
 
-  {% if error %}
-  <div class="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-    {{ error }}
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+    </header>
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6" style="max-width:42ch">
+        <div class="eyebrow" data-reveal style="--d:160ms">Toegang</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Inloggen</h1>
+        <p class="lede mt-5" data-reveal style="--d:380ms">
+          Vul je e-mailadres in. We sturen je een eenmalige inloglink — geen
+          wachtwoord nodig.
+        </p>
+
+        {% if error %}
+        <div class="notice notice--error mt-6" role="alert" data-reveal style="--d:440ms">
+          {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/login" class="mt-8 space-y-5" data-reveal style="--d:520ms">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <div>
+            <label for="email" class="field-label">E-mailadres</label>
+            <input id="email" name="email" type="email" required maxlength="320"
+                   autocomplete="email" autofocus
+                   value="{{ email | default('') }}">
+          </div>
+          <button type="submit" class="btn">Stuur inloglink</button>
+        </form>
+
+        <p class="mt-8" data-reveal style="--d:600ms">
+          <a class="btn btn--ghost btn--sm" href="/register">Nog geen lid? Aanmelden →</a>
+        </p>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:680ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
   </div>
-  {% endif %}
 
-  <form method="post" action="/login" class="mt-6 space-y-4">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-    <div>
-      <label for="email" class="block text-sm font-medium text-slate-700">E-mailadres</label>
-      <input id="email" name="email" type="email" required maxlength="320"
-             value="{{ email | default('') }}"
-             class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500">
-    </div>
-    <button type="submit"
-            class="w-full rounded-md bg-emerald-600 px-4 py-2.5 text-white font-medium hover:bg-emerald-700">
-      Stuur inloglink
-    </button>
-  </form>
-
-  <p class="mt-4 text-sm text-slate-500">
-    Nog geen lid? <a href="/register" class="text-emerald-700 hover:underline">Aanmelden</a>
-  </p>
-</section>
-{% endblock %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

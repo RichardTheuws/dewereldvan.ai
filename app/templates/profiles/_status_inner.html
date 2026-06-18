@@ -1,22 +1,25 @@
 {# Inner markup of the profile status block (completeness + visibility badge).
-   Shared by _completeness.html (normal swap) and _row_deleted.html (OOB). #}
+   Shared by _completeness.html (normal swap) and _row_deleted.html (OOB).
+   Kosmisch: .progress/.progress__fill + .chip/.chip--* (cosmic.css C3/C4). #}
 {% if error %}
-<p class="mb-2 text-sm text-red-700">{{ error }}</p>
+<p class="notice notice--error" role="alert" style="margin-bottom:14px">{{ error }}</p>
 {% endif %}
-<div class="flex items-center justify-between">
-  <span class="text-sm font-medium text-slate-700">Profiel ingevuld</span>
-  <span class="text-sm font-semibold text-emerald-700">{{ profile.completeness }}%</span>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+  <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)">Profiel ingevuld</span>
+  <span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--gold)">{{ profile.completeness }}%</span>
 </div>
-<div class="mt-1 h-2 w-full rounded-full bg-slate-200">
-  <div class="h-2 rounded-full bg-emerald-500" style="width: {{ profile.completeness }}%"></div>
+<div class="progress" style="margin-top:10px"
+     role="progressbar" aria-valuenow="{{ profile.completeness }}"
+     aria-valuemin="0" aria-valuemax="100" aria-label="Profiel ingevuld">
+  <div class="progress__fill" style="width: {{ profile.completeness }}%"></div>
 </div>
-<p class="mt-2 text-xs text-slate-500">
+<p class="muted" style="margin-top:14px;font-size:0.92rem;line-height:1.5">
   Zichtbaarheid:
   {% if profile.visibility.value == "public" %}
-    <span class="rounded bg-emerald-100 px-1.5 py-0.5 font-medium text-emerald-800">Openbaar</span>
+    <span class="chip chip--ok">Openbaar</span>
     &mdash; je profiel is voor iedereen zichtbaar en vindbaar.
   {% else %}
-    <span class="rounded bg-slate-200 px-1.5 py-0.5 font-medium text-slate-700">Alleen leden</span>
+    <span class="chip chip--muted">Alleen leden</span>
     &mdash; alleen ingelogde leden zien je profiel (niet vindbaar in zoekmachines).
   {% endif %}
 </p>

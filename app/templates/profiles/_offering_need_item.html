@@ -1,14 +1,21 @@
 {# A single existing offering/need <li> rendered in the edit-page loop.
-   `kind` is "offering" or "need"; `item` is the Offering/Need object. #}
-<li id="{{ kind }}-{{ item.id }}" class="flex items-start justify-between gap-3 rounded border border-slate-200 bg-white px-3 py-2">
-  <div>
-    <p class="text-sm font-medium text-slate-800">{{ item.title }}</p>
+   `kind` is "offering" or "need"; `item` is the Offering/Need object.
+   Kosmische rij; tegelijk htmx-swap-doel (outerHTML) bij verwijderen. #}
+<li id="{{ kind }}-{{ item.id }}"
+    style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+           border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card)">
+  <div style="min-width:0">
+    <p style="margin:0;color:var(--text);font-weight:500">{{ item.title }}</p>
     {% if item.description %}
-    <p class="text-xs text-slate-500">{{ item.description }}</p>
+    <p style="margin:4px 0 0;color:var(--muted);font-size:0.92rem">{{ item.description }}</p>
     {% endif %}
   </div>
   <button type="button"
-          class="text-xs text-red-600 hover:underline"
+          style="flex:none;white-space:nowrap;font-size:0.85rem;cursor:pointer;
+                 background:none;border:none;padding:2px 0;color:var(--muted);
+                 font-family:'JetBrains Mono',monospace;letter-spacing:0.02em"
+          onmouseover="this.style.color='var(--cyan)'"
+          onmouseout="this.style.color='var(--muted)'"
           hx-delete="/profiel/{{ kind }}/{{ item.id }}"
           hx-target="#{{ kind }}-{{ item.id }}"
           hx-swap="outerHTML"

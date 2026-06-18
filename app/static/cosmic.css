@@ -1045,6 +1045,77 @@
 .cosmic .btn--sm + .btn--sm { margin-left: 2px; }
 
 /* =========================================================================
+   Form-/funnel-primitieven (SPEC-frontend-polish §B, C1-C4) — gedeeld door de
+   auth-funnel, foutpagina's, profiel-edit en admin. Alles onder .cosmic, alleen
+   bestaande tokens; geen tweede look. Motion erft de .cosmic *-doving in het
+   prefers-reduced-motion-block.
+   ========================================================================= */
+
+/* C1 — notice/alert-blok (form-fout + succes). Zacht violet/goud accent,
+   nooit knal-rood (styleguide: rustig, verfijnd). role="alert" in template. */
+.cosmic .notice {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px 16px;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--card);
+}
+.cosmic .notice--error {
+  border-color: rgba(177, 92, 255, 0.4);
+  background: linear-gradient(180deg, rgba(177, 92, 255, 0.08), transparent);
+}
+.cosmic .notice--ok {
+  border-color: rgba(246, 205, 134, 0.45);
+  background: linear-gradient(180deg, rgba(246, 205, 134, 0.08), transparent);
+}
+
+/* C2 — generieke toetsenbord-focus voor links/knoppen (a11y-funnel). De cnav/
+   widgets hebben al focus-visible; dit dekt .btn/a binnen .cosmic. */
+.cosmic a:focus-visible,
+.cosmic .btn:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* C3 — completeness-progressbar (profiel-edit). Track = lijn, fill = goud→violet. */
+.cosmic .progress {
+  width: 100%;
+  height: 6px;
+  border-radius: 100px;
+  background: var(--line);
+  overflow: hidden;
+}
+.cosmic .progress__fill {
+  display: block;
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, var(--gold), var(--violet));
+}
+
+/* C4 — status-chips (modifiers op .chip): completeness/admin-status getint. */
+.cosmic .chip--pending {
+  color: var(--gold);
+  border-color: rgba(246, 205, 134, 0.4);
+  background: rgba(246, 205, 134, 0.06);
+}
+.cosmic .chip--ok {
+  color: var(--gold);
+  border-color: rgba(246, 205, 134, 0.5);
+  background: rgba(246, 205, 134, 0.08);
+}
+.cosmic .chip--warn {
+  color: #ffb3b3;
+  border-color: rgba(255, 120, 120, 0.35);
+  background: rgba(255, 120, 120, 0.06);
+}
+.cosmic .chip--muted {
+  color: var(--muted);
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* =========================================================================
    E1 — Globale feedback-affordance (fab) + paneel
    ========================================================================= */
 .feedback-fab {

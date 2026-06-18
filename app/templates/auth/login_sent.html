@@ -1,17 +1,51 @@
-{% extends "base.html" %}
-{% block title %}Inloglink verstuurd — dewereldvan.ai{% endblock %}
-{% block robots %}<meta name="robots" content="noindex">{% endblock %}
-{% block content %}
-<section class="max-w-md mx-auto text-center">
-  <h1 class="text-2xl font-bold text-slate-900">Kijk in je e-mail</h1>
-  <p class="mt-3 text-slate-600">
-    Als <span class="font-medium">{{ email }}</span> bij ons bekend is en is
-    goedgekeurd, hebben we een inloglink verstuurd. De link is een kort moment
-    geldig en werkt één keer.
-  </p>
-  <p class="mt-2 text-sm text-slate-500">
-    Geen e-mail ontvangen? Controleer je spam, of
-    <a href="/login" class="text-emerald-700 hover:underline">vraag een nieuwe link aan</a>.
-  </p>
-</section>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="nl">
+{# Inloglink verstuurd (A2) — standalone cosmic-document. noindex. De anti-
+   enumeratie-zin ("Als <e-mail> bij ons bekend is en is goedgekeurd…") blijft
+   LETTERLIJK behouden: het is een veiligheidstekst, niet stelliger maken. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Inloglink verstuurd · dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
+
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+    </header>
+
+    <main class="flex-1 pb-24 flex items-center justify-center" style="min-height:50vh">
+      <section class="text-center" style="max-width:48ch">
+        <div class="eyebrow" data-reveal style="--d:160ms;justify-content:center">Toegang</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Kijk in je e-mail</h1>
+        <p class="lede mt-5" data-reveal style="--d:380ms">
+          Als <span class="muted">{{ email }}</span> bij ons bekend is en is
+          goedgekeurd, hebben we een inloglink verstuurd. De link is een kort moment
+          geldig en werkt één keer.
+        </p>
+        <p class="mt-8" data-reveal style="--d:480ms">
+          <a class="btn btn--ghost btn--sm" href="/login">Nieuwe link aanvragen</a>
+        </p>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:560ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

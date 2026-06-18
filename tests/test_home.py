@@ -120,6 +120,32 @@ def test_home_canonical_not_empty(client):
     assert 'property="og:url" content=""' not in resp.text
 
 
+def test_home_favicon_and_og_image(client):
+    """D2/D3 — de voordeur linkt de favicon + theme-color en emit de OG-kaart
+    met het kosmische og-default beeld (publieke unfurl)."""
+    resp = client.get("/")
+    assert resp.status_code == 200
+    body = resp.text
+    # Favicon-partial + theme-color in de <head>.
+    assert "/static/favicon.svg" in body
+    assert 'name="theme-color"' in body
+    # OG-beeld op de publieke voordeur (indexeerbaar → og:image toegestaan).
+    assert "/static/og-default.png" in body
+    assert 'property="og:image"' in body
+
+
+def test_static_assets_served(client):
+    """D1/D3 — favicon (svg+ico) en og-default worden door StaticFiles geserveerd."""
+    for path, ctype in (
+        ("/static/favicon.svg", "image/svg+xml"),
+        ("/static/favicon.ico", "image/"),
+        ("/static/og-default.png", "image/png"),
+    ):
+        r = client.get(path)
+        assert r.status_code == 200, path
+        assert ctype in r.headers.get("content-type", ""), path
+
+
 def test_home_admin_sees_beheer_link(client, SessionTest):
     """Admin-state uit de sessie -> de nav toont de Beheer-link (overal, niet alleen
     op /ideeen). Bewijst de sessie-gebaseerde admin-check in _cosmic_nav.html."""
@@ -179,7 +205,9 @@ def test_home_signal_shown_with_makers(client, SessionTest):
     _seed_public(SessionTest, 1)
     resp = client.get("/")
     assert resp.status_code == 200
-    assert "1 MAKERS" in resp.text
+    # D4: enkelvoud bij precies 1 maker (geen "1 MAKERS").
+    assert "1 MAKER" in resp.text
+    assert "1 MAKERS" not in resp.text
 
 
 # --------------------------------------------------------------------------- #

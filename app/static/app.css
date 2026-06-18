@@ -1,7 +1,0 @@
-/* Supplemental styling. Tailwind ships via CDN (see base.html); this file is
-   for the few rules that are easier as plain CSS. Intentionally minimal. */
-
-[hx-indicator].htmx-request,
-.htmx-request [hx-indicator] {
-  opacity: 0.6;
-}

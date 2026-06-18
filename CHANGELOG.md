@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.11.1] - 2026-06-18
+### Changed (frontend volledig kosmisch — funnel launch-klaar)
+- **Resterende lichte pagina's gekosmiseerd**: de hele auth-funnel (`/login`, `/register` + verstuurd/
+  fout/klaar-schermen), `404`/`500`, `/profiel/bewerken` en `/admin/queue` (+ partials) zijn nu standalone
+  kosmische documenten — functie (forms, htmx, CSRF, anti-enumeratie, SEO) volledig intact.
+- **Detail-laag**: favicon (kosmische ✦, svg + multi-size ico) + `theme-color`, default OG-kaart (1200×630)
+  op publieke pagina's, en de "1 maker"-microcopy-nit (enkelvoud/meervoud) opgelost.
+- **Dode code verwijderd**: `base.html` (lichte Tailwind-shell), `_flash.html`, `app.css` — de enige
+  resterende emerald/slate-restanten; geen template extend't of rendert ze nog. Voorkomt licht-thema-regressie.
+- Transactionele e-mails geverifieerd (al inline/Gmail-safe; geen wijziging nodig). 302 tests groen,
+  styleguide + correctheid PASS. Eén bewuste uitzondering: `/admin/feedback` (admin-only) blijft licht — losse follow-up.
+
 ## [0.11.0] - 2026-06-18
 ### Added (kosmische voordeur + innovatieve navigatie + speelveld-samenhang)
 - **Kosmische home (`/`)**: de lichte "De wereld van ons"-landing vervangen door een standalone

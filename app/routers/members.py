@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.db import get_db
 from app.services import (
     emphasis_service,
@@ -67,4 +68,6 @@ def members_index(
         return _render(request, "members/_grid.html", ctx)
 
     ctx["canonical"] = seo_service.canonical_url("/leden")
+    # Absolute basis voor og:image (publieke unfurl-kaart).
+    ctx["base_url"] = settings.base_url.rstrip("/")
     return _render(request, "members/index.html", ctx)

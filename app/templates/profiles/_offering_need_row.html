@@ -2,7 +2,7 @@
    On validation error only `error` is set (shown via OOB error slot).
    On success: append the new <li> and refresh the status block out-of-band. #}
 {% if error %}
-<div id="{{ kind }}-error" class="text-sm text-red-700 py-1" hx-swap-oob="true">{{ error }}</div>
+<div id="{{ kind }}-error" class="notice notice--error" role="alert" style="margin-top:12px" hx-swap-oob="true">{{ error }}</div>
 {% else %}
 {% include "profiles/_offering_need_item.html" %}
 {# Keep completeness/visibility in sync after adding a row. #}

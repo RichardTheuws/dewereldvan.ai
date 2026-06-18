@@ -12,9 +12,10 @@
   {% set seo_title = "dewereldvan.ai — de wereld van de scherpste AI-makers" %}
   {% set seo_desc = "Een besloten plek voor wie in NL & BE serieus met AI bouwt. Maak je profiel, ontdek wat anderen maken, deel waar je naar zoekt." %}
   {% set og_type = "website" %}
-  {% set og_image = none %}
+  {% set og_image = (base_url ~ "/static/og-default.png") if base_url else none %}
   {% set jsonld = none %}
   {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,7 +35,7 @@
     <main class="pb-24">
       <section class="mt-6">
         <div class="eyebrow" data-reveal style="--d:160ms">
-          {% if logged_in %}WELKOM TERUG{% else %}DE WERELD VAN{% endif %}{% if member_count and member_count > 0 %} · {{ member_count }} MAKERS{% endif %}
+          {% if logged_in %}WELKOM TERUG{% else %}DE WERELD VAN{% endif %}{% if member_count and member_count > 0 %} · {{ member_count }} MAKER{{ 'S' if member_count != 1 else '' }}{% endif %}
         </div>
         <h1 class="headline mt-5" data-reveal style="--d:260ms">
           {% if logged_in %}Welkom in de wereld.{% else %}De wereld van de scherpste AI-makers.{% endif %}

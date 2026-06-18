@@ -161,6 +161,8 @@ def _register_core_routes(app: FastAPI) -> None:
                 "preview_stars": public_profiles[:5],
                 # Publieke voordeur: schone canonical/og:url (geen lege href="").
                 "canonical": seo_service.canonical_url("/"),
+                # Absolute basis voor og:image (publieke unfurl-kaart).
+                "base_url": settings.base_url.rstrip("/"),
             },
         )
 

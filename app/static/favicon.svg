@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="dewereldvan.ai">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="70%">
+      <stop offset="0%" stop-color="#15123a"/>
+      <stop offset="60%" stop-color="#0a0a24"/>
+      <stop offset="100%" stop-color="#04040e"/>
+    </radialGradient>
+    <radialGradient id="spark" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe6b0"/>
+      <stop offset="100%" stop-color="#f6cd86"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <circle cx="32" cy="32" r="13" fill="#f6cd86" opacity="0.16"/>
+  <path d="M32 13 L35.4 28.6 L51 32 L35.4 35.4 L32 51 L28.6 35.4 L13 32 L28.6 28.6 Z" fill="url(#spark)"/>
+</svg>

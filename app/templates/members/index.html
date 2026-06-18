@@ -12,9 +12,10 @@
   {% set seo_title = "De makers — dewereldvan.ai" %}
   {% set seo_desc = "De scherpste AI-makers van Nederland en België. Ontdek wie ze zijn, wat ze maken en waar ze naar zoeken." %}
   {% set og_type = "website" %}
-  {% set og_image = none %}
+  {% set og_image = (base_url ~ "/static/og-default.png") if base_url else none %}
   {% set jsonld = none %}
   {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">

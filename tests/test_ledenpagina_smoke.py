@@ -165,6 +165,17 @@ def test_leden_overview_200(make_client, SessionTest):
     assert make_client(None).get("/leden").status_code == 200
 
 
+def test_leden_favicon_and_og_image(make_client, SessionTest):
+    """D2/D3 — de publieke ledenpagina linkt de favicon + theme-color en emit de
+    OG-kaart met het kosmische og-default beeld (indexeerbare showcase)."""
+    _seed(SessionTest)
+    body = make_client(None).get("/leden").text
+    assert "/static/favicon.svg" in body
+    assert 'name="theme-color"' in body
+    assert "/static/og-default.png" in body
+    assert 'property="og:image"' in body
+
+
 def test_public_person_200(make_client, SessionTest):
     ids = _seed(SessionTest)
     resp = make_client(None).get(f"/leden/{ids['pub_slug']}")
