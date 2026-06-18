@@ -7,13 +7,32 @@ breder — directory, matchmaking (vraag/aanbod), community en een publieke show
 werk van leden. Domein `dewereldvan.ai` staat op Cloudflare; self-hosted op de Mac mini M4
 achter een Cloudflare Tunnel.
 
+## ✨ Ervaringsmandaat (NIET ONDERHANDELBAAR)
+De leden van dewereldvan.ai zijn de meest vooruitstrevende AI-developers, -trainers en
+-beleidsmakers van NL/BE. **Elke pixel en elke interactie moet hen verbazen.** Dit is geen
+nice-to-have maar de kern van het product.
+
+- **ALTIJD, IEDEREEN, OVERAL verbazen.** Geen enkele pagina, flow of e-mail mag "een formuliertje
+  op een pagina" zijn. Onboarding, profielbouw, feedback, roadmap, ideeënbus — álles krijgt de
+  next-level, kosmische behandeling. Een generieke/MVP-look is een **regressie**, geen acceptabel
+  tussenstadium.
+- **Bouw nooit een kale interactie.** Vraag je bij elk scherm af: "verrast dit iemand die dagelijks
+  met AI bouwt?" Zo nee → niet af.
+- **De stijl is gedefinieerd, niet vrij in te vullen.** Volg **[docs/STYLEGUIDE.md](docs/STYLEGUIDE.md)**
+  ("kosmische diepte") tot in de details: typografie, kleur, motion, compositie, microcopy. Hergebruik
+  `app/static/cosmic.css` en de teaser-identiteit; introduceer geen tweede look.
+- **Slim, niet alleen mooi.** De interface helpt actief: feedback geven kan overal, suggesties worden
+  aangeboden, AI assisteert. "Superslim" is onderdeel van het ontwerp, geen feature-vinkje.
+- Bij twijfel: kies de meer verrassende, meer verfijnde optie — ook als dat meer bouwwerk is.
+
 ## Context
 Dit project gebruikt uitgebreide context-documentatie:
 - [Status & taken](context/status.md)
 - [Architectuur](context/architecture.md)
 - [Beslissingen](context/decisions.md)
 - [Tech Stack](context/techstack.md)
-- [PRD / Roadmap](docs/PRD.md) — **APPROVAL PENDING** (Fase 1 start ná akkoord)
+- [**Styleguide & ervaringsrichtlijnen**](docs/STYLEGUIDE.md) — "kosmische diepte", verplicht voor elk scherm
+- [PRD / Roadmap](docs/PRD.md) · [PRD AI-profielbouw](docs/PRD-ai-profiel.md)
 
 ## Kernbeslissingen (zie context/decisions.md voor onderbouwing)
 - **Visie**: directory + matchmaking + community + showcase — datamodel nu holistisch, bouw gefaseerd.
