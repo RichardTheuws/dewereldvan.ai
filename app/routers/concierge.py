@@ -640,6 +640,24 @@ def chips_fragment(
     return _render(request, "concierge/_chips.html", {"chips": vms})
 
 
+@router.get("/concierge/profielbouw", response_class=HTMLResponse)
+def profile_builder_surface(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Deterministisch de profielbouw-surface openen (zonder de LLM om de tool te
+    laten kiezen). De first-run-CTA gebruikt dit zodat 'Bouw mijn profiel' ALTIJD
+    de builder opent — niet afhankelijk van tool-keuze van het model."""
+    is_admin = member.role.value == "admin"
+    loaded = _load_profile_builder(db, {}, member.id, is_admin)
+    if loaded is None:
+        return HTMLResponse("")
+    template, ctx = loaded
+    inner = _render_str(request, template, ctx)
+    return HTMLResponse(_wrap_surface("profile_builder", inner))
+
+
 @router.get("/concierge/nudge", response_class=HTMLResponse)
 def nudge_fragment(
     request: Request,

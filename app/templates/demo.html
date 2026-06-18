@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Publieke gescripte demo (Agent-Shell showcase). GEEN AI-call, GEEN DB: een
+   client-side script speelt de materialisatie van een FICTIEF profiel af met exact
+   dezelfde kosmische esthetiek (field--materialize). Duidelijk gelabeld als demo;
+   indexeerbaar (launch-asset). #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include "_seo_head.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  {# Zonder JS (en voor crawlers): toon de demo-stappen gewoon. #}
+  <noscript><style>.demo-step{opacity:1!important}.demo-reasoning{display:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
+
+  <div class="demo-badge" role="note">
+    <span aria-hidden="true">✦</span> Demo — fictief profiel, door AI opgebouwd
+  </div>
+
+  <div class="wrap canvas">
+    <main role="main" aria-label="Demo — zo bouw je je profiel">
+      <section class="canvas-intro mt-10">
+        <div class="eyebrow" data-reveal style="--d:140ms">De wereld van AI</div>
+        <h1 class="headline mt-5" data-reveal style="--d:240ms">Zo bouw je je profiel.</h1>
+        <p class="lede mt-5" style="max-width:54ch;--d:360ms" data-reveal>
+          Geef één link — de AI leest 'm en bouwt je profiel op. Dit is een
+          voorbeeld met een verzonnen maker.
+        </p>
+
+        {# Faux invoerveld: toont de "ingevoerde" fictieve site. #}
+        <div class="concierge-form canvas-form mt-8" data-reveal style="--d:460ms" aria-hidden="true">
+          <span class="concierge-form__spark">✦</span>
+          <span class="demo-typed concierge-form__input">studio-nova.ai</span>
+        </div>
+      </section>
+
+      {# Reasoning-/scan-regel (gescript onthuld). #}
+      <div class="demo-reasoning reasoning reasoning--settled mt-8" id="demo-reasoning"
+           role="status" aria-live="polite" style="opacity:0">
+        <div class="reasoning__aura" aria-hidden="true">
+          <span class="reasoning__orbit"></span>
+          <span class="reasoning__orbit reasoning__orbit--2"></span>
+          <span class="reasoning__core"></span>
+        </div>
+        <div class="reasoning__body">
+          <div class="reasoning__label"><span aria-hidden="true">✦</span> de gids leest mee</div>
+          <div class="reasoning__fetch"><div class="fetch-line fetch-line--ok">·· studio-nova.ai scannen ✓</div></div>
+        </div>
+      </div>
+
+      {# Het fictieve profiel — elke sectie is een demo-step die in-materialiseert. #}
+      <div class="mt-10">
+        <section class="profile-identity demo-step" style="opacity:0">
+          <div class="profile-identity__text">
+            <div class="display-name">Nova Belmonte</div>
+            <div class="headline" style="font-size:clamp(1.6rem,4vw,2.4rem)">
+              Bouwt stem-AI voor podcasters &amp; makers
+            </div>
+            <div class="demo-tags mt-5">
+              <span class="demo-tag">voice-agents</span>
+              <span class="demo-tag">audio</span>
+              <span class="demo-tag">creative-AI</span>
+              <span class="demo-tag">beleid</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-12 demo-step" style="opacity:0">
+          <div class="eyebrow">Over</div>
+          <p class="lede mt-3" style="max-width:60ch">
+            Audio-engineer en AI-bouwer. Maakt realtime stem-companions die meedenken
+            tijdens opnames, en adviseert de cultuursector over verantwoorde AI.
+          </p>
+        </section>
+
+        <section class="mt-12 demo-step" style="opacity:0">
+          <div class="eyebrow">Wat ik maak</div>
+          <div class="demo-cards mt-4">
+            <div class="card demo-card">
+              <div class="demo-card__title">StudioNova</div>
+              <p class="muted demo-card__desc">Realtime stem-companion die meedenkt tijdens podcast-opnames.</p>
+              <span class="demo-card__link">studio-nova.ai</span>
+            </div>
+            <div class="card demo-card">
+              <div class="demo-card__title">Echokamer</div>
+              <p class="muted demo-card__desc">AI-beleidsadvies voor musea en culturele instellingen.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-12 demo-step" style="opacity:0">
+          <div class="eyebrow">Waar ik naar zoek</div>
+          <p class="lede mt-3" style="max-width:60ch">
+            Een mede-bouwer voor realtime audio-AI — iemand die van lage latency houdt.
+          </p>
+        </section>
+      </div>
+
+      {# Call-to-action (gescript als laatste onthuld). #}
+      <section class="demo-cta demo-step mt-16" style="opacity:0">
+        <hr class="rule mb-8">
+        <h2 class="headline" style="font-size:clamp(1.5rem,3.5vw,2rem)">Zo bouw jij ook je profiel.</h2>
+        <p class="lede mt-3" style="max-width:48ch">In een paar minuten, met je eigen link. Geen formulier.</p>
+        <a class="btn mt-6" href="/register">Word lid →</a>
+      </section>
+
+      <footer class="c-head mt-20" style="border-top:1px solid var(--line)">
+        <span class="muted">✦ Demo met een verzonnen maker · dewereldvan.ai</span>
+        <a class="link" href="/">terug naar de wereld</a>
+      </footer>
+    </main>
+  </div>
+
+  {% include "ai/_cosmic_canvas.html" %}
+
+  <script>
+    (function () {
+      var steps = Array.prototype.slice.call(document.querySelectorAll('.demo-step'));
+      var reasoning = document.getElementById('demo-reasoning');
+      var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+      function showNow(el) { el.style.opacity = '1'; }
+      function materialize(el) {
+        el.style.opacity = '';
+        el.classList.add('field--materializing');
+        el.addEventListener('animationend', function () {
+          el.classList.remove('field--materializing');
+          el.classList.add('field--ready');
+        }, { once: true });
+        setTimeout(function () {
+          el.classList.remove('field--materializing');
+          el.classList.add('field--ready');
+        }, 1000);
+      }
+
+      if (reduce) {
+        if (reasoning) showNow(reasoning);
+        steps.forEach(showNow);
+        return;
+      }
+
+      // Gescripte sequentie: scan-regel → velden één voor één → CTA.
+      var t = 600;
+      if (reasoning) setTimeout(function () { materialize(reasoning); }, t);
+      t += 900;
+      steps.forEach(function (el) {
+        setTimeout(function () { materialize(el); }, t);
+        t += 700;
+      });
+    })();
+  </script>
+</body>
+</html>

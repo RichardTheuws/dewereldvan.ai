@@ -441,6 +441,26 @@ def test_load_profile_builder_anon_is_none(SessionTest):
         db2.close()
 
 
+def test_profielbouw_route_opens_builder_deterministically(make_client, SessionTest):
+    """De first-run-CTA opent de builder via een directe route (geen LLM-gok)."""
+    mid = _seed_approved(SessionTest)
+    body = make_client(mid).get("/concierge/profielbouw").text
+    assert "profile-builder" in body
+    assert 'id="materialisatie"' in body
+    assert 'hx-post="/profiel/ai/bericht"' in body
+
+
+def test_demo_route_public_indexable_and_fictional(make_client):
+    """De publieke demo: 200, duidelijk fictief/AI-demo, CTA naar registratie,
+    indexeerbaar (geen noindex)."""
+    body = make_client(None).get("/demo").text
+    assert "Demo — fictief profiel" in body
+    assert "Nova Belmonte" in body
+    assert "studio-nova.ai" in body
+    assert 'href="/register"' in body
+    assert "noindex" not in body
+
+
 def test_normal_page_keeps_single_overlay_host(make_client, SessionTest):
     """Een gewone (anonieme) kosmische pagina draagt de overlay-host óók exact 1×."""
     body = make_client(None).get("/leden").text

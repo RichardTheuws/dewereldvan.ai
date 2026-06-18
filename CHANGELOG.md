@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.20.0] - 2026-06-19
+### Added (publieke demo/showcase — gescript, fictief, "door AI gemaakt")
+PRD: `docs/PRD-publieke-demo.md` (variant A). Publieke route `GET /demo` (geen login, indexeerbaar):
+een gescripte replay die een **fictief** makersprofiel (Nova Belmonte, fictieve site `studio-nova.ai`)
+in-materialiseert met exact dezelfde kosmische esthetiek (`field--materialize`) — **geen AI-call, geen
+DB**, nul kosten/misbruik. Permanente "✦ Demo — fictief profiel, door AI opgebouwd"-badge + CTA → `/register`.
+Reduced-motion + no-JS tonen de inhoud direct.
+
+### Fixed (first-run "Bouw mijn profiel" deed niets)
+- De first-run-CTA vulde het veld en liet de **LLM** de tool kiezen — die koos soms `my_status` + tekst
+  i.p.v. `surface(profile_builder)`, dus de builder opende niet. Nu opent de CTA de builder
+  **deterministisch** via `GET /concierge/profielbouw` (rendert de profile_builder-surface direct, zonder
+  tool-gok). Altijd raak.
+
 ## [0.19.0] - 2026-06-19
 ### Added (schrijf-surfaces Fase 2.2 — profiel-tekstvelden draften vanuit het gesprek)
 - **`draft_field`-tool** (`headline`/`bio`): "verander mijn kopregel naar …" / "pas mijn bio aan …" →

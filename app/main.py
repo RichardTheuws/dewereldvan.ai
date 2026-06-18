@@ -190,6 +190,26 @@ def _register_core_routes(app: FastAPI) -> None:
             },
         )
 
+    @app.get("/demo", response_class=HTMLResponse)
+    def demo(request: Request) -> HTMLResponse:
+        """Publieke, gescripte showcase: de agent bouwt een FICTIEF profiel op uit
+        een FICTIEVE site (geen AI-call, geen DB). Duidelijk gelabeld als demo;
+        indexeerbaar (launch-asset)."""
+        return templates.TemplateResponse(
+            request,
+            "demo.html",
+            {
+                "canonical": seo_service.canonical_url("/demo"),
+                "base_url": settings.base_url.rstrip("/"),
+                "seo_title": "Demo — zo bouw je je profiel · dewereldvan.ai",
+                "seo_desc": (
+                    "Een door AI opgebouwd, fictief makersprofiel — zie in 20 "
+                    "seconden hoe dewereldvan.ai werkt."
+                ),
+                "og_type": "website",
+            },
+        )
+
     @app.get("/healthz")
     def healthz() -> JSONResponse:
         """Container healthcheck: confirms the app and the DB are reachable."""

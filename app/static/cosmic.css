@@ -2737,3 +2737,50 @@
   gap: 12px;
   margin-top: 4px;
 }
+
+/* ---- Publieke demo/showcase (gescript, fictief profiel) ---- */
+.demo-badge {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  text-align: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(20, 16, 40, 0.7);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+  padding: 9px 16px;
+}
+.demo-typed {
+  color: var(--text);
+  font-size: 17px;
+  padding: 11px 0;
+  opacity: 0.9;
+}
+.demo-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.demo-tag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--cyan);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+.demo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.demo-card { padding: 18px 20px; }
+.demo-card__title { font-family: "Fraunces", serif; font-size: 1.15rem; color: var(--text); }
+.demo-card__desc { margin: 8px 0 10px; line-height: 1.55; }
+.demo-card__link {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--gold);
+}
+.demo-cta .btn { font-size: 15px; }
