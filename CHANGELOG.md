@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.15.1] - 2026-06-19
+### Fixed (canvas-chat: dubbele rand + verdwijnende reply — live op preview gevangen)
+- **Dubbele border om het invoerveld**: de globale `.cosmic input`-regel (border + background +
+  eigen cyan focus-border) overschreef `.concierge-form__input` → het veld kreeg een eigen rand
+  bovenop de form-frame. Opgelost: input-regel specifieker (`.cosmic .concierge-form__input` + `:focus`)
+  zodat het veld kaal is en de form de enige rand levert; de harde `0 0 0 4px` focus-ring werd één
+  zachte halo.
+- **Reply verdween zodra de stream klaar was**: het `done`-event ruimde de hele SSE-host op
+  (`#csse-…`, inclusief het antwoord-tekstblok). Nu verwijdert `done` alléén het transiënte
+  reasoning-paneel (`#reasoning-…`); het antwoord + de gematerialiseerde kaarten/surfaces blijven staan.
+
 ## [0.15.0] - 2026-06-19
 ### Added (Agent-Shell Fase 1 — de agent wordt de shell)
 De grootste pivot tot nu toe: voor **ingelogde, goedgekeurde leden** is de site geen website-met-

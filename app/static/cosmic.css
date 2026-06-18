@@ -2317,21 +2317,34 @@
   transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
 }
 .concierge-form:focus-within {
-  border-color: rgba(63, 210, 255, 0.55);
+  border-color: rgba(63, 210, 255, 0.45);
   background: rgba(63, 210, 255, 0.05);
-  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.1);
+  /* Eén zachte halo i.p.v. een harde 4px-ring — die las samen met de 1px border
+     als een dubbele rand (storend op het grote canvas-veld). */
+  box-shadow: 0 0 28px rgba(63, 210, 255, 0.12);
 }
 .concierge-form__spark { color: var(--gold); font-size: 14px; }
-.concierge-form__input {
+/* Specifieker dan de globale `.cosmic input`-regel (0,1,1), anders krijgt het veld
+   een EIGEN border/background/focus-border bovenop de form-frame → dubbele rand.
+   De form levert de enige rand; het veld zelf is kaal. */
+.cosmic .concierge-form__input {
   flex: 1 1 auto;
+  width: auto;
   min-width: 0;
   border: none;
   background: none;
+  border-radius: 0;
   outline: none;
+  box-shadow: none;
   color: var(--text);
   font-family: "Spline Sans", system-ui, sans-serif;
   font-size: 16px;
   padding: 11px 0;
+}
+.cosmic .concierge-form__input:focus {
+  border: none;
+  background: none;
+  box-shadow: none;
 }
 .concierge-form__input::placeholder { color: var(--muted); opacity: 0.85; }
 .concierge-form__go {

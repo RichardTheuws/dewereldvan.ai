@@ -18,7 +18,9 @@
    verse proxy die via hx-target="#concierge-results" hx-swap="beforeend" appendt. #}
 {% set sid = range(100000, 999999) | random %}
 <div id="csse-{{ sid }}" data-concierge-sse-host>
-  {% include "ai/_reasoning_panel.html" %}
+  {# Het transiënte "AI aan het werk"-paneel — wordt op `done` opgeruimd (zie de
+     done-proxy), terwijl het antwoord + de kaarten/surfaces blijven staan. #}
+  <div id="reasoning-{{ sid }}">{% include "ai/_reasoning_panel.html" %}</div>
 
   {# Tekst-deltas landen hier (geen losse chat-bubbel). #}
   <div class="bubble bubble--assistant concierge-answer" data-answer sse-swap="delta"
@@ -35,8 +37,11 @@
      bestaat al vóór sse-connect). #}
   <div sse-swap="surface" hx-target="#concierge-results" hx-swap="beforeend" style="display:none"></div>
 
-  {# Terminerend done-event: ruim deze SSE-host op (paneel weg). #}
-  <div sse-swap="done" hx-target="#csse-{{ sid }}" hx-swap="outerHTML" style="display:none"></div>
+  {# Terminerend done-event: ruim ALLEEN het transiënte reasoning-paneel op. Het
+     antwoord ([data-answer]) en de gematerialiseerde kaarten/surfaces blijven
+     staan — anders verdwijnt de reply zodra de stream klaar is. De EventSource
+     sluit via sse-close="done" op de voorouder. #}
+  <div sse-swap="done" hx-target="#reasoning-{{ sid }}" hx-swap="outerHTML" style="display:none"></div>
 </div>
 
 <script>
