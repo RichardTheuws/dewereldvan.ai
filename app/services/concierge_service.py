@@ -73,6 +73,15 @@ SYSTEM_PROMPT: str = (
     "echt iets SPECIFIEKS zoekt ('wie bouwt voice-agents?' → search_members of "
     "surface members_grid met tag). Zeg NOOIT 'ik kan niet zonder filter' op een "
     "brede toon-intent — toon gewoon iedereen.\n\n"
+    "ACTIES VOORSTELLEN (draft-tools): wil het lid iets TOEVOEGEN, gebruik dan een "
+    "draft-tool — je SCHRIJFT NIETS, je stelt voor. 'voeg een project toe …' / "
+    "'ik maak …' → draft_offering. 'ik zoek …' / 'ik ben op zoek naar …' → "
+    "draft_need. 'idee: …' / 'ik heb een idee …' → draft_idea. Vul de velden "
+    "(title, description/body) zo goed mogelijk in op basis van wat het lid zei; "
+    "het lid ziet een voorgevuld formulier en bevestigt of past aan. Verzin geen "
+    "feiten — vat alleen samen wat het lid zelf vertelde. Voor openbaar maken of "
+    "verwijderen heb je GEEN tool: verwijs het lid naar 'alles bijschaven & "
+    "publiceren'.\n\n"
     "GEGROND: verzin NOOIT een naam, link, eigenschap of feit; noem alleen makers "
     "die daadwerkelijk uit een tool terugkwamen, met exact hun gegevens. Vind je "
     "niemand, zeg dat eerlijk ('Daar vond ik niemand voor.') en bied eventueel één "
@@ -133,6 +142,17 @@ SURFACE_REGISTRY: dict[str, set[str]] = {
     "profile_view": {"slug"},
     # De levende profielbouw in de canvas (hergebruikt de ai_profile-materialisatie).
     "profile_builder": set(),
+}
+
+# Vaste registry van entiteiten die de agent mag DRAFTEN (Fase 2 schrijf-surfaces).
+# De waarde is de whitelist van velden die de agent mag voorvullen. De draft-tool
+# SCHRIJFT NIET: ze geeft een gevalideerd {draft, fields}-signaal; de router rendert
+# het echte voorgevulde formulier dat naar het bestaande endpoint post (commit pas
+# na de bevestig-klik van het lid). Eén schrijf-pad, één schema per entiteit.
+DRAFT_REGISTRY: dict[str, set[str]] = {
+    "offering": {"title", "description"},  # POST /profiel/offering (OfferingForm)
+    "need": {"title", "description"},  # POST /profiel/need (NeedForm)
+    "idea": {"title", "body"},  # POST /ideeen (IdeaForm)
 }
 
 # Tool-definities (Anthropic input_schema's). additionalProperties weglaten is ok;
@@ -220,6 +240,52 @@ TOOLS: list[dict] = [
             "properties": {
                 "view": {"type": "string", "enum": list(SURFACE_REGISTRY)},
                 "params": {"type": "object"},
+            },
+        },
+    },
+    {
+        "name": "draft_offering",
+        "description": (
+            "Stel een nieuw project ('wat ik maak') voor het lid voor. Vul title "
+            "(en eventueel description) in op basis van wat het lid vertelde — het "
+            "lid ziet een voorgevuld formulier en bevestigt zelf. SCHRIJF NIETS; "
+            "stel alleen voor."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "description": {"type": "string"},
+            },
+        },
+    },
+    {
+        "name": "draft_need",
+        "description": (
+            "Stel een 'waar ik naar zoek'-item voor het lid voor (title + "
+            "eventueel description). Het lid bevestigt zelf in een voorgevuld "
+            "formulier. SCHRIJF NIETS."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "description": {"type": "string"},
+            },
+        },
+    },
+    {
+        "name": "draft_idea",
+        "description": (
+            "Stel een idee voor de ideeënbus voor (title + body) op basis van wat "
+            "het lid zei. Het lid bevestigt zelf in een voorgevuld formulier. "
+            "SCHRIJF NIETS."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "body": {"type": "string"},
             },
         },
     },
@@ -412,6 +478,25 @@ def tool_surface(args: dict) -> dict:
     return {"view": view, "params": params}
 
 
+def tool_draft(entity: str, args: dict) -> dict:
+    """``draft_*`` — valideer een voorgesteld concept (geen write).
+
+    De agent stelt veldwaarden voor; wij geven een gevalideerd
+    ``{draft, fields}``-signaal terug dat de router als voorgevuld formulier
+    rendert. Alleen whitelisted velden met een ``str``-waarde komen door. De
+    bevestig-klik van het lid commit pas (via het bestaande endpoint)."""
+    allowed = DRAFT_REGISTRY.get(entity)
+    if allowed is None:
+        return {"error": f"Onbekende entiteit: {entity}."}
+    raw = args if isinstance(args, dict) else {}
+    fields = {
+        k: str(v).strip()
+        for k, v in raw.items()
+        if k in allowed and isinstance(v, (str, int)) and str(v).strip()
+    }
+    return {"draft": entity, "fields": fields}
+
+
 def run_tool(
     db: Session,
     name: str,
@@ -440,6 +525,12 @@ def run_tool(
         return tool_my_status(db, viewer), []
     if name == "surface":
         return tool_surface(args), []
+    if name == "draft_offering":
+        return tool_draft("offering", args), []
+    if name == "draft_need":
+        return tool_draft("need", args), []
+    if name == "draft_idea":
+        return tool_draft("idea", args), []
     return {"error": f"Onbekende tool: {name}."}, []
 
 
@@ -584,6 +675,18 @@ def stream_concierge(
                 ):
                     on_surface(
                         {"view": result["view"], "params": result.get("params", {})}
+                    )
+                # Draft-signaal (schrijf-surface): zelfde kanaal, andere payload.
+                # De router rendert een voorgevuld formulier; commit pas na de klik.
+                elif (
+                    on_surface is not None
+                    and isinstance(name, str)
+                    and name.startswith("draft_")
+                    and isinstance(result, dict)
+                    and "draft" in result
+                ):
+                    on_surface(
+                        {"draft": result["draft"], "fields": result.get("fields", {})}
                     )
                 if on_tool_event is not None:
                     _emit_tool_event(name, result, on_tool_event)

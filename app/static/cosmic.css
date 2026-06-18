@@ -2718,3 +2718,22 @@
   color: var(--text);
 }
 .canvas-firstrun__go { font-size: 14px; }
+
+/* ---- Schrijf-surfaces (Fase 2): voorgevuld concept-formulier in de stroom ---- */
+.concierge-draft { display: block; }
+.concierge-draft__head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.concierge-draft__head span[aria-hidden] { color: var(--gold); }
+.concierge-draft__field { margin-bottom: 12px; }
+.concierge-draft .field-label { display: block; margin-bottom: 5px; }
+.concierge-draft__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}

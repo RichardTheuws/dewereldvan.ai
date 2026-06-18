@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.18.0] - 2026-06-19
+### Added (schrijf-surfaces Fase 2.1 — de agent voert ledenacties uit, "tonen + 1-klik bevestigen")
+PRD: `docs/PRD-schrijf-surfaces.md` (variant A: constructief). De agent kan nu ledenacties
+**voorbereiden** maar nooit zelf wegschrijven.
+- **Draft-tools + vaste `DRAFT_REGISTRY`**: `draft_offering`/`draft_need`/`draft_idea`. De tool
+  SCHRIJFT NIET; ze geeft een gevalideerd `{draft, fields}`-signaal (str-whitelist per entiteit). De
+  router rendert het **échte voorgevulde formulier** in de stroom; het lid past evt. aan en klikt
+  bevestig; het **bestaande** endpoint (`POST /profiel/offering` · `/profiel/need` · `/ideeen`) commit
+  met zijn Pydantic-schema + CSRF + rate-limit. Eén schrijf-pad, één stramien per entiteit.
+- Drafts lopen door dezelfde surface-machinerie (één kanaal/event), met een `{draft, fields}`-payload.
+  "laat maar" sluit het concept zonder iets op te slaan (geen write zonder klik).
+- **Buiten scope (AVG)**: zichtbaarheid-openbaar + verwijderen blijven dedicated (consent-poort); de
+  agent draft ze niet, hij verwijst ernaar.
+- System-prompt leert de agent draften (voorstellen op basis van wat het lid zei, niet opslaan).
+- Tests: registry-grens + veld-whitelist, draft-emit-zonder-write, voorgevulde partials posten naar de
+  echte endpoints. 439 tests groen.
+
 ## [0.17.0] - 2026-06-19
 ### Added (first-run discovery — profielbouw vindbaar zonder uitleg)
 - **First-run-aanbod in de canvas**: een lid zonder (compleet) profiel krijgt één rustig, inline aanbod

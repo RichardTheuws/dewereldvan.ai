@@ -1,0 +1,24 @@
+{# Schrijf-surface (Fase 2): voorgevuld "wat ik maak"-formulier. De agent vulde de
+   velden voor; het lid past evt. aan en bevestigt. Post naar het BESTAANDE endpoint
+   (POST /profiel/offering, OfferingForm + CSRF). Bij succes vervangt de echte rij
+   deze kaart. "laat maar" sluit het concept zonder iets op te slaan (geen write). #}
+<form class="concierge-draft"
+      hx-post="/profiel/offering"
+      hx-target="closest .surface-card"
+      hx-swap="outerHTML">
+  <div class="concierge-draft__head">
+    <span aria-hidden="true">✦</span> Nieuw project — klopt het? Pas gerust aan.
+  </div>
+  <span class="field-label">Titel</span>
+  <input name="title" class="concierge-draft__field" maxlength="160" required
+         aria-label="Titel van het project"
+         value="{{ fields.title | default('') }}">
+  <span class="field-label">Beschrijving</span>
+  <textarea name="description" class="concierge-draft__field" rows="2" maxlength="4000"
+            aria-label="Beschrijving van het project">{{ fields.description | default('') }}</textarea>
+  <div class="concierge-draft__actions">
+    <button type="submit" class="btn">✦ Toevoegen</button>
+    <button type="button" class="btn btn--ghost btn--sm"
+            onclick="this.closest('.surface-card').remove()">laat maar</button>
+  </div>
+</form>

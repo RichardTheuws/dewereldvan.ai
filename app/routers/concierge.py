@@ -192,6 +192,14 @@ _SURFACE_LOADERS = {
     "profile_builder": _load_profile_builder,
 }
 
+# Schrijf-surfaces (Fase 2): entity → voorgevuld-formulier-partial. Het formulier
+# post naar het bestaande mutatie-endpoint; commit pas na de bevestig-klik.
+_DRAFT_TEMPLATES = {
+    "offering": "concierge/_draft_offering.html",
+    "need": "concierge/_draft_need.html",
+    "idea": "concierge/_draft_idea.html",
+}
+
 # Vertaal een ``navigate``-url naar een in-stroom surface voor ingelogde leden.
 # /logout en alle overige paden → None (echte navigate, verlaat de canvas).
 _NAV_TO_SURFACE: dict[str, tuple[str, dict]] = {
@@ -499,6 +507,16 @@ async def stream(
         """
         if not isinstance(signal, dict):
             return None
+        # Draft-signaal (schrijf-surface): render het voorgevulde formulier. Géén
+        # DB-write hier — het lid bevestigt straks via het bestaande endpoint.
+        if signal.get("draft"):
+            entity = signal["draft"]
+            tmpl = _DRAFT_TEMPLATES.get(entity)
+            if tmpl is None:
+                return None  # registry-grens
+            fields = signal.get("fields") or {}
+            inner = _render_str(request, tmpl, {"fields": fields})
+            return _wrap_surface("draft_" + entity, inner)
         view = signal.get("view") or ""
         params = signal.get("params") or {}
         loader = _SURFACE_LOADERS.get(view)

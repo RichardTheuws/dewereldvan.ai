@@ -397,6 +397,30 @@ def test_surface_tool_emits_on_surface(db, install_loop):
     assert signals == [{"view": "members_grid", "params": {"tag": "agents"}}]
 
 
+def test_draft_tool_emits_on_surface_without_writing(db, install_loop):
+    """Een draft-tool SCHRIJFT NIET; hij emit een {draft, fields}-signaal via het
+    surface-kanaal (de router rendert straks het voorgevulde formulier)."""
+    draft_use = _Block(
+        type="tool_use", id="d1", name="draft_offering",
+        input={"title": "AI-tool", "description": "voor de zorg"},
+    )
+    install_loop([
+        {"deltas": [], "stop_reason": "tool_use", "content": [draft_use]},
+        {"deltas": ["ok"], "stop_reason": "end_turn",
+         "content": [{"type": "text", "text": "ok"}]},
+    ])
+    signals: list[dict] = []
+    concierge_service.stream_concierge(
+        [{"role": "user", "content": "voeg een project toe"}],
+        lambda _t: None,
+        db=db,
+        on_surface=signals.append,
+    )
+    assert signals == [
+        {"draft": "offering", "fields": {"title": "AI-tool", "description": "voor de zorg"}}
+    ]
+
+
 def test_surface_tool_registered_with_contract():
     """De surface-tool is geregistreerd; het Opus-contract blijft ongewijzigd
     (geen sampling/budget-params worden door de tool-def geïntroduceerd)."""

@@ -60,6 +60,44 @@ def test_tool_surface_drops_nonscalar_and_coerces_int():
     assert r["params"] == {"maakt": "7"}
 
 
+def test_tool_draft_unknown_entity_error():
+    assert "error" in concierge_service.tool_draft("verzonnen", {"title": "x"})
+
+
+def test_tool_draft_whitelists_fields():
+    # 'body' hoort niet bij offering → gedropt; title/description blijven.
+    r = concierge_service.tool_draft(
+        "offering", {"title": "T", "body": "nope", "description": "D"}
+    )
+    assert r == {"draft": "offering", "fields": {"title": "T", "description": "D"}}
+
+
+def test_draft_tools_registered():
+    names = [t["name"] for t in concierge_service.TOOLS]
+    for n in ("draft_offering", "draft_need", "draft_idea"):
+        assert n in names
+
+
+def test_draft_partials_prefilled_and_post_to_existing_endpoints():
+    from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+    env = Environment(
+        loader=FileSystemLoader("app/templates"),
+        autoescape=select_autoescape(["html"]),
+    )
+    cases = [
+        ("concierge/_draft_offering.html", "/profiel/offering", {"title": "AI-tool"}),
+        ("concierge/_draft_need.html", "/profiel/need", {"title": "Co-founder"}),
+        ("concierge/_draft_idea.html", "/ideeen", {"title": "Donkere modus"}),
+    ]
+    for tmpl, endpoint, fields in cases:
+        html = env.get_template(tmpl).render(fields=fields)
+        assert f'hx-post="{endpoint}"' in html
+        assert f'value="{fields["title"]}"' in html
+        # Bevestigen + annuleren aanwezig; commit pas na de klik (geen auto-write).
+        assert "laat maar" in html
+
+
 def test_surface_registry_matches_tool_enum():
     surf = next(t for t in concierge_service.TOOLS if t["name"] == "surface")
     enum = set(surf["input_schema"]["properties"]["view"]["enum"])

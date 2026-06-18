@@ -1,0 +1,23 @@
+{# Schrijf-surface (Fase 2): voorgevuld idee voor de ideeënbus. Post naar het
+   BESTAANDE endpoint (POST /ideeen, IdeaForm + CSRF + rate-limit). Bij succes
+   vervangt de verse ideeënlijst deze kaart. "laat maar" sluit zonder op te slaan. #}
+<form class="concierge-draft"
+      hx-post="/ideeen"
+      hx-target="closest .surface-card"
+      hx-swap="outerHTML">
+  <div class="concierge-draft__head">
+    <span aria-hidden="true">✦</span> Een idee voor het platform — klopt het? Pas gerust aan.
+  </div>
+  <span class="field-label">Titel</span>
+  <input name="title" class="concierge-draft__field" maxlength="160" required
+         aria-label="Titel van het idee"
+         value="{{ fields.title | default('') }}">
+  <span class="field-label">Toelichting</span>
+  <textarea name="body" class="concierge-draft__field" rows="3" maxlength="4000"
+            aria-label="Toelichting op het idee">{{ fields.body | default('') }}</textarea>
+  <div class="concierge-draft__actions">
+    <button type="submit" class="btn">✦ Plaatsen</button>
+    <button type="button" class="btn btn--ghost btn--sm"
+            onclick="this.closest('.surface-card').remove()">laat maar</button>
+  </div>
+</form>

@@ -1,0 +1,23 @@
+{# Schrijf-surface (Fase 2): voorgevuld "waar ik naar zoek"-formulier. Post naar het
+   BESTAANDE endpoint (POST /profiel/need, NeedForm + CSRF). Bij succes vervangt de
+   echte rij deze kaart. "laat maar" sluit zonder iets op te slaan. #}
+<form class="concierge-draft"
+      hx-post="/profiel/need"
+      hx-target="closest .surface-card"
+      hx-swap="outerHTML">
+  <div class="concierge-draft__head">
+    <span aria-hidden="true">✦</span> Waar je naar zoekt — klopt het? Pas gerust aan.
+  </div>
+  <span class="field-label">Titel</span>
+  <input name="title" class="concierge-draft__field" maxlength="160" required
+         aria-label="Wat je zoekt"
+         value="{{ fields.title | default('') }}">
+  <span class="field-label">Beschrijving</span>
+  <textarea name="description" class="concierge-draft__field" rows="2" maxlength="4000"
+            aria-label="Toelichting op wat je zoekt">{{ fields.description | default('') }}</textarea>
+  <div class="concierge-draft__actions">
+    <button type="submit" class="btn">✦ Toevoegen</button>
+    <button type="button" class="btn btn--ghost btn--sm"
+            onclick="this.closest('.surface-card').remove()">laat maar</button>
+  </div>
+</form>
