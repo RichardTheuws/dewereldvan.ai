@@ -1,6 +1,6 @@
 # Vision — de profielbouw als levend, wordend artefact
 
-**Status**: 🟡 TER BEVESTIGING (richting vastleggen vóór herbouw) · **Datum**: 2026-06-18
+**Status**: ✅ APPROVED (richting + "volledig inline markeren" bevestigd 2026-06-18) · **Datum**: 2026-06-18
 **Leidend**: `CLAUDE.md` ervaringsmandaat + `docs/STYLEGUIDE.md` (kosmisch + eenvoudige taal).
 
 ## Het idee (één zin)
@@ -34,11 +34,13 @@ levende ervaring. De chat verdwijnt naar de achtergrond; het **artefact** (jouw 
 - **Eenvoudige taal** (geen zweverigheid), kosmische visuele identiteit.
 - **Respect voor expert-tijd**: één paragraaf in → bijna-af profiel → een paar tikken om te perfectioneren.
 
-## Open vraag voor jou
-- **Vervolgvragen**: helemaal inline-markeren (mijn voorstel), of mag de AI tóch af en toe één
-  korte vraag stellen als iets cruciaal ontbreekt (bv. je rol)? (Beide kan; bepaalt de flow.)
+## Beslist (2026-06-18)
+- **Vervolgvragen: VOLLEDIG INLINE MARKEREN.** Geen aparte AI-vraag-beurten / chat-ping-pong.
+  De AI bouwt het beste profiel uit je tekst en markeert twijfels/ontbrekende info **inline op het
+  veld** ("dit leidde ik af — klopt het?" / "vul aan"), die je met één tik bevestigt of aanpast.
 
 ## Hoe verder
-Zodra je de richting + de open vraag bevestigt, leg ik dit vast als de te bouwen spec en herbouw
-ik de profielbouw-interactie als één levende flow (ultracode). De net-gefixte enrichment/draft-engine
-hergebruiken we eronder — alleen de ervaring eromheen wordt nieuw.
+Richting is bevestigd. Volgende sessie: deze spec → herbouw van de profielbouw-interactie als één
+levende flow (ultracode). De net-gefixte enrichment/draft-engine hergebruiken we eronder — alleen de
+ervaring eromheen wordt nieuw. Meenemen: auto-crop levert óók een goede kaart-uitsnede; en de
+ledenpagina wordt een echte levende constellatie (apart "amaze"-spoor).
