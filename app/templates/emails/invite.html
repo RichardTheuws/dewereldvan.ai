@@ -1,0 +1,46 @@
+{# Groep-invite-mail — de eerste indruk voor genodigden. invite_url komt veilig
+   kant-en-klaar uit het verzendpad (settings.base_url + het actieve invite-token). #}
+{% extends "_base.html" %}
+{% block subject %}Je bent erbij — de eerste preview van dewereldvan.ai{% endblock %}
+{% block preheader %}Een besloten preview voor wie serieus met AI bouwt — maak nu je profiel.{% endblock %}
+{% block heading %}Hoi {{ name }},{% endblock %}
+{% block body %}
+  <p style="margin:0 0 14px 0;">
+    Je hebt je aangemeld voor <strong style="color:#eef0ff;">dewereldvan.ai</strong> — de besloten
+    plek voor de mensen die in Nederland en België serieus met AI bouwen. We openen nu de allereerste
+    preview, en je bent een van de eersten die erbij is.
+  </p>
+  <p style="margin:0 0 14px 0;">
+    Eerlijk: dit is nog vroeg en nog niet af — een besloten preview, alleen voor genodigden. Maar je
+    kunt nu al je eigen profiel maken: vertel wie je bent, wat je maakt en waar je naar zoekt. Onze AI
+    bouwt het met je mee — je plakt een paar links en je profiel verschijnt voor je ogen.
+  </p>
+  <p style="margin:0;">
+    Je houdt altijd de regie: je kunt je profiel met <strong style="color:#eef0ff;">één klik</strong>
+    volledig wissen, wanneer je maar wilt.
+  </p>
+{% endblock %}
+{% block cta %}
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 6px 0;">
+    <tr>
+      <td bgcolor="#f6cd86" style="border-radius:999px;">
+        <a href="{{ invite_url }}"
+           style="display:inline-block; padding:14px 30px; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:14px; font-weight:600; letter-spacing:0.03em; color:#1a1330; text-decoration:none; border-radius:999px;">
+          Maak je profiel ✦
+        </a>
+      </td>
+    </tr>
+  </table>
+  <p style="margin:10px 0 0 0; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:11px; color:#7b7ea6; word-break:break-all;">
+    of plak deze link: {{ invite_url }}
+  </p>
+  <p style="margin:18px 0 0 0; font-size:14px; line-height:1.6; color:#c6c9e6;">
+    De link is 24 uur geldig. Lukt het niet meer? Stuur me een berichtje, dan maak ik een nieuwe.
+  </p>
+  <p style="margin:14px 0 0 0; font-size:14px; line-height:1.6; color:#c6c9e6;">
+    Spreek me gerust aan via WhatsApp — mailen vind ik zelf niet zo leuk.
+  </p>
+  <p style="margin:16px 0 0 0; font-size:16px; line-height:1.6; color:#eef0ff;">
+    Tot snel in de wereld,<br>Richard
+  </p>
+{% endblock %}

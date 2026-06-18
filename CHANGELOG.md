@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.14.2] - 2026-06-18
+### Added (kosmische invite-mail — zelfde stijl als de magic-link-mails)
+- **`emails/invite.html` + `render_invite()`**: de groep-invite-mail krijgt nu de verzorgde kosmische
+  HTML (gouden pill-CTA "Maak je profiel ✦", serif-heading, donkere nebula-shell, Gmail-safe inline-CSS) —
+  exact dezelfde vormgeving als de magic-link/goedkeurings-mails, met de AVG-regel ("één klik wist alles")
+  en de persoonlijke afsluiter. (Was eerst kale tekst — de eerste indruk verdient de mooiste mail.)
+- **Bekend: uitgaande mail naar externe adressen staat nog UIT bij Cloudflare** (`email.sending.error.
+  email.sending_disabled`, 403/code 10203). Verzending naar de wachtlijst kan pas na activatie (CF-dashboard:
+  Email Sending aanzetten + verzenddomein onboarden/SPF-DKIM + token-scope) of via een andere ESP (Resend-
+  adapter bestaat al). Zie `dewereldvan-cloudflare-email` memory.
+
 ## [0.14.1] - 2026-06-18
 ### Fixed (live-test groep-invite — Postgres varchar-truncatie)
 - **Registreren via de invite-link gaf een 500 op Postgres**: `audit_log.action` was VARCHAR(18) (ooit

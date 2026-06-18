@@ -41,6 +41,7 @@ __all__ = [
     "render_magic_link",
     "render_admin_notify",
     "render_approval",
+    "render_invite",
 ]
 
 
@@ -141,6 +142,26 @@ def render_admin_notify(name: str, email: str, queue_url: str) -> str:
         email=email,
         queue_url=queue_url,
     )
+
+
+def render_invite(name: str, invite_url: str) -> str:
+    """HTML-body voor de groep-invite-mail (de eerste indruk voor genodigden).
+
+    ``invite_url`` komt kant-en-klaar uit het verzendpad (``settings.base_url`` +
+    het actieve invite-token); hier alleen in een knop-href gezet.
+    """
+    fallback = _inline_shell(
+        heading=f"Hoi {escape(name)},",
+        body_html=(
+            "<p style='margin:0 0 12px 0;'>Je bent uitgenodigd voor de besloten "
+            "preview van dewereldvan.ai — de plek voor wie in NL &amp; BE serieus "
+            "met AI bouwt. Maak nu je eigen profiel; onze AI bouwt het met je mee.</p>"
+            "<p style='margin:0;'>Je houdt altijd de regie: je kunt je profiel met "
+            "één klik volledig wissen, wanneer je maar wilt.</p>"
+        ),
+        cta=_inline_button("Maak je profiel", invite_url),
+    )
+    return _render("invite.html", fallback, name=name, invite_url=invite_url)
 
 
 def render_approval(name: str, login_url: str) -> str:
