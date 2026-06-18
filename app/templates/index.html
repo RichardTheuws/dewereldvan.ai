@@ -1,19 +1,110 @@
-{% extends "base.html" %}
-{% block title %}dewereldvan.ai — ledenplatform{% endblock %}
-{% block content %}
-<section class="text-center py-12">
-  <h1 class="text-4xl font-bold tracking-tight text-slate-900">De wereld van ons</h1>
-  <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-600">
-    Een plek voor de leden van onze groep om te laten zien wie ze zijn,
-    wat ze maken en waar ze naar op zoek zijn.
-  </p>
-  <div class="mt-8 flex items-center justify-center gap-4">
-    <a href="/register" class="rounded-md bg-emerald-600 px-5 py-2.5 text-white font-medium hover:bg-emerald-700">
-      Word lid
-    </a>
-    <a href="/login" class="rounded-md border border-slate-300 px-5 py-2.5 font-medium hover:bg-white">
-      Inloggen
-    </a>
+<!DOCTYPE html>
+<html lang="nl">
+{# De voordeur (/) — kosmische, levende constellatie-home. Standalone
+   cosmic-document (extendt base.html NIET): bezit zelf <body class="cosmic">,
+   includet de achtergrond-partials en het levende #stars-canvas als hero-veld.
+   Werkt voor anonieme bezoekers (uitnodigend) én ingelogde leden (de voordeur
+   naar het speelveld). Indexeerbaar. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = false %}
+  {% set seo_title = "dewereldvan.ai — de wereld van de scherpste AI-makers" %}
+  {% set seo_desc = "Een besloten plek voor wie in NL & BE serieus met AI bouwt. Maak je profiel, ontdek wat anderen maken, deel waar je naar zoekt." %}
+  {% set og_type = "website" %}
+  {% set og_image = none %}
+  {% set jsonld = none %}
+  {% include "_seo_head.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
+
+  {% set logged_in = request.session.get("member_id") %}
+  <div class="wrap">
+    {% set nav_active = "home" %}
+    {% include "_cosmic_nav.html" %}
+
+    <main class="pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">
+          {% if logged_in %}WELKOM TERUG{% else %}DE WERELD VAN{% endif %}{% if member_count and member_count > 0 %} · {{ member_count }} MAKERS{% endif %}
+        </div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">
+          {% if logged_in %}Welkom in de wereld.{% else %}De wereld van de scherpste AI-makers.{% endif %}
+        </h1>
+        <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
+          {% if logged_in %}Ga verder met je profiel, of ontdek wat de anderen maken.{% else %}Een besloten plek voor wie in NL &amp; BE serieus met AI bouwt. Maak je profiel, ontdek wat anderen maken, deel waar je naar zoekt.{% endif %}
+        </p>
+        <div class="mt-8 flex flex-wrap items-center gap-3" data-reveal style="--d:480ms">
+          {% if logged_in %}
+          <a class="btn" href="/profiel/ai/bouwen">Naar mijn profiel</a>
+          <a class="btn btn--ghost" href="/leden">Ontdek de makers</a>
+          {% else %}
+          <a class="btn" href="/register">Word lid</a>
+          <a class="btn btn--ghost" href="/leden">Bekijk de makers</a>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="mt-16">
+        <div class="section-title" data-reveal style="--d:560ms">Het speelveld</div>
+        <div class="grid mt-6">
+          {# 1. De makers — echte deur (publiek). Toont een constellatie-preview
+             van echte leden bij ≥3 publieke makers; anders pure tekstkaart. #}
+          <a class="card" href="/leden" data-reveal style="--d:620ms">
+            <div class="card-label">De makers</div>
+            <div class="card-desc">Ontdek wie er in NL &amp; BE serieus met AI bouwt.</div>
+            {% if preview_stars and preview_stars | length >= 3 %}
+            <div class="home-gate__stars" aria-hidden="true">
+              {% for p in preview_stars %}
+              {% set _src = (p.photo_url | safe_url) if p.photo_url else '' %}
+              <span class="member-star__avatar {% if not _src %}member-star__avatar--initials{% endif %}">
+                {% if _src %}<img src="{{ _src }}" alt="" loading="lazy">{% else %}{{ (p.display_name or '?')[:1] | upper }}{% endif %}
+              </span>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </a>
+
+          {# 2. Ideeën — voor leden; anon wijst eerlijk gelabeld naar de route
+             (die zelf naar /login redirect). #}
+          <a class="card" href="/ideeen" data-reveal style="--d:680ms">
+            <div class="card-label">Ideeën</div>
+            <div class="card-desc">Stel voor wat dit platform moet worden — en stem mee.</div>
+            {% if not logged_in %}<div class="home-gate__note">voor leden</div>{% endif %}
+          </a>
+
+          {# 3. Roadmap — idem. #}
+          <a class="card" href="/roadmap" data-reveal style="--d:740ms">
+            <div class="card-label">Roadmap</div>
+            <div class="card-desc">Zie waar we mee bezig zijn en wat eraan komt.</div>
+            {% if not logged_in %}<div class="home-gate__note">voor leden</div>{% endif %}
+          </a>
+
+          {# 4. Jouw profiel — alleen ingelogd. #}
+          {% if logged_in %}
+          <a class="card" href="/profiel/ai/bouwen" data-reveal style="--d:800ms">
+            <div class="card-label">Jouw profiel</div>
+            <div class="card-desc">Bouw of verfijn je profiel — wie je bent en waar je naar zoekt.</div>
+          </a>
+          {% endif %}
+        </div>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:880ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+    </footer>
   </div>
-</section>
-{% endblock %}
+
+  {% if logged_in %}{% include "_feedback_affordance.html" %}{% endif %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

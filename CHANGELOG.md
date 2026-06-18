@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.11.0] - 2026-06-18
+### Added (kosmische voordeur + innovatieve navigatie + speelveld-samenhang)
+- **Kosmische home (`/`)**: de lichte "De wereld van ons"-landing vervangen door een standalone
+  `<body class="cosmic">`-voordeur met levend sterrenveld, getrapte entree, en speelveld-poortkaarten
+  (3 anon / 4 ingelogd) + één echt signaal (aantal publieke makers) + constellatie-preview bij ≥3 leden.
+  Werkt voor anon (uitnodigend) én ingelogd (voordeur naar het speelveld). SEO-indexeerbaar.
+- **Innovatieve hoofdnavigatie** (`_cosmic_nav.html`): één herbruikbare, kosmische nav (Makers/Ideeën/
+  Roadmap + login/admin-state) met `aria-current`-wayfinding, toetsenbord/mobiel/reduced-motion-veilig.
+  Vervangt de ad-hoc `.c-head`-headers op de speelveld-pagina's (`/leden`, `/ideeen`, `/roadmap`,
+  profielbouw); publieke detailpagina's houden bewust hun eigen focus.
+### Fixed (integratie-review — twee majors)
+- **Lege canonical op de home**: de `/`-route gaf geen `canonical` mee → `<link rel="canonical" href="">`.
+  Nu `seo_service.canonical_url("/")` (geen self-canonical-regressie).
+- **Admin-Beheer-link werkte alleen op `/ideeen`**: de nav las een per-route `is_admin`-context i.p.v. de
+  sessie. Nu `request.session.get("is_admin")` (spiegelt `base.html`) → Beheer-link overal, geen lek voor leden.
+- Regressietests toegevoegd (canonical-niet-leeg, admin-Beheer-overal, geen-lek-voor-leden). 297 tests groen.
+
 ## [0.10.2] - 2026-06-18
 ### Docs
 - **`docs/PRD-verificatie-links.md`** — PRD voor verificatie- & toegangs-links: (a) verificatie-link

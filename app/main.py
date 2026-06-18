@@ -10,19 +10,20 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.config import settings
 from app.csrf import CSRFMiddleware, get_csrf_token
-from app.db import engine
+from app.db import engine, get_db
 from app.deps import _RedirectToLogin
 from app.routers import (
     admin,
@@ -38,6 +39,7 @@ from app.routers import (
     roadmap,
     seo,
 )
+from app.services import members_service, seo_service
 
 logging.basicConfig(level=logging.INFO)
 
@@ -144,8 +146,23 @@ def create_app() -> FastAPI:
 
 def _register_core_routes(app: FastAPI) -> None:
     @app.get("/", response_class=HTMLResponse)
-    def index(request: Request) -> HTMLResponse:
-        return templates.TemplateResponse(request, "index.html")
+    def index(
+        request: Request, db: Session = Depends(get_db)
+    ) -> HTMLResponse:
+        # De voordeur toont één echt signaal (aantal publieke makers) + een
+        # constellatie-preview. Eén poort-call (zelfde eager-load als /leden),
+        # daarna in-memory tellen + slicen — geen tweede query.
+        public_profiles = members_service.list_public_profiles(db)
+        return templates.TemplateResponse(
+            request,
+            "index.html",
+            {
+                "member_count": len(public_profiles),
+                "preview_stars": public_profiles[:5],
+                # Publieke voordeur: schone canonical/og:url (geen lege href="").
+                "canonical": seo_service.canonical_url("/"),
+            },
+        )
 
     @app.get("/healthz")
     def healthz() -> JSONResponse:

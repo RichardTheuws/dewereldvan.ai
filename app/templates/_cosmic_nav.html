@@ -1,0 +1,28 @@
+{# Herbruikbare kosmische hoofdnav. Vervangt de ad-hoc .c-head-headers.
+   Leest request.session voor login- én admin-state (geen per-route context nodig);
+   verwacht optioneel nav_active (str). Werkt zonder JS; reduced-motion-safe. #}
+<nav class="cnav" aria-label="Hoofdnavigatie" data-reveal style="--d:60ms">
+  <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+
+  <div class="cnav__links">
+    <a class="cnav__link {% if nav_active == 'leden' %}cnav__link--active{% endif %}"
+       href="/leden" {% if nav_active == 'leden' %}aria-current="page"{% endif %}>Makers</a>
+    <a class="cnav__link {% if nav_active == 'ideeen' %}cnav__link--active{% endif %}"
+       href="/ideeen" {% if nav_active == 'ideeen' %}aria-current="page"{% endif %}>Ideeën</a>
+    <a class="cnav__link {% if nav_active == 'roadmap' %}cnav__link--active{% endif %}"
+       href="/roadmap" {% if nav_active == 'roadmap' %}aria-current="page"{% endif %}>Roadmap</a>
+  </div>
+
+  <div class="cnav__end">
+    {% if request.session.get("is_admin") %}
+    <a class="cnav__link cnav__link--admin" href="/admin/queue">Beheer</a>
+    {% endif %}
+    {% if request.session.get("member_id") %}
+    <a class="cnav__link {% if nav_active == 'profiel' %}cnav__link--active{% endif %}"
+       href="/profiel/ai/bouwen" {% if nav_active == 'profiel' %}aria-current="page"{% endif %}>Mijn profiel</a>
+    {% else %}
+    <a class="cnav__link" href="/login">Inloggen</a>
+    <a class="btn btn--ghost btn--sm" href="/register">Word lid</a>
+    {% endif %}
+  </div>
+</nav>

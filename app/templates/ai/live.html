@@ -35,13 +35,8 @@
   {% include "profiles/_cosmic_bg.html" %}
 
   <div class="wrap wrap--narrow {{ emphasis_cls }}">
-    <header class="c-head" data-reveal style="--d:60ms">
-      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
-      <div class="links">
-        <a class="link" href="/leden/{{ profile.slug }}">Mijn profiel</a>
-        <a class="link" href="/profiel/bewerken">Handmatig bewerken</a>
-      </div>
-    </header>
+    {% set nav_active = "profiel" %}
+    {% include "_cosmic_nav.html" %}
 
     <main class="flex-1 pb-16">
       <div class="eyebrow" data-reveal style="--d:160ms">Profielbouw &nbsp;·&nbsp; met AI</div>

@@ -176,6 +176,106 @@
   color: var(--gold);
 }
 
+/* ---- hoofdnav (cnav) — herbruikbaar, vervangt de ad-hoc .c-head-headers ----
+   Erft de .c-head-typografie (mono 12.5px). Niet sticky/geen backdrop-filter
+   (GPU-duur op zwakke devices). Mobiel: CSS-only flex-wrap, geen hamburger. */
+.cosmic .cnav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 26px 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  flex-wrap: wrap;
+}
+.cosmic .cnav__links,
+.cosmic .cnav__end {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  color: var(--muted);
+}
+.cosmic .cnav__end {
+  margin-left: auto;
+}
+.cosmic .cnav__link {
+  color: var(--muted);
+  text-decoration: none;
+  position: relative;
+  transition: color 0.25s;
+}
+.cosmic .cnav__link:hover {
+  color: var(--gold);
+}
+.cosmic .cnav__link:focus-visible {
+  outline: none;
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.18);
+}
+/* Active-state als wayfinding: gouden glow-dot + statische underline. Geen
+   animatie → valt onder de bestaande reduced-motion-regel, blijft zichtbaar. */
+.cosmic .cnav__link--active {
+  color: var(--text);
+}
+.cosmic .cnav__link--active::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 7px;
+  border-radius: 50%;
+  vertical-align: middle;
+  background: var(--gold);
+  box-shadow: 0 0 10px 2px var(--gold);
+}
+.cosmic .cnav__link--active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: var(--gold);
+}
+.cosmic .cnav__link--admin {
+  color: var(--cyan);
+}
+@media (max-width: 640px) {
+  .cosmic .cnav {
+    gap: 12px;
+    font-size: 11.5px;
+  }
+  .cosmic .cnav__links,
+  .cosmic .cnav__end {
+    gap: 14px;
+  }
+}
+
+/* ---- home-poortkaart-accenten (constellatie-preview + sublabel) ---- */
+.cosmic .home-gate__stars {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.cosmic .home-gate__stars .member-star__avatar {
+  position: static;
+  left: auto;
+  bottom: auto;
+  width: 38px;
+  height: 38px;
+  font-size: 0.95rem;
+}
+.cosmic .home-gate__note {
+  margin-top: 12px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 /* ---- typography ---- */
 .cosmic .eyebrow {
   font-family: "JetBrains Mono", monospace;

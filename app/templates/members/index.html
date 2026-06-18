@@ -27,16 +27,8 @@
   {% include "profiles/_cosmic_bg.html" %}
 
   <div class="wrap">
-    <header class="c-head" data-reveal style="--d:60ms">
-      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
-      <div class="links">
-        {% if request.session.get("member_id") %}
-        <a class="link" href="/profiel/ai/bouwen">Mijn profiel</a>
-        {% else %}
-        <a class="link" href="/login">Inloggen</a>
-        {% endif %}
-      </div>
-    </header>
+    {% set nav_active = "leden" %}
+    {% include "_cosmic_nav.html" %}
 
     <main class="flex-1 pb-24">
       <section class="mt-6">

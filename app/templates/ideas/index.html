@@ -20,13 +20,8 @@
   {% include "profiles/_cosmic_bg.html" %}
 
   <div class="wrap wrap--narrow">
-    <header class="c-head" data-reveal style="--d:60ms">
-      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
-      <div class="links">
-        <a class="link" href="/roadmap">Roadmap</a>
-        <a class="link" href="/profiel/ai/bouwen">Mijn profiel</a>
-      </div>
-    </header>
+    {% set nav_active = "ideeen" %}
+    {% include "_cosmic_nav.html" %}
 
     <main class="flex-1 pb-24">
       <section class="mt-6">

@@ -1,6 +1,26 @@
 # PRD — Verificatie- & toegangs-links
 
-**Versie**: 0.1.0 · **Datum**: 2026-06-18 · **Status**: 🟡 APPROVAL PENDING
+**Versie**: 0.2.0 · **Datum**: 2026-06-18 · **Status**: 🟢 RICHTING VEREENVOUDIGD (besluit 2026-06-18)
+
+## 0. Besluit (2026-06-18) — vereenvoudigde richting (vervangt scope hieronder)
+De eigenaar kiest een simpeler pad dan het volledige 3-link-systeem:
+1. **Frontend eerst volledig af** (tot in het kleinste detail, launch-klaar) — vóór alles.
+2. **Eén deelbare groep-invite-link** (te delen in de WhatsApp-groep): wie 'm opent kan **direct** een
+   profiel aanmaken — **DIRECT TOELATEN** (pre-approved als lid, mag meteen profiel bouwen; geen
+   admin-queue-stap). **Geldigheid: 24 uur.** Daarna regenereert de admin een nieuwe link.
+3. **Verificatie blijft simpel**: een paar mensen worden handmatig naar **admin** gepromoot; die
+   admins gebruiken de bestaande `/admin/queue` voor moderatie achteraf. Het per-lid verificatie-link-
+   type (3a) en het e-mail-gebonden admin-grant-link-type (3b) zijn vooralsnog **NIET** nodig.
+
+Concreet te bouwen (na frontend-afronding):
+- `group_invite`-token (deel van het `access_token`-mechanisme, §4): één actieve link, 24u TTL,
+  regenereerbaar door een admin; opent een register/bouw-flow die het nieuwe lid op `approved` zet
+  (consent/AVG behouden; nooit auto-publiceren — publiceren blijft de bewuste stap van het lid).
+- Een admin-actie om een lid naar `role=admin` te promoten (handmatig, geauditeerd).
+- AVG/misbruik: 24u TTL + regenereerbaar beperkt leak-impact; rate-limit op profielaanmaak per link;
+  link deelt geen rechten anders dan "word lid + bouw je profiel".
+
+> De rest van dit document (§1–§9) blijft als referentie/achtergrond staan, maar §0 is leidend.
 
 ## 1. Doel
 Lichtgewicht, vanuit de telefoon/WhatsApp bruikbare manieren om (a) nieuwe leden te
