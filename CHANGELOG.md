@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.10.2] - 2026-06-18
+### Docs
+- **`docs/PRD-verificatie-links.md`** — PRD voor verificatie- & toegangs-links: (a) verificatie-link
+  die een lid in de WhatsApp-groep plakt en een admin aanklikt om goed te keuren, (b) e-mail-gebonden
+  single-use admin-toekenningslink, (c) wachtlijst-invite. Eén `access_token`-mechanisme bovenop de
+  bestaande approval/magic-link-flow; authz + audit + leak-model uitgewerkt. TER BEVESTIGING.
+
 ## [0.10.1] - 2026-06-18
 ### Fixed (live browser-walkthrough op de preview — kern-bug gevangen)
 - **Live materialisatie swapte niet in beeld**: het profiel verscheen pas ná een herlaad
