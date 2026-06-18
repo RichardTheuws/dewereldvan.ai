@@ -3,6 +3,12 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.9.5] - 2026-06-18
+### Docs
+- **`docs/VISION-profielbouw.md`** — noord-ster voor de profielbouw: het profiel bouwt zichtbaar
+  zichzelf terwijl je vertelt, en je verfijnt inline (incl. foto-upload op z'n plek) in één
+  doorlopende flow. Vervangt de 3-staps chat→preview→formulier. TER BEVESTIGING.
+
 ## [0.9.4] - 2026-06-18
 ### Fixed (AI-profielbouw — twee blokkerende bugs op productie gediagnosticeerd)
 - **Chat brak op beurt 2** ("Er ging iets mis"): teruggespeelde server-tool-blokken
