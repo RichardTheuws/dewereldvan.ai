@@ -402,7 +402,9 @@ def test_migration_downgrade_is_reversible(migrated):
     from sqlalchemy import inspect
 
     engine, cfg = migrated
-    command.downgrade(cfg, "-1")
+    # Downgrade naar de revisie vóór group_invite (robuust tegen latere migraties
+    # bovenop de kop, zoals 0008): de tabel moet dan weg zijn.
+    command.downgrade(cfg, "0006_concierge")
     insp = inspect(engine)
     assert "group_invite" not in insp.get_table_names()
     command.upgrade(cfg, "head")

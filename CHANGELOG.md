@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.14.1] - 2026-06-18
+### Fixed (live-test groep-invite — Postgres varchar-truncatie)
+- **Registreren via de invite-link gaf een 500 op Postgres**: `audit_log.action` was VARCHAR(18) (ooit
+  gesized op de langste enum-waarde), maar de nieuwe audit-actie `invite_registration` is 19 tekens →
+  `StringDataRightTruncation`. SQLite negeert varchar-lengtes en miste het in de tests; de live browser-test
+  ving het. Fix: migratie `0008` verbreedt de kolom naar VARCHAR(64) (dialect-bewust; SQLite no-op) en het
+  ORM-model zet nu expliciet `length=64` zodat een nieuwe audit-actie niet stil afkapt.
+
 ## [0.14.0] - 2026-06-18
 ### Added (volledige profielverwijdering — data-regie, AVG)
 - **"Wis mijn profiel volledig"**: een prominente, altijd-bereikbare knop (op `/profiel/bewerken` én de

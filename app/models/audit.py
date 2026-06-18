@@ -15,8 +15,11 @@ class AuditLog(Base):
     __tablename__ = "audit_log"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    # Expliciete, ruime lengte (64) i.p.v. de auto-sizing op de langste enum-waarde:
+    # zo breekt een nieuwe, langere audit-actie niet stil op Postgres (zie 0008 —
+    # ``invite_registration`` = 19 > de oude VARCHAR(18)). SQLite negeert de lengte.
     action: Mapped[AuditAction] = mapped_column(
-        SQLEnum(AuditAction, name="audit_action", native_enum=False),
+        SQLEnum(AuditAction, name="audit_action", native_enum=False, length=64),
         nullable=False,
         index=True,
     )

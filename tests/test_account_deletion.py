@@ -383,14 +383,16 @@ def test_farewell_page_is_noindex_and_sessionless(make_client):
 # --------------------------------------------------------------------------- #
 # Migratie-keten                                                               #
 # --------------------------------------------------------------------------- #
-def test_migration_head_is_0007_no_0008_needed():
-    """member_deleted is een additieve VARCHAR-enum-waarde → geen DDL/0008.
+def test_erasure_uses_additive_enum_no_schema_change():
+    """De wis-feature zelf vereiste geen eigen migratie: ``member_deleted`` is een
+    additieve VARCHAR-enum-waarde en de geraakte FK's (audit_log,
+    group_invite.created_by) zijn al ``SET NULL``.
 
-    De FK's die de wissing raakt (audit_log, group_invite.created_by) zijn al
-    ``SET NULL``; er hoeft geen FK-on-delete te wijzigen. We borgen hier dat de
-    keten-kop 0007 blijft en er geen ongebruikte 0008 is binnengeslopen.
+    (0008 bestaat los hiervan: het verbreedt ``audit_log.action`` naar VARCHAR(64)
+    omdat de langere invite-actie de oude VARCHAR(18) overschreed — niet de wissing.)
     """
-    versions = Path("alembic/versions")
-    revs = {p.stem for p in versions.glob("0*.py")}
+    from app.models.base import AuditAction
+
+    assert AuditAction.member_deleted.value == "member_deleted"
+    revs = {p.stem for p in Path("alembic/versions").glob("0*.py")}
     assert "0007_group_invite" in revs
-    assert not any(r.startswith("0008") for r in revs)
