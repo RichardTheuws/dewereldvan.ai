@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.17.0] - 2026-06-19
+### Added (first-run discovery — profielbouw vindbaar zonder uitleg)
+- **First-run-aanbod in de canvas**: een lid zonder (compleet) profiel krijgt één rustig, inline aanbod
+  ("Zal ik je profiel opbouwen? Heb je een website? Dan scan ik die vast…") met een CTA die de
+  profielbouw-surface in de stroom opent (`data-canvas-ask`). Geen pop-up; verdwijnt zodra het profiel
+  compleet is (gegated op `completeness`). Lost op dat een nieuw lid niet wíst dat het de agent om
+  profielbouw kon vragen.
+- De chips blijven puur ontdek-laag (makers/roadmap/tag-overlap); de profielbouw-chip-naar-de-pagina is
+  vervangen door het in-canvas aanbod. 434 tests groen.
+
 ## [0.16.0] - 2026-06-19
 ### Added (conversationele profielbouw in de canvas — variant A, eerste deel)
 PRD: `docs/PRD-conversationele-profielbouw.md`. Doel: profielbouw mag niet voelen als werk.

@@ -64,6 +64,21 @@
       </form>
     </section>
 
+    {# First-run: een lid zonder (compleet) profiel krijgt één rustig aanbod om het
+       op te bouwen — geen pop-up, inline, verdwijnt zodra het profiel compleet is.
+       De CTA opent de profielbouw-surface in de stroom (data-canvas-ask). #}
+    {% if needs_profile %}
+    <div class="canvas-firstrun" role="note" data-reveal style="--d:560ms">
+      <div class="canvas-firstrun__eyebrow"><span aria-hidden="true">✦</span> je profiel</div>
+      <p class="canvas-firstrun__text">
+        Zal ik je profiel opbouwen? Heb je een website? Dan scan ik die vast om te
+        weten wie je bent — één link en ik doe de rest. Of vertel kort wie je bent.
+      </p>
+      <button type="button" class="btn canvas-firstrun__go"
+              data-canvas-ask="Bouw mijn profiel.">Bouw mijn profiel ✦</button>
+    </div>
+    {% endif %}
+
     {# De levende stroom (SSE) onder één EventSource — host bezeten door de canvas. #}
     <div id="concierge-materialisatie" class="canvas-stream mt-10" hx-ext="sse">
       <div id="concierge-flow" class="concierge-flow" role="status" aria-live="polite"></div>

@@ -307,24 +307,8 @@ def select_chips(
                     )
                 )
 
-    # 2. Eigen profiel bijna af → echte link naar de AI-bouwpagina.
-    if (
-        viewer is not None
-        and viewer.profile is not None
-        and "profiel_bijna_af" not in dismissed
-    ):
-        pct = viewer.profile.completeness
-        if _COMPLETENESS_MIN <= pct < 100:
-            missing = _missing_label(viewer.profile)
-            if missing:
-                chips.append(
-                    Nudge(
-                        kind="profiel_bijna_af",
-                        message=f"Maak je profiel af — {missing} ontbreekt nog",
-                        action_label="maak je profiel af",
-                        action="navigate:/profiel/ai/bouwen",
-                    )
-                )
+    # (Profielbouw zit niet in de chips: het prominente first-run-aanbod ín de
+    #  canvas dekt dat in-stroom. De chips zijn de ontdek-laag.)
 
     # 3. Makers in de gids (gegrond op een echte telling) → in-stroom ledengrid.
     if "nieuwe_makers" not in dismissed:

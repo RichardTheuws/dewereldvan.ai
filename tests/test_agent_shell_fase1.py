@@ -310,6 +310,37 @@ def test_canvas_footer_fallback_real_links_and_noscript(make_client, SessionTest
     assert "<noscript>" in body
 
 
+def test_canvas_firstrun_offer_for_incomplete_profile(make_client, SessionTest):
+    """First-run: een lid zonder (compleet) profiel krijgt het bouw-aanbod inline."""
+    mid = _seed_approved(SessionTest)  # geen profiel
+    body = make_client(mid).get("/").text
+    assert "canvas-firstrun" in body
+    assert "Bouw mijn profiel" in body
+
+
+def test_canvas_no_firstrun_for_complete_profile(make_client, SessionTest):
+    from app.models import Profile
+
+    s = SessionTest()
+    m = Member(email="done@x.nl", name="Klaar", status=MemberStatus.approved)
+    s.add(m)
+    s.flush()
+    s.add(
+        Profile(
+            member_id=m.id,
+            slug="klaar",
+            display_name="Klaar",
+            visibility=Visibility.public,
+            completeness=100,
+        )
+    )
+    s.commit()
+    mid = m.id
+    s.close()
+    body = make_client(mid).get("/").text
+    assert "canvas-firstrun" not in body
+
+
 def test_chips_route_renders_at_least_roadmap(make_client, SessionTest):
     mid = _seed_approved(SessionTest, public_profile=True)
     resp = make_client(mid).get("/concierge/chips")

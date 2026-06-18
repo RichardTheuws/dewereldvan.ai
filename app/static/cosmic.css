@@ -2694,3 +2694,27 @@
   transition: color 0.16s ease;
 }
 .profile-builder__full:hover { color: var(--text); }
+
+/* ---- First-run profiel-aanbod (rustige inline-kaart, geen pop-up) ---- */
+.canvas-firstrun {
+  margin-top: 26px;
+  max-width: 620px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px 22px;
+  background: linear-gradient(180deg, rgba(63, 210, 255, 0.045), rgba(255, 255, 255, 0.02));
+}
+.canvas-firstrun__eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.canvas-firstrun__eyebrow span[aria-hidden] { color: var(--gold); }
+.canvas-firstrun__text {
+  margin: 10px 0 16px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.canvas-firstrun__go { font-size: 14px; }

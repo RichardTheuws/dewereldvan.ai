@@ -164,8 +164,14 @@ def _register_core_routes(app: FastAPI) -> None:
         # Anoniem ÉN pending/geschorst krijgen de klassieke, crawlbare voordeur,
         # zodat showcase/SEO + de publieke launch heel blijven.
         if member is not None and member.status == MemberStatus.approved:
+            # First-run guidance: een lid zonder (compleet) profiel krijgt het
+            # rustige "zal ik je profiel opbouwen?"-aanbod in de canvas.
+            profile = member.profile
+            needs_profile = profile is None or (profile.completeness or 0) < 100
             return templates.TemplateResponse(
-                request, "concierge/_canvas.html", {"member": member}
+                request,
+                "concierge/_canvas.html",
+                {"member": member, "needs_profile": needs_profile},
             )
         # De voordeur toont één echt signaal (aantal publieke makers) + een
         # constellatie-preview. Eén poort-call (zelfde eager-load als /leden),
