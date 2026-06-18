@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Afscheidspagina na een volledige profiel-/accountverwijdering (AVG).
+   Standalone cosmic-document (extendt base.html NIET), noindex, sessieloos:
+   geen DB- of sessie-reads — het lid bestaat niet meer. Eenvoudige, heldere NL
+   in de kosmische identiteit. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Je profiel is gewist · dewereldvan.ai</title>
+  <meta name="robots" content="noindex">
+  {% include "_favicon.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
+
+  <div class="wrap wrap--narrow">
+    <main class="flex-1" style="min-height:70vh;display:flex;flex-direction:column;justify-content:center;padding-top:8vh;padding-bottom:8vh">
+      <div class="eyebrow" data-reveal style="--d:80ms">Je data, jouw regie</div>
+      <h1 class="headline mt-5" data-reveal style="--d:200ms">Je profiel is gewist.</h1>
+      <p class="lede mt-6" style="max-width:54ch;--d:320ms" data-reveal>
+        We hebben je profiel en al je gegevens definitief verwijderd. Er staat
+        niets meer van je bij ons — geen profiel, geen projecten, geen foto.
+      </p>
+      <p class="muted mt-5" style="max-width:54ch;font-size:0.97rem;line-height:1.6;--d:420ms" data-reveal>
+        Je bent uitgelogd. Wil je later terugkomen? Dan kun je je opnieuw
+        aanmelden — je begint dan met een schone start.
+      </p>
+      <div class="mt-10" data-reveal style="--d:540ms">
+        <a class="btn" href="/">Terug naar de voordeur</a>
+      </div>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:640ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/register">Opnieuw aanmelden</a>
+    </footer>
+  </div>
+</body>
+</html>

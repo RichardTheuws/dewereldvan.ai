@@ -168,6 +168,21 @@
           <button type="submit" class="btn btn--ghost btn--sm">Opslaan</button>
         </form>
       </section>
+
+      {# --- Je data, jouw regie: volledige verwijdering (AVG, altijd bereikbaar) --- #}
+      <section class="card mt-8" style="padding:24px;--d:720ms" data-reveal>
+        <h2 class="section-title" style="margin-bottom:14px">Je data, jouw regie</h2>
+        <p class="muted" style="margin:0 0 18px;font-size:0.95rem;line-height:1.6;max-width:54ch">
+          Je kunt je profiel altijd, in één keer, volledig verwijderen. We halen
+          dan écht alles weg: je profiel, je projecten, waar je naar zoekt, je
+          foto en je account. Er blijft niets van je achter.
+        </p>
+        <form method="post" action="/profiel/verwijderen"
+              onsubmit="return confirm('Dit verwijdert je profiel en alle gegevens definitief. Dit kan niet ongedaan gemaakt worden.\n\nWeet je het zeker?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="btn btn--danger">Wis mijn profiel volledig</button>
+        </form>
+      </section>
     </main>
 
     <footer class="c-head" style="border-top:1px solid var(--line);--d:720ms" data-reveal>

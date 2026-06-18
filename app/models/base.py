@@ -62,6 +62,10 @@ class AuditAction(str, enum.Enum):
     # waarden, geen migratie nodig (de audit_action-kolom is geen native enum).
     invite_generated = "invite_generated"  # admin genereert/roteert de link
     invite_registration = "invite_registration"  # lid komt binnen via de link
+    # AVG: een lid wist zijn eigen account + profiel volledig (één-druk-knop).
+    # We bewaren één PII-loze audit-rij van de wissing zelf (actor/target genuld,
+    # geen e-mail/naam). VARCHAR-enum → additieve waarde, geen migratie nodig.
+    member_deleted = "member_deleted"
 
 
 class ProfileEmphasis(str, enum.Enum):

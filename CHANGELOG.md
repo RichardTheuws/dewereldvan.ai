@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.14.0] - 2026-06-18
+### Added (volledige profielverwijdering — data-regie, AVG)
+- **"Wis mijn profiel volledig"**: een prominente, altijd-bereikbare knop (op `/profiel/bewerken` én de
+  AI-bouwpagina) → één heldere bevestiging → `POST /profiel/verwijderen` wist het lid + ALLES wat eraan hangt
+  **definitief** en logt uit, met een kosmische afscheidspagina (`/profiel/gewist`).
+- `account_deletion.delete_member_completely`: verwijdert expliciet (DB-agnostisch, FK-veilige volgorde) het
+  foto-bestand op schijf, profiel + offerings (+ slug-historie) + needs + profile_links + tag-koppelingen
+  (níét de gedeelde tags), ideeën + stemmen (ook cross-member), feedback, nudge-dismissals, AI-gesprekken,
+  magic-link-tokens, en de member-row. Bestaande audit-/invite-refs worden genuld; één PII-loze `member_deleted`-
+  audit-rij blijft als minimale grondslag-traceability. **Compleetheids-test bewijst: geen wees-data, gedeelde
+  tags + andere leden intact.** 399 tests groen (10 nieuwe). Geen migratie nodig (bestaande SET NULL-FK's).
+
 ## [0.13.0] - 2026-06-18
 ### Added (groep-invite-link — directe profiel-aanmaak voor genodigden)
 - **Deelbare groep-invite-link** (PRD-verificatie-links §0): één link (`/uitnodiging/{token}`) die in de

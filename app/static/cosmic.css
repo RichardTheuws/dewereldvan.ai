@@ -470,6 +470,19 @@
   box-shadow: none;
 }
 
+/* Verfijnde "gevaar"-variant (AVG-wisknop). Geen knal-rood vlak: een rustige,
+   warm-rode rand op de ghost-knop — duidelijk maar in de kosmische identiteit. */
+.cosmic .btn--danger {
+  background: transparent;
+  color: #f7c8c2;
+  border: 1px solid rgba(232, 110, 96, 0.55);
+}
+.cosmic .btn--danger:hover {
+  border-color: rgba(232, 110, 96, 0.9);
+  background: linear-gradient(180deg, rgba(232, 110, 96, 0.1), transparent);
+  box-shadow: none;
+}
+
 /* ---- forms / inputs ---- */
 .cosmic input,
 .cosmic textarea,

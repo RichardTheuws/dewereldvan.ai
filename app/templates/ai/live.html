@@ -89,14 +89,33 @@
         {% include "ai/_publish_panel.html" %}
       </section>
 
-      {# ---- Opnieuw beginnen (AVG-reset) ---- #}
+      {# ---- Opnieuw beginnen (AVG-reset van DEZE AI-sessie, niet het account) ---- #}
       <div class="mt-12">
         <form action="/profiel/ai/opnieuw" method="post"
               onsubmit="return confirm('Het gesprek en de concept-velden van deze AI-sessie worden gewist. Doorgaan?');">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <button class="btn btn--ghost" type="submit">Opnieuw beginnen</button>
         </form>
+        <p class="muted text-sm mt-3" style="max-width:54ch">
+          "Opnieuw beginnen" wist alleen dit AI-gesprek en de concept-velden —
+          je account en profiel blijven bestaan.
+        </p>
       </div>
+
+      {# ---- Je data, jouw regie: VOLLEDIGE verwijdering (account + profiel) ---- #}
+      <section class="mt-12 card" style="padding:22px;--d:700ms" data-reveal>
+        <h2 class="section-title" style="margin-bottom:12px">Je data, jouw regie</h2>
+        <p class="muted text-sm" style="margin:0 0 16px;line-height:1.6;max-width:54ch">
+          Iets anders dan "opnieuw beginnen": je kunt je profiel en account
+          altijd, in één keer, volledig en definitief verwijderen. Alles wordt
+          weggehaald — niets blijft achter.
+        </p>
+        <form method="post" action="/profiel/verwijderen"
+              onsubmit="return confirm('Dit verwijdert je profiel en alle gegevens definitief. Dit kan niet ongedaan gemaakt worden.\n\nWeet je het zeker?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="btn btn--danger" type="submit">Wis mijn profiel volledig</button>
+        </form>
+      </section>
 
       {# Verborgen completeness-anker voor OOB-updates na elke mutatie. #}
       <div id="profiel-status" class="sr-only" aria-hidden="true">

@@ -22,6 +22,7 @@ from app.deps import current_member, require_member
 from app.models import Member, Profile
 from app.schemas.profile import NeedForm, OfferingForm, ProfileForm, VisibilityForm
 from app.services import (
+    account_deletion,
     emphasis_service,
     offering_slug,
     photo_service,
@@ -258,6 +259,38 @@ def change_visibility(
         )
     db.commit()
     return _render(request, "profiles/_completeness.html", {"profile": profile})
+
+
+# --------------------------------------------------------------------------- #
+# Volledige account-/profielverwijdering (AVG — "1 druk op de knop")          #
+# --------------------------------------------------------------------------- #
+
+
+@router.post("/profiel/verwijderen")
+def delete_account(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> RedirectResponse:
+    """Wis het volledige profiel + account van het ingelogde lid (definitief).
+
+    Eén klik (na bevestiging in de UI) verwijdert ALLES wat aan dit lid hangt
+    (zie ``account_deletion.delete_member_completely``), logt het lid uit, en
+    stuurt naar een kosmische afscheidspagina. CSRF wordt door de middleware
+    afgedwongen; ``require_member`` stuurt een anonieme aanvraag naar /login.
+    """
+    account_deletion.delete_member_completely(db, member)
+    db.commit()
+    # Uitloggen: de sessie wijst nu naar een niet-bestaand lid; volledig wissen.
+    request.session.clear()
+    # 303 → GET op de afscheidspagina (geen sessie/DB-reads nodig daar).
+    return RedirectResponse(url="/profiel/gewist", status_code=303)
+
+
+@router.get("/profiel/gewist", response_class=HTMLResponse)
+def deleted_farewell(request: Request) -> HTMLResponse:
+    """Kosmische afscheidspagina na een volledige wissing (noindex, sessieloos)."""
+    return _render(request, "profiles/deleted.html")
 
 
 # --------------------------------------------------------------------------- #
