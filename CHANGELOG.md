@@ -3,6 +3,12 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.6.1] - 2026-06-18
+### Docs
+- `docs/PRD-ai-profiel.md`: PRD voor AI-native profielbouw — gesprek met Claude Opus 4.8
+  (`web_fetch`/`web_search` + structured outputs) dat links ophaalt/verrijkt incl. echte beelden,
+  plus fal.ai-cover. Datamodel, edge cases, fasering. APPROVAL PENDING.
+
 ## [0.6.0] - 2026-06-17
 ### Added
 - `CloudflareEmailSender` (`app/email/cloudflare_sender.py`): productie-e-mail via de
