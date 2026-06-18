@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.9.3] - 2026-06-18
+### Changed
+- **Copy-sweep: zweverige taal gegrond** op de nieuwe schermen volgens de aangescherpte toon —
+  ideeën-lege-staat ("sterrenveld dat wacht op jouw ster" -> "Wees de eerste — gooi je idee erin"),
+  leden-lege-staten ("Geen ster op deze coördinaten" -> "Niets gevonden"), leden-hero ("levend
+  netwerk / Elke ster" -> direct), ideeën/roadmap-intro's. Visuele kosmische identiteit blijft.
+### Added
+- **Roadmap geseed** met de gevraagde toekomst-features (status: overwegen): events met rollen
+  (ik spreek / ik ben erbij / ik organiseer), forum met subgroepen + threads, direct messaging,
+  notificaties, member dashboard.
+
 ## [0.9.2] - 2026-06-18
 ### Changed
 - **Onboarding `/welkom` herschreven** tot een echte onboarding i.p.v. een auto-doorverwijspagina:
