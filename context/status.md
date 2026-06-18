@@ -1,10 +1,16 @@
 # Project Status
 
-**Laatste update**: 2026-06-17
+**Laatste update**: 2026-06-19
 
 ## Huidige Focus
-Teaser is **live op https://dewereldvan.ai** (community warm maken). Fase 0+1-code staat
-gecommit (v0.4.0). Volgende: Fase 0+1 echt deployen op de M4 + Cloudflare-e-mail aansluiten.
+**Agent-Shell Fase 1 gebouwd (v0.15.0)** — voor ingelogde, goedgekeurde leden is de site nu een
+levende agent-canvas (geen menu/links; interfaces materialiseren in-stroom via de surface-tool over een
+vaste registry). Anoniem/publiek houdt de crawlbare pagina's. Gebouwd via understand→design→red-team
+workflow (6 blockers gesloten), 430 tests groen, gecommit+gepusht op `main`. Nog **niet** gedeployed
+naar de M4-preview (handmatige stap — wacht op go).
+
+Volgende kandidaten: **Fase 2** (schrijf-surfaces: draft-tools "tonen + 1-klik bevestigen") of
+deploy v0.15.0 naar de preview om de canvas live te beoordelen.
 
 ## Open Taken
 - [ ] Email Sending-scope op het CF-token rond + verzenddomein onboarden (SPF/DKIM)
