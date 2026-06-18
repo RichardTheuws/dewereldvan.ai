@@ -81,6 +81,36 @@ class _FakeParseResponse:
         self.stop_reason = stop_reason
 
 
+class _FakeToolUse:
+    """Een ``tool_use``-content-blok zoals ``finalize_draft`` het leest."""
+
+    type = "tool_use"
+    name = "lever_profiel"
+
+    def __init__(self, data: dict) -> None:
+        self.input = data
+
+
+class _FakeCreateResponse:
+    """Antwoord van de geforceerde tool-call in ``finalize_draft``.
+
+    Bevat een ``tool_use``-blok met de profiel-dict als ``input``; bij refusal of
+    ontbrekende output is er geen tool_use-blok (zodat de service netjes faalt).
+    """
+
+    def __init__(self, parsed_output, stop_reason: str = "end_turn") -> None:
+        self.stop_reason = stop_reason
+        if stop_reason == "refusal" or parsed_output is None:
+            self.content = []
+        else:
+            data = (
+                parsed_output.model_dump()
+                if hasattr(parsed_output, "model_dump")
+                else parsed_output
+            )
+            self.content = [_FakeToolUse(data)]
+
+
 class _FakeMessages:
     def __init__(self, owner: FakeAnthropic) -> None:
         self._owner = owner
@@ -88,6 +118,12 @@ class _FakeMessages:
     def stream(self, **kwargs):
         self._owner.stream_kwargs.append(kwargs)
         return _FakeStream(self._owner)
+
+    def create(self, **kwargs):
+        self._owner.create_kwargs.append(kwargs)
+        return _FakeCreateResponse(
+            self._owner.parsed_output, self._owner.parse_stop_reason
+        )
 
     def parse(self, **kwargs):
         self._owner.parse_kwargs.append(kwargs)
@@ -126,6 +162,7 @@ class FakeAnthropic:
         self.stream_calls = 0
         self.stream_kwargs: list[dict] = []
         self.parse_kwargs: list[dict] = []
+        self.create_kwargs: list[dict] = []
         self.messages = _FakeMessages(self)
 
 

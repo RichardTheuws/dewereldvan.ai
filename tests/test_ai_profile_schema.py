@@ -130,15 +130,17 @@ def test_finalize_draft_maps_mocked_structured_output(monkeypatch):
     assert draft.seeking == "samenwerking"
     assert draft.tags == ["python"]
 
-    # The forbidden sampling params are never sent; adaptive thinking always is.
-    (kw,) = fake.parse_kwargs
-    assert kw["thinking"] == {"type": "adaptive"}
+    # Verboden sampling-params worden nooit meegestuurd.
+    (kw,) = fake.create_kwargs
     assert "temperature" not in kw
     assert "top_p" not in kw
     assert "top_k" not in kw
     assert "budget_tokens" not in kw
-    # The finalize call carries no web tools (deterministic JSON step).
-    assert "tools" not in kw
+    # Finalize forceert een tool-call (structured output op SDK 0.69.0 zonder
+    # messages.parse/output_config); geen thinking bij geforceerde tool_choice.
+    assert kw["tool_choice"] == {"type": "tool", "name": "lever_profiel"}
+    assert kw["tools"][0]["name"] == "lever_profiel"
+    assert "thinking" not in kw
 
 
 def test_finalize_draft_refusal_raises(monkeypatch):

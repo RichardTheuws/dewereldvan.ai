@@ -349,13 +349,22 @@ def _web_tools(messages: list[dict]) -> list[dict]:
     ]
 
 
-def _strip_citations(messages: list[dict]) -> list[dict]:
-    """Strip velden die de API niet als INPUT accepteert.
+# Keys die een server-tool-resultaatblok als INPUT mag dragen. De API geeft de
+# blokken retour met extra OUTPUT-velden (``citations``, ``text``, …) die als
+# input 400 geven ("Extra inputs are not permitted"). I.p.v. die velden één voor
+# één te strippen (whack-a-mole), whitelisten we de input-geldige keys.
+_TOOL_RESULT_INPUT_KEYS = ("type", "tool_use_id", "content", "is_error")
 
-    Server-tool-resultaten (web_fetch/web_search) komen retour met een
-    ``citations``-veld; dat terugsturen geeft 400 ("Extra inputs are not
-    permitted"). We verwijderen het vlak voor elke API-call. Werkt op dict-
-    blokken (uit de DB-state of ``model_dump()``), laat al het andere ongemoeid.
+
+def _strip_citations(messages: list[dict]) -> list[dict]:
+    """Saniteer assistant-content zodat ze als INPUT teruggestuurd mag worden.
+
+    Server-tool-resultaatblokken (``*_tool_result``: web_fetch/web_search/
+    code_execution/…) komen retour met output-only velden (``citations``,
+    ``text``) die de API als input weigert. We whitelisten elk zulk blok tot
+    ``_TOOL_RESULT_INPUT_KEYS`` en laten al het andere (tekst, thinking,
+    server_tool_use) ongemoeid. Werkt op dict-blokken (uit de DB-state of
+    ``model_dump()``); strings/overig passeren onveranderd.
     """
     cleaned: list[dict] = []
     for msg in messages:
@@ -363,16 +372,49 @@ def _strip_citations(messages: list[dict]) -> list[dict]:
         if isinstance(content, list):
             blocks = []
             for b in content:
-                if isinstance(b, dict) and b.get("type") in (
-                    "web_fetch_tool_result",
-                    "web_search_tool_result",
+                if isinstance(b, dict) and str(b.get("type", "")).endswith(
+                    "_tool_result"
                 ):
-                    b = {k: v for k, v in b.items() if k != "citations"}
+                    b = {k: b[k] for k in _TOOL_RESULT_INPUT_KEYS if k in b}
                 blocks.append(b)
             cleaned.append({**msg, "content": blocks})
         else:
             cleaned.append(msg)
     return cleaned
+
+
+def _assistant_text(blocks: list) -> str:
+    """Plat de tekstblokken van een assistant-turn samen tot platte tekst."""
+    parts = [
+        (b.get("text") or "")
+        for b in blocks
+        if isinstance(b, dict) and b.get("type") == "text"
+    ]
+    return "".join(parts).strip()
+
+
+def _collapse_history(messages: list[dict]) -> list[dict]:
+    """Vervang eerdere assistant-turns door hun platte tekst.
+
+    Web_fetch/code_execution-blokken van een AFGERONDE beurt terugsturen geeft
+    400's: ongeldige input-velden (citations/text) én ontbroken ``server_tool_use``-
+    paring na persist/reload. De tekst behoudt de synthese; in een nieuwe beurt
+    heeft het model de webtools nog om zo nodig opnieuw op te halen. Lege
+    assistant-turns (puur tool-use, geen tekst) vallen weg.
+    """
+    out: list[dict] = []
+    for msg in messages:
+        if (
+            isinstance(msg, dict)
+            and msg.get("role") == "assistant"
+            and isinstance(msg.get("content"), list)
+        ):
+            text = _assistant_text(msg["content"])
+            if text:
+                out.append({"role": "assistant", "content": text})
+        else:
+            out.append(msg)
+    return out
 
 
 def _block_field(block: object, key: str) -> object | None:
@@ -486,7 +528,9 @@ def stream_turn(
     """
     client = client or _client()
     pauses = 0
-    convo = list(messages)
+    # Collaps eerdere beurten naar tekst (geen server-tool-machinery terugspelen);
+    # de pause-loop hieronder voegt de CURRENT-turn-blokken vers + gepaard toe.
+    convo = _collapse_history(list(messages))
     tools = _web_tools(messages)
 
     while True:
@@ -496,7 +540,7 @@ def stream_turn(
             system=SYSTEM_PROMPT,
             thinking=THINKING,
             tools=tools,
-            messages=_strip_citations(convo),
+            messages=convo,
         ) as stream:
             # HARDE GARANTIE: de tekst-delta-stream blijft byte-identiek. We lezen
             # 'm exact zoals voorheen; thinking/tool-events worden NA de stream uit
@@ -525,17 +569,20 @@ def stream_turn(
                     MAX_PAUSE_TURNS,
                 )
                 return final
-            # Server-tool-loop: assistant-content terugsturen en OPNIEUW streamen.
-            # GEEN extra user-bericht — de server hervat de tool-loop zelf.
-            convo = convo + [
-                {
-                    "role": "assistant",
-                    "content": [
-                        b.model_dump() if hasattr(b, "model_dump") else b
-                        for b in final.content
-                    ],
-                }
-            ]
+            # Server-tool-loop: de CURRENT-turn assistant-content terugsturen en
+            # OPNIEUW streamen (GEEN extra user-bericht; de server hervat zelf). Vers
+            # uit de API => paring intact; alleen de output-only velden whitelisten.
+            convo = convo + _strip_citations(
+                [
+                    {
+                        "role": "assistant",
+                        "content": [
+                            b.model_dump() if hasattr(b, "model_dump") else b
+                            for b in final.content
+                        ],
+                    }
+                ]
+            )
             continue
 
         return final  # end_turn / max_tokens
@@ -546,38 +593,58 @@ def finalize_draft(
     *,
     client: anthropic.Anthropic | None = None,
 ) -> DraftProfile:
-    """Stap 2 — afsluitende structured-output-call (geen streaming, geen tools).
+    """Stap 2 — afsluitende structured-output via een GEFORCEERDE tool-call.
 
-    Roept ``client.messages.parse(..., output_format=DraftProfileOut)`` aan over de
-    volledige conversatie (incl. de in stap 1 opgehaalde info), checkt
-    ``stop_reason == "refusal"`` (raise ``EnrichmentRefused``) en mapt via
-    ``_to_draft`` (hallucinatie-guard: ""->None, lege rollen/projecten gedropt).
-
-    Geen ``tools`` en geen streaming hier: dit is een deterministische
-    JSON-oplevering, niet een agentische turn.
+    De gepinde anthropic-SDK (0.69.0) heeft geen ``messages.parse`` /
+    ``output_config``; we forceren daarom een tool-call met ``PROFILE_SCHEMA`` als
+    ``input_schema`` en lezen de ``tool_use``-input als de gestructureerde JSON.
+    Geen streaming, geen thinking (deterministische extractie; geforceerde
+    tool_choice). ``stop_reason == "refusal"`` -> ``EnrichmentRefused``. Mapping +
+    hallucinatie-guard via ``DraftProfileOut`` + ``_to_draft``.
     """
     client = client or _client()
 
-    resp = client.messages.parse(
+    tool = {
+        "name": "lever_profiel",
+        "description": (
+            "Lever het volledige profiel als gestructureerde data volgens het schema."
+        ),
+        "input_schema": PROFILE_SCHEMA,
+    }
+    # De conversatie eindigt op de assistant-reply; de API eist dat 'ie op een
+    # user-bericht eindigt (geen assistant-prefill). Voeg een afsluitende user-turn
+    # toe die om het profiel vraagt.
+    convo = _collapse_history(messages) + [
+        {"role": "user", "content": "Lever nu mijn profiel volgens het schema."}
+    ]
+    resp = client.messages.create(
         model=MODEL,
         max_tokens=MAX_TOKENS,
         system=SYSTEM_PROMPT + FINALIZE_INSTRUCTION,
-        thinking=THINKING,
-        messages=_strip_citations(messages),
-        output_format=DraftProfileOut,
+        messages=convo,
+        tools=[tool],
+        tool_choice={"type": "tool", "name": "lever_profiel"},
     )
 
     if _refused(resp):
         raise EnrichmentRefused()
 
-    parsed = getattr(resp, "parsed_output", None)
-    if parsed is None:
-        # Geen geldige structured output (bv. max_tokens-truncatie): faal expliciet
-        # i.p.v. een half profiel te persisteren.
+    data = next(
+        (
+            b.input
+            for b in resp.content
+            if getattr(b, "type", None) == "tool_use"
+            and getattr(b, "name", None) == "lever_profiel"
+        ),
+        None,
+    )
+    if data is None:
+        # Geen tool-output (bv. max_tokens-truncatie): faal expliciet i.p.v. een
+        # half profiel te persisteren.
         logger.warning(
-            "finalize_draft: geen parsed_output (stop_reason=%s)",
+            "finalize_draft: geen tool_use-output (stop_reason=%s)",
             getattr(resp, "stop_reason", None),
         )
         raise EnrichmentRefused()
 
-    return _to_draft(parsed)
+    return _to_draft(DraftProfileOut.model_validate(data))

@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.9.4] - 2026-06-18
+### Fixed (AI-profielbouw — twee blokkerende bugs op productie gediagnosticeerd)
+- **Chat brak op beurt 2** ("Er ging iets mis"): teruggespeelde server-tool-blokken
+  (web_fetch/code_execution) gaven 400's — eerst ongeldige input-velden (`citations`, dan
+  `text`), daarna ontbroken `server_tool_use`-paring na persist/reload. Robuuste fix:
+  eerdere beurten worden naar platte tekst gecollapst (`_collapse_history`); de synthese
+  blijft, en het model heeft de webtools nog om zo nodig opnieuw op te halen. De zeldzame
+  pause_turn-loop binnen één beurt houdt de blokken (vers + gepaard, velden gewhitelist).
+- **Draft-generatie faalde altijd**: de code riep `client.messages.parse(output_format=…)`
+  aan, dat in de gepinde anthropic-SDK (0.69.0) niet bestaat. `finalize_draft` gebruikt nu
+  een **geforceerde tool-call** met `PROFILE_SCHEMA` als `input_schema` + afsluitende
+  user-turn (de API eist dat de conversatie op een user-bericht eindigt).
+- Volledige flow live geverifieerd: beurt 1 → beurt 2 → draft (headline/rollen/projecten/tags).
+
 ## [0.9.3] - 2026-06-18
 ### Changed
 - **Copy-sweep: zweverige taal gegrond** op de nieuwe schermen volgens de aangescherpte toon —
