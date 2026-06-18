@@ -1,0 +1,251 @@
+{# De Concierge — het kosmische intent-oppervlak (PRD §2, §4.2). GEEN chatbubbel.
+
+   Globaal geïncludeerd in ÉLKE kosmische pagina (vlak vóór het constellatie-canvas).
+   Oproepbaar via ⌘K / Ctrl+K, via "/" (buiten tekstvelden), en via het rustige
+   "✦ Vraag de wereld"-veld in _cosmic_nav.html (mobiele primaire ingang). Bij
+   oproepen ademt het mesh-paneel naar voren (wrap--narrow), met de bestaande
+   [data-reveal]-entrance; de sterren erachter blijven driften. Sluiten: Esc of
+   klik-buiten. Volledige focus-trap + aria-rollen.
+
+   Twee snelheden in één veld:
+     - INSTANT-laag (geen AI): client-side index van routes + lichte makers-index,
+       lazy gefetcht van GET /concierge/index bij de eerste opening.
+     - CONCIERGE-laag (AI): ↵ of de "✦ Vraag de concierge het uit te zoeken"-rij
+       POST't naar /concierge/bericht → opent de SSE-stream (concierge/_stream.html).
+
+   Contextuele placeholder: zet per pagina `{% set concierge_context = "leden" %}`
+   (of "roadmap"/"member"/"profiel"/…) vóór deze include. `concierge_member_first`
+   levert de voornaam voor de /leden/{slug}-placeholder. #}
+{% set _ctx = concierge_context | default("") %}
+{% if _ctx == "leden" %}
+  {% set _ph = "Vraag de wereld… wie bouwt hier voice-agents?" %}
+{% elif _ctx == "roadmap" %}
+  {% set _ph = "Vraag de wereld… wat staat er gepland?" %}
+{% elif _ctx == "member" and concierge_member_first %}
+  {% set _ph = "Vraag de wereld… stel me voor aan " ~ concierge_member_first %}
+{% else %}
+  {% set _ph = "Vraag de wereld iets…" %}
+{% endif %}
+{% set _logged_in = request.session.get("member_id") %}
+
+{# Founder-herkenning (PRD §5.2): bij de eerste ingelogde sessie van een founder
+   zet het backend `session["concierge_founder_welcome"]` → de Concierge opent zich
+   éénmalig uit zichzelf met een welkomst-nudge (de enige uitzondering op
+   "alleen-bij-open"). De proactieve nudge (incl. de founder-variant) wordt lazy
+   gefetcht van GET /concierge/nudge wanneer het oppervlak met een leeg veld opent;
+   `nudge.kind == 'founder_welcome'` levert dan de inhoud. #}
+<div id="concierge-overlay" class="concierge-overlay" hidden
+     {% if request.session.get("concierge_founder_welcome") %}data-auto-open="1"{% endif %}
+     hx-headers='{"X-CSRF-Token": "{{ request.session.get("csrf_token", "") }}"}'>
+  {# Klik-buiten-vangveld (achter het paneel). #}
+  <div class="concierge-overlay__scrim" data-concierge-close aria-hidden="true"></div>
+
+  <div class="concierge-panel wrap--narrow" role="dialog" aria-modal="true"
+       aria-label="De Concierge — vraag de wereld" data-reveal>
+    <div class="concierge-panel__head">
+      <span class="concierge-panel__eyebrow"><span aria-hidden="true">✦</span> de concierge</span>
+      <button type="button" class="concierge-panel__close" data-concierge-close
+              aria-label="Sluiten (Esc)">✕</button>
+    </div>
+
+    {# ---- Invoerveld: opent de stream ---- #}
+    <form class="concierge-form" id="concierge-form"
+          hx-post="/concierge/bericht"
+          hx-target="#concierge-flow"
+          hx-swap="innerHTML"
+          autocomplete="off"
+          hx-on::after-request="if(event.detail.successful){var i=document.getElementById('concierge-input');if(i){i.value='';} var inst=document.getElementById('concierge-instant'); if(inst){inst.innerHTML='';}}">
+      <span class="concierge-form__spark" aria-hidden="true">✦</span>
+      <input type="text" id="concierge-input" name="message"
+             class="concierge-form__input"
+             placeholder="{{ _ph }}"
+             aria-label="Vraag de wereld"
+             aria-controls="concierge-instant concierge-flow"
+             autocomplete="off" spellcheck="false" />
+      <button type="submit" class="concierge-form__go" aria-label="Vraag de concierge het uit te zoeken">↵</button>
+    </form>
+
+    {# ---- INSTANT-laag: deterministische matches (geen AI), gevuld door JS ---- #}
+    <div id="concierge-instant" class="concierge-instant" role="listbox"
+         aria-label="Directe suggesties"></div>
+
+    {# ---- Proactieve nudge (alleen bij leeg oppervlak) ----
+       Lazy gefetcht van GET /concierge/nudge wanneer het oppervlak met een leeg
+       veld opent (PRD §2.4: alleen-bij-open). De route levert het gerenderde
+       _nudge.html-fragment (of leeg). Eén nudge max; leeg = niets. #}
+    <div id="concierge-nudge-slot"></div>
+
+    {# ---- De levende Concierge-flow (SSE) onder één EventSource ---- #}
+    <div id="concierge-materialisatie" hx-ext="sse">
+      {# De stream-host (reasoning/delta) wordt hier ingeswapt door /concierge/bericht. #}
+      <div id="concierge-flow" class="concierge-flow" aria-live="polite"></div>
+      {# Echte makerkaarten vloeien hier in (verse proxy in _stream.html appendt). #}
+      <div id="concierge-results" class="concierge-results"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var overlay = document.getElementById('concierge-overlay');
+  if (!overlay || overlay.dataset.bound) return;
+  overlay.dataset.bound = '1';
+
+  var panel = overlay.querySelector('.concierge-panel');
+  var input = document.getElementById('concierge-input');
+  var instant = document.getElementById('concierge-instant');
+  var lastFocus = null;
+  var indexData = null;       // { routes:[{label,url,keywords}], members:[{name,slug,tags}] }
+  var indexLoaded = false;
+  var nudgeLoaded = false;
+  var nudgeSlot = document.getElementById('concierge-nudge-slot');
+
+  function isOpen() { return !overlay.hidden; }
+
+  // Proactieve nudge: alléén bij een open oppervlak met een leeg veld (PRD §2.4).
+  // Eén fetch per pageload; de route levert het gerenderde fragment of leeg.
+  function loadNudge() {
+    if (nudgeLoaded || !nudgeSlot) return;
+    if (input && input.value.trim()) return;  // niet bij een al-ingevuld veld.
+    nudgeLoaded = true;
+    fetch('/concierge/nudge', { headers: { 'HX-Request': 'true' }, credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.text() : ''; })
+      .then(function (html) {
+        if (!html || !html.trim()) return;
+        nudgeSlot.innerHTML = html;
+        try { if (window.htmx) htmx.process(nudgeSlot); } catch (e) {}
+      })
+      .catch(function () { /* nudge faalt stil; de rest werkt door */ });
+  }
+
+  function loadIndex() {
+    if (indexLoaded) return;
+    indexLoaded = true;
+    fetch('/concierge/index', { headers: { 'HX-Request': 'true' }, credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (d) { indexData = d; renderInstant(); } })
+      .catch(function () { /* instant-laag faalt stil; de AI-laag werkt door */ });
+  }
+
+  function norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+
+  function renderInstant() {
+    if (!instant) return;
+    var q = norm(input ? input.value : '').trim();
+    if (!q || !indexData) { instant.innerHTML = ''; return; }
+    var rows = [];
+
+    (indexData.routes || []).forEach(function (rt) {
+      var hay = norm(rt.label) + ' ' + norm((rt.keywords || []).join(' '));
+      if (hay.indexOf(q) !== -1) {
+        rows.push({ kind: 'route', label: '→ Ga naar ' + rt.label, url: rt.url });
+      }
+    });
+    (indexData.members || []).forEach(function (m) {
+      var hay = norm(m.name) + ' ' + norm((m.tags || []).join(' '));
+      if (hay.indexOf(q) !== -1) {
+        rows.push({ kind: 'member', label: m.name, sub: (m.tags || []).slice(0, 3).join(' · '), url: '/leden/' + m.slug });
+      }
+    });
+    rows = rows.slice(0, 6);
+
+    var html = rows.map(function (r) {
+      var sub = r.sub ? '<span class="concierge-instant__sub">' + escapeHtml(r.sub) + '</span>' : '';
+      return '<a class="concierge-instant__row" role="option" href="' + escapeHtml(r.url) + '">' +
+             '<span class="concierge-instant__label">' + escapeHtml(r.label) + '</span>' + sub + '</a>';
+    }).join('');
+    // Altijd de "laat de concierge het uitzoeken"-rij als afsluiter.
+    html += '<button type="button" class="concierge-instant__row concierge-instant__ask" role="option" ' +
+            'onclick="document.getElementById(\'concierge-form\').requestSubmit()">' +
+            '<span class="concierge-instant__label">✦ Vraag de concierge het uit te zoeken</span></button>';
+    instant.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+
+  function open() {
+    if (isOpen()) { if (input) input.focus(); return; }
+    lastFocus = document.activeElement;
+    overlay.hidden = false;
+    document.body.classList.add('concierge-open');
+    loadIndex();
+    loadNudge();
+    requestAnimationFrame(function () {
+      panel.classList.add('concierge-panel--in');
+      if (input) { input.focus(); input.select(); }
+    });
+  }
+
+  function close() {
+    if (!isOpen()) return;
+    overlay.hidden = true;
+    panel.classList.remove('concierge-panel--in');
+    document.body.classList.remove('concierge-open');
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+  }
+
+  // ---- Oproep-ingangen ----
+  document.addEventListener('keydown', function (e) {
+    // ⌘K / Ctrl+K — altijd.
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault(); open(); return;
+    }
+    // "/" — alleen buiten een tekstveld.
+    if (e.key === '/' && !isOpen()) {
+      var t = e.target;
+      var tag = t && t.tagName ? t.tagName.toLowerCase() : '';
+      var typing = tag === 'input' || tag === 'textarea' || (t && t.isContentEditable);
+      if (!typing) { e.preventDefault(); open(); return; }
+    }
+    if (e.key === 'Escape' && isOpen()) { e.preventDefault(); close(); return; }
+    // Focus-trap.
+    if (e.key === 'Tab' && isOpen()) {
+      var f = panel.querySelectorAll('a[href],button:not([disabled]),input,textarea,[tabindex]:not([tabindex="-1"])');
+      f = Array.prototype.filter.call(f, function (el) { return el.offsetParent !== null || el === document.activeElement; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  // Nav-veld + elk element met [data-concierge-open] opent het oppervlak.
+  document.addEventListener('click', function (e) {
+    var opener = e.target.closest('[data-concierge-open]');
+    if (opener) { e.preventDefault(); open(); return; }
+    var closer = e.target.closest('[data-concierge-close]');
+    if (closer && overlay.contains(closer)) { e.preventDefault(); close(); return; }
+    // Nudge-acties.
+    var fill = e.target.closest('[data-concierge-fill]');
+    if (fill) {
+      e.preventDefault();
+      if (input) { input.value = fill.getAttribute('data-concierge-fill'); input.focus(); }
+      var form = document.getElementById('concierge-form');
+      if (form) form.requestSubmit();
+      return;
+    }
+    var go = e.target.closest('[data-concierge-go]');
+    if (go) { e.preventDefault(); window.location.href = go.getAttribute('data-concierge-go'); return; }
+  });
+
+  // Live instant-matching tijdens typen.
+  if (input) {
+    input.addEventListener('input', renderInstant);
+  }
+
+  // HX-Redirect uit de stream (navigate-tool) sluit het oppervlak vanzelf doordat
+  // de pagina navigeert; niets extra nodig.
+
+  // Expose voor expliciete openers elders (defensief).
+  window.dwvConcierge = { open: open, close: close };
+
+  // Als het oppervlak server-side al een founder-welkomst toont, open het eenmalig.
+  if (overlay.dataset.autoOpen === '1') {
+    requestAnimationFrame(open);
+  }
+})();
+</script>

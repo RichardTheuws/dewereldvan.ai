@@ -26,6 +26,7 @@
 </head>
 <body class="cosmic">
   {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
 
   <div class="wrap">
     {% set nav_active = "leden" %}
@@ -59,6 +60,8 @@
   </div>
 
   {% if request.session.get("member_id") %}{% include "_feedback_affordance.html" %}{% endif %}
+  {% set concierge_context = "leden" %}
+  {% include "_concierge.html" %}
   {% include "ai/_cosmic_canvas.html" %}
 </body>
 </html>

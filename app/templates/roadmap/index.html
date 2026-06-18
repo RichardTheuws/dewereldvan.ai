@@ -18,6 +18,7 @@
 </head>
 <body class="cosmic" hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
   {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
 
   <div class="wrap">
     {% set nav_active = "roadmap" %}
@@ -45,6 +46,8 @@
   </div>
 
   {% include "_feedback_affordance.html" %}
+  {% set concierge_context = "roadmap" %}
+  {% include "_concierge.html" %}
   {% include "ai/_cosmic_canvas.html" %}
 </body>
 </html>

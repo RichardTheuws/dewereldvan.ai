@@ -1,0 +1,17 @@
+{# Dunne, rustige kosmische preview-band (PRD §5.1). Bovenaan ÉLKE kosmische
+   pagina, boven _cosmic_nav.html. Server-rendered (werkt zonder JS): de boodschap
+   staat er gewoon. ✕ zet een sessie-cookie (`dwv_preview_dismissed`) zodat de band
+   niet elke navigatie terugkomt; bij gezette cookie rendert er niets.
+
+   Géén apart visueel idioom — `eyebrow`-register met --gold/--muted, hoort bij de
+   Concierge-familie. Reduced-motion-safe (alleen een statische band). #}
+{% if request.cookies.get("dwv_preview_dismissed") != "1" %}
+<div class="preview-banner" id="preview-banner" role="note" aria-label="Preview-melding" data-reveal style="--d:20ms">
+  <span class="preview-banner__text">
+    <span class="preview-banner__spark" aria-hidden="true">✦</span>
+    Besloten preview — alleen op uitnodiging.
+  </span>
+  <button type="button" class="preview-banner__close" aria-label="Melding sluiten"
+          onclick="(function(b){document.cookie='dwv_preview_dismissed=1; path=/; max-age=2592000; samesite=lax';b.remove();})(this.closest('.preview-banner'))">✕</button>
+</div>
+{% endif %}

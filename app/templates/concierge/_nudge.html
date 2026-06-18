@@ -1,0 +1,44 @@
+{# Proactieve suggestie (PRD §2.4). Verschijnt ALLEEN in het lege Concierge-
+   oppervlak wanneer het lid zelf opent — nooit als autonome pop-up/toast.
+   Eén regel observatie + één actie + ✕ niet-nu. Server-side gerenderd (pure SQL,
+   geen LLM) en door _concierge.html ingevoegd wanneer het oppervlak leeg opent.
+
+   Verwacht (geleverd door de route / nudge_service):
+     - nudge.kind     : str — 'profile_incomplete' | 'tag_overlap' | 'new_members'
+                          | 'founder_welcome' (de eenmalige founder-uitnodiging)
+     - nudge.text     : str — de gegronde observatie, eenvoudige NL
+     - nudge.action   : str — de knop-tekst (bv. "stel je voor", "bekijk", "afmaken")
+     - nudge.prompt   : str (optioneel) — als gezet vult de actie het Concierge-veld
+                          met deze tekst i.p.v. te navigeren (bv. connect/founder)
+     - nudge.url      : str (optioneel) — navigatie-doel als er geen prompt is
+
+   Founder-variant (`founder_welcome`) toont een persoonlijke welkomst; de actie
+   opent de Concierge-stroom in verhaal-modus via het `prompt`-veld. #}
+{% if nudge %}
+<div class="concierge-nudge {% if nudge.kind == 'founder_welcome' %}concierge-nudge--founder{% endif %}"
+     id="concierge-nudge" data-reveal role="note">
+  <div class="concierge-nudge__eyebrow">
+    <span aria-hidden="true">✦</span>
+    {% if nudge.kind == 'founder_welcome' %}een woord vooraf{% else %}de wereld merkte op{% endif %}
+  </div>
+  <p class="concierge-nudge__text">{{ nudge.text }}</p>
+  <div class="concierge-nudge__actions">
+    <button type="button" class="concierge-nudge__do"
+            {% if nudge.prompt %}
+            data-concierge-fill="{{ nudge.prompt }}"
+            {% elif nudge.url %}
+            data-concierge-go="{{ nudge.url }}"
+            {% endif %}>
+      {{ nudge.action }} →
+    </button>
+    <button type="button" class="concierge-nudge__dismiss"
+            hx-post="/concierge/nudge/dismiss"
+            hx-vals='{"nudge_kind": "{{ nudge.kind }}"}'
+            hx-target="#concierge-nudge"
+            hx-swap="outerHTML"
+            aria-label="Niet nu — verberg deze suggestie 30 dagen">
+      ✕ {% if nudge.kind == 'founder_welcome' %}later{% else %}niet nu{% endif %}
+    </button>
+  </div>
+</div>
+{% endif %}

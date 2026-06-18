@@ -23,6 +23,12 @@
   <div class="grain"></div>
   <div class="vignette"></div>
 
+  {# Alleen de statische preview-band: 500 is bewust JS-vrij + doet geen
+     session/DB-reads die kunnen falen als de app stuk is, dus GEEN interactieve
+     Concierge hier (die zou naar een mogelijk-down backend posten). De band leest
+     enkel een cookie en degradeert veilig. #}
+  {% include "_preview_banner.html" %}
+
   <div class="wrap wrap--narrow">
     <header class="c-head">
       <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>

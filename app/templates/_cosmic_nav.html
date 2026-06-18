@@ -14,6 +14,14 @@
   </div>
 
   <div class="cnav__end">
+    {# Rustige Concierge-ingang (PRD §2.1) — opent het intent-oppervlak. Mobiele
+       primaire ingang (tap) naast ⌘K en "/". Werkt alleen mét het oppervlak
+       (_concierge.html) op de pagina; zonder JS is het een onschuldige knop. #}
+    <button type="button" class="cnav__concierge" data-concierge-open
+            aria-label="Vraag de wereld (⌘K)" title="Vraag de wereld — ⌘K of /">
+      <span class="cnav__concierge-spark" aria-hidden="true">✦</span>
+      <span class="cnav__concierge-text">Vraag de wereld</span>
+    </button>
     {% if request.session.get("is_admin") %}
     <a class="cnav__link cnav__link--admin" href="/admin/queue">Beheer</a>
     {% endif %}

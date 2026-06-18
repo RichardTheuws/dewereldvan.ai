@@ -275,6 +275,14 @@ def verify(
     # eerste login (geen AI-bouw-turns én geen ingevuld profiel) → de cinematische
     # /welkom-aankomst; anders het gewone /profiel/bewerken.
     redirect_path = onboarding_service.first_login_redirect_path(db, result.member)
+    # Concierge founder-welkomst (PRD §5.2): herkende mede-oprichter zonder
+    # vastgelegd ontstaansverhaal → zet een eenmalige sessie-flag die het
+    # frontend bij de eerstvolgende paginaload leest om de Concierge proactief
+    # te openen. De flag wordt door de frontend (of de /concierge/index-fetch)
+    # geconsumeerd; daarna verdwijnt 'ie. Geen herhaling zolang origin_story leeg
+    # is en de flag nog niet verbruikt is.
+    if result.member.is_founder and result.member.origin_story is None:
+        request.session["concierge_founder_welcome"] = True
     db.commit()
     _set_session(request, result.member)
     return RedirectResponse(url=redirect_path, status_code=303)

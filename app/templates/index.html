@@ -26,6 +26,7 @@
 </head>
 <body class="cosmic">
   {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
 
   {% set logged_in = request.session.get("member_id") %}
   <div class="wrap">
@@ -106,6 +107,8 @@
   </div>
 
   {% if logged_in %}{% include "_feedback_affordance.html" %}{% endif %}
+  {% set concierge_context = "home" %}
+  {% include "_concierge.html" %}
   {% include "ai/_cosmic_canvas.html" %}
 </body>
 </html>

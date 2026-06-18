@@ -3,6 +3,29 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.12.0] - 2026-06-18
+### Added (de Concierge — een gegronde, intelligente laag overal)
+- **AI-concierge als ruggengraat** (`docs/PRD-concierge.md`, APPROVED): een intent-oppervlak (⌘K / `/` /
+  "✦ Vraag de wereld"-veld in de nav — geen chatbot-bubbel) dat overal oproepbaar is. Een instant-laag
+  (geen AI, client-side route/maker-match) + een AI-stream die het profielbouw-patroon 1:1 hergebruikt:
+  reasoning-glow, tool-status, woord-voor-woord tekst, en **echte, klikbare makerkaarten die materialiseren**.
+- **5 gegronde function-tools** (`concierge_service`): `search_members`/`navigate`/`connect`/`explain`/`my_status`.
+  Harde anti-hallucinatie: kaarten worden server-side uit de DB op slug gerenderd → een verzonnen naam levert
+  géén kaart. AVG-poort zit in de bron (alleen public+approved). Opus 4.8-contract + MAX_TOOL_TURNS-cap.
+- **Proactieve laag** (`nudge_service`, pure SQL): max één gegronde suggestie, alléén wanneer je het oppervlak
+  zelf opent, 30 dagen dismissbaar. Anon krijgt alleen de neutrale "N nieuwe makers"-nudge.
+- **PREVIEW-banner** (besloten preview, alleen op uitnodiging) cross-cutting op alle pagina's.
+- **Founder-herkenning**: Bart Ensink / Hendrik van Zwol worden bij registratie herkend (`is_founder`) en de
+  concierge nodigt hen éénmalig uit hun **ontstaansverhaal** te vertellen (`member.origin_story`).
+- Alembic `0006_concierge` (additief: `is_founder`, `origin_story`, `concierge_nudge_dismissal`).
+### Fixed (integratie-review — backend↔frontend-naad)
+- Wiring-mismatches die de proactieve laag/founder-welkomst/navigatie dood maakten (dismiss-veldnaam,
+  ontbrekende nudge-injectie via `GET /concierge/nudge`, drie founder-sleutel-spellingen, instant-`routes`-key,
+  `display_name`↔`name`) gerepareerd. **DB-sessie-race** opgelost: kaarten renderen in een eigen `SessionLocal`,
+  niet de request-db vanuit de drain-thread. `navigate` emit nu een SSE-event (met open-redirect-guard).
+- 371 tests groen (incl. 13 nieuwe naad-tests die de gerenderde payloads dekken). Grounding/AVG/injectie/refusal/
+  CSRF/Opus-contract: alle reviews PASS.
+
 ## [0.11.1] - 2026-06-18
 ### Changed (frontend volledig kosmisch — funnel launch-klaar)
 - **Resterende lichte pagina's gekosmiseerd**: de hele auth-funnel (`/login`, `/register` + verstuurd/

@@ -5,14 +5,15 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from sqlalchemy import Boolean, String, Text
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, MemberRole, MemberStatus, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.ai_chat import AiChatTurn
+    from app.models.concierge import ConciergeNudgeDismissal
     from app.models.magic_link import MagicLinkToken
     from app.models.profile import Profile
 
@@ -43,6 +44,14 @@ class Member(Base, TimestampMixin):
     # Source IP of the registration request — used to rate-limit anonymous
     # open registration per IP (abuse / e-mail-bomb protection).
     registration_ip: Mapped[str | None] = mapped_column(String(45), nullable=True)
+    # Concierge: recognised co-founder (Bart/Hendrik) → one-time origin-story
+    # welcome on first logged-in session. Set at registration on a name-match.
+    is_founder: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+    # The community's origin story, told by a founder via the concierge. Kept
+    # apart from the profile bio: a separate content-asset for the home/over page.
+    origin_story: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     profile: Mapped[Profile | None] = relationship(
         back_populates="member", uselist=False, cascade="all, delete-orphan"
@@ -51,5 +60,8 @@ class Member(Base, TimestampMixin):
         back_populates="member", cascade="all, delete-orphan"
     )
     ai_chat_turns: Mapped[list[AiChatTurn]] = relationship(
+        back_populates="member", cascade="all, delete-orphan"
+    )
+    nudge_dismissals: Mapped[list[ConciergeNudgeDismissal]] = relationship(
         back_populates="member", cascade="all, delete-orphan"
     )

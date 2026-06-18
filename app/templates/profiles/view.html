@@ -35,6 +35,7 @@
 </head>
 <body class="cosmic">
   {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
 
   <div class="wrap wrap--narrow {{ ecls }}">
     <header class="c-head" data-reveal style="--d:60ms">
@@ -172,6 +173,9 @@
     </footer>
   </div>
 
+  {% set concierge_context = "member" %}
+  {% set concierge_member_first = (profile.display_name or "").split(" ")[0] if profile.display_name else "" %}
+  {% include "_concierge.html" %}
   {% include "ai/_cosmic_canvas.html" %}
 </body>
 </html>

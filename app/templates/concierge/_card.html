@@ -1,0 +1,27 @@
+{# Eén echte makerkaart-in-de-stroom (PRD §2.3 / §4.2). Dunne wrapper om de
+   bestaande kosmische makerkaart `members/_member_star.html` — GEEN tweede look.
+
+   Server-side gerenderd door `routers/concierge.py` en als payload van het
+   `card`-SSE-event de stroom in geduwd. De grounding-poort zit in de bron: het
+   profiel komt uitsluitend uit `members_service` (public + approved), dus een door
+   het model verzonnen naam levert hier nooit een profiel → geen kaart.
+
+   Verwacht (geleverd door de route, identiek aan members/_grid.html-context):
+     - `profile`         : het echte Profile-object uit de DB
+     - `emphasis_class`  : callable (emphasis_service.emphasis_class)
+     - `photo_for`       : callable (photo_service.photo_or_initials)
+   Optioneel:
+     - `shared_tags`     : list[str] — gedeelde tags met de viewer (van `connect`),
+                            getoond als rustige "waarom"-regel onder de kaart.
+
+   `loop` is hier niet gedefinieerd; _member_star.html valt dan terug op --d:0ms. #}
+<div class="concierge-card" data-reveal>
+  {% include "members/_member_star.html" %}
+  {% if shared_tags %}
+  <div class="concierge-card__why">
+    <span aria-hidden="true">✦</span>
+    Jullie delen
+    {% for t in shared_tags[:3] %}<span class="chip">{{ t }}</span>{% endfor %}
+  </div>
+  {% endif %}
+</div>

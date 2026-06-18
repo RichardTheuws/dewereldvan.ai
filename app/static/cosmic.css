@@ -2148,3 +2148,349 @@
     animation: none !important;
   }
 }
+
+/* =========================================================================
+   De Concierge (PRD §2/§4/§5) — het kosmische intent-oppervlak + de preview-band.
+   Eén additief blok; raakt geen bestaande regels. Alleen bestaande tokens
+   (--violet/--cyan/--gold/--card/--line/--muted/--text). Alle motion valt onder de
+   bestaande `.cosmic *`-reduced-motion-regel; de preview-band en de Concierge-knop
+   in de nav krijgen onderaan een expliciet reduced-motion-vangnet (net als de
+   feedback-fab, want sommige zijn niet onder .cosmic gescopet).
+   ========================================================================= */
+
+/* ---- Preview-band (boven de nav, op élke pagina) ---- */
+.preview-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  position: relative;
+  padding: 7px 40px 7px 16px;
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.09));
+  background: linear-gradient(180deg, rgba(246, 205, 134, 0.06), transparent);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted, #9097c4);
+}
+.preview-banner__spark { color: var(--gold, #f6cd86); margin-right: 6px; }
+.preview-banner__text { display: inline-flex; align-items: center; }
+.preview-banner__close {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: var(--muted, #9097c4);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: color 0.2s;
+}
+.preview-banner__close:hover { color: var(--text, #eef0ff); }
+
+/* ---- Concierge-ingang in de nav ---- */
+.cosmic .cnav__concierge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(63, 210, 255, 0.25);
+  border-radius: 100px;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.02);
+  transition: color 0.25s, border-color 0.3s, box-shadow 0.35s, transform 0.2s;
+}
+.cosmic .cnav__concierge:hover {
+  color: var(--text);
+  border-color: rgba(63, 210, 255, 0.55);
+  box-shadow: 0 8px 26px -14px rgba(63, 210, 255, 0.6);
+  transform: translateY(-1px);
+}
+.cosmic .cnav__concierge:focus-visible {
+  outline: none;
+  border-color: rgba(63, 210, 255, 0.7);
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.18);
+}
+.cosmic .cnav__concierge-spark { color: var(--gold); }
+@media (max-width: 640px) {
+  .cosmic .cnav__concierge { padding: 6px 11px; }
+  .cosmic .cnav__concierge-text { display: none; }
+}
+
+/* ---- Het oppervlak: overlay + naar-voren-ademend paneel ---- */
+.concierge-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(48px, 12vh, 140px) 16px 16px;
+  overflow-y: auto;
+}
+.concierge-overlay[hidden] { display: none; }
+/* Het scrim is bewust GEEN harde zwart-overlay-modal (= standaard): een zachte,
+   kosmische verdieping zodat het mesh erachter blijft driften (PRD §2.1). */
+.concierge-overlay__scrim {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(13, 12, 38, 0.55), transparent 70%),
+    rgba(4, 4, 14, 0.55);
+  backdrop-filter: blur(3px);
+}
+.concierge-panel {
+  position: relative;
+  width: min(640px, 100%);
+  border: 1px solid rgba(109, 93, 252, 0.3);
+  border-radius: 22px;
+  padding: 18px 18px 16px;
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(109, 93, 252, 0.16), transparent 55%),
+    rgba(10, 10, 30, 0.94);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  transform: translateY(16px) scale(0.985);
+  filter: blur(8px);
+  transition: opacity 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+              transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+              filter 0.42s ease;
+}
+.concierge-panel--in { opacity: 1; transform: none; filter: none; }
+
+.concierge-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.concierge-panel__eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.concierge-panel__close {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: color 0.2s;
+}
+.concierge-panel__close:hover { color: var(--text); }
+
+/* ---- Invoerveld ---- */
+.concierge-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 4px 6px 4px 14px;
+  background: rgba(255, 255, 255, 0.035);
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+.concierge-form:focus-within {
+  border-color: rgba(63, 210, 255, 0.55);
+  background: rgba(63, 210, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.1);
+}
+.concierge-form__spark { color: var(--gold); font-size: 14px; }
+.concierge-form__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--text);
+  font-family: "Spline Sans", system-ui, sans-serif;
+  font-size: 16px;
+  padding: 11px 0;
+}
+.concierge-form__input::placeholder { color: var(--muted); opacity: 0.85; }
+.concierge-form__go {
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--cyan);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: color 0.2s, border-color 0.3s, background 0.3s;
+}
+.concierge-form__go:hover { color: var(--text); border-color: rgba(63, 210, 255, 0.5); }
+.concierge-form__go:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.2);
+}
+
+/* ---- INSTANT-laag: deterministische resultaten ---- */
+.concierge-instant { display: flex; flex-direction: column; margin-top: 8px; }
+.concierge-instant:empty { display: none; }
+.concierge-instant__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+  padding: 9px 12px;
+  color: var(--text);
+  text-decoration: none;
+  font-family: "Spline Sans", system-ui, sans-serif;
+  transition: background 0.2s;
+}
+.concierge-instant__row:hover,
+.concierge-instant__row:focus-visible {
+  outline: none;
+  background: rgba(63, 210, 255, 0.08);
+}
+.concierge-instant__label { font-size: 14px; }
+.concierge-instant__sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.concierge-instant__ask .concierge-instant__label { color: var(--gold); }
+
+/* ---- Proactieve nudge ---- */
+.concierge-nudge {
+  margin-top: 14px;
+  border: 1px solid rgba(109, 93, 252, 0.3);
+  border-radius: 16px;
+  padding: 14px 16px;
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(109, 93, 252, 0.12), transparent 60%),
+    var(--card);
+}
+.concierge-nudge--founder { border-color: rgba(246, 205, 134, 0.35); }
+.concierge-nudge__eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 6px;
+}
+.concierge-nudge--founder .concierge-nudge__eyebrow { color: var(--gold); }
+.concierge-nudge__text {
+  font-size: 0.96rem;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+.concierge-nudge__actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.concierge-nudge__do {
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  padding: 8px 16px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: #1a1330;
+  background: linear-gradient(100deg, var(--gold), #ffe6b0);
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+.concierge-nudge__do:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px -10px rgba(246, 205, 134, 0.6);
+}
+.concierge-nudge__do:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.22);
+}
+.concierge-nudge__dismiss {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.03em;
+  padding: 4px 2px;
+  transition: color 0.2s;
+}
+.concierge-nudge__dismiss:hover { color: var(--text); }
+.concierge-nudge__dismiss:focus-visible {
+  outline: none;
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.18);
+}
+
+/* ---- De levende flow + materialiserende kaarten ---- */
+.concierge-flow { margin-top: 14px; }
+.concierge-flow:empty { margin-top: 0; }
+.concierge-answer {
+  display: block;
+  max-width: 100%;
+  margin-top: 12px;
+  white-space: pre-wrap;
+}
+.concierge-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+.concierge-results:empty { display: none; margin-top: 0; }
+/* De kaart-in-de-stroom hergebruikt .member-star 1:1; deze wrapper voegt alleen
+   de in-vloei-choreografie + de "waarom"-regel toe. */
+.concierge-card { display: flex; flex-direction: column; gap: 8px; }
+.concierge-card .member-star { height: 100%; }
+.concierge-card--in { animation: concierge-card-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes concierge-card-in {
+  from { opacity: 0; filter: blur(7px); transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; filter: none; transform: none; }
+}
+.concierge-card__why {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.concierge-card__why span[aria-hidden] { color: var(--gold); }
+
+@media (max-width: 640px) {
+  .concierge-overlay { padding-top: 24px; }
+  .concierge-form__input { font-size: 16px; }
+  .concierge-results { grid-template-columns: 1fr; }
+}
+
+/* ---- Reduced-motion-vangnet (de preview-band + de nav-knop zijn deels niet
+   onder .cosmic; de panel-entrance valt al onder `.cosmic *`, maar we maken het
+   expliciet zodat niets blijft hangen — styleguide §5: geen uitzondering). ---- */
+@media (prefers-reduced-motion: reduce) {
+  .preview-banner__close,
+  .cosmic .cnav__concierge,
+  .concierge-panel,
+  .concierge-card--in {
+    animation: none !important;
+    transition: none !important;
+  }
+  .concierge-panel { opacity: 1; transform: none; filter: none; }
+}
+

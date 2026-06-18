@@ -1,0 +1,107 @@
+{# Geretourneerd door POST /concierge/bericht, geswapt in #concierge-flow.
+   GEEN chat-bubbel: dit is de levende Concierge-flow. Gekloond van
+   ai/_materialize_stream.html (1:1 hetzelfde mechanisme), aangepast voor de
+   Concierge:
+
+     - reasoning  → het gloeiende "de gids doorzoeken…"-paneel (sse-swap="reasoning")
+     - fetch      → de bekende fetch-line ("·· 3 makers gevonden ✓")
+     - delta      → tekst materialiseert woord-voor-woord (sse-swap="delta")
+     - card       → NIEUW: echte kosmische makerkaarten vloeien één voor één in
+     - done       → ruimt het paneel op en sluit de stream
+
+   KRITIEKE VALKUIL (zelfde als _materialize_stream.html): htmx-ext-sse bindt een
+   sse-swap alleen aan de EventSource op het moment dat het element wordt verwerkt
+   MÉT een sse-connect-voorouder. Daarom dragen ALLE sse-swap-bindingen op de VERSE
+   elementen hieronder (samen met dit fragment toegevoegd ná sse-connect) — net als
+   in de werkende profielbouw. De resultaten-/kaart-container (#concierge-results)
+   bestaat al vóór sse-connect; daarom bindt de card-swap NIET daarop maar op een
+   verse proxy die via hx-target="#concierge-results" hx-swap="beforeend" appendt. #}
+{% set sid = range(100000, 999999) | random %}
+<div id="csse-{{ sid }}" data-concierge-sse-host>
+  {% include "ai/_reasoning_panel.html" %}
+
+  {# Tekst-deltas landen hier (geen losse chat-bubbel). #}
+  <div class="bubble bubble--assistant concierge-answer" data-answer sse-swap="delta"
+       hx-swap="beforeend" aria-live="polite" aria-atomic="false" style="display:none"></div>
+
+  {# Verse proxy: elke `card`-payload (server-side gerenderde makerkaart) wordt
+     achteraan de resultaten-container toegevoegd. Bindt WÉL omdat dit element vers
+     ná sse-connect verschijnt. #}
+  <div sse-swap="card" hx-target="#concierge-results" hx-swap="beforeend" style="display:none"></div>
+
+  {# Terminerend done-event: ruim deze SSE-host op (paneel weg). #}
+  <div sse-swap="done" hx-target="#csse-{{ sid }}" hx-swap="outerHTML" style="display:none"></div>
+</div>
+
+<script>
+  (function () {
+    var host = document.getElementById('csse-{{ sid }}');
+    if (!host) return;
+    var root = document.getElementById('concierge-materialisatie');
+    if (!root) return;
+
+    // De resultaten-container leegmaken bij een nieuwe vraag (verse stroom).
+    var results = document.getElementById('concierge-results');
+    if (results) results.innerHTML = '';
+
+    // (Her)activeer de SSE-verbinding op de gedeelde voorouder. Sluit een vorige
+    // verbinding eerst (nieuwe vraag = nieuwe stream).
+    if (root.getAttribute('sse-connect')) {
+      root.removeAttribute('sse-connect');
+      try { htmx.process(root); } catch (e) {}
+    }
+    root.setAttribute('sse-connect', '/concierge/stream');
+    root.setAttribute('sse-close', 'done');
+    try { htmx.process(root); } catch (e) {}
+
+    if (!root.dataset.matBound) {
+      root.dataset.matBound = '1';
+
+      root.addEventListener('htmx:sseMessage', function (e) {
+        if (!e.detail) return;
+        var type = e.detail.type;
+
+        if (type === 'navigate') {
+          // De navigate-tool stuurt een interne (relatieve) path; valideer hard
+          // tegen open-redirect en navigeer dan (sluit het oppervlak vanzelf).
+          var url = (e.detail.data || '').trim();
+          if (/^\/[^/\\]/.test(url) || url === '/') {
+            window.location.assign(url);
+          }
+          return;
+        } else if (type === 'delta') {
+          var panel = root.querySelector('[data-reasoning]');
+          if (panel) panel.classList.add('reasoning--settled');
+          var ans = root.querySelector('[data-answer]');
+          if (ans) ans.style.display = '';
+        } else if (type === 'fetch') {
+          var line = root.querySelector('.reasoning__fetch');
+          if (!line) return;
+          var label = '', state = 'ok';
+          try { var d = JSON.parse(e.detail.data); label = d.label || d.host || ''; state = d.state || 'ok'; }
+          catch (err) { return; }
+          var row = document.createElement('div');
+          var isErr = state === 'err';
+          row.className = 'fetch-line fetch-line--' + (isErr ? 'err' : 'ok');
+          row.textContent = '·· ' + (label || 'de gids doorzoeken') + ' ' + (isErr ? '✗' : '✓');
+          line.appendChild(row);
+        }
+      });
+
+      // Een net-ingevloeide kaart krijgt zijn materialisatie-animatie en daarna 'ready'.
+      root.addEventListener('htmx:afterSwap', function (e) {
+        var el = e.target;
+        if (!el || el.id !== 'concierge-results') return;
+        var card = el.lastElementChild;
+        if (!card || !card.classList || card.dataset.cmDone) return;
+        card.dataset.cmDone = '1';
+        var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+        if (reduce) return;
+        card.classList.add('concierge-card--in');
+        card.addEventListener('animationend', function () {
+          card.classList.remove('concierge-card--in');
+        }, { once: true });
+      });
+    }
+  })();
+</script>

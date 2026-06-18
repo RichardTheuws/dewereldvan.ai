@@ -12,6 +12,7 @@ Edge cases handled here (PRD §4):
 
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -27,6 +28,35 @@ from app.models import (
     MemberStatus,
 )
 from app.security import naive_utc, pending_expiry, utcnow
+
+# Concierge founder-herkenning (PRD §5.2). De namen van de mede-oprichters;
+# bij registratie matchen we de opgegeven naam genormaliseerd hiertegen → de
+# Concierge opent éénmalig met de ontstaansverhaal-uitnodiging.
+FOUNDER_NAMES: frozenset[str] = frozenset({"bart ensink", "hendrik van zwol"})
+
+
+def _normalize_name(name: str) -> str:
+    """Accent-, case- en woordvolgorde-tolerante normalisatie van een naam.
+
+    "Hendrik van Zwol", "hendrik  van zwol" en "Zwol Hendrik van" matchen
+    allemaal. Diakrieten worden gestript (NFKD), de woorden gesorteerd, zodat de
+    set-vergelijking robuust is tegen invoer-variatie.
+    """
+    folded = unicodedata.normalize("NFKD", name or "")
+    folded = "".join(c for c in folded if not unicodedata.combining(c))
+    words = sorted(folded.lower().split())
+    return " ".join(words)
+
+
+# Genormaliseerde founder-set (één keer berekend) voor de match.
+_FOUNDER_NORMALIZED: frozenset[str] = frozenset(
+    _normalize_name(n) for n in FOUNDER_NAMES
+)
+
+
+def is_founder_name(name: str) -> bool:
+    """True als ``name`` (genormaliseerd) een bekende mede-oprichter is."""
+    return _normalize_name(name) in _FOUNDER_NORMALIZED
 
 
 @dataclass(frozen=True)
@@ -112,6 +142,8 @@ def register_member(
         approved_at=naive_utc(now) if is_admin else None,
         pending_expires_at=None if is_admin else naive_utc(pending_expiry(now)),
         registration_ip=requested_ip,
+        # Concierge: herken een mede-oprichter op naam → éénmalig welkomstmoment.
+        is_founder=is_founder_name(name),
     )
     db.add(member)
     db.flush()
