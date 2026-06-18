@@ -50,3 +50,9 @@ class AuditAction(str, enum.Enum):
     member_rejected = "member_rejected"
     member_suspended = "member_suspended"
     visibility_changed = "visibility_changed"
+
+
+class ProfileLinkKind(str, enum.Enum):
+    affiliation = "affiliation"  # rol/affiliatie ("verantwoordelijk voor X")
+    build = "build"  # iets dat het lid bouwt
+    other = "other"

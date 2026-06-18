@@ -130,3 +130,15 @@ def make_member(db):
 @pytest.fixture
 def fake_email() -> FakeEmailSender:
     return FakeEmailSender()
+
+
+# --- Fake AI cover-image backend ---------------------------------------------
+# The reusable doubles (FakeImageGenerator / FakeAnthropic / install_fake_anthropic)
+# live in tests/_ai_helpers.py so test modules can import them directly; the
+# fixture below just wraps FakeImageGenerator for dependency-override use.
+from tests._ai_helpers import FakeImageGenerator  # noqa: E402
+
+
+@pytest.fixture
+def fake_image_generator() -> FakeImageGenerator:
+    return FakeImageGenerator()

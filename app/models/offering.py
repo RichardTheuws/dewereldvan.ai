@@ -22,6 +22,9 @@ class Offering(Base, TimestampMixin):
     )
     title: Mapped[str] = mapped_column(String(160), nullable=False)  # "wat ik maak"
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # AI-native profielbouw: link + beeld bij een offering (wordt 'project').
+    url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # ordering
 
     profile: Mapped[Profile] = relationship(back_populates="offerings")

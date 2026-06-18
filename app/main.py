@@ -24,7 +24,7 @@ from app.config import settings
 from app.csrf import CSRFMiddleware, get_csrf_token
 from app.db import engine
 from app.deps import _RedirectToLogin
-from app.routers import admin, auth, profiles
+from app.routers import admin, ai_profile, auth, profiles
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,10 +38,34 @@ def _csrf_context(request: Request) -> dict:
     return {"csrf_token": get_csrf_token(request)}
 
 
+def safe_url(value: str | None) -> str:
+    """Return ``value`` only if it is a safe http(s)/relative URL, else ``''``.
+
+    Defends against ``javascript:``/``data:``/``vbscript:`` and other dangerous
+    schemes reaching ``href``/``src`` sinks on the public profile (where AI- and
+    page-supplied URLs land). Jinja autoescaping blocks attribute breakout but
+    NOT a ``javascript:`` scheme, so this filter is the guard for that vector.
+    Scheme-relative (``//host``) and same-origin relative URLs are allowed.
+    """
+    if not value:
+        return ""
+    stripped = value.strip()
+    if not stripped:
+        return ""
+    # A leading scheme is "<scheme>:" with no slash/?/# before the colon.
+    head = stripped.split("/", 1)[0]
+    if ":" in head:
+        scheme = head.split(":", 1)[0].strip().lower()
+        if scheme not in ("http", "https"):
+            return ""
+    return stripped
+
+
 # Shared templates handle, also exposed on app.state for FEATURES routers.
 templates = Jinja2Templates(
     directory=str(TEMPLATES_DIR), context_processors=[_csrf_context]
 )
+templates.env.filters["safe_url"] = safe_url
 
 
 def create_app() -> FastAPI:
@@ -77,6 +101,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(profiles.router)
     app.include_router(admin.router)
+    app.include_router(ai_profile.router)
 
     return app
 

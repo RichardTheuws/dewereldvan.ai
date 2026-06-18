@@ -6,12 +6,14 @@ all mappers are registered on a single metadata before use.
 
 from __future__ import annotations
 
+from app.models.ai_chat import AiChatTurn
 from app.models.audit import AuditLog
 from app.models.base import (
     AuditAction,
     Base,
     MemberRole,
     MemberStatus,
+    ProfileLinkKind,
     TimestampMixin,
     Visibility,
 )
@@ -20,6 +22,7 @@ from app.models.member import Member
 from app.models.need import Need
 from app.models.offering import Offering
 from app.models.profile import Profile
+from app.models.profile_link import ProfileLink
 from app.models.tag import Tag, profile_tag
 
 __all__ = [
@@ -29,12 +32,15 @@ __all__ = [
     "MemberRole",
     "Visibility",
     "AuditAction",
+    "ProfileLinkKind",
     "Member",
     "MagicLinkToken",
     "Profile",
+    "ProfileLink",
     "Tag",
     "profile_tag",
     "Offering",
     "Need",
     "AuditLog",
+    "AiChatTurn",
 ]

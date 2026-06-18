@@ -1,0 +1,19 @@
+{# A role / affiliation card on the public profile. Expects `link` (ProfileLink)
+   with .label, .url, .description, .image_url. Becomes an <a> when a url exists. #}
+{% set _url = link.url | safe_url %}
+{% set _img = link.image_url | safe_url %}
+{% if _url %}
+<a class="card" href="{{ _url }}" target="_blank" rel="noopener nofollow"
+   style="display:flex;gap:14px;align-items:flex-start">
+{% else %}
+<div class="card" style="display:flex;gap:14px;align-items:flex-start">
+{% endif %}
+  {% if _img %}
+  <img class="thumb" style="width:88px;height:88px;margin:0;flex:none;border-radius:12px;object-fit:cover"
+       src="{{ _img }}" alt="" loading="lazy">
+  {% endif %}
+  <div class="flex-1 min-w-0">
+    <div class="card-label">{{ link.label }}</div>
+    {% if link.description %}<div class="card-desc">{{ link.description }}</div>{% endif %}
+  </div>
+{% if _url %}</a>{% else %}</div>{% endif %}

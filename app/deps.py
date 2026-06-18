@@ -10,6 +10,7 @@ from __future__ import annotations
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
+from app.ai import ImageGenerator, get_image_generator
 from app.db import get_db
 from app.email import EmailSender, get_email_sender
 from app.models import Member, MemberRole, MemberStatus
@@ -60,11 +61,17 @@ def email_sender() -> EmailSender:
     return get_email_sender()
 
 
+def image_generator() -> ImageGenerator:
+    """Dependency-injected cover-image backend (overridable in tests)."""
+    return get_image_generator()
+
+
 __all__ = [
     "SESSION_MEMBER_KEY",
     "current_member",
     "require_member",
     "require_admin",
     "email_sender",
+    "image_generator",
     "_RedirectToLogin",
 ]

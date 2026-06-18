@@ -12,6 +12,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, MemberRole, MemberStatus, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.ai_chat import AiChatTurn
     from app.models.magic_link import MagicLinkToken
     from app.models.profile import Profile
 
@@ -47,5 +48,8 @@ class Member(Base, TimestampMixin):
         back_populates="member", uselist=False, cascade="all, delete-orphan"
     )
     magic_links: Mapped[list[MagicLinkToken]] = relationship(
+        back_populates="member", cascade="all, delete-orphan"
+    )
+    ai_chat_turns: Mapped[list[AiChatTurn]] = relationship(
         back_populates="member", cascade="all, delete-orphan"
     )

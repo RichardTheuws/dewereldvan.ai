@@ -3,6 +3,70 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.8.1] - 2026-06-18
+### Security
+- Stored XSS gedicht: `safe_url`-Jinja-filter (alleen `http`/`https`/relatief)
+  toegepast op AI/pagina-geleverde `url`/`image_url`/`cover_image_url` in
+  `_cosmic_link_card.html`, `_cosmic_project_card.html` en `view.html` — blokkeert
+  `javascript:`/`data:`-schema's in `href`/`src` op het publieke profiel.
+- DOM-XSS via de live SSE-stream gedicht: elke assistant-delta wordt server-side
+  HTML-geëscaped (`markupsafe.escape`) vóór het `delta`-event, zodat de live-bubbel
+  als tekst rendert (sluit het prompt-injection→XSS-pad en de markup-flash).
+- AVG-scope afgedwongen: `web_fetch` wordt beperkt tot de door het lid geplakte
+  domeinen (`allowed_domains`) en `web_search` vervalt zodra er links zijn; system-
+  prompt herhaalt dat opgehaalde paginacontent gegevens zijn, geen instructies.
+
+### Fixed
+- AVG-retentie: `POST /profiel/ai/opnieuw` wist nu ook `ai_source_text` en de in de
+  sessie gegenereerde `cover_image_url` (de knop beloofde dat al).
+- Publiek profiel is zonder JS zichtbaar: `<noscript>`-vangnet forceert
+  `[data-reveal]`-content zichtbaar (progressive enhancement i.p.v. JS-gate).
+- A11y: streamende assistant-bubbel krijgt `aria-live="polite"`; typing-indicator
+  krijgt `role="status"` + visueel-verborgen label.
+- Opschoning: SSE-drain-protocol (sentinel + timeout) leeft nu uitsluitend in
+  `_Channel.get`; de router-duplicatie (`_blocking_get`, dubbele `_DONE`-import,
+  tweede `120.0`) is verwijderd.
+
+## [0.8.0] - 2026-06-18
+### Added (AI-native profielbouw — ROUTES+UI, F1-F3)
+- Router-bodies in `app/routers/ai_profile.py`: `GET /profiel/ai/bouwen` (kosmische
+  chat-bouwpagina), `POST /profiel/ai/bericht` (persist user-turn + SSE-container),
+  `GET /profiel/ai/stream` (SSE: tekst-deltas + `done`-bubbel; sync SDK in threadpool,
+  refusal-veilig), `POST /profiel/ai/maak-draft` (structured output → DRAFT zonder
+  `visibility` te zetten), `POST /profiel/ai/cover` (F2, faalt gracieus),
+  `POST /profiel/ai/draft/bewerken`, `POST /profiel/ai/publiceren` (delegeert naar de
+  bestaande zichtbaarheidsflow; consent vereist voor public), `POST /profiel/ai/opnieuw`.
+- `app/services/ai_conversation.py`: DB-conversatie-state (`load_messages` /
+  `append_turn` / `clear_turns` / `has_turns`) + in-process SSE-`_Channel`.
+- Kosmische identiteit: `app/static/cosmic.css` (tokens + nebula/gloed/sterren/grain,
+  Fraunces + JetBrains Mono + Spline Sans, `prefers-reduced-motion`-veilig);
+  `base.html` (fonts + cosmic.css + htmx-sse + "Bouw met AI"-nav).
+- Herontworpen publieke profielpagina `profiles/view.html` (kosmische diepte; cover-hero,
+  headline/bio/rollen/projects-met-beeld/seeking/tags; OG-tags alléén voor public;
+  noindex + login-gating gerespecteerd) + partials (`_cosmic_bg`, `_cosmic_link_card`,
+  `_cosmic_project_card`, `_cosmic_tags`).
+- Bouwflow-templates (`ai/build.html`, `_chat_message`, `_message_sent`, `_draft_preview`,
+  `_draft_card_link`, `_cover`, `_cosmic_canvas`).
+
+## [0.7.0] - 2026-06-18
+### Added (AI-native profielbouw — FOUNDATION, F1-F3)
+- Datamodel (additief, breekt geen bestaande tabellen): `profile` krijgt `headline`,
+  `cover_image_url`, `ai_enriched`, `ai_source_text`; `offering` krijgt `url`, `image_url`;
+  nieuw `ProfileLink`-model (`profile_link`: rollen/affiliaties + builds met beeld) en
+  `AiChatTurn`-model (`ai_chat_turn`: server-side conversatie-state). Migratie
+  `0003_ai_profile` (strikt additief; up+down geverifieerd).
+- Enum `ProfileLinkKind` (`native_enum=False` → VARCHAR + CHECK, SQLite/Postgres-pariteit).
+- `ImageGenerator`-interface (`app/ai/`): `Protocol` + `FalImageGenerator` (fal.ai flux/schnell
+  via httpx, faalt gracieus → `url=None`) + `NoopImageGenerator` (fallback) + factory
+  `get_image_generator()` via settings; deps-injectie `image_generator()` (overridable in tests).
+- Config: `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` (default `claude-opus-4-8`), `FAL_KEY`,
+  `AI_ENRICH_ENABLED`, `RATE_LIMIT_AI_ENRICH_PER_HOUR`, `AI_IMAGE_BACKEND`; `.env.example` bijgewerkt.
+- `requirements.txt`: `anthropic==0.69.0`.
+- Stubs voor de volgende build-fasen: `app/services/ai_profile.py` (PROFILE_SCHEMA,
+  `DraftProfile` dataclass, `_to_draft`-guard, Anthropic twee-staps signatures) en
+  `app/routers/ai_profile.py` (lege `APIRouter`, gewired in `app/main.py`); Pydantic-schemas
+  in `app/schemas/ai_profile.py` (`ChatMessageForm`, `AcceptForm`, `DraftProfileOut`).
+
 ## [0.6.1] - 2026-06-18
 ### Docs
 - `docs/PRD-ai-profiel.md`: PRD voor AI-native profielbouw — gesprek met Claude Opus 4.8

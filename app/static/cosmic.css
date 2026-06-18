@@ -1,0 +1,525 @@
+/* dewereldvan.ai — kosmische design-taal (uit teaser/index.html).
+ *
+ * Scope-veilig: alle effecten en typografie hangen onder `.cosmic` zodat de
+ * gewone (lichte) app onaangeraakt blijft. Twee pagina's zetten <body
+ * class="cosmic ...">: de publieke profielpagina (profiles/view.html) en de
+ * AI-bouwflow (ai/build.html). prefers-reduced-motion schakelt alle motion uit.
+ */
+
+.cosmic {
+  --bg-0: #04040e;
+  --bg-1: #0a0a24;
+  --indigo: #15123a;
+  --violet: #6d5dfc;
+  --cyan: #3fd2ff;
+  --magenta: #b15cff;
+  --gold: #f6cd86;
+  --text: #eef0ff;
+  --muted: #9097c4;
+  --line: rgba(255, 255, 255, 0.09);
+  --card: rgba(255, 255, 255, 0.035);
+  --maxw: 1180px;
+
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: "Spline Sans", system-ui, sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---- atmosphere: layered nebula mesh ---- */
+.cosmic .mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.cosmic .mesh::before,
+.cosmic .mesh::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  mix-blend-mode: screen;
+}
+.cosmic .mesh::before {
+  width: 60vmax;
+  height: 60vmax;
+  left: -10vmax;
+  top: -15vmax;
+  background: radial-gradient(circle at 50% 50%, var(--violet), transparent 62%);
+  animation: cosmic-drift1 26s ease-in-out infinite alternate;
+}
+.cosmic .mesh::after {
+  width: 55vmax;
+  height: 55vmax;
+  right: -12vmax;
+  bottom: -18vmax;
+  background: radial-gradient(circle at 50% 50%, var(--magenta), transparent 60%);
+  animation: cosmic-drift2 32s ease-in-out infinite alternate;
+}
+.cosmic .glow-cyan {
+  position: fixed;
+  z-index: 0;
+  width: 46vmax;
+  height: 46vmax;
+  border-radius: 50%;
+  left: 50%;
+  top: 64%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 50% 50%, rgba(63, 210, 255, 0.34), transparent 60%);
+  filter: blur(80px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: cosmic-pulse 14s ease-in-out infinite;
+}
+@keyframes cosmic-drift1 {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(8vmax, 6vmax) scale(1.15); }
+}
+@keyframes cosmic-drift2 {
+  from { transform: translate(0, 0) scale(1.05); }
+  to { transform: translate(-7vmax, -5vmax) scale(0.9); }
+}
+@keyframes cosmic-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.95; }
+}
+
+/* starfield canvas — the living constellation */
+.cosmic #stars {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* grain + vignette */
+.cosmic .grain {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.cosmic .vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 35%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* ---- structure ---- */
+.cosmic .wrap {
+  position: relative;
+  z-index: 3;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 clamp(22px, 5vw, 56px);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.cosmic .wrap--narrow {
+  max-width: 880px;
+}
+
+.cosmic .c-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 26px 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+}
+.cosmic .brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text);
+  text-decoration: none;
+}
+.cosmic .brand .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 12px 2px var(--gold);
+  animation: cosmic-twinkle 3.4s ease-in-out infinite;
+}
+@keyframes cosmic-twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.cosmic .c-head .links {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  color: var(--muted);
+}
+.cosmic .c-head a.link {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.25s;
+}
+.cosmic .c-head a.link:hover {
+  color: var(--gold);
+}
+
+/* ---- typography ---- */
+.cosmic .eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cosmic .eyebrow::before {
+  content: "";
+  width: 42px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+.cosmic .eyebrow--plain::before {
+  display: none;
+}
+
+.cosmic .headline {
+  font-family: "Fraunces", serif;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.0;
+  font-size: clamp(2.4rem, 6vw, 4.6rem);
+  color: var(--text);
+}
+.cosmic .display-name {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--muted);
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+}
+.cosmic .section-title {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.cosmic .lede {
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  color: #c7cbe8;
+  font-weight: 300;
+}
+.cosmic .lede b {
+  color: var(--text);
+  font-weight: 400;
+}
+
+/* ---- cover hero ---- */
+.cosmic .cover {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  aspect-ratio: 16 / 7;
+  background:
+    radial-gradient(80% 120% at 20% 0%, rgba(109, 93, 252, 0.35), transparent 60%),
+    radial-gradient(80% 120% at 90% 100%, rgba(177, 92, 255, 0.3), transparent 60%),
+    var(--indigo);
+}
+.cosmic .cover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cosmic .cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 30%, rgba(4, 4, 14, 0.85) 100%);
+}
+
+/* ---- cards ---- */
+.cosmic .card {
+  position: relative;
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  padding: 18px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.3s, transform 0.25s, box-shadow 0.35s;
+  overflow: hidden;
+}
+.cosmic a.card:hover {
+  border-color: rgba(63, 210, 255, 0.45);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px -18px rgba(63, 210, 255, 0.5);
+}
+.cosmic .card .thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  background: var(--indigo);
+}
+.cosmic .card .card-label {
+  font-family: "Spline Sans", sans-serif;
+  font-weight: 500;
+  color: var(--text);
+}
+.cosmic .card .card-desc {
+  margin-top: 6px;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+.cosmic .card .card-url {
+  margin-top: 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--cyan);
+  word-break: break-all;
+}
+.cosmic .grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+/* ---- seeking ---- */
+.cosmic .seeking {
+  border: 1px solid rgba(246, 205, 134, 0.25);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(246, 205, 134, 0.06), transparent);
+  padding: 20px 22px;
+}
+
+/* ---- tags / chips ---- */
+.cosmic .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.cosmic .chip {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.03em;
+  color: var(--cyan);
+  border: 1px solid rgba(63, 210, 255, 0.3);
+  background: rgba(63, 210, 255, 0.06);
+  border-radius: 100px;
+  padding: 6px 13px;
+}
+
+/* ---- buttons ---- */
+.cosmic .btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  border-radius: 100px;
+  padding: 13px 24px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  color: #1a1330;
+  background: linear-gradient(100deg, var(--gold), #ffe6b0);
+  text-decoration: none;
+  transition: transform 0.25s ease, box-shadow 0.35s ease;
+}
+.cosmic .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 34px -8px rgba(246, 205, 134, 0.6);
+}
+.cosmic .btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+.cosmic .btn--ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+.cosmic .btn--ghost:hover {
+  border-color: rgba(63, 210, 255, 0.5);
+  box-shadow: none;
+}
+
+/* ---- forms / inputs ---- */
+.cosmic input,
+.cosmic textarea,
+.cosmic select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 13px 16px;
+  color: var(--text);
+  font-family: "Spline Sans", sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+.cosmic textarea {
+  resize: vertical;
+}
+.cosmic input::placeholder,
+.cosmic textarea::placeholder {
+  color: #6b7099;
+}
+.cosmic input:focus,
+.cosmic textarea:focus,
+.cosmic select:focus {
+  border-color: rgba(63, 210, 255, 0.55);
+  background: rgba(63, 210, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.1), 0 0 30px rgba(63, 210, 255, 0.12);
+}
+.cosmic label.field-label {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* ---- chat ---- */
+.cosmic .chat-stream {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cosmic .bubble {
+  max-width: 78%;
+  padding: 14px 18px;
+  border-radius: 18px;
+  font-size: 0.98rem;
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+.cosmic .bubble--user {
+  align-self: flex-end;
+  background: linear-gradient(100deg, rgba(109, 93, 252, 0.3), rgba(177, 92, 255, 0.22));
+  border: 1px solid rgba(109, 93, 252, 0.4);
+  color: var(--text);
+}
+.cosmic .bubble--assistant {
+  align-self: flex-start;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: #dfe2fb;
+}
+.cosmic .bubble--refusal {
+  align-self: flex-start;
+  background: rgba(255, 120, 120, 0.08);
+  border: 1px solid rgba(255, 120, 120, 0.35);
+  color: #ffd5d5;
+}
+.cosmic .bubble--system {
+  align-self: center;
+  background: transparent;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.03em;
+  max-width: 100%;
+  text-align: center;
+}
+
+/* typing indicator */
+.cosmic .typing {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+.cosmic .typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  opacity: 0.5;
+  animation: cosmic-blink 1.2s infinite ease-in-out;
+}
+.cosmic .typing span:nth-child(2) { animation-delay: 0.2s; }
+.cosmic .typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes cosmic-blink {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+
+/* ---- divider / generic ---- */
+.cosmic .rule {
+  height: 1px;
+  background: var(--line);
+  border: none;
+  margin: 0;
+}
+.cosmic a.text-link {
+  color: var(--cyan);
+  text-decoration: none;
+}
+.cosmic a.text-link:hover {
+  text-decoration: underline;
+}
+.cosmic .muted {
+  color: var(--muted);
+}
+
+/* entrance choreography */
+.cosmic [data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+  filter: blur(8px);
+}
+.cosmic.ready [data-reveal] {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+  transition: opacity 1s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 1s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1s ease;
+  transition-delay: var(--d, 0ms);
+}
+
+@media (max-width: 560px) {
+  .cosmic .bubble { max-width: 90%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cosmic *,
+  .cosmic *::before,
+  .cosmic *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .cosmic [data-reveal] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}

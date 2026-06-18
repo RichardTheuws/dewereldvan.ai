@@ -8,7 +8,15 @@
   {% block robots %}{% endblock %}
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
+  {# Kosmische identiteit: fonts + tokens. Only pages with <body class="cosmic">
+     pick up the dark theme; the rest of the app stays light. #}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
   <link rel="stylesheet" href="/static/app.css">
+  {% block head_extra %}{% endblock %}
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-800 flex flex-col"
       hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
@@ -18,6 +26,7 @@
       <div class="flex items-center gap-4 text-sm">
         {% set member = request.session.get("member_id") %}
         {% if member %}
+          <a href="/profiel/ai/bouwen" class="hover:text-emerald-700">Bouw met AI</a>
           <a href="/profiel/bewerken" class="hover:text-emerald-700">Profiel</a>
           {% if request.session.get("is_admin") %}
             <a href="/admin/queue" class="hover:text-emerald-700">Queue</a>

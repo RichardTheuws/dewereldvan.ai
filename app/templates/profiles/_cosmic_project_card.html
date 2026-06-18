@@ -1,0 +1,17 @@
+{# A project card ("wat ik maak") on the public profile. Expects `item` with
+   .title, .description, .url, .image_url (an Offering or ProfileLink-shaped). #}
+{% set _title = item.title if item.title is defined else item.label %}
+{% set _url = item.url | safe_url %}
+{% set _img = item.image_url | safe_url %}
+{% if _url %}
+<a class="card" href="{{ _url }}" target="_blank" rel="noopener nofollow">
+{% else %}
+<div class="card">
+{% endif %}
+  {% if _img %}
+  <img class="thumb" src="{{ _img }}" alt="" loading="lazy">
+  {% endif %}
+  <div class="card-label">{{ _title }}</div>
+  {% if item.description %}<div class="card-desc">{{ item.description }}</div>{% endif %}
+  {% if _url %}<div class="card-url">{{ _url }}</div>{% endif %}
+{% if _url %}</a>{% else %}</div>{% endif %}

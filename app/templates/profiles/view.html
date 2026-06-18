@@ -1,69 +1,135 @@
-{% extends "base.html" %}
-{% block title %}{{ profile.display_name }} — dewereldvan.ai{% endblock %}
-{# Members-only profiles must not be indexed; public ones are indexable. #}
-{% block robots %}{% if noindex %}<meta name="robots" content="noindex">{% endif %}{% endblock %}
-{% block content %}
-<article class="max-w-2xl mx-auto space-y-6">
+<!DOCTYPE html>
+<html lang="nl">
+{# Public profile page — "kosmische diepte" identity. Standalone cosmic document
+   (not extending base.html) so it can own the full <body> + dark theme.
 
-  <header class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-slate-900">{{ profile.display_name }}</h1>
-    {% if is_owner %}
-    <a href="/profiel/bewerken" class="text-sm text-emerald-700 hover:underline">Bewerken</a>
-    {% endif %}
-  </header>
-
-  {% if profile.bio %}
-  <section>
-    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Over</h2>
-    <p class="mt-1 whitespace-pre-line text-slate-700">{{ profile.bio }}</p>
-  </section>
+   Visibility (PRD §4, enforced in the route): members-only profiles arrive with
+   `noindex=True` and are login-gated before reaching this template; public
+   profiles are indexable and get OG tags. OG metadata is emitted ONLY for public
+   profiles to avoid leaking members-only data into link unfurls. #}
+{% set is_public = not noindex %}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ profile.headline or profile.display_name }} — dewereldvan.ai</title>
+  {% if noindex %}
+  <meta name="robots" content="noindex">
+  {% else %}
+  <meta name="description" content="{{ (profile.headline or profile.bio or profile.display_name) | striptags | truncate(160) }}">
+  <meta property="og:type" content="profile">
+  <meta property="og:title" content="{{ profile.display_name }} — {{ profile.headline or 'dewereldvan.ai' }}">
+  <meta property="og:description" content="{{ (profile.bio or profile.headline or '') | striptags | truncate(200) }}">
+  {% if profile.cover_image_url %}<meta property="og:image" content="{{ profile.cover_image_url }}">{% endif %}
+  <meta property="og:url" content="{{ request.base_url | string | trim('/') }}/leden/{{ profile.slug }}">
   {% endif %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  {# Progressive enhancement: the entrance choreography hides [data-reveal] until
+     the canvas script adds `.ready`. Without JS that gate would leave the whole
+     profile permanently invisible (and unscrapeable). Force content visible when
+     JS is unavailable. #}
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
 
-  {% if profile.makes_summary %}
-  <section>
-    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Wat ik maak</h2>
-    <p class="mt-1 whitespace-pre-line text-slate-700">{{ profile.makes_summary }}</p>
-  </section>
-  {% endif %}
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+      <div class="links">
+        {% if is_owner %}
+        <a class="link" href="/profiel/ai/bouwen">Bewerken met AI</a>
+        <a class="link" href="/profiel/bewerken">Handmatig</a>
+        {% else %}
+        <span class="muted">{% if is_public %}openbaar profiel{% else %}ledenprofiel{% endif %}</span>
+        {% endif %}
+      </div>
+    </header>
 
-  {% if profile.offerings %}
-  <section>
-    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Aanbod</h2>
-    <ul class="mt-2 space-y-2">
-      {% for item in profile.offerings %}
-      <li class="rounded border border-slate-200 bg-white px-3 py-2">
-        <p class="text-sm font-medium text-slate-800">{{ item.title }}</p>
-        {% if item.description %}<p class="text-xs text-slate-500">{{ item.description }}</p>{% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-  </section>
-  {% endif %}
+    <main class="flex-1 pb-20">
 
-  {% if profile.needs %}
-  <section>
-    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Waar ik naar zoek</h2>
-    <ul class="mt-2 space-y-2">
-      {% for item in profile.needs %}
-      <li class="rounded border border-slate-200 bg-white px-3 py-2">
-        <p class="text-sm font-medium text-slate-800">{{ item.title }}</p>
-        {% if item.description %}<p class="text-xs text-slate-500">{{ item.description }}</p>{% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-  </section>
-  {% endif %}
+      {# ---- Cover hero ---- #}
+      <section class="cover mt-2" data-reveal style="--d:140ms">
+        {% set _cover = profile.cover_image_url | safe_url %}
+        {% if _cover %}
+        <img src="{{ _cover }}" alt="">
+        {% endif %}
+      </section>
 
-  {% if profile.tags %}
-  <section>
-    <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Tags</h2>
-    <div class="mt-2 flex flex-wrap gap-2">
-      {% for tag in profile.tags %}
-      <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">{{ tag.name }}</span>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
+      {# ---- Identity ---- #}
+      <section class="mt-8" data-reveal style="--d:240ms">
+        <div class="display-name">{{ profile.display_name }}</div>
+        <h1 class="headline mt-2">{{ profile.headline or profile.display_name }}</h1>
+        {% if profile.tags %}
+        <div class="mt-5">{% set tags = profile.tags %}{% include "profiles/_cosmic_tags.html" %}</div>
+        {% endif %}
+      </section>
 
-</article>
-{% endblock %}
+      {# ---- Bio ---- #}
+      {% if profile.bio %}
+      <section class="mt-12" data-reveal style="--d:340ms">
+        <div class="section-title mb-3">Over</div>
+        <p class="lede" style="max-width:58ch;white-space:pre-line">{{ profile.bio }}</p>
+      </section>
+      {% endif %}
+
+      {# ---- Roles / affiliations ---- #}
+      {% set roles = profile.profile_links | selectattr('kind.value', 'equalto', 'affiliation') | list %}
+      {% if roles %}
+      <section class="mt-14" data-reveal style="--d:400ms">
+        <div class="section-title mb-4">Rollen &amp; affiliaties</div>
+        <div class="grid">
+          {% for link in roles %}{% include "profiles/_cosmic_link_card.html" %}{% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      {# ---- Projects: offerings + build-kind links ---- #}
+      {% set builds = profile.profile_links | selectattr('kind.value', 'equalto', 'build') | list %}
+      {% if profile.offerings or builds %}
+      <section class="mt-14" data-reveal style="--d:460ms">
+        <div class="section-title mb-4">Wat ik maak</div>
+        <div class="grid">
+          {% for item in profile.offerings %}{% include "profiles/_cosmic_project_card.html" %}{% endfor %}
+          {% for item in builds %}{% include "profiles/_cosmic_project_card.html" %}{% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      {# ---- Fallback: legacy "wat ik maak" summary ---- #}
+      {% if not profile.offerings and not builds and profile.makes_summary %}
+      <section class="mt-14" data-reveal style="--d:460ms">
+        <div class="section-title mb-3">Wat ik maak</div>
+        <p class="lede" style="max-width:58ch;white-space:pre-line">{{ profile.makes_summary }}</p>
+      </section>
+      {% endif %}
+
+      {# ---- Seeking ---- #}
+      {% if profile.needs %}
+      <section class="mt-14" data-reveal style="--d:520ms">
+        <div class="section-title mb-4">Waar ik naar zoek</div>
+        <div class="space-y-3">
+          {% for need in profile.needs %}
+          <div class="seeking">
+            <div class="card-label">{{ need.title }}</div>
+            {% if need.description %}<p class="card-desc mt-1">{{ need.description }}</p>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line)" data-reveal style="--d:600ms">
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

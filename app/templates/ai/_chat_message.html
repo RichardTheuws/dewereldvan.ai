@@ -1,0 +1,14 @@
+{# One chat bubble. Accepts either a `turn` dict ({role, text}) from the history
+   loop, or direct `role` + `text` context when rendered standalone (POST/SSE).
+   Roles: user | assistant | refusal | system. #}
+{% set _role = turn.role if turn is defined else role %}
+{% set _text = turn.text if turn is defined else text %}
+{% if _role == "user" %}
+<div class="bubble bubble--user">{{ _text }}</div>
+{% elif _role == "refusal" %}
+<div class="bubble bubble--refusal">{{ _text }}</div>
+{% elif _role == "system" %}
+<div class="bubble bubble--system">{{ _text }}</div>
+{% else %}
+<div class="bubble bubble--assistant">{{ _text }}</div>
+{% endif %}

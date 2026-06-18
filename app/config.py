@@ -27,6 +27,17 @@ class Settings(BaseSettings):
     # Max anonymous open registrations accepted per source IP per hour.
     rate_limit_register_per_hour: int = 5
 
+    # --- AI-native profielbouw (F1-F3) ---
+    # The anthropic SDK reads ANTHROPIC_API_KEY from env itself; we also expose it
+    # here so settings stay the single source of truth for config introspection.
+    anthropic_api_key: str | None = None  # ANTHROPIC_API_KEY
+    anthropic_model: str = "claude-opus-4-8"  # ANTHROPIC_MODEL
+    fal_key: str | None = None  # FAL_KEY — fal.ai cover generation
+    ai_enrich_enabled: bool = True  # AI_ENRICH_ENABLED
+    rate_limit_ai_enrich_per_hour: int = 10  # per lid
+    # Factory switch for the ImageGenerator backend (net als email_backend).
+    ai_image_backend: str = "fal"  # "fal" | "noop"
+
     @property
     def admin_email_set(self) -> set[str]:
         return {e.strip().lower() for e in self.admin_emails.split(",") if e.strip()}

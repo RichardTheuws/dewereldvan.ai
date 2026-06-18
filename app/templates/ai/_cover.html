@@ -1,0 +1,17 @@
+{# Cover preview + (re)generate button. Swapped into #cover after a generate
+   attempt. Cover is optional and fails gracefully (cover_error). #}
+<div class="cover mb-3">
+  {% if profile.cover_image_url %}
+  <img src="{{ profile.cover_image_url }}" alt="Cover">
+  {% endif %}
+</div>
+{% if cover_error %}
+<p class="text-sm" style="color:#ffd5d5">{{ cover_error }}</p>
+{% endif %}
+<button class="btn btn--ghost"
+        hx-post="/profiel/ai/cover"
+        hx-target="#cover"
+        hx-swap="innerHTML"
+        hx-disabled-elt="this">
+  {% if profile.cover_image_url %}Nieuwe cover{% else %}Genereer cover{% endif %}
+</button>

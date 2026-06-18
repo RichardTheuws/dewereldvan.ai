@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from app.models.member import Member
     from app.models.need import Need
     from app.models.offering import Offering
+    from app.models.profile_link import ProfileLink
     from app.models.tag import Tag
 
 
@@ -47,6 +48,14 @@ class Profile(Base, TimestampMixin):
     consented_public_at: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True
     )
+    # AI-native profielbouw (F1-F3). All additive; default to "no AI build yet".
+    headline: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    cover_image_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    ai_enriched: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+    # Raw member input kept for audit / regenerate; cascades away on member delete.
+    ai_source_text: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     member: Mapped[Member] = relationship(back_populates="profile")
     offerings: Mapped[list[Offering]] = relationship(
@@ -57,4 +66,9 @@ class Profile(Base, TimestampMixin):
     )
     tags: Mapped[list[Tag]] = relationship(
         secondary="profile_tag", back_populates="profiles"
+    )
+    profile_links: Mapped[list[ProfileLink]] = relationship(
+        back_populates="profile",
+        cascade="all, delete-orphan",
+        order_by="ProfileLink.position",
     )

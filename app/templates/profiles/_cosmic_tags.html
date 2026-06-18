@@ -1,0 +1,6 @@
+{# Mono tag chips. Expects `tags` (iterable with .name). #}
+<div class="chips">
+  {% for tag in tags %}
+  <span class="chip">{{ tag.name }}</span>
+  {% endfor %}
+</div>

@@ -1,0 +1,40 @@
+{# Returned by POST /profiel/ai/bericht and appended to #chat-pending.
+   Shows the just-sent member bubble, then opens an SSE connection that:
+   - appends streamed text deltas into a live assistant bubble (sse-swap="delta")
+   - on the terminating "done" event, swaps in the final rendered bubble and
+     closes the connection.
+   A fresh element id per send avoids collisions when sending several messages. #}
+{% set sid = range(100000, 999999) | random %}
+<div class="bubble bubble--user">{{ user_text }}</div>
+
+<div id="sse-{{ sid }}" hx-ext="sse" sse-connect="/profiel/ai/stream" sse-close="done">
+  {# Live streaming target: text deltas are appended here as they arrive.
+     aria-live announces the streamed answer to screenreaders as it grows. #}
+  <div class="bubble bubble--assistant" sse-swap="delta" hx-swap="beforeend"
+       aria-live="polite" aria-atomic="false">
+    <span class="typing" data-typing role="status">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+      <span style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0">Assistent typt…</span>
+    </span>
+  </div>
+
+  {# On "done": replace this whole SSE block with the final, persisted bubble. #}
+  <div sse-swap="done"
+       hx-target="#sse-{{ sid }}"
+       hx-swap="outerHTML"
+       style="display:none"></div>
+</div>
+
+<script>
+  // Hide the typing indicator as soon as the first delta lands.
+  (function () {
+    var box = document.getElementById('sse-{{ sid }}');
+    if (!box) return;
+    box.addEventListener('htmx:sseMessage', function (e) {
+      if (e.detail && e.detail.type === 'delta') {
+        var t = box.querySelector('[data-typing]');
+        if (t) t.remove();
+      }
+    });
+  })();
+</script>
