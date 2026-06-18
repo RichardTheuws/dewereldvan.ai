@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Cinematische eerste-login (E4b) — "Welkom in de wereld van…". Standalone
+   cosmic-document. De constellatie onthult de eigen ster (een gouden puls midden
+   in het veld), de tekst onthult zich gechoreografeerd, en de pagina vloeit daarna
+   vloeiend door naar /profiel/ai/bouwen. prefers-reduced-motion => directe knop,
+   geen auto-redirect. noindex (persoonlijk). #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Welkom — dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  {# Fallback voor clients zonder JS / reduced-motion: geen harde meta-refresh
+     (zou de reveal afkappen), maar de knop hieronder is altijd zichtbaar. #}
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}.welcome-skip{opacity:1!important}</style></noscript>
+</head>
+<body class="cosmic welcome" data-next="{{ next_url }}">
+  {% include "profiles/_cosmic_bg.html" %}
+
+  <div class="wrap welcome__wrap">
+    <main class="welcome__stage">
+      {# De ster die opgloeit — het lid zelf, als nieuwe ster in de constellatie. #}
+      <div class="welcome__star" data-reveal style="--d:200ms" aria-hidden="true">
+        <span class="welcome__star-core"></span>
+        <span class="welcome__star-halo"></span>
+      </div>
+
+      <p class="eyebrow eyebrow--plain welcome__eyebrow" data-reveal style="--d:520ms">
+        Je ster is verschenen
+      </p>
+      <h1 class="headline welcome__headline" data-reveal style="--d:760ms">
+        Welkom in de wereld van<br>
+        <span class="welcome__name">{{ first_name }}</span>.
+      </h1>
+      <p class="lede welcome__lede" data-reveal style="--d:1040ms;max-width:48ch">
+        Dit is een levend netwerk van makers. Jij hoort er nu bij. Zo dadelijk
+        bouwen we samen je profiel — vertel je verhaal, de rest verbindt vanzelf.
+      </p>
+
+      <div class="welcome__actions" data-reveal style="--d:1320ms">
+        <a class="btn welcome__go" href="{{ next_url }}">Bouw je profiel ✦</a>
+        <span class="welcome__autohint" aria-hidden="true">je wordt zo doorgeleid…</span>
+      </div>
+    </main>
+  </div>
+
+  {% include "ai/_cosmic_canvas.html" %}
+
+  <script>
+    // Gechoreografeerde doorvloei: na de reveal vloeien we vloeiend door naar de
+    // AI-bouwer. prefers-reduced-motion => GEEN auto-redirect (de knop staat klaar).
+    (function () {
+      var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+      var next = document.body.getAttribute('data-next') || '/profiel/ai/bouwen';
+      if (reduce) return;
+      // Geef de entrance-choreografie de tijd om te landen, dan zachte fade-out.
+      setTimeout(function () { document.body.classList.add('welcome--leaving'); }, 5200);
+      setTimeout(function () { window.location.assign(next); }, 6000);
+    })();
+  </script>
+</body>
+</html>

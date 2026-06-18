@@ -66,6 +66,7 @@
     </footer>
   </div>
 
+  {% if request.session.get("member_id") %}{% include "_feedback_affordance.html" %}{% endif %}
   {% include "ai/_cosmic_canvas.html" %}
 </body>
 </html>

@@ -1,0 +1,23 @@
+{# Gloeiend "AI aan het werk"-paneel (W) — vervangt de statische "..."-indicator.
+   Toont de live-gestreamde redenering (sse-swap="reasoning") in een kosmisch kader
+   met een subtiele constellatie-puls die "verbindt" terwijl het model werkt, plus
+   (STRETCH) per-link fetch-status (sse-swap="fetch"). Geen eigen <html>: rendert in
+   het SSE-blok van _message_sent.html. Het paneel verbergt zichzelf zodra de
+   eerste tekst-delta landt (de JS in _message_sent.html), zodat het naadloos
+   overgaat in het echte antwoord. #}
+<div class="reasoning" data-reasoning role="status" aria-live="polite">
+  <div class="reasoning__aura" aria-hidden="true">
+    <span class="reasoning__orbit"></span>
+    <span class="reasoning__orbit reasoning__orbit--2"></span>
+    <span class="reasoning__core"></span>
+  </div>
+  <div class="reasoning__body">
+    <div class="reasoning__label">
+      <span class="reasoning__spark" aria-hidden="true">✦</span> AI aan het werk
+    </div>
+    {# Per-link fetch-status verschijnt hier (✦ host ophalen… ✓/✗). #}
+    <div class="reasoning__fetch" sse-swap="fetch" hx-swap="beforeend" aria-live="polite"></div>
+    {# Live-redenering (thinking-deltas) groeit hier aan. #}
+    <div class="reasoning__think" sse-swap="reasoning" hx-swap="beforeend"></div>
+  </div>
+</div>

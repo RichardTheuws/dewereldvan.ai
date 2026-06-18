@@ -1,0 +1,83 @@
+{# Kosmische HTML-mail-shell (E4) — inline-CSS table-layout.
+
+   E-mail-clients ondersteunen geen externe CSS/JS/canvas en strippen <head>-
+   styles wisselvallig; daarom is ALLE styling inline op de cellen zelf en gebruikt
+   dit shell een table-layout (de enige betrouwbare e-mail-layoutprimitief).
+
+   De kosmische identiteit wordt geemuleerd, niet exact gereproduceerd:
+   - donkere achtergrond (bgcolor #04040e met een radiale nebula-gloed als
+     inline background; #0a0a24 als solide fallback eronder voor clients die de
+     gradient strippen, m.n. Gmail);
+   - lichte tekst (#eef0ff), een gouden pill-CTA (#f6cd86 op donkere tekst);
+   - display-serif (Fraunces laadt niet in mail → graceful fallback Georgia/serif),
+     mono-eyebrow (JetBrains Mono → fallback monospace).
+
+   Child-templates (magic_link.html / approval.html) extenden dit shell en vullen
+   de blocks. De render gebeurt via een losse Jinja-Environment in
+   app/email/templates.py (SERVICES) — geen Request/route nodig. #}
+<!DOCTYPE html>
+<html lang="nl" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{% block subject %}dewereldvan.ai{% endblock %}</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0a0a24; background-color:#04040e;">
+  {# Preheader: verborgen voorbeeldtekst in de inbox-lijst. #}
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:#04040e; font-size:1px; line-height:1px;">
+    {% block preheader %}Een bericht van dewereldvan.ai{% endblock %}
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+         bgcolor="#0a0a24"
+         style="background-color:#04040e; background:radial-gradient(circle at 50% -10%, #15123a 0%, #0a0a24 38%, #04040e 100%);">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0"
+               style="width:560px; max-width:100%;">
+
+          {# Merk / eyebrow #}
+          <tr>
+            <td style="padding:0 8px 8px 8px;">
+              <span style="font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:#3fd2ff;">
+                dewereldvan<span style="color:#f6cd86;">.ai</span>
+              </span>
+            </td>
+          </tr>
+
+          {# Kaart-paneel #}
+          <tr>
+            <td style="background-color:#0c0c2a; border:1px solid rgba(255,255,255,0.09); border-radius:16px; padding:32px 32px 28px 32px;">
+
+              <h1 style="margin:0 0 14px 0; font-family:Fraunces,Georgia,'Times New Roman',serif; font-weight:400; font-size:26px; line-height:1.2; color:#eef0ff;">
+                {% block heading %}{% endblock %}
+              </h1>
+
+              <div style="font-family:'Spline Sans',Helvetica,Arial,sans-serif; font-size:16px; line-height:1.6; color:#c6c9e6;">
+                {% block body %}{% endblock %}
+              </div>
+
+              {% block cta %}{% endblock %}
+
+            </td>
+          </tr>
+
+          {# Footer #}
+          <tr>
+            <td style="padding:18px 12px 0 12px;">
+              <p style="margin:0; font-family:'Spline Sans',Helvetica,Arial,sans-serif; font-size:12px; line-height:1.6; color:#7b7ea6;">
+                dewereldvan.ai — een plek voor wie we zijn, wat we maken en waar we naar zoeken.
+              </p>
+              {% block footer_extra %}{% endblock %}
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

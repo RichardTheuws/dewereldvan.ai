@@ -53,5 +53,9 @@
       dewereldvan.ai — een plek voor wie we zijn, wat we maken en waar we naar zoeken.
     </div>
   </footer>
+
+  {# Globale feedback-affordance (E1): alleen voor ingelogde leden. htmx zit al
+     geladen; de CSRF-token reist mee via hx-headers op <body>. #}
+  {% if request.session.get("member_id") %}{% include "_feedback_affordance.html" %}{% endif %}
 </body>
 </html>

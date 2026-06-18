@@ -1,0 +1,43 @@
+{# Eén idee-kaart (E2). Werkt in twee contexten:
+   - in de lijst: ``counts`` (dict) + ``voted`` (set) zijn meegegeven;
+   - als swap-target na stem/moderatie: ``count`` (int) + ``voted`` (bool) direct.
+   We normaliseren beide naar _count / _voted_now. #}
+{% set _count = count if count is defined else (counts.get(idea.id, 0) if counts is defined else 0) %}
+{% set _voted_now = voted if voted is boolean else (idea.id in voted if voted is defined else false) %}
+<article id="idea-{{ idea.id }}" class="idea-card idea-card--{{ idea.status.value }}">
+  <div class="idea-card__vote" id="idea-vote-{{ idea.id }}">
+    {% include "ideas/_vote.html" with context %}
+  </div>
+
+  <div class="idea-card__body">
+    <div class="idea-card__top">
+      <h3 class="idea-card__title">{{ idea.title }}</h3>
+      <span class="idea-status idea-status--{{ idea.status.value }}">{{ idea.status.value }}</span>
+    </div>
+    <p class="idea-card__text">{{ idea.body }}</p>
+    {% if idea.member %}
+    <div class="idea-card__by">door {{ idea.member.name }}</div>
+    {% endif %}
+
+    {% if is_admin %}
+    <div class="idea-card__admin">
+      <form hx-post="/admin/ideeen/{{ idea.id }}/status"
+            hx-target="#idea-{{ idea.id }}" hx-swap="outerHTML" class="idea-admin-status">
+        <select name="status" onchange="this.form.requestSubmit()" aria-label="Status">
+          {% for s in statuses %}
+          <option value="{{ s.value }}" {% if s == idea.status %}selected{% endif %}>{{ s.value }}</option>
+          {% endfor %}
+        </select>
+      </form>
+      <button class="btn btn--ghost btn--sm"
+              hx-post="/admin/ideeen/{{ idea.id }}/promoot"
+              hx-target="#idea-{{ idea.id }}" hx-swap="outerHTML">Naar roadmap ✦</button>
+      <button class="btn btn--ghost btn--sm"
+              hx-post="/admin/ideeen/{{ idea.id }}/verberg"
+              hx-target="#idea-{{ idea.id }}" hx-swap="outerHTML">
+        {% if idea.hidden %}Toon{% else %}Verberg{% endif %}
+      </button>
+    </div>
+    {% endif %}
+  </div>
+</article>

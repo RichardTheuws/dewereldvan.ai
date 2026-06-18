@@ -1,0 +1,29 @@
+{# Eén feedback-rij (E1 admin) — swap-target voor verberg/toon. #}
+<article id="feedback-{{ item.id }}"
+         class="fb-row{% if item.hidden %} fb-row--hidden{% endif %}">
+  <div class="fb-row__meta">
+    <span class="fb-row__kind">{{ item.kind }}</span>
+    <span class="fb-row__path"><code>{{ item.page_path }}</code></span>
+    {% if item.member %}
+    <span class="fb-row__who">{{ item.member.name }}</span>
+    {% else %}
+    <span class="fb-row__who fb-row__who--anon">anoniem</span>
+    {% endif %}
+  </div>
+
+  <p class="fb-row__body">{{ item.body }}</p>
+
+  {% if item.ai_summary %}
+  <p class="fb-row__summary"><span aria-hidden="true">✦</span> {{ item.ai_summary }}</p>
+  {% endif %}
+
+  <div class="fb-row__actions">
+    <button class="btn btn--ghost btn--sm"
+            hx-post="/admin/feedback/{{ item.id }}/verberg"
+            hx-target="#feedback-{{ item.id }}"
+            hx-swap="outerHTML">
+      {% if item.hidden %}Toon weer{% else %}Verberg{% endif %}
+    </button>
+    {% if item.hidden %}<span class="fb-row__flag">verborgen</span>{% endif %}
+  </div>
+</article>

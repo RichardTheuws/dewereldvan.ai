@@ -26,9 +26,11 @@ from app.deps import (
     email_sender,
 )
 from app.email import EmailMessage, EmailSender, EmailSendError
+from app.email import templates as email_templates
 from app.models import Member, MemberRole, MemberStatus
 from app.schemas.auth import MagicLinkRequest, RegisterForm
 from app.services import magic_link as magic_link_service
+from app.services import onboarding_service
 from app.services import registration as registration_service
 
 router = APIRouter(tags=["auth"])
@@ -57,6 +59,9 @@ def _notify_admins_new_registration(
             f"Naam: {member.name}\n"
             f"E-mail: {member.email}\n\n"
             f"Beoordeel de aanvraag in de queue:\n{queue_url}\n"
+        ),
+        html_body=email_templates.render_admin_notify(
+            member.name, member.email, queue_url
         ),
     )
     try:
@@ -205,6 +210,9 @@ def login_submit(
             f"gebruikt worden:\n\n{verify_url}\n\n"
             "Heb je dit niet aangevraagd? Dan kun je deze e-mail negeren.\n"
         ),
+        html_body=email_templates.render_magic_link(
+            member.name, verify_url, settings.magic_link_ttl_min
+        ),
     )
     try:
         sender.send(message)
@@ -263,9 +271,13 @@ def verify(
         )
 
     assert result.member is not None
+    # Beslis de bestemming VOOR de commit, terwijl het lid nog aan de sessie hangt:
+    # eerste login (geen AI-bouw-turns én geen ingevuld profiel) → de cinematische
+    # /welkom-aankomst; anders het gewone /profiel/bewerken.
+    redirect_path = onboarding_service.first_login_redirect_path(db, result.member)
     db.commit()
     _set_session(request, result.member)
-    return RedirectResponse(url="/profiel/bewerken", status_code=303)
+    return RedirectResponse(url=redirect_path, status_code=303)
 
 
 # --------------------------------------------------------------------------- #

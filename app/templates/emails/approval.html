@@ -1,0 +1,26 @@
+{# Goedkeurings-mail (E4a) — lid is zojuist goedgekeurd. login_url veilig. #}
+{% extends "_base.html" %}
+{% block subject %}Je bent erbij — dewereldvan.ai{% endblock %}
+{% block preheader %}Je aanmelding is goedgekeurd. Log in en bouw je ster.{% endblock %}
+{% block heading %}Welkom, {{ name }}.{% endblock %}
+{% block body %}
+  <p style="margin:0 0 14px 0;">
+    Je aanmelding is goedgekeurd. Vanaf nu hoor je bij de wereld — een levend
+    netwerk van de scherpste makers.
+  </p>
+  <p style="margin:0;">
+    Log in en bouw je plek: vertel wie je bent, wat je maakt en waar je naar zoekt.
+  </p>
+{% endblock %}
+{% block cta %}
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 6px 0;">
+    <tr>
+      <td bgcolor="#f6cd86" style="border-radius:999px;">
+        <a href="{{ login_url }}"
+           style="display:inline-block; padding:14px 30px; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:14px; font-weight:600; letter-spacing:0.03em; color:#1a1330; text-decoration:none; border-radius:999px;">
+          Inloggen ✦
+        </a>
+      </td>
+    </tr>
+  </table>
+{% endblock %}

@@ -1,0 +1,68 @@
+{# Feedback-paneel (E1) — htmx-fragment, geladen in #feedback-slot.
+   Een kosmisch zwevend paneel boven de fab. Het formulier post naar /feedback en
+   swapt zichzelf (#feedback-panel) met de succes-staat. CSRF reist via hx-headers
+   op de pagina-<body>. Geen eigen <html> — rendert binnen het bestaande document. #}
+<div id="feedback-panel" class="feedback-panel" role="dialog" aria-modal="false"
+     aria-label="Deel je gedachte">
+  <div class="feedback-panel__head">
+    <span class="feedback-panel__eyebrow">✦ deel je gedachte</span>
+    <button type="button" class="feedback-panel__close" aria-label="Sluiten"
+            data-feedback-close>×</button>
+  </div>
+
+  {% if error %}
+  <p class="feedback-panel__err" role="alert">{{ error }}</p>
+  {% endif %}
+
+  <form hx-post="/feedback"
+        hx-target="#feedback-panel"
+        hx-swap="outerHTML">
+    <input type="hidden" name="page_path" value="{{ page_path }}">
+
+    <label class="field-label" for="feedback-kind">Wat is dit?</label>
+    <select id="feedback-kind" name="kind">
+      <option value="idee">een idee</option>
+      <option value="bug">iets werkt niet</option>
+      <option value="lof">een compliment</option>
+      <option value="algemeen" selected>iets anders</option>
+    </select>
+
+    <label class="field-label" for="feedback-body" style="margin-top:14px">Je gedachte</label>
+    <textarea id="feedback-body" name="body" rows="4" required
+              placeholder="Wat valt je op? Wat zou beter kunnen? Schrijf vrijuit — we lezen alles."
+              autofocus>{{ body or "" }}</textarea>
+
+    <div class="feedback-panel__foot">
+      <span class="feedback-panel__hint">Verzonden vanaf <code>{{ page_path }}</code></span>
+      <button class="btn" type="submit">Versturen ✦</button>
+    </div>
+  </form>
+</div>
+<script>
+  (function () {
+    var panel = document.getElementById('feedback-panel');
+    if (!panel) return;
+    var slot = document.getElementById('feedback-slot');
+    var fab = document.querySelector('.feedback-fab');
+
+    function close() {
+      if (slot) slot.innerHTML = '';
+      if (fab) {
+        fab.setAttribute('aria-expanded', 'false');
+        fab.focus();  // breng focus terug naar de toggle (a11y)
+      }
+    }
+
+    // Sluitknop + ESC sturen consequent dezelfde close (incl. FAB-state-reset).
+    var closeBtn = panel.querySelector('[data-feedback-close]');
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    panel.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+    });
+
+    // Focus de textarea zelf — `autofocus` is onbetrouwbaar na een htmx
+    // innerHTML-swap (het element is na de swap niet "fresh from parse").
+    var body = document.getElementById('feedback-body');
+    if (body) body.focus();
+  })();
+</script>

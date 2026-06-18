@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Roadmap admin-CRUD (E3) — standalone cosmic-document. require_admin, noindex.
+   Maak-formulier bovenaan; alle items als bewerkbare rijen eronder. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Roadmap — beheer · dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+      <div class="links">
+        <a class="link" href="/roadmap">Publieke roadmap</a>
+        <a class="link" href="/admin/feedback">Feedback</a>
+      </div>
+    </header>
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">Beheer · curatie</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Roadmap-board.</h1>
+        <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
+          Voeg items toe, zet ze in een fase en stuur de volgorde met positie. Wat
+          hier staat, leeft op de publieke roadmap.
+        </p>
+      </section>
+
+      {% if saved %}
+      <p class="rm-saved" role="status" data-reveal style="--d:440ms">✦ Opgeslagen.</p>
+      {% endif %}
+      {% if error %}
+      <p class="idea-form__err" role="alert" data-reveal style="--d:440ms">{{ error }}</p>
+      {% endif %}
+
+      <section class="mt-8" data-reveal style="--d:480ms">
+        <form class="rm-create"
+              hx-post="/admin/roadmap"
+              hx-target="body"
+              hx-swap="outerHTML">
+          <div class="rm-create__grid">
+            <div class="rm-create__title">
+              <label class="field-label" for="rm-title">Titel</label>
+              <input id="rm-title" name="title" maxlength="200" required placeholder="Wat ga je bouwen?">
+            </div>
+            <div>
+              <label class="field-label" for="rm-phase">Fase</label>
+              <input id="rm-phase" name="phase" maxlength="80" value="Volgende" placeholder="Nu / Volgende / Later">
+            </div>
+            <div>
+              <label class="field-label" for="rm-status">Status</label>
+              <select id="rm-status" name="status">
+                {% for s in statuses %}<option value="{{ s.value }}">{{ s.value }}</option>{% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="rm-position">Positie</label>
+              <input id="rm-position" name="position" type="number" min="0" value="0">
+            </div>
+          </div>
+          <div class="mt-3">
+            <label class="field-label" for="rm-desc">Omschrijving</label>
+            <textarea id="rm-desc" name="description" rows="2" maxlength="4000"
+                      placeholder="Optioneel — wat houdt het in?"></textarea>
+          </div>
+          <div class="rm-create__foot">
+            <button class="btn" type="submit">Item toevoegen ✦</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="mt-12" data-reveal style="--d:560ms">
+        <div class="section-title mb-5">Alle items</div>
+        {% if items %}
+        <div class="rm-admin-list">
+          {% for item in items %}
+            {% include "roadmap/_admin_item.html" %}
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="constellation-empty">
+          <span class="constellation-empty__spark" aria-hidden="true">✦</span>
+          <p class="lede" style="max-width:40ch;margin:0 auto">Nog geen items. Voeg het eerste hierboven toe.</p>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:680ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "_feedback_affordance.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

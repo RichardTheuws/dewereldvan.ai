@@ -1,0 +1,22 @@
+{# Globale feedback-affordance (E1) — "✦ deel je gedachte", overal bereikbaar.
+
+   FOUNDATION levert de markup-only hook: een vaste, toetsenbord-bereikbare pill die
+   het htmx-paneel inlaadt, plus een leeg swap-slot. De volledige kosmische styling
+   (.feedback-fab / .feedback-panel in cosmic.css), de motion en de a11y-finish
+   komen van de ROUTES+UI-laag; de POST-route + paneel-fragment idem.
+
+   Geincludeerd voor ingelogde leden vlak voor </body> in base.html, en (door
+   ROUTES+UI) per cosmic standalone-pagina vlak voor het constellatie-canvas. De
+   pill is overal hetzelfde element — geen tweede look. #}
+<button type="button"
+        class="feedback-fab"
+        aria-label="Deel je gedachte over deze pagina"
+        aria-controls="feedback-slot"
+        aria-expanded="false"
+        hx-get="/feedback/paneel"
+        hx-target="#feedback-slot"
+        hx-swap="innerHTML"
+        hx-on::after-request="this.setAttribute('aria-expanded', 'true')">
+  ✦ deel je gedachte
+</button>
+<div id="feedback-slot"></div>

@@ -1,0 +1,18 @@
+{# Stemknop-fragment (E2) — swap-target #idea-vote-{id} na een stem.
+   Normaliseert telling/stem-staat uit beide aanroep-contexten (zie _card.html).
+   Optimistic: bij klik tonen we meteen 'gestemd' (de swap bevestigt de telling). #}
+{% set _c = count if count is defined else (_count if _count is defined else 0) %}
+{% set _v = voted if voted is boolean else (_voted_now if _voted_now is defined else false) %}
+<form id="idea-vote-form-{{ idea.id }}"
+      hx-post="/ideeen/{{ idea.id }}/stem"
+      hx-target="#idea-vote-{{ idea.id }}"
+      hx-swap="innerHTML"
+      {% if _v %}hx-disabled-elt="find button"{% endif %}>
+  <button type="submit"
+          class="vote-btn{% if _v %} vote-btn--voted{% endif %}"
+          {% if _v %}aria-pressed="true" title="Je stemde al"{% else %}aria-pressed="false" title="Stem op dit idee"{% endif %}>
+    <span class="vote-btn__arrow" aria-hidden="true">▲</span>
+    <span class="vote-btn__count">{{ _c }}</span>
+    <span class="vote-btn__label">{% if _v %}gestemd{% else %}stem{% endif %}</span>
+  </button>
+</form>

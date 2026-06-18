@@ -1,22 +1,34 @@
 {# Returned by POST /profiel/ai/bericht and appended to #chat-pending.
    Shows the just-sent member bubble, then opens an SSE connection that:
-   - appends streamed text deltas into a live assistant bubble (sse-swap="delta")
-   - on the terminating "done" event, swaps in the final rendered bubble and
-     closes the connection.
+   - shows a glowing "AI aan het werk"-panel during the wait, into which the
+     model's reasoning (sse-swap="reasoning") and per-link fetch-status
+     (sse-swap="fetch", STRETCH) are surfaced when present;
+   - appends streamed text deltas into a live assistant bubble (sse-swap="delta");
+   - on the terminating "done" event, swaps in the final rendered bubble (which
+     replaces this whole block, incl. the panel) and closes the connection.
+   The delta-stream and the done-swap are intentionally UNCHANGED (regression
+   guard for the wait-UX). The reasoning/fetch handling is purely additive.
+
+   Ordering note: thinking/fetch are extracted from the final message AFTER the
+   text has streamed, so they arrive on the wire alongside/after the first delta.
+   The panel therefore stays mounted until the terminating "done" event (it is
+   only dimmed, not removed, on the first delta) — otherwise the reasoning/fetch
+   swap-targets would already be gone and those events would land nowhere. If the
+   model surfaces no thinking/tool events, the panel stays as the glowing
+   placeholder and the answer streams beneath it — the experience is still "af".
    A fresh element id per send avoids collisions when sending several messages. #}
 {% set sid = range(100000, 999999) | random %}
 <div class="bubble bubble--user">{{ user_text }}</div>
 
 <div id="sse-{{ sid }}" hx-ext="sse" sse-connect="/profiel/ai/stream" sse-close="done">
+  {# Glowing reasoning panel: live thinking + per-link fetch status, until the
+     first answer-delta arrives (then it is removed in JS below). #}
+  {% include "ai/_reasoning_panel.html" %}
+
   {# Live streaming target: text deltas are appended here as they arrive.
      aria-live announces the streamed answer to screenreaders as it grows. #}
-  <div class="bubble bubble--assistant" sse-swap="delta" hx-swap="beforeend"
-       aria-live="polite" aria-atomic="false">
-    <span class="typing" data-typing role="status">
-      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
-      <span style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0">Assistent typt…</span>
-    </span>
-  </div>
+  <div class="bubble bubble--assistant" data-answer sse-swap="delta" hx-swap="beforeend"
+       aria-live="polite" aria-atomic="false" style="display:none"></div>
 
   {# On "done": replace this whole SSE block with the final, persisted bubble. #}
   <div sse-swap="done"
@@ -26,14 +38,40 @@
 </div>
 
 <script>
-  // Hide the typing indicator as soon as the first delta lands.
   (function () {
     var box = document.getElementById('sse-{{ sid }}');
     if (!box) return;
+
     box.addEventListener('htmx:sseMessage', function (e) {
-      if (e.detail && e.detail.type === 'delta') {
-        var t = box.querySelector('[data-typing]');
-        if (t) t.remove();
+      if (!e.detail) return;
+      var type = e.detail.type;
+
+      if (type === 'delta') {
+        // First answer-delta: reveal the answer bubble beneath the panel. We do
+        // NOT remove the reasoning panel here — reasoning/fetch events arrive
+        // alongside/after the deltas (they are extracted post-stream), so their
+        // swap-targets must still exist. The panel is replaced wholesale on the
+        // terminating "done" event (this block is swapped out via hx-target).
+        // Mark it as "settled" so the label reads done rather than busy.
+        var panel = box.querySelector('[data-reasoning]');
+        if (panel) panel.classList.add('reasoning--settled');
+        var ans = box.querySelector('[data-answer]');
+        if (ans) ans.style.display = '';
+      } else if (type === 'fetch') {
+        // The raw payload is JSON {"host","state"}: render it as a tidy line.
+        var line = box.querySelector('.reasoning__fetch');
+        if (!line) return;
+        var host = '', state = 'ok';
+        try { var d = JSON.parse(e.detail.data); host = d.host || ''; state = d.state || 'ok'; }
+        catch (err) { return; }
+        // htmx already appended the raw JSON as text; replace it with a clean row.
+        var raw = line.lastChild;
+        if (raw && raw.nodeType === 3) line.removeChild(raw);
+        var row = document.createElement('div');
+        var isErr = state === 'err';
+        row.className = 'fetch-line fetch-line--' + (isErr ? 'err' : 'ok');
+        row.textContent = '✦ ' + (host || 'bron') + ' ophalen ' + (isErr ? '✗' : '✓');
+        line.appendChild(row);
       }
     });
   })();

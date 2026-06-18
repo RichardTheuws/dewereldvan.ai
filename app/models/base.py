@@ -53,6 +53,11 @@ class AuditAction(str, enum.Enum):
     # Foto-upload spoor (AVG) + grondslag voor de upload-rate-limit (per lid,
     # glijdend uur-venster). VARCHAR-enum → additieve waarde, geen migratie nodig.
     photo_uploaded = "photo_uploaded"
+    # Ervaring-laag moderatie (E1-E3). VARCHAR-enum → additieve waarden, geen
+    # migratie nodig (de audit_action-kolom is geen native enum).
+    feedback_hidden = "feedback_hidden"
+    idea_hidden = "idea_hidden"
+    idea_promoted = "idea_promoted"
 
 
 class ProfileEmphasis(str, enum.Enum):
@@ -71,3 +76,23 @@ class ProfileLinkKind(str, enum.Enum):
     affiliation = "affiliation"  # rol/affiliatie ("verantwoordelijk voor X")
     build = "build"  # iets dat het lid bouwt
     other = "other"
+
+
+class IdeaStatus(str, enum.Enum):
+    """Status van een ideeenbus-idee (E2). Langste waarde 'afgewezen' = 9 →
+    de DDL-kolom is ``String(length=9)`` (zie 0005_ervaring)."""
+
+    open = "open"
+    gepland = "gepland"
+    gedaan = "gedaan"
+    afgewezen = "afgewezen"
+
+
+class RoadmapStatus(str, enum.Enum):
+    """Status van een roadmap-item (E3). Langste waarde 'overwegen' = 9 →
+    de DDL-kolom is ``String(length=9)`` (zie 0005_ervaring)."""
+
+    overwegen = "overwegen"
+    gepland = "gepland"
+    bezig = "bezig"
+    gedaan = "gedaan"

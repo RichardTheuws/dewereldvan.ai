@@ -1,0 +1,24 @@
+{# Idee-indienformulier (E2). Post naar /ideeen; bij succes komt de verse lijst
+   terug en swapt #ideas-list. Het formulier zelf reset via hx-on. #}
+<form class="idea-form"
+      hx-post="/ideeen"
+      hx-target="#ideas-list"
+      hx-swap="innerHTML"
+      hx-on::after-request="if(event.detail.successful){this.reset();this.querySelector('input[name=title]').focus();}">
+  <div class="idea-form__row">
+    <div class="idea-form__title">
+      <label class="field-label" for="idea-title">Je idee in één zin</label>
+      <input id="idea-title" name="title" maxlength="160" required
+             placeholder="Bijv. Een live-changelog op de homepage">
+    </div>
+  </div>
+  <div class="mt-4">
+    <label class="field-label" for="idea-body">Vertel iets meer</label>
+    <textarea id="idea-body" name="body" rows="3" maxlength="4000" required
+              placeholder="Waarom zou dit deze wereld beter maken? Hoe zie je het voor je?"></textarea>
+  </div>
+  <div class="idea-form__foot">
+    <span class="idea-form__hint">Eén goed idee &gt; tien halve. Houd het scherp.</span>
+    <button class="btn" type="submit">Idee delen ✦</button>
+  </div>
+</form>

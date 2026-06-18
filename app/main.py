@@ -28,10 +28,14 @@ from app.routers import (
     admin,
     ai_profile,
     auth,
+    feedback,
+    ideas,
     members,
+    onboarding,
     photo,
     profiles,
     projects,
+    roadmap,
     seo,
 )
 
@@ -128,6 +132,12 @@ def create_app() -> FastAPI:
     app.include_router(projects.router)
     app.include_router(photo.router)
     app.include_router(seo.router)
+    # Ervaring-laag (E1-E4): feedback, ideeenbus, roadmap, onboarding. Stubs nu;
+    # route-bodies door SERVICES/ROUTES+UI.
+    app.include_router(feedback.router)
+    app.include_router(ideas.router)
+    app.include_router(roadmap.router)
+    app.include_router(onboarding.router)
 
     return app
 

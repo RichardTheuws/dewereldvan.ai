@@ -1,0 +1,14 @@
+{# Eén roadmap-item (E3, leden-weergave). #}
+<article class="roadmap-item roadmap-item--{{ item.status.value }}">
+  <div class="roadmap-item__status">
+    <span class="roadmap-dot roadmap-dot--{{ item.status.value }}" aria-hidden="true"></span>
+    <span class="roadmap-item__statuslabel">{{ item.status.value }}</span>
+  </div>
+  <h3 class="roadmap-item__title">{{ item.title }}</h3>
+  {% if item.description %}
+  <p class="roadmap-item__desc">{{ item.description }}</p>
+  {% endif %}
+  {% if item.linked_idea_id %}
+  <div class="roadmap-item__origin">✦ uit de ideeenbus</div>
+  {% endif %}
+</article>

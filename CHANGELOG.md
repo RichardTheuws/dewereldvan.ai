@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.9.0] - 2026-06-18
+### Added (Ervaring-laag E1-E4 + wacht-UX)
+- **Feedback overal** (E1): altijd-bereikbare "✦ deel je gedachte"-affordance (htmx-paneel),
+  opslag met paginacontext, optionele Claude-samenvatting (faalt gracieus), admin-overzicht.
+- **Ideeënbus** (E2, `/ideeen`): indienen, stemmen (1 upvote/lid/idee, UNIQUE), status; admin
+  modereren + promoten naar de roadmap.
+- **Roadmap** (E3, `/roadmap`): levende, admin-curated roadmap (DB-backed), gevoed door ideeën.
+- **Onboarding + gestylede e-mails** (E4): kosmische HTML-mails (magic-link + goedkeuring) achter
+  de bestaande EmailSender; cinematische eerste-login die doorvloeit naar de profielbouw.
+- **Wacht-UX** (W): gloeiend "AI-aan-het-werk"-paneel met live-redenering + constellatie i.p.v.
+  statische "..."; additieve SSE-events, `delta`/`done` byte-identiek (AI-fixes intact).
+- Migratie `0005_ervaring` (additief): `feedback`, `idea`, `idea_vote`, `roadmap_item`.
+- _Nog NIET gedeployed — wacht op de profielbouw-vision-richting (zie gesprek)._
+
 ## [0.8.5] - 2026-06-18
 ### Fixed (AI-profielbouw — live-bugs, gediagnosticeerd op productie)
 - **Profielbouwer hing ("..."): `web_fetch`-resultaten teruggespeeld met `citations`**

@@ -914,4 +914,733 @@
     transform: none;
     filter: none;
   }
+  /* De feedback-affordance is bewust NIET onder .cosmic (werkt op zowel
+     cosmic- als lichte pagina's), dus de .cosmic *-regel hierboven dooft haar
+     motion NIET. Doof 'm hier expliciet — styleguide §1/§5: geen uitzondering. */
+  .feedback-fab,
+  .feedback-panel,
+  .feedback-panel *,
+  .feedback-panel *::before,
+  .feedback-panel *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* =========================================================================
+   Ervaring-laag (E1-E4 + W) — feedback / ideeen / roadmap / onboarding /
+   wacht-UX. Alles op de bestaande tokens; geen tweede look. De .cosmic-gescopete
+   componenten (ideeen/roadmap/wacht-UX) erven de reduced-motion-regel (.cosmic *)
+   hierboven; de NIET-.cosmic feedback-fab/-paneel krijgen daar een eigen,
+   expliciete reduced-motion-uitzondering (zie het media-block hierboven).
+   ========================================================================= */
+
+/* ---- kleine knop-variant (admin-acties) ---- */
+.cosmic .btn--sm {
+  padding: 8px 15px;
+  font-size: 11px;
+}
+
+/* ---- helpers ---- */
+.cosmic .btn--sm + .btn--sm { margin-left: 2px; }
+
+/* =========================================================================
+   E1 — Globale feedback-affordance (fab) + paneel
+   ========================================================================= */
+.feedback-fab {
+  position: fixed;
+  right: clamp(16px, 3vw, 28px);
+  bottom: clamp(16px, 3vw, 28px);
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(63, 210, 255, 0.3);
+  border-radius: 100px;
+  padding: 11px 18px;
+  cursor: pointer;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: #eef0ff;
+  /* token-onafhankelijke donkere fill: werkt op zowel cosmic- als light-pagina's */
+  background: linear-gradient(120deg, rgba(21, 18, 58, 0.92), rgba(10, 10, 36, 0.92));
+  box-shadow: 0 10px 30px -12px rgba(63, 210, 255, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(6px);
+  transition: transform 0.25s ease, box-shadow 0.35s ease, border-color 0.3s;
+}
+.feedback-fab:hover {
+  transform: translateY(-2px);
+  border-color: rgba(63, 210, 255, 0.6);
+  box-shadow: 0 16px 40px -14px rgba(63, 210, 255, 0.6);
+}
+.feedback-fab:focus-visible {
+  outline: none;
+  border-color: rgba(63, 210, 255, 0.75);
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.22);
+}
+
+.feedback-panel {
+  position: fixed;
+  right: clamp(16px, 3vw, 28px);
+  bottom: calc(clamp(16px, 3vw, 28px) + 58px);
+  z-index: 41;
+  width: min(380px, calc(100vw - 32px));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.09));
+  border-radius: 18px;
+  padding: 18px 18px 16px;
+  color: #eef0ff;
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgba(109, 93, 252, 0.18), transparent 60%),
+    rgba(10, 10, 30, 0.96);
+  box-shadow: 0 30px 70px -28px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+  animation: fb-rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes fb-rise {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.feedback-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.feedback-panel__eyebrow {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold, #f6cd86);
+}
+.feedback-panel__close {
+  border: none;
+  background: none;
+  color: #9097c4;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+.feedback-panel__close:hover { color: #eef0ff; }
+.feedback-panel select,
+.feedback-panel textarea,
+.feedback-panel input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.09));
+  border-radius: 12px;
+  padding: 11px 13px;
+  color: #eef0ff;
+  font-family: "Spline Sans", system-ui, sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+.feedback-panel select:focus,
+.feedback-panel textarea:focus,
+.feedback-panel input:focus {
+  border-color: rgba(63, 210, 255, 0.55);
+  background: rgba(63, 210, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.1);
+}
+.feedback-panel .field-label {
+  display: block;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9097c4;
+  margin-bottom: 5px;
+}
+.feedback-panel__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+}
+.feedback-panel__hint { font-size: 11px; color: #7b7ea6; }
+.feedback-panel__hint code { color: #9097c4; word-break: break-all; }
+.feedback-panel__err {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #ffd5d5;
+}
+.feedback-panel--sent { text-align: center; padding: 26px 22px; }
+.feedback-panel__spark {
+  font-size: 2rem;
+  color: var(--gold, #f6cd86);
+  text-shadow: 0 0 22px var(--gold, #f6cd86);
+  display: block;
+  margin-bottom: 8px;
+  animation: cosmic-twinkle 3s ease-in-out infinite;
+}
+.feedback-panel__thanks {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.05rem;
+  color: #eef0ff;
+  margin: 0 0 16px;
+}
+
+/* Paneel-knoppen thema-onafhankelijk (net als de rest van het paneel): het
+   paneel wordt globaal via base.html geinjecteerd, ook op lichte pagina's waar
+   geen .cosmic-voorouder bestaat. Zonder deze regels vallen de submit- (.btn) en
+   sluit-knop (.btn--ghost) terug op kale browser-defaults — de goud-gradient pill
+   en de ghost-variant hieronder spiegelen .cosmic .btn / .btn--ghost. */
+.feedback-panel .btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  border-radius: 100px;
+  padding: 13px 24px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  color: #1a1330;
+  background: linear-gradient(100deg, var(--gold, #f6cd86), #ffe6b0);
+  text-decoration: none;
+  transition: transform 0.25s ease, box-shadow 0.35s ease;
+}
+.feedback-panel .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 34px -8px rgba(246, 205, 134, 0.6);
+}
+.feedback-panel .btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.22);
+}
+.feedback-panel .btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+.feedback-panel .btn--ghost {
+  background: transparent;
+  color: #eef0ff;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.09));
+}
+.feedback-panel .btn--ghost:hover {
+  border-color: rgba(63, 210, 255, 0.5);
+  box-shadow: none;
+}
+
+/* =========================================================================
+   E2 — Ideeenbus: indien-formulier, kaarten, stemknop
+   ========================================================================= */
+.cosmic .idea-form {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    radial-gradient(90% 120% at 100% 0%, rgba(63, 210, 255, 0.08), transparent 55%),
+    var(--card);
+  padding: 22px;
+}
+.cosmic .idea-form__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.cosmic .idea-form__hint { font-size: 0.85rem; color: var(--muted); }
+.cosmic .idea-form__err {
+  margin: 0 0 14px;
+  color: #ffd5d5;
+  font-size: 0.9rem;
+}
+
+.cosmic .idea-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cosmic .idea-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  padding: 18px;
+  transition: border-color 0.3s, transform 0.25s, box-shadow 0.35s;
+}
+.cosmic .idea-card:hover {
+  border-color: rgba(63, 210, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 44px -22px rgba(63, 210, 255, 0.5);
+}
+.cosmic .idea-card__vote { flex: none; }
+.cosmic .idea-card__body { flex: 1 1 auto; min-width: 0; }
+.cosmic .idea-card__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cosmic .idea-card__title {
+  font-family: "Fraunces", serif;
+  font-weight: 400;
+  font-size: 1.2rem;
+  line-height: 1.2;
+  color: var(--text);
+}
+.cosmic .idea-card__text {
+  margin-top: 7px;
+  color: #c7cbe8;
+  font-size: 0.95rem;
+}
+.cosmic .idea-card__by {
+  margin-top: 9px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.cosmic .idea-card__admin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.cosmic .idea-admin-status { margin: 0; }
+.cosmic .idea-admin-status select { width: auto; padding: 7px 10px; font-size: 12px; }
+
+/* status-pill */
+.cosmic .idea-status {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.cosmic .idea-status--gepland { color: var(--cyan); border-color: rgba(63, 210, 255, 0.35); }
+.cosmic .idea-status--gedaan { color: var(--gold); border-color: rgba(246, 205, 134, 0.4); }
+.cosmic .idea-status--afgewezen { color: #ffb3b3; border-color: rgba(255, 120, 120, 0.3); }
+
+/* stemknop */
+.cosmic .vote-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 58px;
+  padding: 12px 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.25s, transform 0.2s, box-shadow 0.3s, background 0.25s;
+}
+.cosmic .vote-btn:hover {
+  border-color: rgba(63, 210, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -14px rgba(63, 210, 255, 0.55);
+}
+.cosmic .vote-btn:focus-visible {
+  outline: none;
+  border-color: rgba(63, 210, 255, 0.7);
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.18);
+}
+.cosmic .vote-btn__arrow { font-size: 12px; color: var(--cyan); line-height: 1; }
+.cosmic .vote-btn__count {
+  font-family: "Fraunces", serif;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--text);
+}
+.cosmic .vote-btn__label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cosmic .vote-btn--voted {
+  border-color: rgba(246, 205, 134, 0.5);
+  background: linear-gradient(180deg, rgba(246, 205, 134, 0.1), transparent);
+  box-shadow: 0 0 0 1px rgba(246, 205, 134, 0.3);
+}
+.cosmic .vote-btn--voted .vote-btn__arrow,
+.cosmic .vote-btn--voted .vote-btn__label { color: var(--gold); }
+
+/* =========================================================================
+   E3 — Roadmap board + items (leden + admin)
+   ========================================================================= */
+.cosmic .roadmap-board {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  align-items: start;
+}
+.cosmic .roadmap-col {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background:
+    radial-gradient(80% 60% at 50% 0%, rgba(109, 93, 252, 0.1), transparent 60%),
+    var(--card);
+  padding: 18px;
+}
+.cosmic .roadmap-col__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 14px;
+}
+.cosmic .roadmap-col__phase {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.cosmic .roadmap-col__count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  padding: 2px 9px;
+}
+.cosmic .roadmap-col__items { display: flex; flex-direction: column; gap: 12px; }
+.cosmic .roadmap-item {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 14px 16px;
+  transition: border-color 0.3s, transform 0.25s, box-shadow 0.35s;
+}
+.cosmic .roadmap-item:hover {
+  border-color: rgba(63, 210, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px -20px rgba(63, 210, 255, 0.5);
+}
+.cosmic .roadmap-item__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.cosmic .roadmap-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--muted);
+  box-shadow: 0 0 10px 1px currentColor;
+}
+.cosmic .roadmap-dot--overwegen { color: var(--muted); background: var(--muted); }
+.cosmic .roadmap-dot--gepland { color: var(--cyan); background: var(--cyan); }
+.cosmic .roadmap-dot--bezig { color: var(--magenta); background: var(--magenta); animation: cosmic-pulse 2.4s ease-in-out infinite; }
+.cosmic .roadmap-dot--gedaan { color: var(--gold); background: var(--gold); }
+.cosmic .roadmap-item__statuslabel {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cosmic .roadmap-item__title {
+  font-family: "Fraunces", serif;
+  font-weight: 400;
+  font-size: 1.08rem;
+  line-height: 1.25;
+  color: var(--text);
+}
+.cosmic .roadmap-item__desc {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.cosmic .roadmap-item__origin {
+  margin-top: 9px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+}
+
+/* admin board */
+.cosmic .rm-create {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  padding: 20px;
+}
+.cosmic .rm-create__grid,
+.cosmic .rm-admin-item__grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 2fr 1fr 1fr 0.7fr;
+}
+.cosmic .rm-create__foot { margin-top: 14px; display: flex; justify-content: flex-end; }
+.cosmic .rm-admin-list { display: flex; flex-direction: column; gap: 12px; }
+.cosmic .rm-admin-item {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 16px;
+}
+.cosmic .rm-admin-item__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.cosmic .rm-admin-item__origin {
+  margin-right: auto;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--gold);
+}
+.cosmic .rm-saved { color: var(--gold); font-family: "JetBrains Mono", monospace; font-size: 12px; }
+
+@media (max-width: 720px) {
+  .cosmic .rm-create__grid,
+  .cosmic .rm-admin-item__grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* =========================================================================
+   E1 admin — feedback-overzicht-rijen
+   ========================================================================= */
+.fb-list { display: flex; flex-direction: column; gap: 12px; }
+.cosmic .fb-row {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  padding: 16px 18px;
+  transition: opacity 0.3s, border-color 0.3s;
+}
+.cosmic .fb-row--hidden { opacity: 0.5; border-style: dashed; }
+.cosmic .fb-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+}
+.cosmic .fb-row__kind {
+  color: var(--cyan);
+  border: 1px solid rgba(63, 210, 255, 0.3);
+  border-radius: 100px;
+  padding: 2px 9px;
+  text-transform: uppercase;
+}
+.cosmic .fb-row__path code { color: var(--muted); word-break: break-all; }
+.cosmic .fb-row__who { color: var(--text); }
+.cosmic .fb-row__who--anon { color: var(--muted); font-style: italic; }
+.cosmic .fb-row__body { color: #c7cbe8; font-size: 0.96rem; white-space: pre-wrap; }
+.cosmic .fb-row__summary {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--gold);
+  background: rgba(246, 205, 134, 0.06);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.88rem;
+  color: #e7d9bd;
+}
+.cosmic .fb-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.cosmic .fb-row__flag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* =========================================================================
+   E4b — Onboarding: cinematische "Welkom in de wereld van…"-aankomst
+   ========================================================================= */
+.cosmic.welcome .welcome__wrap {
+  min-height: 100vh;
+  justify-content: center;
+}
+.cosmic .welcome__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8vh 0;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.cosmic .welcome__star {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 8px;
+  display: grid;
+  place-items: center;
+}
+.cosmic .welcome__star-core {
+  position: absolute;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 30px 8px rgba(246, 205, 134, 0.8), 0 0 80px 20px rgba(246, 205, 134, 0.35);
+  animation: welcome-pulse 3.6s ease-in-out infinite;
+}
+.cosmic .welcome__star-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(246, 205, 134, 0.35);
+  box-shadow: inset 0 0 30px rgba(246, 205, 134, 0.18);
+  animation: welcome-halo 6s linear infinite;
+}
+@keyframes welcome-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.8; }
+}
+@keyframes welcome-halo {
+  from { transform: rotate(0deg) scale(1); }
+  to { transform: rotate(360deg) scale(1.05); }
+}
+.cosmic .welcome__eyebrow { justify-content: center; margin-top: 6px; }
+.cosmic .welcome__headline { margin-top: 18px; font-size: clamp(2.2rem, 6vw, 4.2rem); }
+.cosmic .welcome__name {
+  font-style: italic;
+  color: var(--gold);
+  text-shadow: 0 0 40px rgba(246, 205, 134, 0.35);
+}
+.cosmic .welcome__lede { margin: 22px auto 0; }
+.cosmic .welcome__actions {
+  margin-top: 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.cosmic .welcome__autohint {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cosmic.welcome--leaving {
+  transition: opacity 0.8s ease, filter 0.8s ease;
+  opacity: 0;
+  filter: blur(8px);
+}
+
+/* =========================================================================
+   W — Wacht-UX: gloeiend "AI aan het werk"-redenering-paneel
+   ========================================================================= */
+.cosmic .reasoning {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  align-self: flex-start;
+  max-width: 88%;
+  padding: 16px 18px;
+  border: 1px solid rgba(109, 93, 252, 0.3);
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(109, 93, 252, 0.16), transparent 55%),
+    var(--card);
+  box-shadow: 0 0 40px -16px rgba(109, 93, 252, 0.5);
+  animation: reasoning-breathe 3.4s ease-in-out infinite;
+}
+@keyframes reasoning-breathe {
+  0%, 100% { box-shadow: 0 0 40px -16px rgba(109, 93, 252, 0.5); }
+  50% { box-shadow: 0 0 60px -12px rgba(63, 210, 255, 0.5); }
+}
+.cosmic .reasoning--done {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+/* Het antwoord stroomt — kalmeer het paneel (geen busy-puls meer) maar houd het
+   leesbaar zodat de zojuist-gesurfacede redenering/fetch-status zichtbaar blijft
+   tot het "done"-event het hele blok vervangt. */
+.cosmic .reasoning--settled {
+  animation: none;
+  opacity: 0.78;
+  box-shadow: 0 0 30px -20px rgba(109, 93, 252, 0.5);
+}
+.cosmic .reasoning--settled .reasoning__orbit,
+.cosmic .reasoning--settled .reasoning__core { animation: none; }
+.cosmic .reasoning__aura {
+  position: relative;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+}
+.cosmic .reasoning__core {
+  position: absolute;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 16px 3px rgba(63, 210, 255, 0.8);
+  animation: cosmic-twinkle 1.8s ease-in-out infinite;
+}
+.cosmic .reasoning__orbit {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(63, 210, 255, 0.35);
+  animation: reasoning-spin 3.2s linear infinite;
+}
+.cosmic .reasoning__orbit--2 {
+  inset: 7px;
+  border-color: rgba(177, 92, 255, 0.4);
+  animation-duration: 2.1s;
+  animation-direction: reverse;
+}
+@keyframes reasoning-spin { to { transform: rotate(360deg); } }
+.cosmic .reasoning__body { flex: 1 1 auto; min-width: 0; }
+.cosmic .reasoning__label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 6px;
+}
+.cosmic .reasoning__spark { color: var(--gold); }
+.cosmic .reasoning__fetch { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+.cosmic .fetch-line {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+.cosmic .fetch-line--ok { color: var(--cyan); }
+.cosmic .fetch-line--err { color: #ffb3b3; }
+.cosmic .reasoning__think {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #aab0dd;
+  font-style: italic;
+  white-space: pre-wrap;
+  max-height: 220px;
+  overflow-y: auto;
 }

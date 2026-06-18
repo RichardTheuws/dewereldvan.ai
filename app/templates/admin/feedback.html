@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Admin feedback-overzicht (E1) — standalone cosmic-document (extendt base.html
+   NIET). Login-gated + noindex. Niet-verborgen eerst, nieuwste eerst. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Feedback — beheer · dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+      <div class="links">
+        <a class="link" href="/admin/queue">Aanmeldingen</a>
+        <a class="link" href="/admin/roadmap">Roadmap</a>
+      </div>
+    </header>
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">Beheer · de stem van de makers</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Feedback.</h1>
+        <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
+          Alles wat leden achterlieten — overal op de site. Verberg wat afgehandeld
+          is; de rest blijft bovenaan staan.
+        </p>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:480ms">
+        {% if items %}
+        <div class="fb-list">
+          {% for item in items %}
+            {% include "admin/_feedback_row.html" %}
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="constellation-empty" data-reveal>
+          <span class="constellation-empty__spark" aria-hidden="true">✦</span>
+          <p class="lede" style="max-width:42ch;margin:0 auto">
+            Nog stilte. Zodra iemand een gedachte deelt, verschijnt die hier.
+          </p>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:560ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "_feedback_affordance.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

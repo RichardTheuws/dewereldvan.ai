@@ -1,0 +1,29 @@
+{# Feedback succes-staat (E1) — swapt #feedback-panel na een geslaagde POST.
+   Verdwijnt vanzelf na een paar seconden zodat de pagina weer schoon is. #}
+<div id="feedback-panel" class="feedback-panel feedback-panel--sent" role="status">
+  <div class="feedback-panel__spark" aria-hidden="true">✦</div>
+  <p class="feedback-panel__thanks">Gevangen. Dank — elke gedachte maakt deze wereld scherper.</p>
+  <button type="button" class="btn btn--ghost" data-feedback-close>Sluiten</button>
+</div>
+<script>
+  (function () {
+    var slot = document.getElementById('feedback-slot');
+    if (!slot) return;
+    var fab = document.querySelector('.feedback-fab');
+
+    function close(restoreFocus) {
+      slot.innerHTML = '';
+      if (fab) {
+        fab.setAttribute('aria-expanded', 'false');
+        if (restoreFocus) fab.focus();  // alleen op expliciet sluiten focus terug
+      }
+    }
+
+    var closeBtn = document.querySelector('#feedback-panel [data-feedback-close]');
+    if (closeBtn) closeBtn.addEventListener('click', function () { close(true); });
+
+    // Auto-verdwijnen na een paar seconden — geen focus-sprong (de gebruiker is
+    // ondertussen wellicht verder; alleen de toggle-state resetten).
+    setTimeout(function () { close(false); }, 4200);
+  })();
+</script>

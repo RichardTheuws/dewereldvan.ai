@@ -1,0 +1,27 @@
+{# Roadmap-board (E3) — fasen als kolommen, items op positie. Lege roadmap krijgt
+   ook de kosmische behandeling. ``grouped`` = list[(phase, [items])]. #}
+{% if grouped %}
+<div class="roadmap-board">
+  {% for phase, items in grouped %}
+  <div class="roadmap-col" data-reveal style="--d:{{ 80 * loop.index0 }}ms">
+    <div class="roadmap-col__head">
+      <span class="roadmap-col__phase">{{ phase }}</span>
+      <span class="roadmap-col__count">{{ items | length }}</span>
+    </div>
+    <div class="roadmap-col__items">
+      {% for item in items %}
+        {% include "roadmap/_item.html" %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="constellation-empty" data-reveal>
+  <span class="constellation-empty__spark" aria-hidden="true">✦</span>
+  <p class="lede" style="max-width:46ch;margin:0 auto">
+    De kaart is nog leeg — maar er wordt al gedacht. Heb jij een richting in je
+    hoofd? Laat 'm achter in de <a class="text-link" href="/ideeen">ideeenbus</a>.
+  </p>
+</div>
+{% endif %}

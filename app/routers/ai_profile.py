@@ -22,6 +22,7 @@ Alle routes draaien onder ``require_member`` (ingelogd + approved); CSRF loopt v
 
 from __future__ import annotations
 
+import json
 import logging
 
 from fastapi import APIRouter, Depends, Form, Request, status
@@ -211,17 +212,33 @@ async def stream(
     ``content[0]`` zonder ``stop_reason``-check).
     """
     messages = ai_conversation.load_messages(db, member)
-    channel = ai_conversation._Channel()
+    # Drie aparte _Channel-instanties — het bestaande sentinel/timeout-protocol
+    # blijft per kanaal ongewijzigd. ``text_ch`` voert de bestaande tekst-deltas
+    # (byte-identiek), ``think_ch`` de live-redenering (reasoning) en ``tool_ch``
+    # de per-link fetch-status (STRETCH). De thinking/tool-kanalen zijn additief:
+    # oude clients negeren de extra event-soorten, en stream_turn valt zonder
+    # callbacks terug op exact het oude gedrag.
+    text_ch = ai_conversation._Channel()
+    think_ch = ai_conversation._Channel()
+    tool_ch = ai_conversation._Channel()
     member_id = member.id
 
     def _run() -> object | None:
         try:
-            return ai_service.stream_turn(messages, channel.send)
+            return ai_service.stream_turn(
+                messages,
+                text_ch.send,
+                on_thinking=think_ch.send,
+                on_tool_event=lambda e: tool_ch.send(json.dumps(e)),
+            )
         except Exception:  # noqa: BLE001 — surface as a system message, no traceback
             logger.exception("AI stream_turn faalde voor member %s", member_id)
             return None
         finally:
-            channel.close()
+            # Sluit ALLE kanalen zodat geen enkele drain-lus blijft hangen.
+            text_ch.close()
+            think_ch.close()
+            tool_ch.close()
 
     async def _gen():
         if not settings.ai_enrich_enabled:
@@ -231,15 +248,72 @@ async def stream(
         # Kick off the blocking producer CONCURRENTLY (as a task, so it actually
         # runs while we drain deltas) and stream deltas as they arrive.
         import asyncio
+        import time
+
+        from app.services.ai_conversation import CHANNEL_TIMEOUT_SEC
 
         task = asyncio.ensure_future(run_in_threadpool(_run))
-        async for chunk in _drain(channel):
-            # Escape each delta so the live-stream bubble (htmx sse-swap inserts
-            # the payload as HTML, not text) renders model output as plain text.
-            # This closes the prompt-injection -> DOM-XSS path and makes the live
-            # bubble match the final autoescaped bubble (no markup flash).
-            yield _sse_event("delta", str(escape(chunk)))
-        final = await task
+        deadline = time.monotonic() + CHANNEL_TIMEOUT_SEC
+
+        # Eén drain-lus over de drie kanalen via korte, niet-blokkerende polls
+        # (blokkerende channel-read off de event-loop met korte timeout, zodat we
+        # tussen de kanalen kunnen rouleren). De reasoning- en fetch-events worden
+        # additief uitgestuurd; ``delta`` blijft exact zoals voorheen (geescaped).
+        # De producer-task signaleert einde door alle kanalen te sluiten -> alle
+        # drains lopen leeg -> we breken eruit (of het wall-clock-vangnet grijpt).
+        text_done = think_done = tool_done = False
+        while not (text_done and think_done and tool_done):
+            # Absolute wall-clock vangnet (zoals de oude _Channel.get-timeout):
+            # blokkeert ``stream_turn`` oncontroleerbaar (SDK/netwerk-stall zonder
+            # dat de finally->close() draait), dan flipt ``task.done()`` nooit en
+            # zou deze lus eindeloos pollen. Na CHANNEL_TIMEOUT_SEC breken we eruit
+            # zodat de SSE-verbinding + threadpool-worker niet permanent vastzitten.
+            if time.monotonic() > deadline:
+                logger.warning(
+                    "AI stream-drain timeout (%.0fs) voor member %s; stop.",
+                    CHANNEL_TIMEOUT_SEC,
+                    member_id,
+                )
+                break
+            # Thinking eerst surfacen (de wacht-UX-redenering loopt vóór de tekst).
+            if not think_done:
+                item = await run_in_threadpool(think_ch.get, 0.02)
+                if item is None and task.done() and think_ch.q.empty():
+                    think_done = True
+                elif item is not None:
+                    yield _sse_event("reasoning", str(escape(item)))
+                    continue
+            if not tool_done:
+                item = await run_in_threadpool(tool_ch.get, 0.02)
+                if item is None and task.done() and tool_ch.q.empty():
+                    tool_done = True
+                elif item is not None:
+                    yield _sse_event("fetch", item)
+                    continue
+            if not text_done:
+                item = await run_in_threadpool(text_ch.get, 0.02)
+                if item is None and task.done() and text_ch.q.empty():
+                    text_done = True
+                elif item is not None:
+                    # Escape each delta so the live-stream bubble (htmx sse-swap
+                    # inserts the payload as HTML, not text) renders model output
+                    # as plain text. This closes the prompt-injection -> DOM-XSS
+                    # path and makes the live bubble match the final autoescaped
+                    # bubble (no markup flash). BYTE-IDENTIEK aan het oude gedrag.
+                    yield _sse_event("delta", str(escape(item)))
+                    continue
+
+        # Normaal is de task hier al klaar (sentinel-terminatie). Brak de lus af op
+        # het wall-clock-vangnet terwijl de producer nog hangt, dan zou ``await
+        # task`` opnieuw blokkeren — vang dat af met een korte grace en val terug
+        # op de "er ging iets mis"-bubbel i.p.v. de SSE-respons te laten hangen.
+        if task.done():
+            final = await task
+        else:
+            try:
+                final = await asyncio.wait_for(asyncio.shield(task), timeout=1.0)
+            except TimeoutError:
+                final = None
 
         # Decide the final bubble + persist the assistant turn.
         if final is None:
@@ -274,20 +348,6 @@ async def stream(
         yield _sse_event("done", html)
 
     return StreamingResponse(_gen(), media_type="text/event-stream")
-
-
-async def _drain(channel):
-    """Yield text deltas from the channel until it signals end-of-stream.
-
-    The sentinel + safety-timeout protocol is owned by ``_Channel.get`` (which
-    returns ``None`` at end-of-stream); this just runs that blocking read off the
-    event loop and stops when it does.
-    """
-    while True:
-        item = await run_in_threadpool(channel.get)
-        if item is None:
-            return
-        yield item
 
 
 # --------------------------------------------------------------------------- #

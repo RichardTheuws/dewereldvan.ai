@@ -47,6 +47,20 @@ class Settings(BaseSettings):
     photo_output_px: int = 512  # vierkante crop-zijde (ronde weergave via CSS)
     rate_limit_photo_per_hour: int = 12  # per lid
 
+    # --- Ervaring-laag (E1-E4): feedback, ideeenbus, roadmap ---
+    # Anti-spam per ingelogd lid in een glijdend uur-venster (rij-tel-patroon,
+    # spiegelt rate_limit_magic_per_hour). Anonieme feedback wordt per inzender-IP
+    # begrensd (zie rate_limit_feedback_anon_per_hour), niet via deze per-lid teller.
+    rate_limit_feedback_per_hour: int = 12  # per lid
+    # Anonieme (uitgelogde) feedback per inzender-IP in een glijdend uur-venster
+    # (zelfde rij-tel-patroon op de feedback.ip-kolom). Sluit de ongebonden
+    # anonieme schrijf (storage-DoS) zonder het anonieme pad te schrappen.
+    rate_limit_feedback_anon_per_hour: int = 6  # per IP
+    rate_limit_idea_per_hour: int = 6  # per lid
+    # Harde bovengrens op de body-lengte van een feedback-bericht (anti-abuse;
+    # geldt voor zowel ingelogde als anonieme inzending).
+    max_feedback_body_chars: int = 4000
+
     @property
     def admin_email_set(self) -> set[str]:
         return {e.strip().lower() for e in self.admin_emails.split(",") if e.strip()}

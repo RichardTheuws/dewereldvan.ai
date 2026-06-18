@@ -1,0 +1,29 @@
+{# Magic-link-inlogmail (E4a). verify_url komt veilig kant-en-klaar uit auth.py. #}
+{% extends "_base.html" %}
+{% block subject %}Je inloglink voor dewereldvan.ai{% endblock %}
+{% block preheader %}Klik om in te loggen — {{ ttl_min }} minuten geldig.{% endblock %}
+{% block heading %}Hoi {{ name }},{% endblock %}
+{% block body %}
+  <p style="margin:0 0 14px 0;">
+    Klik op de knop om in te loggen. De link is <strong style="color:#eef0ff;">{{ ttl_min }} minuten</strong>
+    geldig en kan één keer gebruikt worden.
+  </p>
+  <p style="margin:0;">
+    Heb je dit niet aangevraagd? Dan kun je deze e-mail rustig negeren.
+  </p>
+{% endblock %}
+{% block cta %}
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 6px 0;">
+    <tr>
+      <td bgcolor="#f6cd86" style="border-radius:999px;">
+        <a href="{{ verify_url }}"
+           style="display:inline-block; padding:14px 30px; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:14px; font-weight:600; letter-spacing:0.03em; color:#1a1330; text-decoration:none; border-radius:999px;">
+          Inloggen ✦
+        </a>
+      </td>
+    </tr>
+  </table>
+  <p style="margin:10px 0 0 0; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:11px; color:#7b7ea6; word-break:break-all;">
+    of plak deze link: {{ verify_url }}
+  </p>
+{% endblock %}

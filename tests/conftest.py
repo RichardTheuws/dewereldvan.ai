@@ -225,6 +225,92 @@ def fake_email() -> FakeEmailSender:
     return FakeEmailSender()
 
 
+# --- Ervaring-laag factories (E1-E3) -----------------------------------------
+@pytest.fixture
+def make_feedback(db):
+    """Factory: create + flush a Feedback row (member optional = anoniem)."""
+    from app.models import Feedback
+
+    def _make(
+        *,
+        member: Member | None = None,
+        page_path: str = "/leden",
+        body: str = "Mooie pagina.",
+        kind: str = "algemeen",
+        hidden: bool = False,
+        ai_summary: str | None = None,
+    ) -> Feedback:
+        row = Feedback(
+            member_id=member.id if member is not None else None,
+            page_path=page_path,
+            body=body,
+            kind=kind,
+            hidden=hidden,
+            ai_summary=ai_summary,
+        )
+        db.add(row)
+        db.flush()
+        return row
+
+    return _make
+
+
+@pytest.fixture
+def make_idea(db):
+    """Factory: create + flush an Idea (status defaults to ``open``)."""
+    from app.models import Idea, IdeaStatus
+
+    def _make(
+        member: Member,
+        *,
+        title: str = "Een fris idee",
+        body: str = "We zouden X kunnen doen.",
+        status: IdeaStatus = IdeaStatus.open,
+        hidden: bool = False,
+    ) -> Idea:
+        idea = Idea(
+            member_id=member.id,
+            title=title,
+            body=body,
+            status=status,
+            hidden=hidden,
+        )
+        db.add(idea)
+        db.flush()
+        return idea
+
+    return _make
+
+
+@pytest.fixture
+def make_roadmap_item(db):
+    """Factory: create + flush a RoadmapItem."""
+    from app.models import RoadmapItem, RoadmapStatus
+
+    def _make(
+        *,
+        title: str = "Een mijlpaal",
+        description: str | None = None,
+        status: RoadmapStatus = RoadmapStatus.overwegen,
+        phase: str = "Later",
+        position: int = 0,
+        linked_idea_id: int | None = None,
+    ) -> RoadmapItem:
+        item = RoadmapItem(
+            title=title,
+            description=description,
+            status=status,
+            phase=phase,
+            position=position,
+            linked_idea_id=linked_idea_id,
+        )
+        db.add(item)
+        db.flush()
+        return item
+
+    return _make
+
+
 # --- Fake AI cover-image backend ---------------------------------------------
 # The reusable doubles (FakeImageGenerator / FakeAnthropic / install_fake_anthropic)
 # live in tests/_ai_helpers.py so test modules can import them directly; the

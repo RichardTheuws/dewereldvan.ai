@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Ideeenbus (E2) — standalone cosmic-document. Login-gated + noindex.
+   Leden dienen ideeen in, stemmen (1 per lid per idee) en zien status. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Ideeenbus — dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+      <div class="links">
+        <a class="link" href="/roadmap">Roadmap</a>
+        <a class="link" href="/profiel/ai/bouwen">Mijn profiel</a>
+      </div>
+    </header>
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">Samen bouwen</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Ideeenbus.</h1>
+        <p class="lede mt-5" style="max-width:56ch;--d:380ms" data-reveal>
+          Wat zou deze wereld scherper maken? Gooi je idee erin, stem op wat jou
+          raakt. De sterkste signalen belanden op de <a class="text-link" href="/roadmap">roadmap</a>.
+        </p>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:460ms">
+        {% include "ideas/_form.html" %}
+      </section>
+
+      <section class="mt-12" data-reveal style="--d:560ms">
+        <div class="section-title mb-5">De ideeen</div>
+        <div id="ideas-list">
+          {% include "ideas/_list.html" %}
+        </div>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:680ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "_feedback_affordance.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

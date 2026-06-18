@@ -1,0 +1,15 @@
+{# Ideeen-lijst-fragment (E2) — swap-target #ideas-list. Toont de fout/lege staat
+   en de kaarten (meest gestemd eerst). #}
+{% if error %}
+<p class="idea-form__err" role="alert">{{ error }}</p>
+{% endif %}
+
+{% if ideas %}
+<div class="idea-grid">
+  {% for idea in ideas %}
+    {% include "ideas/_card.html" %}
+  {% endfor %}
+</div>
+{% else %}
+{% include "ideas/_empty.html" %}
+{% endif %}

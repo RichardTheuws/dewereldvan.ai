@@ -11,13 +11,18 @@ from app.models.audit import AuditLog
 from app.models.base import (
     AuditAction,
     Base,
+    IdeaStatus,
     MemberRole,
     MemberStatus,
     ProfileEmphasis,
     ProfileLinkKind,
+    RoadmapStatus,
     TimestampMixin,
     Visibility,
 )
+from app.models.feedback import Feedback
+from app.models.idea import Idea
+from app.models.idea_vote import IdeaVote
 from app.models.magic_link import MagicLinkToken
 from app.models.member import Member
 from app.models.need import Need
@@ -25,6 +30,7 @@ from app.models.offering import Offering
 from app.models.offering_slug_history import OfferingSlugHistory
 from app.models.profile import Profile
 from app.models.profile_link import ProfileLink
+from app.models.roadmap_item import RoadmapItem
 from app.models.tag import Tag, profile_tag
 
 __all__ = [
@@ -36,6 +42,8 @@ __all__ = [
     "AuditAction",
     "ProfileEmphasis",
     "ProfileLinkKind",
+    "IdeaStatus",
+    "RoadmapStatus",
     "Member",
     "MagicLinkToken",
     "Profile",
@@ -47,4 +55,8 @@ __all__ = [
     "Need",
     "AuditLog",
     "AiChatTurn",
+    "Feedback",
+    "Idea",
+    "IdeaVote",
+    "RoadmapItem",
 ]

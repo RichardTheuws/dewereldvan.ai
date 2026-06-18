@@ -375,11 +375,90 @@ def _strip_citations(messages: list[dict]) -> list[dict]:
     return cleaned
 
 
+def _block_field(block: object, key: str) -> object | None:
+    """Lees ``key`` van een content-blok dat een object of een dict kan zijn.
+
+    Anthropic-SDK levert content-blokken als pydantic-objecten; uit de DB-state
+    komen ze als dicts terug. Deze helper leest beide vormen zonder te crashen.
+    """
+    if isinstance(block, dict):
+        return block.get(key)
+    return getattr(block, key, None)
+
+
+def _emit_thinking(final: object, on_thinking: Callable[[str], None]) -> None:
+    """Best-effort: stuur de redenering (thinking-blokken) naar ``on_thinking``.
+
+    Strikt additief en swallow-on-error: de hoofdstroom (tekst-deltas + de
+    structured-output-fixes) mag hier NOOIT op stranden. Thinking-blokken worden
+    na de stream uit ``final.content`` gehaald (de tekst-delta-stream zelf blijft
+    daardoor byte-identiek — we lezen 'm niet opnieuw).
+    """
+    try:
+        for block in getattr(final, "content", None) or []:
+            if _block_field(block, "type") != "thinking":
+                continue
+            text = _block_field(block, "thinking") or _block_field(block, "text")
+            if text:
+                on_thinking(str(text))
+    except Exception:  # noqa: BLE001 — redenering-surface is best-effort
+        logger.debug("on_thinking surfacing overgeslagen.", exc_info=True)
+
+
+def _emit_tool_events(final: object, on_tool_event: Callable[[dict], None]) -> None:
+    """Best-effort (STRETCH): surface per-link ``web_fetch``-status als tool-events.
+
+    Scant ``final.content`` op ``web_fetch_tool_result``-blokken en stuurt per blok
+    ``{"host": ..., "state": "ok"|"err"}``. De host komt uit het bijbehorende
+    ``server_tool_use``/``web_fetch``-call-blok (op ``tool_use_id``); ``err`` als het
+    resultaat een ``error_code`` draagt. Faalt de extractie → swallow, de
+    hoofdstroom draait door. Raakt ``_strip_citations``/``_web_tools``/
+    ``_member_domains``/de allowed_domains-fix NIET aan.
+    """
+    try:
+        content = getattr(final, "content", None) or []
+
+        # Map tool_use_id -> aangevraagde host (uit het web_fetch-call-blok).
+        host_by_id: dict[str, str] = {}
+        for block in content:
+            btype = _block_field(block, "type")
+            if btype not in ("server_tool_use", "tool_use"):
+                continue
+            if _block_field(block, "name") != "web_fetch":
+                continue
+            tool_id = _block_field(block, "id")
+            tinput = _block_field(block, "input") or {}
+            url = tinput.get("url") if isinstance(tinput, dict) else None
+            if tool_id and url:
+                host = urlsplit(str(url)).hostname
+                if host:
+                    host_by_id[str(tool_id)] = host
+
+        for block in content:
+            if _block_field(block, "type") != "web_fetch_tool_result":
+                continue
+            tool_id = _block_field(block, "tool_use_id")
+            result = _block_field(block, "content")
+            is_error = False
+            if isinstance(result, dict):
+                is_error = bool(result.get("error_code")) or (
+                    result.get("type") == "web_fetch_tool_result_error"
+                )
+            host = host_by_id.get(str(tool_id), "") if tool_id else ""
+            on_tool_event(
+                {"host": host, "state": "err" if is_error else "ok"}
+            )
+    except Exception:  # noqa: BLE001 — tool-event-surface is best-effort
+        logger.debug("on_tool_event surfacing overgeslagen.", exc_info=True)
+
+
 def stream_turn(
     messages: list[dict],
     send: Callable[[str], None],
     *,
     client: anthropic.Anthropic | None = None,
+    on_thinking: Callable[[str], None] | None = None,
+    on_tool_event: Callable[[dict], None] | None = None,
 ):
     """Stap 1 — agentische streaming-turn met webtools.
 
@@ -395,6 +474,15 @@ def stream_turn(
     ``messages`` wordt NIET gemuteerd; de caller appendt de assistant-turn
     (``final.content``) aan de DB-state zodat tool/thinking-blokken byte-exact
     bewaard blijven voor de volgende user-turn.
+
+    Wacht-UX (additief, optioneel — defaults ``None`` = exact het oude gedrag):
+    - ``on_thinking(delta)``  — gevoed met de live-redenering (thinking-blokken),
+      voor het gloeiende "AI aan het werk"-paneel.
+    - ``on_tool_event(dict)`` — gevoed met ``{"host", "state"}`` per ``web_fetch``
+      (STRETCH), voor de "✦ <host> ophalen… ✓/✗"-regels.
+    Beide zijn STRIKT best-effort: de tekst-delta-stream én de citations/
+    allowed_domains/fetch-prompt-fixes blijven onaangeroerd. Een fout in het
+    surfacen wordt geslikt; de hoofdstroom draait gewoon door.
     """
     client = client or _client()
     pauses = 0
@@ -410,9 +498,18 @@ def stream_turn(
             tools=tools,
             messages=_strip_citations(convo),
         ) as stream:
+            # HARDE GARANTIE: de tekst-delta-stream blijft byte-identiek. We lezen
+            # 'm exact zoals voorheen; thinking/tool-events worden NA de stream uit
+            # final.content gehaald (additief), nooit ten koste van deze loop.
             for text in stream.text_stream:
                 send(text)
             final = stream.get_final_message()
+
+        # Additieve wacht-UX-surfaces (best-effort, geslikt bij fout).
+        if on_thinking is not None:
+            _emit_thinking(final, on_thinking)
+        if on_tool_event is not None:
+            _emit_tool_events(final, on_tool_event)
 
         stop = getattr(final, "stop_reason", None)
 

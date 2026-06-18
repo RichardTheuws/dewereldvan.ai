@@ -1,0 +1,43 @@
+{# Eén bewerkbare roadmap-rij (E3 admin) — swap-target na bewerken; delete swapt leeg. #}
+<article id="rm-item-{{ item.id }}" class="rm-admin-item">
+  <form class="rm-admin-item__form"
+        hx-post="/admin/roadmap/{{ item.id }}/bewerken"
+        hx-target="#rm-item-{{ item.id }}"
+        hx-swap="outerHTML">
+    <div class="rm-admin-item__grid">
+      <div class="rm-admin-item__title">
+        <label class="field-label" for="rm-{{ item.id }}-title">Titel</label>
+        <input id="rm-{{ item.id }}-title" name="title" value="{{ item.title }}" maxlength="200" required>
+      </div>
+      <div>
+        <label class="field-label" for="rm-{{ item.id }}-phase">Fase</label>
+        <input id="rm-{{ item.id }}-phase" name="phase" value="{{ item.phase }}" maxlength="80">
+      </div>
+      <div>
+        <label class="field-label" for="rm-{{ item.id }}-status">Status</label>
+        <select id="rm-{{ item.id }}-status" name="status">
+          {% for s in statuses %}
+          <option value="{{ s.value }}" {% if s == item.status %}selected{% endif %}>{{ s.value }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="field-label" for="rm-{{ item.id }}-pos">Positie</label>
+        <input id="rm-{{ item.id }}-pos" name="position" type="number" min="0" value="{{ item.position }}">
+      </div>
+    </div>
+    <div class="mt-3">
+      <label class="field-label" for="rm-{{ item.id }}-desc">Omschrijving</label>
+      <textarea id="rm-{{ item.id }}-desc" name="description" rows="2" maxlength="4000">{{ item.description or "" }}</textarea>
+    </div>
+    <div class="rm-admin-item__foot">
+      {% if item.linked_idea_id %}<span class="rm-admin-item__origin">✦ uit idee #{{ item.linked_idea_id }}</span>{% endif %}
+      <button class="btn btn--ghost btn--sm" type="submit">Opslaan</button>
+      <button class="btn btn--ghost btn--sm" type="button"
+              hx-post="/admin/roadmap/{{ item.id }}/verwijderen"
+              hx-target="#rm-item-{{ item.id }}"
+              hx-swap="outerHTML"
+              hx-confirm="Dit item verwijderen?">Verwijderen</button>
+    </div>
+  </form>
+</article>
