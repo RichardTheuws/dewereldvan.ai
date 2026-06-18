@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.13.0] - 2026-06-18
+### Added (groep-invite-link — directe profiel-aanmaak voor genodigden)
+- **Deelbare groep-invite-link** (PRD-verificatie-links §0): één link (`/uitnodiging/{token}`) die in de
+  WhatsApp-groep gedeeld kan worden; wie 'm opent maakt **direct** een profiel — pre-approved (geen admin-
+  queue), 24 uur geldig, regenereerbaar door een admin (`/admin/uitnodiging` toont + roteert de link).
+- Veilig: token `secrets.token_urlsafe(32)`, 24u TTL, regenereerbaar (gelekte link te doden), CSRF, IP-rate-
+  limit op nieuwe inschrijvingen, 410 op dood token, noindex landing. De link verleent **uitsluitend**
+  approved-lidmaatschap — nooit admin (admin alleen via `ADMIN_EMAILS`); geschorst/geweigerd wordt niet heropend.
+- Alembic `0007_group_invite` (additief). 390 tests groen (24 nieuwe).
+
 ## [0.12.1] - 2026-06-18
 ### Fixed (concierge live-test — SSE connect overal)
 - **De concierge-stream opende nooit** op de meeste pagina's: `htmx-ext-sse` (en op sommige pagina's

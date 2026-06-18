@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Admin: groep-invite-link beheren (PRD-verificatie-links §0) — standalone
+   cosmic-document, in de admin-familie (spiegelt admin/queue.html). Login-gated +
+   noindex. Toont de huidige actieve link + vervaldatum + "genereer nieuwe link". #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Uitnodigingslink — beheer · dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+      <div class="links">
+        <a class="link" href="/admin/queue">Aanmeldingen</a>
+        <a class="link" href="/admin/feedback">Feedback</a>
+        <a class="link" href="/admin/roadmap">Roadmap</a>
+      </div>
+    </header>
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">Beheer</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Uitnodigingslink.</h1>
+        <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
+          Eén deelbare link voor de WhatsApp-groep. Wie 'm opent, kan meteen een
+          profiel bouwen — geen wachtrij. De link is 24 uur geldig; genereer een
+          nieuwe om de oude direct ongeldig te maken.
+        </p>
+
+        {% if just_generated %}
+        <div class="notice mt-6" role="status" data-reveal style="--d:440ms">
+          Nieuwe link gegenereerd. De vorige link werkt nu niet meer.
+        </div>
+        {% endif %}
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:480ms">
+        {% if invite %}
+        <div class="card">
+          <div class="eyebrow" style="margin-bottom:.5rem">Actieve link</div>
+          <p style="word-break:break-all;font-size:.95rem;font-family:'JetBrains Mono',monospace">
+            <code>{{ invite_url }}</code>
+          </p>
+          <p class="muted mt-3" style="font-size:.9rem">
+            Geldig tot {{ invite.expires_at.strftime("%d-%m-%Y %H:%M") }} UTC.
+          </p>
+          <div class="mt-5" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
+            <button type="button" class="btn btn--ghost btn--sm"
+                    data-copy="{{ invite_url }}"
+                    onclick="(function(b){navigator.clipboard&&navigator.clipboard.writeText(b.dataset.copy);b.textContent='Gekopieerd ✓';})(this)">
+              Kopieer link
+            </button>
+          </div>
+        </div>
+        {% else %}
+        <div class="constellation-empty" data-reveal>
+          <span class="constellation-empty__spark" aria-hidden="true">✦</span>
+          <p class="lede" style="max-width:42ch;margin:0 auto">
+            Er is nog geen actieve uitnodigingslink. Genereer er één om te delen.
+          </p>
+        </div>
+        {% endif %}
+
+        <form method="post" action="/admin/uitnodiging" class="mt-8" data-reveal style="--d:560ms">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="btn">
+            {% if invite %}Genereer nieuwe link{% else %}Genereer link{% endif %}
+          </button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:640ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "_concierge.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

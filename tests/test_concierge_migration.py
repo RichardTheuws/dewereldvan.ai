@@ -65,7 +65,9 @@ def test_migration_chain_builds_concierge_schema(migrated):
 
 def test_migration_downgrade_is_reversible(migrated):
     engine, cfg = migrated
-    command.downgrade(cfg, "-1")
+    # Downgrade to the revision BEFORE the concierge layer (explicit target — a
+    # relative "-1" would break the moment another migration is stacked on head).
+    command.downgrade(cfg, "0005_ervaring")
     insp = inspect(engine)
     assert "concierge_nudge_dismissal" not in insp.get_table_names()
     assert "is_founder" not in {c["name"] for c in insp.get_columns("member")}

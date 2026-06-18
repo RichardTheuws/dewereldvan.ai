@@ -58,6 +58,10 @@ class AuditAction(str, enum.Enum):
     feedback_hidden = "feedback_hidden"
     idea_hidden = "idea_hidden"
     idea_promoted = "idea_promoted"
+    # Groep-invite-link (PRD-verificatie-links §0). VARCHAR-enum → additieve
+    # waarden, geen migratie nodig (de audit_action-kolom is geen native enum).
+    invite_generated = "invite_generated"  # admin genereert/roteert de link
+    invite_registration = "invite_registration"  # lid komt binnen via de link
 
 
 class ProfileEmphasis(str, enum.Enum):

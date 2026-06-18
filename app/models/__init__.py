@@ -22,6 +22,7 @@ from app.models.base import (
 )
 from app.models.concierge import ConciergeNudgeDismissal
 from app.models.feedback import Feedback
+from app.models.group_invite import GroupInvite
 from app.models.idea import Idea
 from app.models.idea_vote import IdeaVote
 from app.models.magic_link import MagicLinkToken
@@ -58,6 +59,7 @@ __all__ = [
     "AiChatTurn",
     "ConciergeNudgeDismissal",
     "Feedback",
+    "GroupInvite",
     "Idea",
     "IdeaVote",
     "RoadmapItem",

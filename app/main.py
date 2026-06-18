@@ -32,6 +32,7 @@ from app.routers import (
     concierge,
     feedback,
     ideas,
+    invite,
     members,
     onboarding,
     photo,
@@ -143,6 +144,9 @@ def create_app() -> FastAPI:
     app.include_router(onboarding.router)
     # Concierge-laag (Fase 1): intent-oppervlak + gegronde SSE-stroom.
     app.include_router(concierge.router)
+    # Groep-invite-link (PRD-verificatie-links §0): één deelbare WhatsApp-link →
+    # direct profiel bouwen (pre-approved) + admin-generatie.
+    app.include_router(invite.router)
 
     return app
 

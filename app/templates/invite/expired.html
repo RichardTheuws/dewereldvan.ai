@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Verlopen/ongeldige groep-invite — standalone cosmic-document. Geen stacktrace:
+   een nette, rustige melding + de weg terug. noindex (besloten preview). #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Uitnodiging verlopen · dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+    </header>
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6" style="max-width:46ch">
+        <div class="eyebrow" data-reveal style="--d:160ms">Uitnodiging</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">
+          Deze uitnodiging is verlopen of niet meer geldig
+        </h1>
+        <p class="lede mt-5" data-reveal style="--d:380ms">
+          Een uitnodigingslink is 24 uur geldig. Vraag degene die je uitnodigde
+          om een nieuwe link — dan ben je zo binnen.
+        </p>
+
+        <p class="mt-8" data-reveal style="--d:520ms">
+          <a class="btn btn--ghost btn--sm" href="/login">Al lid? Inloggen →</a>
+        </p>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:680ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "_concierge.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>
