@@ -27,6 +27,29 @@
   {% set _ph = "Vraag de wereld iets…" %}
 {% endif %}
 {% set _logged_in = request.session.get("member_id") %}
+{# Bootstrap: de Concierge zit op ÉLKE kosmische pagina, maar niet elke pagina laadt
+   htmx + htmx-ext-sse in de head (alleen de profielbouw deed dat). Zonder htmx-ext-sse
+   is de `hx-ext="sse"` op #concierge-materialisatie een no-op → de EventSource opent
+   nooit → de stream hangt. Laad ze hier één keer (idempotent) zodat de concierge
+   overal werkt. User-getriggerd (seconden ná load) → de async-load is ruim op tijd;
+   de stream doet bovendien `htmx.process(root)` ná sse-connect, dus de binding pakt. #}
+<script>
+  (function () {
+    if (window.__dwvConciergeBoot) return;
+    window.__dwvConciergeBoot = 1;
+    function load(src, cb) {
+      var s = document.createElement("script");
+      s.async = false; s.src = src; if (cb) s.onload = cb;
+      document.head.appendChild(s);
+    }
+    var SSE = "https://unpkg.com/htmx-ext-sse@2.2.2/sse.js";
+    if (!window.htmx) {
+      load("https://unpkg.com/htmx.org@2.0.4", function () { load(SSE); });
+    } else {
+      load(SSE);
+    }
+  })();
+</script>
 
 {# Founder-herkenning (PRD §5.2): bij de eerste ingelogde sessie van een founder
    zet het backend `session["concierge_founder_welcome"]` → de Concierge opent zich

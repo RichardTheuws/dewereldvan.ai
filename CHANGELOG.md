@@ -3,6 +3,15 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.12.1] - 2026-06-18
+### Fixed (concierge live-test — SSE connect overal)
+- **De concierge-stream opende nooit** op de meeste pagina's: `htmx-ext-sse` (en op sommige pagina's
+  zelfs `htmx` zelf) werd alleen in de profielbouw-head geladen, niet op de andere kosmische pagina's.
+  Daardoor was `hx-ext="sse"` op `#concierge-materialisatie` een no-op → geen EventSource → het paneel
+  bleef hangen op "AI aan het werk" (geverifieerd via live browser-test: geen `GET /concierge/stream`).
+  Fix: een idempotente bootstrap-loader in `_concierge.html` (de cross-cutting include) laadt htmx +
+  htmx-ext-sse waar ze ontbreken — dekt alle 18 concierge-pagina's op één plek.
+
 ## [0.12.0] - 2026-06-18
 ### Added (de Concierge — een gegronde, intelligente laag overal)
 - **AI-concierge als ruggengraat** (`docs/PRD-concierge.md`, APPROVED): een intent-oppervlak (⌘K / `/` /
