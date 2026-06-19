@@ -73,7 +73,10 @@ SYSTEM_PROMPT: str = (
     "verschenen?' / 'laat het nieuws zien' → surface nieuws. 'wat is er voor mij?' / "
     "'laat mijn matches zien' / 'wie zoekt wat ik maak?' / 'wie biedt wat ik zoek?' → "
     "surface matches. 'mijn intro's' / 'wie wil kennismaken?' / 'wie heeft "
-    "gereageerd?' → surface connections. 'bouw mijn profiel' "
+    "gereageerd?' → surface connections. Wil het lid dewereldvan KOPPELEN aan z'n "
+    "eigen AI-tool, of vraagt het naar de MCP-server / 'Claude Code' / 'Cursor' / "
+    "'verbind mijn tool' → leg het uit met explain (topic 'verbind') en navigeer "
+    "naar 'verbind' (de tokenpagina /profiel/verbind). 'bouw mijn profiel' "
     "/ 'maak mijn profiel' → surface profile_builder. Vraag pas om een onderwerp als het lid "
     "echt iets SPECIFIEKS zoekt ('wie bouwt voice-agents?' → search_members of "
     "surface members_grid met tag). Zeg NOOIT 'ik kan niet zonder filter' op een "
@@ -110,6 +113,7 @@ _ROUTE_TABLE: dict[str, tuple[str, str]] = {
     "ideeen": ("/ideeen", "de ideeënbus"),
     "roadmap": ("/roadmap", "de roadmap"),
     "profiel": ("/profiel/ai/bouwen", "je eigen profiel"),
+    "verbind": ("/profiel/verbind", "de pagina om je AI-tool te koppelen"),
 }
 
 # Gecureerde, vaste kennisbasis voor explain (PRD §3 — geen vrije generatie).
@@ -137,6 +141,27 @@ _EXPLAIN_TOPICS: dict[str, str] = {
         "De roadmap toont waar we mee bezig zijn en wat er gepland staat. Hij "
         "wordt gevoed door de ideeën van de leden."
     ),
+    "verbind": (
+        "Je kunt dewereldvan.ai koppelen aan je eigen AI-tool (Claude Code, Cursor "
+        "of een eigen agent) via een MCP-server. Dan bouw je je profiel, doorzoek "
+        "je de makers, haal je je matches op en stel je je voor — rechtstreeks "
+        "vanuit je editor. Ga naar 'Verbind tool' (/profiel/verbind), genereer een "
+        "token, en plak het getoonde `claude mcp add`-commando in je tool."
+    ),
+}
+
+# Synoniemen → een vast explain-onderwerp (zodat 'MCP'/'AI-tool'/'Claude Code'
+# niet op 'onbekend onderwerp' stuiten).
+_EXPLAIN_ALIASES: dict[str, str] = {
+    "mcp": "verbind",
+    "mcp-server": "verbind",
+    "ai-tool": "verbind",
+    "tool": "verbind",
+    "tools": "verbind",
+    "claude code": "verbind",
+    "cursor": "verbind",
+    "koppelen": "verbind",
+    "integratie": "verbind",
 }
 
 # Vaste registry van interfaces die de agent in-stroom mag materialiseren
@@ -237,7 +262,8 @@ TOOLS: list[dict] = [
         "name": "explain",
         "description": (
             "Leg een platform-onderwerp uit met gecureerde tekst. topic is een "
-            "van: platform, profiel, zichtbaarheid, ideeen, roadmap."
+            "van: platform, profiel, zichtbaarheid, ideeen, roadmap, verbind "
+            "(je AI-tool/MCP koppelen)."
         ),
         "input_schema": {
             "type": "object",
@@ -511,12 +537,13 @@ def tool_connect(db: Session, args: dict, viewer: Member | None) -> dict:
 def tool_explain(args: dict) -> dict:
     """``explain`` — vaste, gecureerde NL-tekst (geen vrije generatie)."""
     topic = (args.get("topic") or "").strip().lower()
+    topic = _EXPLAIN_ALIASES.get(topic, topic)
     text = _EXPLAIN_TOPICS.get(topic)
     if text is None:
         return {
             "error": (
                 "Onbekend onderwerp. Kies uit: platform, profiel, "
-                "zichtbaarheid, ideeen, roadmap."
+                "zichtbaarheid, ideeen, roadmap, verbind."
             )
         }
     return {"topic": topic, "text": text}

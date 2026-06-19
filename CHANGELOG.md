@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.29.1] - 2026-06-19
+### Fixed
+- **De concierge kon de MCP-koppeling niet uitleggen** (viel buiten de 5 vaste `explain`-onderwerpen →
+  "onbekend onderwerp"). Nieuw onderwerp **`verbind`** + synoniemen (`mcp`, `ai-tool`, `claude code`,
+  `cursor`, `koppelen`…) met gegronde uitleg + verwijzing naar `/profiel/verbind`; navigate-route `verbind`
+  → de tokenpagina; instant-index + SYSTEM_PROMPT kennen het intent. Vraag de agent nu "hoe verbind ik mijn
+  AI-tool / wat is de MCP-server" en je krijgt uitleg + de weg ernaartoe.
+
 ## [0.29.0] - 2026-06-19
 ### Added — MCP-server: "praat met dewereldvan vanuit je eigen AI-tool" (activatie)
 - **dewereldvan als MCP-server** (FastMCP, Streamable HTTP, stateless), gemount op `/mcp` in de web-

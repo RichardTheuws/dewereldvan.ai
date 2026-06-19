@@ -832,6 +832,11 @@ _INSTANT_ROUTE_PROFILE: dict = {
     "url": "/profiel/ai/bouwen",
     "keywords": ["profiel", "mijn", "bewerken", "afmaken"],
 }
+_INSTANT_ROUTE_CONNECT: dict = {
+    "label": "Verbind je AI-tool",
+    "url": "/profiel/verbind",
+    "keywords": ["verbind", "mcp", "tool", "claude code", "cursor", "koppelen", "token", "api"],
+}
 
 
 @router.get("/concierge/index")
@@ -850,6 +855,7 @@ def instant_index(
     routes = list(_INSTANT_ROUTES)
     if member is not None:
         routes.append(_INSTANT_ROUTE_PROFILE)
+        routes.append(_INSTANT_ROUTE_CONNECT)
 
     profiles = members_service.list_public_profiles(db)
     items = [

@@ -147,6 +147,26 @@ def test_tool_zoek_makers_scoped_public(SessionTest, as_member):
 
 
 # --------------------------------------------------------------------------- #
+# De concierge legt de MCP-koppeling uit (geen "onbekend onderwerp")          #
+# --------------------------------------------------------------------------- #
+def test_concierge_explains_mcp_connect():
+    from app.services import concierge_service as cs
+
+    # direct onderwerp + synoniemen → gegronde uitleg, géén fout
+    for topic in ("verbind", "mcp", "ai-tool", "claude code", "cursor"):
+        r = cs.tool_explain({"topic": topic})
+        assert "error" not in r, topic
+        assert "MCP" in r["text"] and "/profiel/verbind" in r["text"]
+
+    # navigate-route bestaat
+    nav = cs.tool_navigate.__wrapped__ if hasattr(cs.tool_navigate, "__wrapped__") else None
+    assert cs._ROUTE_TABLE["verbind"][0] == "/profiel/verbind"
+    # en het zit in de surface-enum-vrije navigate-tabel; explain-tool noemt 'verbind'
+    explain_tool = next(t for t in cs.TOOLS if t["name"] == "explain")
+    assert "verbind" in explain_tool["description"]
+
+
+# --------------------------------------------------------------------------- #
 # AVG: token mee-gewist bij accountverwijdering                                #
 # --------------------------------------------------------------------------- #
 def test_account_deletion_removes_tokens(SessionTest):
