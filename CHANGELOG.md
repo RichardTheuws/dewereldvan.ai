@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.33.1] - 2026-06-19
+### Fixed
+- **Screenshot-422 op sommige sites**: de hero-screenshot wachtte op `networkidle0`, wat veel moderne sites
+  (analytics/polling) nooit bereiken → Cloudflare gaf 422 (8/9 projecten lukten, 1 faalde). Nu `waitUntil:"load"`
+  — robuust genoeg voor een hero. De enrich-job pikt de gemiste screenshot vanzelf op (idempotent: `screenshot_url`
+  was nog NULL). End-to-end geverifieerd op preview met echte Cloudflare Browser Rendering + Claude.
+
 ## [0.33.0] - 2026-06-19
 ### Added — projectpagina's: screenshot-hero + inhoudelijke samenvatting
 - **Elke projectpagina (`/projecten/{slug}`) krijgt automatisch een screenshot-hero van de live site én een

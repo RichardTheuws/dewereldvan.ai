@@ -56,7 +56,10 @@ def screenshot(url: str) -> bytes | None:
         "url": url,
         "viewport": _VIEWPORT,
         "screenshotOptions": {"type": "png"},
-        "gotoOptions": {"waitUntil": "networkidle0", "timeout": 30000},
+        # 'load' i.p.v. 'networkidle0': veel moderne sites (analytics/polling)
+        # bereiken nooit "geen netwerk" → Cloudflare geeft dan 422. 'load' wacht
+        # op de pagina + resources — robuust genoeg voor een hero-screenshot.
+        "gotoOptions": {"waitUntil": "load", "timeout": 30000},
     }
     try:
         resp = httpx.post(
