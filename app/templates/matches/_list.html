@@ -1,0 +1,44 @@
+{# Match-lijst (Tier 1) — vraag↔aanbod-koppelingen voor dit lid, in de canvas.
+   ``member_id`` bepaalt het perspectief: ben je de zoeker (een aanbod past bij
+   jouw vraag) of de maker (iemand zoekt wat jij maakt). De gegronde "waarom"-zin
+   staat prominent. #}
+{% if matches %}
+<div class="match-grid">
+  {% for m in matches %}
+  {% set is_seeker = (m.seeker_member_id == member_id) %}
+  <article class="match-card">
+    <div class="match-card__head">
+      <span class="match-badge">
+        {% if is_seeker %}past bij wat jij zoekt{% else %}iemand zoekt wat jij maakt{% endif %}
+      </span>
+      <span class="match-card__score" title="hoe goed dit past">{{ m.score }}%</span>
+    </div>
+
+    {% if is_seeker %}
+    <h3 class="match-card__title">{{ m.offering.title }}</h3>
+    <div class="match-card__who">
+      van <a class="text-link" href="/leden/{{ m.offering.profile.slug }}">{{ m.offering.profile.display_name }}</a>
+      — bij jouw vraag “{{ m.need.title }}”
+    </div>
+    {% else %}
+    <h3 class="match-card__title">{{ m.need.title }}</h3>
+    <div class="match-card__who">
+      <a class="text-link" href="/leden/{{ m.need.profile.slug }}">{{ m.need.profile.display_name }}</a>
+      zoekt dit — jouw “{{ m.offering.title }}” past
+    </div>
+    {% endif %}
+
+    <p class="match-card__why"><span aria-hidden="true">✦</span> {{ m.rationale }}</p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="constellation-empty" data-reveal>
+  <span class="constellation-empty__spark" aria-hidden="true">✦</span>
+  <p class="lede" style="max-width:46ch;margin:0 auto 6px">
+    Nog geen matches. Vul aan wat je zoekt en wat je maakt — dan breng ik vraag en
+    aanbod bij elkaar zodra het past.
+  </p>
+  <p class="muted" style="font-size:.9rem">Hoe completer je profiel, hoe beter de match.</p>
+</div>
+{% endif %}

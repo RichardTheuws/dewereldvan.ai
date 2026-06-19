@@ -3,6 +3,24 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.27.0] - 2026-06-19
+### Added — Matchmaking vraag↔aanbod (Tier 1, Fase 1): de kern-visie gaat werken
+- **De `Need` doet eindelijk werk.** Nieuwe `MatchSuggestion`-entiteit (migratie `0012`) koppelt andermans
+  `Need` aan jouw `Offering`. Twee-traps engine (`match_service`, fork A): goedkope SQL-kandidaatgeneratie
+  (gedeelde tags + woord-overlap, gecapt) → **één Claude-call per need** die op échte complementariteit
+  oordeelt + een gegronde "waarom"-zin schrijft (forced tool-use, geen `parse()`; grounding-poort: alleen
+  aangeboden offering-ids komen door). Gegated op `AI_ENRICH_ENABLED` — uit = geen call, geen suggesties.
+- **Matchbereik: alle goedgekeurde leden** (fork A), incl. members-only profielen (besloten community →
+  interne waarde; contact pas na intro-accept in Fase 2).
+- **`surface(matches)`** in de agent-canvas: "wat is er voor mij?" / "laat mijn matches zien" → kosmische
+  match-kaarten met de waarom-zin prominent + score + perspectief (jij zoekt ↔ iemand zoekt wat jij maakt).
+  Tonen markeert `new → seen`.
+- **Push-chip** (fork A): "N nieuwe matches voor jou" verschijnt ongevraagd bovenaan de canvas-chips
+  (hoogste prioriteit, pure SQL op `status=new`).
+- **Idempotent + sticky**: uniek `(need_id, offering_id)`; `dismissed`/`acted` blijven gerespecteerd bij
+  herrekenen. **AVG**: `MatchSuggestion` in `delete_member_completely` (zoeker óf maker). Cron-job
+  `python -m app.jobs.refresh_matches`. 9 nieuwe tests (479 groen + 4 Postgres-pariteit geskipt).
+
 ## [0.26.0] - 2026-06-19
 ### Added — Tier 0 asset-bescherming (uit de audit): backups + Postgres-testketen
 - **Nightly Postgres-backup** — dewereldvan geregistreerd in het bestaande, beproefde M1-backupsysteem

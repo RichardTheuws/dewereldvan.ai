@@ -48,12 +48,14 @@ from app.services import (
     emphasis_service,
     idea_service,
     members_service,
+    match_service,
     nudge_service,
     photo_service,
     post_service,
     profile_service,
     roadmap_service,
 )
+from app.models import MatchStatus
 
 logger = logging.getLogger(__name__)
 
@@ -184,6 +186,22 @@ def _load_nieuws(db: Session, params: dict, member_id, is_admin) -> tuple[str, d
     }
 
 
+def _load_matches(db: Session, params: dict, member_id, is_admin):
+    """De vraag↔aanbod-matches voor dit lid in-canvas (Tier 1). Alleen ingelogd.
+    Markeert verse (``new``) matches als ``seen`` zodat de push-chip leegloopt."""
+    if member_id is None:
+        return None
+    member = db.get(Member, member_id)
+    if member is None:
+        return None
+    matches = match_service.list_for_member(db, member)
+    for m in matches:
+        if m.status == MatchStatus.new:
+            m.status = MatchStatus.seen
+    db.commit()
+    return "matches/_list.html", {"matches": matches, "member_id": member_id}
+
+
 def _load_profile_builder(db: Session, params: dict, member_id, is_admin):
     """De levende profielbouw IN de canvas (Agent-Shell A). Hergebruikt de
     ai_profile-materialisatie 1:1: zelfde #materialisatie-host + #profielvorm +
@@ -212,6 +230,7 @@ _SURFACE_LOADERS = {
     "roadmap_board": _load_roadmap_board,
     "agenda": _load_agenda,
     "nieuws": _load_nieuws,
+    "matches": _load_matches,
     "profile_builder": _load_profile_builder,
 }
 

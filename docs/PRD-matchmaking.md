@@ -1,7 +1,9 @@
 # PRD — Matchmaking: vraag ↔ aanbod (Tier 1, het vlaggenschip)
 
-**Status:** 🟡 TER GOEDKEURING (2026-06-19) — wacht op akkoord/forks vóór bouw
-**Versie-doel:** 0.27.0 (MINOR — nieuwe entiteiten + match-engine + surface)
+**Status:** 🟢 FASE 1 GEBOUWD (v0.27.0, 2026-06-19) — alle 3 forks A bevestigd (LLM-geoordeeld +
+SQL-kandidaten · alle goedgekeurde leden · push). `MatchSuggestion` + engine + `surface(matches)` +
+push-chip + cron + AVG. Fase 2 (persistente connect/intro + notificatie) en Fase 3 (digest) volgen.
+**Versie:** 0.27.0 (MINOR — nieuwe entiteit + match-engine + surface)
 **Aanleiding:** de platform-audit (2026-06-19) — drie onafhankelijke verkenners noemden
 **offering↔need-matchmaking** als grootste gat tussen wat er staat en wat de visie belooft
 ("wie zoekt wat ik maak", PRD.md §3 Fase 3). Het datamodel ligt klaar; alleen de waarde-laag ontbreekt.

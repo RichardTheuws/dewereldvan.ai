@@ -290,6 +290,23 @@ def select_chips(
 
     chips: list[Nudge] = []
 
+    # 0. Matchmaking (hoogste prioriteit) — de push: "iemand zoekt wat jij maakt
+    #    / makers bieden wat jij zoekt". Gegrond op een echte ``new``-telling.
+    if viewer is not None and "chip_matches" not in dismissed:
+        from app.services import match_service
+
+        n = match_service.count_new_for_member(db, viewer)
+        if n >= 1:
+            woord = "match" if n == 1 else "matches"
+            chips.append(
+                Nudge(
+                    kind="chip_matches",
+                    message=f"{n} nieuwe {woord} voor jou",
+                    action_label="bekijk je matches",
+                    action="ask:Laat mijn matches zien.",
+                )
+            )
+
     # 1. Tag-overlap (lid met profiel) → in-stroom introductie.
     if viewer is not None:
         candidate = _tag_overlap_candidate(db, viewer)

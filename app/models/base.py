@@ -140,3 +140,15 @@ class NewsRole(str, enum.Enum):
     geinterviewd = "geinterviewd"  # geïnterviewd / aan het woord
     vermeld = "vermeld"  # genoemd / uitgelicht
     gedeeld = "gedeeld"  # interessant, gewoon gedeeld
+
+
+class MatchStatus(str, enum.Enum):
+    """Status van een match-suggestie (need ↔ offering). ``new`` voedt de push-
+    chip; ``dismissed`` blijft sticky; ``acted`` = er is een intro op gestuurd.
+    Langste waarde 'dismissed' = 9 → de DDL-kolom is ``String(length=9)``
+    (zie 0012_match_suggestion)."""
+
+    new = "new"
+    seen = "seen"
+    dismissed = "dismissed"
+    acted = "acted"

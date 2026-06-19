@@ -70,7 +70,9 @@ SYSTEM_PROMPT: str = (
     "params (toon iedereen). 'laat de roadmap zien' → surface roadmap_board. "
     "'toon de ideeën' → surface ideas_list. 'wat is er te doen?' / 'laat de "
     "agenda zien' / 'welke meetups zijn er?' → surface agenda. 'wat is er "
-    "verschenen?' / 'laat het nieuws zien' → surface nieuws. 'bouw mijn profiel' "
+    "verschenen?' / 'laat het nieuws zien' → surface nieuws. 'wat is er voor mij?' / "
+    "'laat mijn matches zien' / 'wie zoekt wat ik maak?' / 'wie biedt wat ik zoek?' → "
+    "surface matches. 'bouw mijn profiel' "
     "/ 'maak mijn profiel' → surface profile_builder. Vraag pas om een onderwerp als het lid "
     "echt iets SPECIFIEKS zoekt ('wie bouwt voice-agents?' → search_members of "
     "surface members_grid met tag). Zeg NOOIT 'ik kan niet zonder filter' op een "
@@ -148,6 +150,7 @@ SURFACE_REGISTRY: dict[str, set[str]] = {
     "roadmap_board": set(),
     "agenda": set(),  # de levende agenda met meetup-kaarten (Post/event)
     "nieuws": set(),  # artikelen/interviews/uitgelicht werk (Post/nieuws)
+    "matches": set(),  # vraag↔aanbod-koppelingen voor dit lid (Tier 1)
     "profile_view": {"slug"},
     # De levende profielbouw in de canvas (hergebruikt de ai_profile-materialisatie).
     "profile_builder": set(),
@@ -255,6 +258,7 @@ TOOLS: list[dict] = [
             "pagina navigeren). view is een van: members_grid (params: tag?, "
             "maakt?, zoekt?), member_detail (slug), ideas_list, roadmap_board, "
             "agenda (meetups/events), nieuws (artikelen/interviews), "
+            "matches (de vraag↔aanbod-koppelingen voor dit lid), "
             "profile_view (slug)."
         ),
         "input_schema": {

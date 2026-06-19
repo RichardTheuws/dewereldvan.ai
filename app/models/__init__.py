@@ -13,6 +13,7 @@ from app.models.base import (
     Base,
     EventFrequency,
     IdeaStatus,
+    MatchStatus,
     MemberRole,
     MemberStatus,
     NewsRole,
@@ -29,6 +30,7 @@ from app.models.group_invite import GroupInvite
 from app.models.idea import Idea
 from app.models.idea_vote import IdeaVote
 from app.models.magic_link import MagicLinkToken
+from app.models.match_suggestion import MatchSuggestion
 from app.models.member import Member
 from app.models.need import Need
 from app.models.offering import Offering
@@ -53,6 +55,7 @@ __all__ = [
     "PostKind",
     "EventFrequency",
     "NewsRole",
+    "MatchStatus",
     "Member",
     "MagicLinkToken",
     "Profile",
@@ -72,4 +75,5 @@ __all__ = [
     "IdeaVote",
     "RoadmapItem",
     "Post",
+    "MatchSuggestion",
 ]
