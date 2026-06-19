@@ -30,6 +30,9 @@
     <a class="cnav__link cnav__link--admin" href="/admin/queue">Beheer</a>
     {% endif %}
     {% if request.session.get("member_id") %}
+    <a class="cnav__link {% if nav_active == 'verbind' %}cnav__link--active{% endif %}"
+       href="/profiel/verbind" {% if nav_active == 'verbind' %}aria-current="page"{% endif %}
+       title="Koppel dewereldvan aan je AI-tool">✦ Verbind tool</a>
     <a class="cnav__link {% if nav_active == 'profiel' %}cnav__link--active{% endif %}"
        href="/profiel/ai/bouwen" {% if nav_active == 'profiel' %}aria-current="page"{% endif %}>Mijn profiel</a>
     {% else %}

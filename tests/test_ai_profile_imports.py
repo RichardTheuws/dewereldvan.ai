@@ -52,7 +52,8 @@ def test_models_exported_from_package():
 def test_ai_routes_are_mounted():
     from app.main import app
 
-    paths = {route.path for route in app.routes}
+    from tests._route_helpers import app_paths
+    paths = app_paths(app)
     assert "/profiel/ai/bouwen" in paths
     assert "/profiel/ai/bericht" in paths
     assert "/profiel/ai/stream" in paths

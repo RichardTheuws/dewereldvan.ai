@@ -42,7 +42,8 @@ def test_feature_modules_import():
 def test_app_mounts_all_feature_routes():
     from app.main import app
 
-    paths = {route.path for route in app.routes}
+    from tests._route_helpers import app_paths
+    paths = app_paths(app)
     assert "/leden" in paths
     assert "/leden/{slug}" in paths
     assert "/projecten/{slug}" in paths

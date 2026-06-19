@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.29.0] - 2026-06-19
+### Added — MCP-server: "praat met dewereldvan vanuit je eigen AI-tool" (activatie)
+- **dewereldvan als MCP-server** (FastMCP, Streamable HTTP, stateless), gemount op `/mcp` in de web-
+  container. AI-bouwers koppelen 'm aan Claude Code / Cursor / eigen agents en bouwen hun profiel, doorzoeken
+  de gids, halen matches op en sturen intro's — **zonder hun editor te verlaten**. Tools: `wie_ben_ik`,
+  `werk_profiel_bij`, `voeg_project_toe`, `voeg_zoekvraag_toe`, `zoek_makers`, `mijn_matches`, `stel_voor`,
+  `hoe_werkt_dewereldvan`, `bouw_profiel_uit_link` (AI trekt je profiel uit een link). Dunne laag over de
+  bestaande services; elke tool gescoped tot het geauthenticeerde lid.
+- **Persoonlijk Bearer-token** (`PersonalToken`, migratie `0014`): alleen de hash opgeslagen (magic-link-
+  patroon), ruwe token één keer getoond, intrekbaar. ASGI-auth-middleware → 401 zonder geldig token; een
+  token = "act as dit approved lid", nooit role-escalatie. **"Verbind je AI-tool"-pagina** (`/profiel/verbind`)
+  genereert tokens + toont het kant-en-klare `claude mcp add`-commando.
+- **Stack gemoderniseerd**: fastapi 0.118 → **0.137.2** (+ starlette 1.x) — vereist door het MCP-ecosysteem
+  (sse-starlette ≥0.49). CSRF zondert `/mcp` uit (eigen Bearer-auth). AVG: `PersonalToken` in
+  `delete_member_completely`. **Live MCP-handshake lokaal end-to-end geverifieerd** (auth + tools + writes).
+  6 nieuwe tests (493 groen + Postgres-pariteit). Telegram rich-content-bot op de roadmap gezet.
+
 ## [0.28.0] - 2026-06-19
 ### Added — Connect/intro (Tier 1 Fase 2): de match wordt verzilverd
 - **"Stel me voor" doet eindelijk iets.** Nieuwe `Connection`-entiteit (migratie `0013`): een match-kaart

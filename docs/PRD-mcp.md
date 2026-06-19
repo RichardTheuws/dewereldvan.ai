@@ -1,7 +1,10 @@
 # PRD — dewereldvan MCP-server: "praat met dewereldvan vanuit je eigen AI-tool"
 
-**Status:** 🟡 TER GOEDKEURING (2026-06-19) — wacht op akkoord/forks vóór bouw
-**Versie-doel:** 0.29.0 (MINOR — nieuwe entiteit + MCP-laag + tunnel-ingress)
+**Status:** 🟢 FASE 1 GEBOUWD (v0.29.0, 2026-06-19). Forks: PAT-auth · incl. `bouw_profiel_uit_link` ·
+gemount op `/mcp`. Live MCP-handshake lokaal end-to-end geverifieerd. Endpoint draait op
+`app.dewereldvan.ai/mcp` (de aparte `mcp.dewereldvan.ai`-ingress is optionele verfraaiing). Stack
+gemoderniseerd (fastapi 0.137). **Fase 2 (eigen hostname, OAuth-optie) optioneel later.**
+**Versie:** 0.29.0 (MINOR — PersonalToken + MCP-laag)
 **Aanleiding (eigenaar):** activatie — zoveel mogelijk WhatsApp-groepsleden een profiel laten maken. De
 leden zijn AI-bouwers die de hele dag in agentic tooling leven; de website is een context-switch, hun editor
 is thuis. Eigenaars-idee: laat coders dewereldvan.ai vanuit hun eigen systeem "praten".

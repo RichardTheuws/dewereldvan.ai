@@ -1,0 +1,13 @@
+{# Vers token — ÉÉN keer getoond (raw_token). Inclusief het kant-en-klare commando. #}
+<div class="new-token" data-reveal>
+  <div class="new-token__head">✦ Je token (kopieer 'm nu — je ziet 'm hierna niet meer)</div>
+  <pre class="connect-cmd connect-cmd--token"><code>{{ raw_token }}</code></pre>
+  <div class="new-token__cmd-label">Of plak dit hele commando in Claude Code:</div>
+  <pre class="connect-cmd"><code>claude mcp add --transport http dewereldvan \
+  {{ mcp_url }} \
+  --header "Authorization: Bearer {{ raw_token }}"</code></pre>
+  <div class="new-token__refresh">
+    <button class="btn btn--ghost btn--sm" hx-get="/profiel/verbind"
+            hx-select="#connect-tokens" hx-target="#connect-tokens" hx-swap="innerHTML">tokenlijst verversen</button>
+  </div>
+</div>

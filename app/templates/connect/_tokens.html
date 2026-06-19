@@ -1,0 +1,22 @@
+{# Token-lijst (swap-target #connect-tokens). Alleen hash + label zichtbaar — de
+   ruwe token is na genereren weg. #}
+{% if tokens %}
+<div class="token-list">
+  {% for t in tokens %}
+  <div class="token-row" id="token-{{ t.id }}">
+    <div class="token-row__main">
+      <span class="token-row__label">{{ t.label }}</span>
+      <span class="token-row__meta">
+        {% if t.last_used_at %}laatst gebruikt {{ t.last_used_at | nl_datum }}{% else %}nog niet gebruikt{% endif %}
+      </span>
+    </div>
+    <button class="btn btn--ghost btn--sm"
+            hx-post="/profiel/verbind/token/{{ t.id }}/intrekken"
+            hx-target="#connect-tokens" hx-swap="innerHTML"
+            hx-confirm="Dit token intrekken? Tools die het gebruiken verliezen toegang.">intrekken</button>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted" style="font-size:.92rem">Nog geen tokens. Genereer er hierboven één om je tool te verbinden.</p>
+{% endif %}

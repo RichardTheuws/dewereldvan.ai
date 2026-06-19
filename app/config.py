@@ -64,6 +64,9 @@ class Settings(BaseSettings):
     # Intro's/connecties versturen (Tier 1 Fase 2) — per lid, glijdend uur-venster.
     # Krap gehouden: een intro mailt een ander lid; dit dempt spam/ongewenste post.
     rate_limit_intro_per_hour: int = 8  # per lid
+    # De publieke MCP-server-URL (eigen Cloudflare-ingress, los van base_url). Wordt
+    # getoond in het `claude mcp add`-commando op de "verbind je tool"-pagina.
+    mcp_base_url: str = "https://mcp.dewereldvan.ai"  # MCP_BASE_URL
     # Harde bovengrens op de body-lengte van een feedback-bericht (anti-abuse;
     # geldt voor zowel ingelogde als anonieme inzending).
     max_feedback_body_chars: int = 4000

@@ -53,6 +53,13 @@ class CSRFMiddleware:
             await self.app(scope, receive, send)
             return
 
+        # De MCP-server (/mcp) is een API met z'n eigen Bearer-token-auth (geen
+        # cookies/sessie) → CSRF (een sessie-cookie-verdediging) is daar niet van
+        # toepassing en zou de JSON-RPC-POSTs blokkeren.
+        if scope.get("path", "").startswith("/mcp"):
+            await self.app(scope, receive, send)
+            return
+
         request = Request(scope, receive=receive)
         expected = get_csrf_token(request)  # mints + stores on first use
 

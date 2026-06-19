@@ -54,3 +54,28 @@ def csrf_token(client: TestClient, path: str = "/login") -> str:
     )
     assert m, f"CSRF token not found on {path}"
     return m.group(1)
+
+
+def app_paths(app) -> set[str]:
+    """Verzamel alle route-paden van een FastAPI-app, recursief.
+
+    FastAPI 0.137 wikkelt ge-include'de routers in ``_IncludedRouter`` (zonder
+    ``.path``); de echte sub-routes hangen onder ``original_router.routes``. Deze
+    helper descend't daar doorheen zodat smoke-tests robuust blijven over
+    FastAPI-versies."""
+    out: set[str] = set()
+
+    def _walk(routes):
+        for r in routes:
+            p = getattr(r, "path", None)
+            if p:
+                out.add(p)
+            orig = getattr(r, "original_router", None)
+            if orig is not None:
+                _walk(orig.routes)
+            sub = getattr(r, "routes", None)
+            if sub:
+                _walk(sub)
+
+    _walk(app.routes)
+    return out

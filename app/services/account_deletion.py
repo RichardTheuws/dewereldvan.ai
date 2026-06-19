@@ -47,6 +47,7 @@ from app.models import (
     Need,
     Offering,
     OfferingSlugHistory,
+    PersonalToken,
     Post,
     Profile,
     ProfileLink,
@@ -174,6 +175,7 @@ def delete_member_completely(db: Session, member: Member) -> None:
             ConciergeNudgeDismissal.member_id == member_id
         )
     )
+    db.execute(delete(PersonalToken).where(PersonalToken.member_id == member_id))
     db.execute(delete(ConciergeTurn).where(ConciergeTurn.member_id == member_id))
     db.execute(delete(AiChatTurn).where(AiChatTurn.member_id == member_id))
     db.execute(delete(MagicLinkToken).where(MagicLinkToken.member_id == member_id))

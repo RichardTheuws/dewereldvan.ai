@@ -3238,3 +3238,98 @@
   padding-top: 10px;
   border-top: 1px solid var(--line);
 }
+
+/* ============================================================ */
+/* Verbind je AI-tool (MCP connect)                             */
+/* ============================================================ */
+
+.cosmic .connect-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  padding: 20px;
+}
+.cosmic .connect-step__n {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(109, 93, 252, 0.5);
+  color: #c3b6ff;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+}
+.cosmic .connect-step__h {
+  font-family: "Fraunces", serif;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+.cosmic .connect-step__p {
+  margin: 6px 0 12px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.cosmic .connect-step__p em { color: #cfd2ef; font-style: italic; }
+.cosmic .connect-gen {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cosmic .connect-gen input { flex: 1 1 240px; }
+.cosmic .connect-cmd {
+  margin: 4px 0 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(4, 4, 14, 0.6);
+  overflow-x: auto;
+}
+.cosmic .connect-cmd code {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #cfe6ff;
+  white-space: pre;
+}
+.cosmic .connect-cmd--token code { color: var(--gold); word-break: break-all; white-space: pre-wrap; }
+
+.cosmic .new-token {
+  margin-top: 16px;
+  border: 1px solid rgba(246, 205, 134, 0.4);
+  border-radius: 16px;
+  background: rgba(246, 205, 134, 0.05);
+  padding: 18px;
+}
+.cosmic .new-token__head {
+  font-family: "Fraunces", serif;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+.cosmic .new-token__cmd-label,
+.cosmic .new-token__refresh { margin-top: 12px; }
+.cosmic .new-token__cmd-label { color: var(--muted); font-size: 0.88rem; }
+
+.cosmic .token-list { display: flex; flex-direction: column; gap: 10px; }
+.cosmic .token-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  padding: 14px 16px;
+}
+.cosmic .token-row__label { color: var(--text); font-size: 0.95rem; }
+.cosmic .token-row__meta {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}

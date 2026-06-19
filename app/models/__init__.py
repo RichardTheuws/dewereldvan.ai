@@ -37,6 +37,7 @@ from app.models.member import Member
 from app.models.need import Need
 from app.models.offering import Offering
 from app.models.offering_slug_history import OfferingSlugHistory
+from app.models.personal_token import PersonalToken
 from app.models.post import Post
 from app.models.profile import Profile
 from app.models.profile_link import ProfileLink
@@ -80,4 +81,5 @@ __all__ = [
     "Post",
     "MatchSuggestion",
     "Connection",
+    "PersonalToken",
 ]

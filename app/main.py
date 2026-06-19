@@ -7,6 +7,7 @@ three feature routers (auth, profiles, admin).
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from pathlib import Path
 
@@ -31,6 +32,7 @@ from app.routers import (
     ai_profile,
     auth,
     concierge,
+    connect,
     connections,
     feedback,
     ideas,
@@ -90,8 +92,21 @@ templates.env.filters["relatieve_tijd"] = post_service.relatieve_tijd
 templates.env.filters["nl_datum"] = post_service.nl_datum
 
 
+@contextlib.asynccontextmanager
+async def _lifespan(app: FastAPI):
+    """De FastMCP Streamable-HTTP-sessiemanager MOET binnen de host-lifespan
+    draaien (anders 'Task group is not initialized'). Importeer lazy zodat de
+    app-import niet aan de mcp-dep hangt als die ontbreekt."""
+    from app.mcp_server import mcp
+
+    async with mcp.session_manager.run():
+        yield
+
+
 def create_app() -> FastAPI:
-    app = FastAPI(title="dewereldvan.ai", docs_url=None, redoc_url=None)
+    app = FastAPI(
+        title="dewereldvan.ai", docs_url=None, redoc_url=None, lifespan=_lifespan
+    )
 
     # Order matters (last-added runs outermost). We want, outer -> inner:
     # ProxyHeaders -> Session -> CSRF, so the CSRF layer can read the loaded
@@ -126,6 +141,13 @@ def create_app() -> FastAPI:
         name="uploads",
     )
 
+    # MCP-server: "praat met dewereldvan vanuit je eigen AI-tool" (Bearer-auth,
+    # eigen ingress mcp.dewereldvan.ai). Gemount op /mcp; de sessiemanager draait
+    # via ``_lifespan``. Lazy import zodat de mcp-dep optioneel blijft.
+    from app.mcp_server import mcp_asgi_app
+
+    app.mount("/mcp", mcp_asgi_app())
+
     app.state.templates = templates
 
     _register_core_routes(app)
@@ -148,6 +170,7 @@ def create_app() -> FastAPI:
     app.include_router(roadmap.router)
     app.include_router(posts.router)
     app.include_router(connections.router)
+    app.include_router(connect.router)
     app.include_router(onboarding.router)
     # Concierge-laag (Fase 1): intent-oppervlak + gegronde SSE-stroom.
     app.include_router(concierge.router)

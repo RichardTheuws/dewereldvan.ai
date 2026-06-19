@@ -15,7 +15,8 @@ def test_app_imports_and_builds():
     from app.main import app
 
     assert app.title == "dewereldvan.ai"
-    paths = {route.path for route in app.routes}
+    from tests._route_helpers import app_paths
+    paths = app_paths(app)
     # FOUNDATION core + the three feature routers must be mounted.
     assert "/" in paths
     assert "/healthz" in paths
