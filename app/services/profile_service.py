@@ -247,7 +247,14 @@ def update_offering(
     if description is not None:
         offering.description = description.strip() or None
     if url is not None:
-        offering.url = _safe_url(url)
+        new_url = _safe_url(url)
+        if new_url != offering.url:
+            # De link veranderde → de auto-verrijking (screenshot-hero + AI-
+            # samenvatting) hoort bij de óúde URL. Null ze zodat de enrich-job ze
+            # opnieuw genereert voor de nieuwe link (geen verouderde hero/tekst).
+            offering.screenshot_url = None
+            offering.summary = None
+        offering.url = new_url
     if image_url is not None:
         offering.image_url = _safe_url(image_url)
 

@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.33.0] - 2026-06-19
+### Added — projectpagina's: screenshot-hero + inhoudelijke samenvatting
+- **Elke projectpagina (`/projecten/{slug}`) krijgt automatisch een screenshot-hero van de live site én een
+  gegronde AI-samenvatting van de pagina-inhoud.** Beide uit de link van het lid, via **Cloudflare Browser
+  Rendering** (`browser_render_service`): `/screenshot` → WEBP-hero, `/markdown` → pagina-tekst die een gewone
+  Claude-call samenvat (geen web_fetch/pause_turn-server-tools → ontwijkt de SDK-valkuil). CF haalt de externe
+  pagina op (geen SSRF vanuit ons).
+- **Datamodel**: `offering.screenshot_url` (hero, valt terug op het bestaande `image_url`) + `offering.summary`
+  (los van de door het lid getypte `description`). Migratie `0016` (additief/nullable, Postgres-pariteit bewezen).
+- **Verrijking via de nachtelijke job** `app.jobs.enrich_projects` (toegevoegd aan `nightly-jobs.sh`): idempotent
+  (alleen projecten met URL én ontbrekende verrijking), gegated — samenvatting op `AI_ENRICH_ENABLED`, screenshot
+  op CF-creds. Bij een URL-wijziging nult `update_offering` screenshot+summary → her-genereren voor de nieuwe link.
+- Hero + Samenvatting gerenderd in `projects/view.html`; og:image/seo_desc gebruiken nu de screenshot/samenvatting.
+- 536 tests groen. **Let op**: de CF-token heeft de **Browser Rendering**-permissie nodig (dashboard).
+
 ## [0.32.1] - 2026-06-19
 ### Added — nachtelijke job-runner (scheduling-gat gedicht)
 - **`scripts/nightly-jobs.sh`**: draait nachtelijk `refresh_matches` (matchsuggesties) + `distill_memories`

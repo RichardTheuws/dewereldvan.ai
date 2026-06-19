@@ -10,7 +10,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set seo_title = offering.title ~ " — dewereldvan.ai" %}
-  {% set seo_desc = offering.description or (offering.title ~ ", een project van " ~ profile.display_name) %}
+  {% set seo_desc = offering.summary or offering.description or (offering.title ~ ", een project van " ~ profile.display_name) %}
   {% set og_type = "website" %}
   {% include "_seo_head.html" %}
   <script src="https://cdn.tailwindcss.com"></script>
@@ -35,10 +35,10 @@
 
     <main class="flex-1 pb-20">
 
-      {# ---- Project-hero ---- #}
+      {# ---- Project-hero: screenshot van de live site (val terug op image_url) ---- #}
       <section class="cover mt-2" data-reveal style="--d:140ms">
-        {% set _img = offering.image_url | safe_url %}
-        {% if _img %}<img src="{{ _img }}" alt="">{% endif %}
+        {% set _hero = (offering.screenshot_url or offering.image_url) | safe_url %}
+        {% if _hero %}<img src="{{ _hero }}" alt="Screenshot van {{ offering.title }}" loading="lazy">{% endif %}
       </section>
 
       <section class="mt-8" data-reveal style="--d:240ms">
@@ -50,8 +50,16 @@
         </div>
       </section>
 
+      {# ---- Inhoudelijke samenvatting (gegrond, uit de pagina-inhoud) ---- #}
+      {% if offering.summary %}
+      <section class="mt-10" data-reveal style="--d:300ms">
+        <div class="section-title mb-3">Samenvatting</div>
+        <p class="lede" style="max-width:58ch;white-space:pre-line">{{ offering.summary }}</p>
+      </section>
+      {% endif %}
+
       {% if offering.description %}
-      <section class="mt-10" data-reveal style="--d:340ms">
+      <section class="mt-10" data-reveal style="--d:360ms">
         <div class="section-title mb-3">Over dit project</div>
         <p class="lede" style="max-width:58ch;white-space:pre-line">{{ offering.description }}</p>
       </section>

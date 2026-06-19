@@ -120,6 +120,33 @@ def save_photo(raw: bytes, member_id: int) -> str:
     return f"{settings.upload_url_prefix}/{name}"
 
 
+def save_screenshot(raw: bytes, offering_id: int) -> str | None:
+    """Verwerk + schrijf een project-screenshot weg; retourneer het serveer-pad.
+
+    Anders dan ``save_photo`` (vierkante avatar-crop): een screenshot-hero is
+    landschap. We schalen naar max 1200px breed (aspect behouden), strippen alle
+    metadata via ``convert("RGB")`` en bewaren als WEBP onder ``UPLOAD_DIR`` met
+    een willekeurige, traversal-veilige naam. Ongeldige bytes → ``None`` (de
+    enrich-laag is best-effort; nooit crashen op een rare render).
+    """
+    try:
+        img = Image.open(BytesIO(raw))
+        img = img.convert("RGB")  # dropt alpha + metadata
+        max_w = 1200
+        if img.width > max_w:
+            h = round(img.height * (max_w / img.width))
+            img = img.resize((max_w, h), Image.LANCZOS)
+        out = BytesIO()
+        img.save(out, format="WEBP", quality=82, method=6)
+    except (UnidentifiedImageError, OSError, ValueError):
+        return None
+    name = f"proj-{offering_id}-{secrets.token_hex(8)}.webp"
+    path = _abs_path(name)  # anti-traversal-guard
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(out.getvalue())
+    return f"{settings.upload_url_prefix}/{name}"
+
+
 def delete_photo(photo_url: str | None) -> None:
     """Verwijder het bestand achter ``photo_url`` (idempotent, AVG).
 

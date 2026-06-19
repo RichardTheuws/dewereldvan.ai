@@ -29,6 +29,7 @@ from app.storage.photos import (
     delete_photo,
     process_image,
     save_photo,
+    save_screenshot,
     storage_name,
     validate_upload,
 )
@@ -40,6 +41,7 @@ __all__ = [
     "validate_upload",
     "process_image",
     "save_photo",
+    "save_screenshot",
     "delete_photo",
     "storage_name",
     "store_member_photo",

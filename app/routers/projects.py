@@ -83,7 +83,11 @@ def view_project(
             # unfurls van besloten content).
             "jsonld": None if noindex else seo_service.jsonld_project(offering),
             "og_image": (
-                None if noindex else seo_service.absolute_url(offering.image_url)
+                None
+                if noindex
+                else seo_service.absolute_url(
+                    offering.screenshot_url or offering.image_url
+                )
             ),
         },
     )

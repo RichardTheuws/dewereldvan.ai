@@ -32,6 +32,12 @@ class Offering(Base, TimestampMixin):
     # AI-native profielbouw: link + beeld bij een offering (wordt 'project').
     url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     image_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    # Project-verrijking (auto, uit de link via Cloudflare Browser Rendering):
+    # een screenshot-hero + een gegronde AI-samenvatting van de pagina-inhoud. De
+    # hero valt terug op image_url als screenshot_url leeg is; summary staat los
+    # van de door het lid getypte description.
+    screenshot_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # ordering
 
     profile: Mapped[Profile] = relationship(back_populates="offerings")
