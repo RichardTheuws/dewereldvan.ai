@@ -577,6 +577,37 @@ def test_admin_keeps_beheer_in_shell_nav(make_client, SessionTest):
     assert "cnav__concierge" in resp.text
 
 
+def test_project_view_triggers_lazy_enrichment(make_client, SessionTest, monkeypatch):
+    """Een projectpagina met een link maar zonder verrijking start de verrijking
+    (lazy-on-view). Bewijst de wiring; de echte thread is elders gedekt."""
+    s = SessionTest()
+    m = Member(email="pv@x.nl", name="PV", status=MemberStatus.approved)
+    s.add(m)
+    s.flush()
+    p = Profile(
+        member_id=m.id, slug="pv", display_name="PV", visibility=Visibility.public
+    )
+    s.add(p)
+    s.flush()
+    from app.models import Offering
+
+    s.add(Offering(
+        profile_id=p.id, title="Proj", slug="pv-proj",
+        url="https://voorbeeld.nl", position=0,
+    ))
+    s.commit()
+    s.close()
+
+    calls: list[int] = []
+    from app.services import project_enrich_service
+
+    monkeypatch.setattr(project_enrich_service, "trigger_async", calls.append)
+    client = make_client(None)  # anoniem; publiek profiel → zichtbaar
+    resp = client.get("/projecten/pv-proj")
+    assert resp.status_code == 200
+    assert calls, "verrijking werd niet getriggerd bij ontbrekende screenshot/summary"
+
+
 def test_canvas_has_single_fallback(make_client, SessionTest):
     """Op de canvas (root voor een ingelogd lid) staat de footer-fallback precies
     één keer — _concierge.html voegt 'm daar NIET nog eens toe (host_owned)."""

@@ -240,6 +240,56 @@ def test_same_url_keeps_enrichment(db, make_member, make_profile):
 # --------------------------------------------------------------------------- #
 
 
+def test_enrich_skips_already_present_fields(db, make_member, make_profile, monkeypatch):
+    """Guard: is een veld al gezet, dan wordt het NIET opnieuw gegenereerd (geen
+    dubbele CF/Claude-call). Alleen wat mist wordt aangevuld."""
+    monkeypatch.setattr(
+        "app.services.project_enrich_service.settings.ai_enrich_enabled", True
+    )
+    offering = _offering_with_url(db, make_member, make_profile)
+    offering.screenshot_url = "/uploads/proj-1-already.webp"
+    offering.summary = "Staat er al."
+
+    def _boom(*a, **k):
+        raise AssertionError("mag niet aangeroepen worden — al gevuld")
+
+    monkeypatch.setattr("app.services.browser_render_service.screenshot", _boom)
+    monkeypatch.setattr("app.services.browser_render_service.markdown", _boom)
+    assert pe.enrich_offering(db, offering, client=FakeClient()) is False
+
+
+def test_enrich_fills_only_missing_field(db, make_member, make_profile, monkeypatch, tmp_path):
+    """Alleen de screenshot mist → die wordt gezet, de bestaande summary blijft."""
+    monkeypatch.setattr(
+        "app.services.project_enrich_service.settings.ai_enrich_enabled", True
+    )
+    monkeypatch.setattr("app.storage.photos.UPLOAD_DIR", tmp_path)
+    monkeypatch.setattr(photo_service, "UPLOAD_DIR", tmp_path)
+    monkeypatch.setattr(
+        "app.services.browser_render_service.screenshot", lambda u: _png()
+    )
+
+    def _no_markdown(*a, **k):
+        raise AssertionError("summary bestaat al — markdown niet ophalen")
+
+    monkeypatch.setattr("app.services.browser_render_service.markdown", _no_markdown)
+    offering = _offering_with_url(db, make_member, make_profile)
+    offering.summary = "Bestaande samenvatting."
+
+    assert pe.enrich_offering(db, offering, client=FakeClient()) is True
+    assert offering.screenshot_url and offering.screenshot_url.endswith(".webp")
+    assert offering.summary == "Bestaande samenvatting."
+
+
+def test_trigger_async_noop_without_cloudflare(monkeypatch):
+    """Geen Cloudflare-creds → geen achtergrond-thread (en geen inflight-spoor)."""
+    monkeypatch.setattr(
+        "app.services.browser_render_service.configured", lambda: False
+    )
+    pe.trigger_async(987654)
+    assert 987654 not in pe._inflight
+
+
 def test_browser_render_noop_without_creds(monkeypatch):
     from app.services import browser_render_service as br
 

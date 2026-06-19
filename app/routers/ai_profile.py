@@ -64,6 +64,7 @@ from app.services import (
     photo_service,
     profile_link_service,
     profile_service,
+    project_enrich_service,
 )
 from app.services import ai_profile as ai_service
 from app.services import visibility as visibility_service
@@ -698,6 +699,9 @@ def add_offering_route(
     offering_slug.ensure_slug(db, offering)
     profile_service.recompute_completeness(profile)
     db.commit()
+    # Direct (achtergrond) verrijken zodra er een link is — geen UX-vertraging.
+    if offering.url:
+        project_enrich_service.trigger_async(offering.id)
     db.refresh(profile)
     body = _render_str(
         request, "ai/slots/_projects.html", _form_ctx(request, profile)
@@ -758,6 +762,10 @@ def patch_offering(
     if item is None:
         raise HTTPException(status_code=404)
     db.commit()
+    # Een gewijzigde link nullt de verrijking (zie update_offering) → her-genereer
+    # 'm direct in de achtergrond; een ontbrekende verrijking vult zo ook aan.
+    if item.url and (item.screenshot_url is None or item.summary is None):
+        project_enrich_service.trigger_async(item.id)
     db.refresh(profile)
     db.refresh(item)
     return _offering_card(request, profile, item)

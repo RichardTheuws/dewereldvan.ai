@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.deps import current_member
 from app.models import Member
-from app.services import offering_slug, seo_service
+from app.services import offering_slug, project_enrich_service, seo_service
 from app.services import visibility as visibility_service
 
 router = APIRouter(tags=["projects"])
@@ -68,6 +68,14 @@ def view_project(
     # publiek niet (verberg het bestaan → 404 / login zoals de profielpagina).
     if profile is None or not visibility_service.can_view(profile, viewer):
         return _denied()
+
+    # Lazy-on-view (universeel vangnet): mist dit project nog een screenshot of
+    # samenvatting maar heeft het wél een link, start dan de verrijking in de
+    # achtergrond. Dekt projecten uit álle aanmaakpaden (concierge-draft,
+    # AI-bouwer, MCP) die de directe na-opslaan-trigger niet raakten. No-op zonder
+    # Cloudflare-creds + dubbel-werk-guard zitten in trigger_async.
+    if offering.url and (offering.screenshot_url is None or offering.summary is None):
+        project_enrich_service.trigger_async(offering.id)
 
     noindex = visibility_service.is_noindex(profile)
     return _render(

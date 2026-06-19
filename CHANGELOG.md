@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.34.0] - 2026-06-19
+### Added — een nieuw project wordt nu direct verrijkt (niet pas 's nachts)
+- **Async-na-opslaan**: zodra je een project met een link toevoegt of de link wijzigt (inline-editor),
+  start de verrijking (screenshot-hero + samenvatting) meteen in een achtergrond-thread — geen vertraging op
+  de bewerk-UX. `project_enrich_service.trigger_async` (gegated op Cloudflare-creds; dubbel-werk-guard via een
+  in-proces `_inflight`-set; eigen sessie per thread).
+- **Lazy-on-first-view** (universeel vangnet): opent iemand een projectpagina die nog een screenshot/samenvatting
+  mist, dan start de verrijking ook — dekt projecten uit álle aanmaakpaden (concierge-draft, AI-bouwer, MCP).
+- **Guard**: `enrich_offering` genereert alleen wat ontbreekt (geen dubbele CF/Claude-call); een URL-wijziging
+  ruimt het oude screenshot-bestand op en nult beide velden → schone her-generatie. Nachtelijke job blijft de
+  laatste backstop. 540 tests groen.
+
 ## [0.33.1] - 2026-06-19
 ### Fixed
 - **Screenshot-422 op sommige sites**: de hero-screenshot wachtte op `networkidle0`, wat veel moderne sites

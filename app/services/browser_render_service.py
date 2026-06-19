@@ -36,6 +36,14 @@ def _configured() -> bool:
     return bool(settings.cloudflare_account_id and settings.cloudflare_api_token)
 
 
+def configured() -> bool:
+    """Publiek: of Cloudflare Browser Rendering bruikbaar is (creds aanwezig).
+
+    De async-verrijking gebruikt dit als poort: geen CF → geen achtergrond-thread
+    (en dus ook geen thread-ruis in dev/test zonder Cloudflare)."""
+    return _configured()
+
+
 def _endpoint(kind: str) -> str:
     return f"{_API}/accounts/{settings.cloudflare_account_id}/browser-rendering/{kind}"
 

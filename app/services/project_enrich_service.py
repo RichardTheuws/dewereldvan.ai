@@ -15,15 +15,22 @@ Best-effort + gegated op ``ai_enrich_enabled`` (samenvatting) resp. CF-creds
 from __future__ import annotations
 
 import logging
+import threading
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.db import SessionLocal
 from app.models import Offering
 from app.services import browser_render_service, photo_service
 
 logger = logging.getLogger(__name__)
+
+# In-proces guard: voorkom dat hetzelfde project tegelijk door twee threads wordt
+# verrijkt (bv. lazy-on-view onder gelijktijdige hits). Best-effort, per-proces.
+_inflight: set[int] = set()
+_inflight_lock = threading.Lock()
 
 _MODEL = settings.anthropic_model
 _MAX_TOKENS = 500
@@ -82,10 +89,12 @@ def summarize(url: str, *, client=None) -> str | None:
 
 
 def enrich_offering(db: Session, offering: Offering, *, client=None) -> bool:
-    """Vul screenshot + samenvatting voor één offering met een URL. Caller commit.
+    """Vul de ONTBREKENDE verrijking (screenshot/samenvatting) voor één offering.
 
-    Returnt True als er iets is gezet. Screenshot en samenvatting zijn los
-    best-effort: de één kan slagen terwijl de ander overslaat.
+    Returnt True als er iets is gezet. Alleen wat nog mist wordt gegenereerd (een
+    URL-wijziging nullt beide → dan herstellen ze allebei). Screenshot en
+    samenvatting zijn los best-effort: de één kan slagen terwijl de ander overslaat.
+    Caller commit.
     """
     url = (offering.url or "").strip()
     if not url:
@@ -93,24 +102,67 @@ def enrich_offering(db: Session, offering: Offering, *, client=None) -> bool:
 
     changed = False
 
-    # --- Screenshot-hero (Cloudflare Browser Rendering) ---
-    png = browser_render_service.screenshot(url)
-    if png:
-        new_url = photo_service.save_screenshot(png, offering.id)
-        if new_url:
-            old = offering.screenshot_url
-            offering.screenshot_url = new_url
-            if old and old != new_url:
-                photo_service.delete_photo(old)  # geen wees-bestand
+    # --- Screenshot-hero (Cloudflare Browser Rendering) — alleen als die mist ---
+    if not offering.screenshot_url:
+        png = browser_render_service.screenshot(url)
+        if png:
+            new_url = photo_service.save_screenshot(png, offering.id)
+            if new_url:
+                offering.screenshot_url = new_url
+                changed = True
+
+    # --- Gegronde samenvatting — alleen als die mist ---
+    if not offering.summary:
+        summary = summarize(url, client=client)
+        if summary:
+            offering.summary = summary
             changed = True
 
-    # --- Gegronde samenvatting ---
-    summary = summarize(url, client=client)
-    if summary:
-        offering.summary = summary
-        changed = True
-
     return changed
+
+
+def enrich_one(offering_id: int) -> bool:
+    """Verrijk één offering in een EIGEN sessie (voor de achtergrond-thread/cron).
+
+    Laadt de offering, vult de ontbrekende verrijking, commit. Returnt True bij
+    een update. Best-effort: vangt alles (mag nooit een thread laten crashen)."""
+    try:
+        with SessionLocal() as db:
+            offering = db.get(Offering, offering_id)
+            if offering is None:
+                return False
+            changed = enrich_offering(db, offering)
+            if changed:
+                db.commit()
+            return changed
+    except Exception:  # noqa: BLE001 — achtergrond-verrijking mag nooit crashen
+        logger.exception("Async-verrijking faalde voor offering %s", offering_id)
+        return False
+
+
+def trigger_async(offering_id: int) -> None:
+    """Start de verrijking van één project in de achtergrond (geen UX-vertraging).
+
+    Gebruikt na het toevoegen/wijzigen van een project (direct verrijken) én
+    lazy bij de eerste paginaweergave. Poort: geen Cloudflare-creds → no-op (ook
+    geen thread-ruis in dev/test). Dubbel-werk-guard via ``_inflight`` zodat
+    gelijktijdige triggers voor hetzelfde project niet stapelen.
+    """
+    if not browser_render_service.configured():
+        return
+    with _inflight_lock:
+        if offering_id in _inflight:
+            return
+        _inflight.add(offering_id)
+
+    def _run() -> None:
+        try:
+            enrich_one(offering_id)
+        finally:
+            with _inflight_lock:
+                _inflight.discard(offering_id)
+
+    threading.Thread(target=_run, name=f"enrich-{offering_id}", daemon=True).start()
 
 
 def refresh_all(db: Session, *, client=None) -> int:

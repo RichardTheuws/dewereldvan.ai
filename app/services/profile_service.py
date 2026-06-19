@@ -250,8 +250,13 @@ def update_offering(
         new_url = _safe_url(url)
         if new_url != offering.url:
             # De link veranderde → de auto-verrijking (screenshot-hero + AI-
-            # samenvatting) hoort bij de óúde URL. Null ze zodat de enrich-job ze
-            # opnieuw genereert voor de nieuwe link (geen verouderde hero/tekst).
+            # samenvatting) hoort bij de óúde URL. Ruim het oude screenshot-bestand
+            # op (geen wees-bestand) en null beide velden zodat ze opnieuw
+            # genereren voor de nieuwe link (geen verouderde hero/tekst).
+            if offering.screenshot_url:
+                from app.services import photo_service
+
+                photo_service.delete_photo(offering.screenshot_url)
             offering.screenshot_url = None
             offering.summary = None
         offering.url = new_url
