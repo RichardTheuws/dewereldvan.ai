@@ -86,6 +86,11 @@
         if (!e.detail) return;
         var type = e.detail.type;
 
+        // Elk gematerialiseerd veld (f-headline/f-bio/...) stelt de auto-cover
+        // (debounced) uit — betrouwbaar, want deze events vuren zeker (net als
+        // delta/fetch). Ná het laatste veld → één automatische cover.
+        if (type && type.indexOf('f-') === 0) { scheduleAutoCover(); }
+
         if (type === 'delta') {
           // Eerste delta: onthul de "AI schrijft…"-regel; markeer het paneel als
           // 'settled' (niet verwijderen — reasoning/fetch komen ná de deltas).
@@ -119,7 +124,6 @@
       root.addEventListener('htmx:afterSwap', function (e) {
         var el = e.target;
         if (!el || !el.classList || !el.classList.contains('field--materializing')) return;
-        scheduleAutoCover();  // elk gematerialiseerd veld stelt de auto-cover (debounced) uit
         var done = function () { el.classList.remove('field--materializing'); el.classList.add('field--ready'); };
         var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
         if (reduce) { done(); return; }
