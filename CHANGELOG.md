@@ -3,6 +3,12 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.25.1] - 2026-06-19
+### Fixed
+- **Migratie `0010_post` faalde op Postgres** (`hidden` boolean met `server_default=sa.text("0")` →
+  DatatypeMismatch). Nu `sa.false()` (dialect-neutraal, projectconventie). De SQLite-migratietest ving dit
+  niet; CREATE TABLE faalde atomair (geen partial state). Preview-redeploy hersteld.
+
 ## [0.25.0] - 2026-06-19
 ### Added — Agenda & Nieuws (Fase 2): verweven in de agent-shell
 - **`surface(agenda)` + `surface(nieuws)`**: "wat is er te doen?" / "laat de agenda zien" / "wat is er
