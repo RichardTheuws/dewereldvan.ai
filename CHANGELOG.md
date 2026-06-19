@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.32.1] - 2026-06-19
+### Added — nachtelijke job-runner (scheduling-gat gedicht)
+- **`scripts/nightly-jobs.sh`**: draait nachtelijk `refresh_matches` (matchsuggesties) + `distill_memories`
+  (concierge-geheugen) op de M4. Beide gegated op `AI_ENRICH_ENABLED`, idempotent, lage op-last; bewust geen
+  `set -e` zodat een fout in job 1 job 2 niet blokkeert. Aangeroepen door de LaunchAgent
+  `com.theuws.dewereldvan.nightly-jobs` (machine-config op server-mini). Hiermee groeit het geheugen en
+  verversen matches voortaan vanzelf, unattended.
+
 ## [0.32.0] - 2026-06-19
 ### Changed — Concierge-intelligentie Fase 3: één shell voor ingelogde leden
 - **Einde van de twee paradigma's.** Een ingelogd, goedgekeurd lid kreeg op de klassieke kosmische
