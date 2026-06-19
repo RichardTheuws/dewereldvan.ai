@@ -139,6 +139,25 @@ def test_submit_event_persists(make_client, seed, SessionTest):
         s.close()
 
 
+def test_agenda_renders_countdown_filter_end_to_end(make_client, seed, SessionTest):
+    """Een event mét next_at moet door de echte template-env (relatieve_tijd-filter)
+    renderen zonder fout — de countdown verschijnt op de pagina."""
+    from app.models import EventFrequency, Post, PostKind
+    from app.security import utcnow
+
+    s = SessionTest()
+    s.add(Post(kind=PostKind.event, title="Binnenkort", frequency=EventFrequency.wekelijks,
+               next_at=utcnow() + timedelta(days=3), added_by_id=seed["member"]))
+    s.commit()
+    s.close()
+
+    client = make_client(seed["member"])
+    page = client.get("/agenda")
+    assert page.status_code == 200
+    assert "Binnenkort" in page.text
+    assert "over 3 dagen" in page.text  # de countdown-filter draaide
+
+
 def test_submit_event_without_title_is_rejected(make_client, seed, SessionTest):
     from app.models import Post
 
@@ -403,3 +422,87 @@ def test_nl_datum_format():
 
     assert nl_datum(datetime(2026, 6, 24, 18, 0)) == "24 jun 2026"
     assert nl_datum(None) == ""
+
+
+# --------------------------------------------------------------------------- #
+# Fase 2 — agent-integratie (surfaces + draft-tools)                          #
+# --------------------------------------------------------------------------- #
+def test_agenda_nieuws_in_surface_registry_and_enum():
+    from app.services import concierge_service
+
+    assert "agenda" in concierge_service.SURFACE_REGISTRY
+    assert "nieuws" in concierge_service.SURFACE_REGISTRY
+    surf = next(t for t in concierge_service.TOOLS if t["name"] == "surface")
+    enum = set(surf["input_schema"]["properties"]["view"]["enum"])
+    assert enum == set(concierge_service.SURFACE_REGISTRY)  # geen drift
+
+
+def test_draft_event_news_tools_registered_and_dispatch():
+    from app.services import concierge_service
+
+    names = [t["name"] for t in concierge_service.TOOLS]
+    assert "draft_event" in names
+    assert "draft_news" in names
+
+    # whitelist + signaalvorm (verzonnen veld 'rommel' wordt gedropt)
+    ev = concierge_service.tool_draft(
+        "event", {"title": "Meetup", "frequency": "wekelijks", "rommel": "x"}
+    )
+    assert ev == {"draft": "event", "fields": {"title": "Meetup", "frequency": "wekelijks"}}
+
+    # dispatch via run_tool (entity-mapping draft_news → 'nieuws')
+    res, slugs = concierge_service.run_tool(
+        None, "draft_news", {"title": "Artikel", "url": "https://x"}, viewer=None
+    )
+    assert res == {"draft": "nieuws", "fields": {"title": "Artikel", "url": "https://x"}}
+    assert slugs == []
+
+
+def test_draft_partials_post_to_real_endpoints():
+    from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+    env = Environment(
+        loader=FileSystemLoader("app/templates"),
+        autoescape=select_autoescape(["html"]),
+    )
+    html_ev = env.get_template("concierge/_draft_event.html").render(
+        fields={"title": "Aimelo meetup", "frequency": "wekelijks"}
+    )
+    assert 'hx-post="/agenda"' in html_ev
+    assert 'value="Aimelo meetup"' in html_ev
+    assert "laat maar" in html_ev
+
+    html_nw = env.get_template("concierge/_draft_news.html").render(
+        fields={"title": "Interview", "url": "https://example.com", "role": "geinterviewd"}
+    )
+    assert 'hx-post="/nieuws"' in html_nw
+    assert 'value="https://example.com"' in html_nw
+    assert "laat maar" in html_nw
+
+
+def test_nav_to_surface_agenda_nieuws():
+    from app.routers import concierge as cr
+
+    assert cr._nav_to_surface("/agenda") == ("agenda", {})
+    assert cr._nav_to_surface("/nieuws") == ("nieuws", {})
+
+
+def test_surface_loaders_return_lists(SessionTest, seed):
+    from app.models import NewsRole, Post, PostKind
+    from app.routers import concierge as cr
+
+    s = SessionTest()
+    s.add_all([
+        Post(kind=PostKind.event, title="E1", added_by_id=seed["member"]),
+        Post(kind=PostKind.nieuws, title="N1", url="https://a", role=NewsRole.gedeeld),
+    ])
+    s.commit()
+
+    tmpl_a, ctx_a = cr._load_agenda(s, {}, seed["member"], False)
+    assert tmpl_a == "agenda/_list.html"
+    assert any(e.title == "E1" for e in ctx_a["events"])
+
+    tmpl_n, ctx_n = cr._load_nieuws(s, {}, seed["member"], False)
+    assert tmpl_n == "nieuws/_list.html"
+    assert any(i.title == "N1" for i in ctx_n["items"])
+    s.close()

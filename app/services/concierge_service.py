@@ -68,18 +68,23 @@ SYSTEM_PROMPT: str = (
     "Belangrijk: een brede toon-intent vraagt GEEN filter. "
     "'laat de makers zien' / 'wie zijn de leden' → surface members_grid ZONDER "
     "params (toon iedereen). 'laat de roadmap zien' → surface roadmap_board. "
-    "'toon de ideeën' → surface ideas_list. 'bouw mijn profiel' / 'maak mijn "
-    "profiel' → surface profile_builder. Vraag pas om een onderwerp als het lid "
+    "'toon de ideeën' → surface ideas_list. 'wat is er te doen?' / 'laat de "
+    "agenda zien' / 'welke meetups zijn er?' → surface agenda. 'wat is er "
+    "verschenen?' / 'laat het nieuws zien' → surface nieuws. 'bouw mijn profiel' "
+    "/ 'maak mijn profiel' → surface profile_builder. Vraag pas om een onderwerp als het lid "
     "echt iets SPECIFIEKS zoekt ('wie bouwt voice-agents?' → search_members of "
     "surface members_grid met tag). Zeg NOOIT 'ik kan niet zonder filter' op een "
     "brede toon-intent — toon gewoon iedereen.\n\n"
     "ACTIES VOORSTELLEN (draft-tools): wil het lid iets TOEVOEGEN, gebruik dan een "
     "draft-tool — je SCHRIJFT NIETS, je stelt voor. 'voeg een project toe …' / "
     "'ik maak …' → draft_offering. 'ik zoek …' / 'ik ben op zoek naar …' → "
-    "draft_need. 'idee: …' / 'ik heb een idee …' → draft_idea. 'verander mijn "
+    "draft_need. 'idee: …' / 'ik heb een idee …' → draft_idea. 'zet een meetup "
+    "in de agenda …' / 'voeg een event toe …' → draft_event (title + frequency). "
+    "'ik schreef een artikel …' / 'ik werd geïnterviewd …' / 'deel dit nieuws …' "
+    "→ draft_news (title + url). 'verander mijn "
     "kopregel naar …' → draft_field (field=headline). 'pas mijn bio aan …' / "
     "'schrijf mijn over-tekst …' → draft_field (field=bio). Vul de velden "
-    "(title, description/body, of value) zo goed mogelijk in op basis van wat het lid zei; "
+    "zo goed mogelijk in op basis van wat het lid zei; "
     "het lid ziet een voorgevuld formulier en bevestigt of past aan. Verzin geen "
     "feiten — vat alleen samen wat het lid zelf vertelde. Voor openbaar maken of "
     "verwijderen heb je GEEN tool: verwijs het lid naar 'alles bijschaven & "
@@ -141,6 +146,8 @@ SURFACE_REGISTRY: dict[str, set[str]] = {
     "member_detail": {"slug"},
     "ideas_list": set(),
     "roadmap_board": set(),
+    "agenda": set(),  # de levende agenda met meetup-kaarten (Post/event)
+    "nieuws": set(),  # artikelen/interviews/uitgelicht werk (Post/nieuws)
     "profile_view": {"slug"},
     # De levende profielbouw in de canvas (hergebruikt de ai_profile-materialisatie).
     "profile_builder": set(),
@@ -155,6 +162,13 @@ DRAFT_REGISTRY: dict[str, set[str]] = {
     "offering": {"title", "description"},  # POST /profiel/offering (OfferingForm)
     "need": {"title", "description"},  # POST /profiel/need (NeedForm)
     "idea": {"title", "body"},  # POST /ideeen (IdeaForm)
+    # POST /agenda (EventForm) — een meetup/event voor de agenda.
+    "event": {
+        "title", "frequency", "next_at", "location", "cadence_note",
+        "url", "description",
+    },
+    # POST /nieuws (NewsForm) — een artikel/interview voor het nieuws.
+    "nieuws": {"title", "url", "role", "source", "published_at", "description"},
 }
 
 # Profiel-tekstvelden die de agent mag voorstellen te WIJZIGEN (Fase 2.2). Bewust
@@ -240,6 +254,7 @@ TOOLS: list[dict] = [
             "Materialiseer een interface in de stroom (gebruik dit i.p.v. naar een "
             "pagina navigeren). view is een van: members_grid (params: tag?, "
             "maakt?, zoekt?), member_detail (slug), ideas_list, roadmap_board, "
+            "agenda (meetups/events), nieuws (artikelen/interviews), "
             "profile_view (slug)."
         ),
         "input_schema": {
@@ -294,6 +309,50 @@ TOOLS: list[dict] = [
             "properties": {
                 "title": {"type": "string"},
                 "body": {"type": "string"},
+            },
+        },
+    },
+    {
+        "name": "draft_event",
+        "description": (
+            "Stel een agenda-event (meetup) voor het lid voor. Vul title + "
+            "frequency (een van: eenmalig, wekelijks, tweewekelijks, maandelijks, "
+            "doorlopend) in, en eventueel location, next_at (ISO datum-tijd, bv. "
+            "2026-06-24T18:00), cadence_note ('elke woensdag 19:00'), url, "
+            "description. Het lid ziet een voorgevuld formulier en bevestigt zelf. "
+            "SCHRIJF NIETS; stel alleen voor."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "frequency": {"type": "string"},
+                "next_at": {"type": "string"},
+                "location": {"type": "string"},
+                "cadence_note": {"type": "string"},
+                "url": {"type": "string"},
+                "description": {"type": "string"},
+            },
+        },
+    },
+    {
+        "name": "draft_news",
+        "description": (
+            "Stel een nieuwsbericht (artikel/interview/uitgelicht werk) voor het "
+            "lid voor. Vul title + url in, en eventueel role (een van: geschreven, "
+            "geinterviewd, vermeld, gedeeld), source (de publicatie), published_at "
+            "(ISO datum) en description. Het lid bevestigt zelf in een voorgevuld "
+            "formulier. SCHRIJF NIETS."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "url": {"type": "string"},
+                "role": {"type": "string"},
+                "source": {"type": "string"},
+                "published_at": {"type": "string"},
+                "description": {"type": "string"},
             },
         },
     },
@@ -571,6 +630,10 @@ def run_tool(
         return tool_draft("need", args), []
     if name == "draft_idea":
         return tool_draft("idea", args), []
+    if name == "draft_event":
+        return tool_draft("event", args), []
+    if name == "draft_news":
+        return tool_draft("nieuws", args), []
     if name == "draft_field":
         return tool_draft_field(args), []
     return {"error": f"Onbekende tool: {name}."}, []

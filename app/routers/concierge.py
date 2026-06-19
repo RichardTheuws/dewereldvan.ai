@@ -40,7 +40,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.db import SessionLocal, get_db
 from app.deps import current_member, require_member
-from app.models import IdeaStatus, Member, RoadmapStatus
+from app.models import EventFrequency, IdeaStatus, Member, NewsRole, RoadmapStatus
 from app.services import (
     ai_conversation,
     concierge_service,
@@ -50,6 +50,7 @@ from app.services import (
     members_service,
     nudge_service,
     photo_service,
+    post_service,
     profile_service,
     roadmap_service,
 )
@@ -163,6 +164,26 @@ def _load_roadmap_board(db: Session, params: dict, member_id, is_admin) -> tuple
     }
 
 
+def _load_agenda(db: Session, params: dict, member_id, is_admin) -> tuple[str, dict]:
+    member = db.get(Member, member_id) if member_id is not None else None
+    return "agenda/_list.html", {
+        "events": post_service.list_events(db),
+        "member": member,
+        "is_admin": is_admin,
+        "frequencies": list(EventFrequency),
+    }
+
+
+def _load_nieuws(db: Session, params: dict, member_id, is_admin) -> tuple[str, dict]:
+    member = db.get(Member, member_id) if member_id is not None else None
+    return "nieuws/_list.html", {
+        "items": post_service.list_news(db),
+        "member": member,
+        "is_admin": is_admin,
+        "roles": list(NewsRole),
+    }
+
+
 def _load_profile_builder(db: Session, params: dict, member_id, is_admin):
     """De levende profielbouw IN de canvas (Agent-Shell A). Hergebruikt de
     ai_profile-materialisatie 1:1: zelfde #materialisatie-host + #profielvorm +
@@ -189,6 +210,8 @@ _SURFACE_LOADERS = {
     "profile_view": _load_member_detail,
     "ideas_list": _load_ideas_list,
     "roadmap_board": _load_roadmap_board,
+    "agenda": _load_agenda,
+    "nieuws": _load_nieuws,
     "profile_builder": _load_profile_builder,
 }
 
@@ -198,6 +221,8 @@ _DRAFT_TEMPLATES = {
     "offering": "concierge/_draft_offering.html",
     "need": "concierge/_draft_need.html",
     "idea": "concierge/_draft_idea.html",
+    "event": "concierge/_draft_event.html",  # agenda-event (Fase 2)
+    "nieuws": "concierge/_draft_news.html",  # nieuwsartikel (Fase 2)
     "field": "concierge/_draft_field.html",  # profiel-tekstveld (Fase 2.2)
 }
 _FIELD_LABELS = {"headline": "Kopregel", "bio": "Over jou"}
@@ -208,6 +233,8 @@ _NAV_TO_SURFACE: dict[str, tuple[str, dict]] = {
     "/leden": ("members_grid", {}),
     "/ideeen": ("ideas_list", {}),
     "/roadmap": ("roadmap_board", {}),
+    "/agenda": ("agenda", {}),
+    "/nieuws": ("nieuws", {}),
 }
 _MEMBER_SLUG_RE = re.compile(r"^/leden/([\w-]+)$")
 
@@ -761,6 +788,8 @@ def save_origin_story(
 # ``{label, url, keywords}``; "mijn profiel" verschijnt alleen voor een ingelogd lid.
 _INSTANT_ROUTES: list[dict] = [
     {"label": "Leden", "url": "/leden", "keywords": ["leden", "gids", "makers", "wie"]},
+    {"label": "Agenda", "url": "/agenda", "keywords": ["agenda", "meetup", "meetups", "event", "events", "wanneer"]},
+    {"label": "Nieuws", "url": "/nieuws", "keywords": ["nieuws", "artikel", "artikelen", "interview", "verschenen"]},
     {"label": "Ideeën", "url": "/ideeen", "keywords": ["ideeen", "ideeën", "ideeenbus", "idee"]},
     {"label": "Roadmap", "url": "/roadmap", "keywords": ["roadmap", "planning", "gepland"]},
 ]

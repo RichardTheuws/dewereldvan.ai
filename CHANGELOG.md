@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.25.0] - 2026-06-19
+### Added — Agenda & Nieuws (Fase 2): verweven in de agent-shell
+- **`surface(agenda)` + `surface(nieuws)`**: "wat is er te doen?" / "laat de agenda zien" / "wat is er
+  verschenen?" materialiseren de agenda/nieuws-lijst **in-canvas** (geen paginawissel), server-side uit de
+  DB gerenderd (grounding-poort). `navigate /agenda|/nieuws` mapt ook naar deze surfaces.
+- **`draft_event` + `draft_news`** schrijf-tools (tonen + 1-klik bevestigen): "zet een meetup in de
+  agenda …" / "ik werd geïnterviewd, deel dit …" → de agent SCHRIJFT NIET maar geeft een gevalideerd
+  `{draft, fields}`-signaal; de router rendert het echte voorgevulde formulier dat naar het bestaande
+  `POST /agenda`·`/nieuws`-endpoint commit (CSRF + Pydantic + rate-limit). Lopen door dezelfde
+  surface-machinerie als de andere schrijf-surfaces.
+- Instant-index + SYSTEM_PROMPT uitgebreid met agenda/nieuws-intents. 6 nieuwe tests (470 groen).
+
 ## [0.24.0] - 2026-06-19
 ### Added — Agenda & Nieuws (Fase 1): iedereen publiceert direct
 - **Eén holistische `Post`-entiteit** (`kind` ∈ event | nieuws, + later "etc") i.p.v. losse tabellen:

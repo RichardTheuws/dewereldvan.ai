@@ -1,0 +1,43 @@
+{# Schrijf-surface (Fase 2): voorgevuld nieuwsartikel. Post naar het BESTAANDE
+   endpoint (POST /nieuws, NewsForm + CSRF + rate-limit). Bij succes vervangt het
+   verse nieuws deze kaart. "laat maar" sluit zonder op te slaan. #}
+{% set roles = [["geschreven","zelf geschreven"],["geinterviewd","geïnterviewd"],["vermeld","uitgelicht"],["gedeeld","gewoon gedeeld"]] %}
+{% set chosen = fields.role | default('gedeeld') %}
+<form class="concierge-draft"
+      hx-post="/nieuws"
+      hx-target="closest .surface-card"
+      hx-swap="outerHTML">
+  <div class="concierge-draft__head">
+    <span aria-hidden="true">✦</span> Nieuws om te delen — klopt het? Pas gerust aan.
+  </div>
+  <span class="field-label">Kop van het artikel</span>
+  <input name="title" class="concierge-draft__field" maxlength="200" required
+         aria-label="Kop van het artikel" value="{{ fields.title | default('') }}">
+
+  <span class="field-label">Link naar het artikel</span>
+  <input name="url" type="url" class="concierge-draft__field" maxlength="500" required
+         aria-label="Link" value="{{ fields.url | default('') }}" placeholder="https://…">
+
+  <span class="field-label">Jouw rol</span>
+  <select name="role" class="concierge-draft__field" aria-label="Rol">
+    {% for value, label in roles %}
+    <option value="{{ value }}" {% if chosen == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+
+  <span class="field-label">Bron <span class="muted">(optioneel)</span></span>
+  <input name="source" class="concierge-draft__field" maxlength="160"
+         aria-label="Bron" value="{{ fields.source | default('') }}">
+
+  <input type="hidden" name="published_at" value="{{ fields.published_at | default('') }}">
+
+  <span class="field-label">Korte toelichting <span class="muted">(optioneel)</span></span>
+  <textarea name="description" class="concierge-draft__field" rows="2" maxlength="4000"
+            aria-label="Toelichting">{{ fields.description | default('') }}</textarea>
+
+  <div class="concierge-draft__actions">
+    <button type="submit" class="btn">✦ Nieuws delen</button>
+    <button type="button" class="btn btn--ghost btn--sm"
+            onclick="this.closest('.surface-card').remove()">laat maar</button>
+  </div>
+</form>

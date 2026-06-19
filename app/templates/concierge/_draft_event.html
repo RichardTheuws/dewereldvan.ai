@@ -1,0 +1,48 @@
+{# Schrijf-surface (Fase 2): voorgevuld agenda-event. Post naar het BESTAANDE
+   endpoint (POST /agenda, EventForm + CSRF + rate-limit). Bij succes vervangt de
+   verse agenda deze kaart. "laat maar" sluit zonder op te slaan. #}
+{% set freqs = ["eenmalig", "wekelijks", "tweewekelijks", "maandelijks", "doorlopend"] %}
+{% set chosen = fields.frequency | default('wekelijks') %}
+<form class="concierge-draft"
+      hx-post="/agenda"
+      hx-target="closest .surface-card"
+      hx-swap="outerHTML">
+  <div class="concierge-draft__head">
+    <span aria-hidden="true">✦</span> Een meetup voor de agenda — klopt het? Pas gerust aan.
+  </div>
+  <span class="field-label">Naam van het event</span>
+  <input name="title" class="concierge-draft__field" maxlength="200" required
+         aria-label="Naam van het event" value="{{ fields.title | default('') }}">
+
+  <span class="field-label">Hoe vaak?</span>
+  <select name="frequency" class="concierge-draft__field" aria-label="Frequentie">
+    {% for fr in freqs %}
+    <option value="{{ fr }}" {% if chosen == fr %}selected{% endif %}>{{ fr }}</option>
+    {% endfor %}
+  </select>
+
+  <span class="field-label">Locatie <span class="muted">(optioneel)</span></span>
+  <input name="location" class="concierge-draft__field" maxlength="160"
+         aria-label="Locatie" value="{{ fields.location | default('') }}">
+
+  <span class="field-label">Cadans in mensentaal <span class="muted">(optioneel)</span></span>
+  <input name="cadence_note" class="concierge-draft__field" maxlength="120"
+         aria-label="Cadans" value="{{ fields.cadence_note | default('') }}"
+         placeholder="bv. elke woensdag 18:00–20:00">
+
+  <span class="field-label">Link <span class="muted">(optioneel)</span></span>
+  <input name="url" type="url" class="concierge-draft__field" maxlength="500"
+         aria-label="Link" value="{{ fields.url | default('') }}">
+
+  <input type="hidden" name="next_at" value="{{ fields.next_at | default('') }}">
+
+  <span class="field-label">Waar gaat het over? <span class="muted">(optioneel)</span></span>
+  <textarea name="description" class="concierge-draft__field" rows="2" maxlength="4000"
+            aria-label="Omschrijving">{{ fields.description | default('') }}</textarea>
+
+  <div class="concierge-draft__actions">
+    <button type="submit" class="btn">✦ Aan de agenda toevoegen</button>
+    <button type="button" class="btn btn--ghost btn--sm"
+            onclick="this.closest('.surface-card').remove()">laat maar</button>
+  </div>
+</form>
