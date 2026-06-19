@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.26.0] - 2026-06-19
+### Added — Tier 0 asset-bescherming (uit de audit): backups + Postgres-testketen
+- **Nightly Postgres-backup** — dewereldvan geregistreerd in het bestaande, beproefde M1-backupsysteem
+  (`m4-backup.sh`, 02:00 LaunchAgent): logische `pg_dump` + gzip + size-validatie + daily/weekly-retentie
+  (7d/4w) + ntfy-alerting + M4-heartbeat. Augment van een werkend systeem, geen parallelle stack. De audit
+  meldde "geen backup"; de waarheid bleek "nooit aangemeld". **Restore end-to-end bewezen**: dump → gzip →
+  restore in wegwerp-Postgres, rij-aantallen identiek aan live. Procedure: `docs/BACKUP-RESTORE.md`.
+- **Postgres in de testketen** — `tests/test_postgres_parity.py` draait `alembic upgrade head` + smoke-CRUD
+  tegen een ECHTE Postgres (default geskipt; de snelle SQLite-suite blijft standaard). Vangt de dialect-bug-
+  klasse die 0008 (varchar te kort) én 0010 (boolean-default) door de SQLite-tests liet glippen en pas in
+  productie faalde. **Bewezen**: met de 0010-bug terug → rood met exact `DatatypeMismatch`; na fix → groen.
+- **Lokale runner** `scripts/test-postgres.sh` (wegwerp-Postgres in Docker) + **CI-workflow**
+  `.github/workflows/ci.yml` (SQLite-suite + Postgres-pariteit via een `postgres:16`-service) → dialect-bugs
+  worden rood vóór deploy i.p.v. via een handmatige prod-browsertest. 470 groen + 4 geskipt (pariteit).
+
 ## [0.25.1] - 2026-06-19
 ### Fixed
 - **Migratie `0010_post` faalde op Postgres** (`hidden` boolean met `server_default=sa.text("0")` →

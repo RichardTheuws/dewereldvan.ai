@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # Echte Postgres als service — vangt dialect-bugs (varchar-lengte,
+    # boolean-default, type-mismatch) die de SQLite-suite structureel mist.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: dewereldvan_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d dewereldvan_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SECRET_KEY: ci-secret-key-deterministic-0123456789abcdef
+      EMAIL_BACKEND: console
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Snelle suite (SQLite, create_all)
+        run: pytest -q
+
+      - name: Postgres-pariteit (migraties + smoke-CRUD tegen echte Postgres)
+        env:
+          TEST_DATABASE_URL: postgresql+psycopg://app:app@localhost:5432/dewereldvan_test
+        run: pytest -q tests/test_postgres_parity.py
