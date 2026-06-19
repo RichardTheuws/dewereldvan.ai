@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.22.1] - 2026-06-19
+### Fixed (lege profielbouw-regressie + betrouwbare auto-cover)
+- **Regressie (v0.21.0): de profielbouw kwam leeg terug.** De "kort + plat"-tekstinstructie zat in
+  `SYSTEM_PROMPT`, die óók de finalize/structured-output-call voedt → het model vulde lege velden.
+  Verplaatst naar een aparte `STREAM_TEXT_INSTRUCTION` die ALLEEN de streamende conversatie-call raakt;
+  de finalize-call krijgt de oorspronkelijke prompt terug → velden vullen weer.
+- **Auto-cover betrouwbaar**: het `done`-SSE-event triggerde de auto-cover niet (htmx-ext-sse sluit via
+  `sse-close` vóór de listener). Nu gekoppeld aan het veld-materialisatie-event met een debounce — vuurt
+  alleen bij een gevulde build, één keer (vlag + img-check).
+
 ## [0.22.0] - 2026-06-19
 ### Changed (sfeerbeeld nu automatisch)
 - Ná de profielbouw genereert de AI nu **automatisch** een sfeerbeeld (fal.ai) — één keer per build,

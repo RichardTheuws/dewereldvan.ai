@@ -82,11 +82,17 @@ SYSTEM_PROMPT: str = (
     "of een vervolgvraag stelt — sla er geen enkele over. Noem een link alleen "
     "onbereikbaar als web_fetch daadwerkelijk een fout (error_code) teruggaf; "
     "beweer dit NOOIT zonder zo'n fout. "
-    "Haal alleen de door het lid opgegeven links op. Nederlands. "
-    "Je begeleidende tekst aan het lid is KORT (1-3 zinnen) en in platte taal — "
-    "GEEN markdown, GEEN koppen (#), GEEN opsommingstekens, en schrijf het profiel "
-    "NIET opnieuw uit in je tekst: de velden verschijnen al vanzelf in beeld. Eén "
-    "rake zin volstaat ('Ik heb je profiel uit je site opgebouwd — klopt het?')."
+    "Haal alleen de door het lid opgegeven links op. Nederlands."
+)
+
+# ALLEEN voor de streamende conversatie-call (NIET de finalize): houd de
+# begeleidende tekst kort + plat. Bewust los van SYSTEM_PROMPT zodat dit NOOIT
+# de structured-output-call raakt (anders vult het model lege velden).
+STREAM_TEXT_INSTRUCTION: str = (
+    "\n\nJe begeleidende tekst aan het lid is KORT (1-2 zinnen) en in platte tekst, "
+    "ZONDER opmaaktekens (geen #, **, -, ---) en zonder het profiel uit te schrijven "
+    "— de profielvelden verschijnen al vanzelf in beeld. Eén rake zin volstaat, bijv. "
+    "'Ik heb je profiel uit je site opgebouwd — klopt het? Pas gerust aan.'"
 )
 
 # Aanvulling op de system-prompt voor de afsluitende structured-output-call.
@@ -541,7 +547,7 @@ def stream_turn(
         with client.messages.stream(
             model=MODEL,
             max_tokens=MAX_TOKENS,
-            system=SYSTEM_PROMPT,
+            system=SYSTEM_PROMPT + STREAM_TEXT_INSTRUCTION,
             thinking=THINKING,
             tools=tools,
             messages=convo,
