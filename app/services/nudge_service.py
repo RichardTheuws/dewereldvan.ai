@@ -290,6 +290,22 @@ def select_chips(
 
     chips: list[Nudge] = []
 
+    # 0a. Inkomende intro's (hoogste prioriteit) — iemand wacht op je antwoord.
+    if viewer is not None and "chip_intros" not in dismissed:
+        from app.services import connection_service
+
+        pending = connection_service.count_pending_incoming(db, viewer)
+        if pending >= 1:
+            woord = "intro" if pending == 1 else "intro's"
+            chips.append(
+                Nudge(
+                    kind="chip_intros",
+                    message=f"{pending} {woord} wacht op jou",
+                    action_label="bekijk je intro's",
+                    action="ask:Laat mijn intro's zien.",
+                )
+            )
+
     # 0. Matchmaking (hoogste prioriteit) — de push: "iemand zoekt wat jij maakt
     #    / makers bieden wat jij zoekt". Gegrond op een echte ``new``-telling.
     if viewer is not None and "chip_matches" not in dismissed:

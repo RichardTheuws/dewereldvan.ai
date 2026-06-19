@@ -41,6 +41,7 @@ from app.models import (
     Idea,
     IdeaVote,
     MagicLinkToken,
+    Connection,
     MatchSuggestion,
     Member,
     Need,
@@ -117,6 +118,14 @@ def delete_member_completely(db: Session, member: Member) -> None:
     )
 
     # --- 4. Afhankelijke rijen verwijderen (kinderen vóór ouders) -------------
+    # Intro's waar dit lid afzender óf ontvanger is — vóór de match-suggesties
+    # (Connection verwijst er via SET NULL naar; expliciet, SQLite handhaaft niets).
+    db.execute(
+        delete(Connection).where(
+            (Connection.from_member_id == member_id)
+            | (Connection.to_member_id == member_id)
+        )
+    )
     # Match-suggesties waar dit lid zoeker óf maker is — vóór de needs/offerings
     # (die ze via CASCADE óók zouden raken, maar SQLite handhaaft dat niet).
     db.execute(

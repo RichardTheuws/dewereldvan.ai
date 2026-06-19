@@ -1,0 +1,16 @@
+{# Voorgevuld intro-formulier (Fase 2) — verschijnt in de intro-slot van een
+   match-kaart. Post naar /intro; bij succes komt de bevestiging terug. #}
+<form class="intro-form"
+      hx-post="/intro"
+      hx-target="#intro-slot-{{ match_id }}"
+      hx-swap="innerHTML">
+  <input type="hidden" name="match_id" value="{{ match_id }}">
+  <label class="field-label" for="intro-msg-{{ match_id }}">Bericht aan {{ to_name }}</label>
+  <textarea id="intro-msg-{{ match_id }}" name="message" rows="3" maxlength="2000"
+            aria-label="Intro-bericht">{{ suggested }}</textarea>
+  <div class="intro-form__actions">
+    <button type="submit" class="btn btn--sm">✦ Stuur de intro</button>
+    <button type="button" class="btn btn--ghost btn--sm"
+            onclick="document.getElementById('intro-slot-{{ match_id }}').innerHTML=''">laat maar</button>
+  </div>
+</form>

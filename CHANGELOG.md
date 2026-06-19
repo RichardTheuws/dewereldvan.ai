@@ -3,6 +3,19 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.28.0] - 2026-06-19
+### Added — Connect/intro (Tier 1 Fase 2): de match wordt verzilverd
+- **"Stel me voor" doet eindelijk iets.** Nieuwe `Connection`-entiteit (migratie `0013`): een match-kaart
+  heeft nu een **"stel me voor aan …"**-knop → voorgevuld, gegrond intro-bericht → bevestigen → de intro
+  wordt **gepersisteerd** en de ontvanger **gemaild** (kosmische `intro.html`-mail, plain/directe taal,
+  géén contactgegevens). De match gaat naar `acted`.
+- **De ontvanger beslist** (consent-poort): `surface(connections)` toont inkomende + uitgaande intro's;
+  inkomend-pending krijgt **Accepteren / Niet nu**. Pas ná **akkoord** delen beide partijen hun e-mail
+  (`can_view_contact`). Push-chip "N intro's wachten op jou" (hoogste prioriteit).
+- **Geen dood spoor meer**: idempotent (geen dubbele intro from→to), rate-limit (8/uur), e-mail faalt nooit
+  silent (intro blijft staan, nette melding). **AVG**: `Connection` in `delete_member_completely` (afzender
+  óf ontvanger). `draft`-pad voor de agent + slug-pad ondersteund. 8 nieuwe tests (487 groen + Postgres-pariteit).
+
 ## [0.27.0] - 2026-06-19
 ### Added — Matchmaking vraag↔aanbod (Tier 1, Fase 1): de kern-visie gaat werken
 - **De `Need` doet eindelijk werk.** Nieuwe `MatchSuggestion`-entiteit (migratie `0012`) koppelt andermans

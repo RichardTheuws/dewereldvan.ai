@@ -49,6 +49,7 @@ from app.services import (
     idea_service,
     members_service,
     match_service,
+    connection_service,
     nudge_service,
     photo_service,
     post_service,
@@ -202,6 +203,19 @@ def _load_matches(db: Session, params: dict, member_id, is_admin):
     return "matches/_list.html", {"matches": matches, "member_id": member_id}
 
 
+def _load_connections(db: Session, params: dict, member_id, is_admin):
+    """De intro's van dit lid in-canvas (Fase 2): inkomend (reageren) + uitgaand."""
+    if member_id is None:
+        return None
+    member = db.get(Member, member_id)
+    if member is None:
+        return None
+    return "connections/_list.html", {
+        "connections": connection_service.list_for_member(db, member),
+        "member_id": member_id,
+    }
+
+
 def _load_profile_builder(db: Session, params: dict, member_id, is_admin):
     """De levende profielbouw IN de canvas (Agent-Shell A). Hergebruikt de
     ai_profile-materialisatie 1:1: zelfde #materialisatie-host + #profielvorm +
@@ -231,6 +245,7 @@ _SURFACE_LOADERS = {
     "agenda": _load_agenda,
     "nieuws": _load_nieuws,
     "matches": _load_matches,
+    "connections": _load_connections,
     "profile_builder": _load_profile_builder,
 }
 

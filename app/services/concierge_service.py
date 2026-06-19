@@ -72,7 +72,8 @@ SYSTEM_PROMPT: str = (
     "agenda zien' / 'welke meetups zijn er?' → surface agenda. 'wat is er "
     "verschenen?' / 'laat het nieuws zien' → surface nieuws. 'wat is er voor mij?' / "
     "'laat mijn matches zien' / 'wie zoekt wat ik maak?' / 'wie biedt wat ik zoek?' → "
-    "surface matches. 'bouw mijn profiel' "
+    "surface matches. 'mijn intro's' / 'wie wil kennismaken?' / 'wie heeft "
+    "gereageerd?' → surface connections. 'bouw mijn profiel' "
     "/ 'maak mijn profiel' → surface profile_builder. Vraag pas om een onderwerp als het lid "
     "echt iets SPECIFIEKS zoekt ('wie bouwt voice-agents?' → search_members of "
     "surface members_grid met tag). Zeg NOOIT 'ik kan niet zonder filter' op een "
@@ -151,6 +152,7 @@ SURFACE_REGISTRY: dict[str, set[str]] = {
     "agenda": set(),  # de levende agenda met meetup-kaarten (Post/event)
     "nieuws": set(),  # artikelen/interviews/uitgelicht werk (Post/nieuws)
     "matches": set(),  # vraag↔aanbod-koppelingen voor dit lid (Tier 1)
+    "connections": set(),  # de intro's van dit lid (Tier 1 Fase 2)
     "profile_view": {"slug"},
     # De levende profielbouw in de canvas (hergebruikt de ai_profile-materialisatie).
     "profile_builder": set(),
@@ -259,6 +261,7 @@ TOOLS: list[dict] = [
             "maakt?, zoekt?), member_detail (slug), ideas_list, roadmap_board, "
             "agenda (meetups/events), nieuws (artikelen/interviews), "
             "matches (de vraag↔aanbod-koppelingen voor dit lid), "
+            "connections (de intro's van dit lid), "
             "profile_view (slug)."
         ),
         "input_schema": {

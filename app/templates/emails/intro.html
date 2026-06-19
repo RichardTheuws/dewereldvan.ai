@@ -1,0 +1,30 @@
+{# Intro-notificatie (Tier 1 Fase 2) — een lid wil kennismaken. Géén contact-
+   gegevens; die komen pas ná akkoord. login_url veilig (uit het verzendpad). #}
+{% extends "_base.html" %}
+{% block subject %}{{ from_name }} wil kennismaken — dewereldvan.ai{% endblock %}
+{% block preheader %}{{ from_name }} stelt zich aan je voor. Log in om te reageren.{% endblock %}
+{% block heading %}Hoi {{ to_name }},{% endblock %}
+{% block body %}
+  <p style="margin:0 0 14px 0;">
+    {{ from_name }} wil graag met je kennismaken via dewereldvan.ai:
+  </p>
+  <p style="margin:0 0 14px 0; padding-left:14px; border-left:2px solid #6d5dfc; color:#cfd2ef;">
+    {{ message }}
+  </p>
+  <p style="margin:0;">
+    Log in om te reageren — accepteren of niet, jij beslist. Pas ná akkoord delen
+    jullie contactgegevens.
+  </p>
+{% endblock %}
+{% block cta %}
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 6px 0;">
+    <tr>
+      <td bgcolor="#f6cd86" style="border-radius:999px;">
+        <a href="{{ login_url }}"
+           style="display:inline-block; padding:14px 30px; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:14px; font-weight:600; letter-spacing:0.03em; color:#1a1330; text-decoration:none; border-radius:999px;">
+          Bekijk de intro ✦
+        </a>
+      </td>
+    </tr>
+  </table>
+{% endblock %}

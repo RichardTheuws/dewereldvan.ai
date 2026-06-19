@@ -31,6 +31,7 @@ from app.routers import (
     ai_profile,
     auth,
     concierge,
+    connections,
     feedback,
     ideas,
     invite,
@@ -146,6 +147,7 @@ def create_app() -> FastAPI:
     app.include_router(ideas.router)
     app.include_router(roadmap.router)
     app.include_router(posts.router)
+    app.include_router(connections.router)
     app.include_router(onboarding.router)
     # Concierge-laag (Fase 1): intent-oppervlak + gegronde SSE-stroom.
     app.include_router(concierge.router)

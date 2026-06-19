@@ -29,6 +29,13 @@
     {% endif %}
 
     <p class="match-card__why"><span aria-hidden="true">✦</span> {{ m.rationale }}</p>
+
+    <div class="match-card__foot">
+      {% set other = m.offering.profile.display_name if is_seeker else m.need.profile.display_name %}
+      <button class="btn btn--sm" hx-get="/intro/nieuw?match={{ m.id }}"
+              hx-target="#intro-slot-{{ m.id }}" hx-swap="innerHTML">stel me voor aan {{ other }} →</button>
+    </div>
+    <div id="intro-slot-{{ m.id }}" class="match-card__intro"></div>
   </article>
   {% endfor %}
 </div>

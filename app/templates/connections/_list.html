@@ -1,0 +1,17 @@
+{# Connections-surface (Fase 2) — alle intro's van dit lid, in de canvas.
+   Inkomend (reageren) en uitgaand, nieuwste eerst. #}
+{% if connections %}
+<div class="conn-grid">
+  {% for conn in connections %}
+    {% include "connections/_card.html" %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="constellation-empty" data-reveal>
+  <span class="constellation-empty__spark" aria-hidden="true">✦</span>
+  <p class="lede" style="max-width:46ch;margin:0 auto 6px">
+    Nog geen intro's. Vraag “wat is er voor mij?” en stel je voor aan een match —
+    dan begint het hier te leven.
+  </p>
+</div>
+{% endif %}

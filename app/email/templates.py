@@ -42,6 +42,7 @@ __all__ = [
     "render_admin_notify",
     "render_approval",
     "render_invite",
+    "render_intro",
 ]
 
 
@@ -178,5 +179,33 @@ def render_approval(name: str, login_url: str) -> str:
         "approval.html",
         fallback,
         name=name,
+        login_url=login_url,
+    )
+
+
+def render_intro(to_name: str, from_name: str, message: str, login_url: str) -> str:
+    """HTML-body voor de intro-notificatie (Tier 1 Fase 2).
+
+    ``message`` is de door de afzender bevestigde intro-tekst; geëscaped (geen
+    HTML-injectie). Géén contactgegevens in de mail — die komen pas ná akkoord.
+    """
+    fallback = _inline_shell(
+        heading=f"Hoi {escape(to_name)},",
+        body_html=(
+            f"<p style='margin:0 0 12px 0;'>{escape(from_name)} wil graag met je "
+            "kennismaken via dewereldvan.ai:</p>"
+            f"<p style='margin:0 0 12px 0; padding-left:12px; border-left:2px solid "
+            f"#6d5dfc; color:#444;'>{escape(message)}</p>"
+            "<p style='margin:0;'>Log in om te reageren — accepteren of niet, jij "
+            "beslist.</p>"
+        ),
+        cta=_inline_button("Bekijk de intro", login_url),
+    )
+    return _render(
+        "intro.html",
+        fallback,
+        to_name=to_name,
+        from_name=from_name,
+        message=message,
         login_url=login_url,
     )

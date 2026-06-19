@@ -152,3 +152,14 @@ class MatchStatus(str, enum.Enum):
     seen = "seen"
     dismissed = "dismissed"
     acted = "acted"
+
+
+class ConnectionStatus(str, enum.Enum):
+    """Status van een intro/connectie (Tier 1 Fase 2). De initiatiefnemer stelt
+    voor (``pending``); de ontvanger accepteert/wijst af. Langste waarde
+    'accepted'/'declined' = 8 → de DDL-kolom is ``String(length=8)`` (zie
+    0013_connection)."""
+
+    pending = "pending"
+    accepted = "accepted"
+    declined = "declined"

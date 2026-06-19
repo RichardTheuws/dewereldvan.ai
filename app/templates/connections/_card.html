@@ -1,0 +1,33 @@
+{# Eén intro-kaart (Fase 2). ``member_id`` bepaalt richting + acties. Werkt in de
+   connections-surface én als swap-target na accept/decline. #}
+{% set incoming = (conn.to_member_id == member_id) %}
+{% set other = conn.from_member if incoming else conn.to_member %}
+<article id="conn-{{ conn.id }}" class="conn-card conn-card--{{ conn.status.value }}">
+  <div class="conn-card__head">
+    <span class="conn-badge">{% if incoming %}voor jou{% else %}door jou{% endif %}</span>
+    <span class="conn-status conn-status--{{ conn.status.value }}">
+      {% if conn.status.value == 'pending' %}wacht op antwoord
+      {% elif conn.status.value == 'accepted' %}geaccepteerd
+      {% else %}afgewezen{% endif %}
+    </span>
+  </div>
+
+  <div class="conn-card__who">
+    {% if incoming %}{{ other.name }} wil met je kennismaken{% else %}je intro aan {{ other.name }}{% endif %}
+  </div>
+  <p class="conn-card__msg">{{ conn.message }}</p>
+
+  {% if conn.status.value == 'accepted' %}
+  <div class="conn-card__contact">
+    ✦ Jullie zijn verbonden — bereik {{ other.name }} via
+    <a class="text-link" href="mailto:{{ other.email }}">{{ other.email }}</a>.
+  </div>
+  {% elif incoming and conn.status.value == 'pending' %}
+  <div class="conn-card__actions">
+    <button class="btn btn--sm" hx-post="/intro/{{ conn.id }}/accept"
+            hx-target="#conn-{{ conn.id }}" hx-swap="outerHTML">✦ Accepteren</button>
+    <button class="btn btn--ghost btn--sm" hx-post="/intro/{{ conn.id }}/decline"
+            hx-target="#conn-{{ conn.id }}" hx-swap="outerHTML">Niet nu</button>
+  </div>
+  {% endif %}
+</article>

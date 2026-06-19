@@ -1,0 +1,11 @@
+{# Bevestiging na het versturen van een intro (Fase 2). #}
+<div class="intro-done" role="status">
+  {% if already %}
+  <span aria-hidden="true">✦</span> Er liep al een intro naar {{ to_name }} — die staat klaar.
+  {% else %}
+  <span aria-hidden="true">✦</span> Verstuurd. {{ to_name }} krijgt je bericht en kan reageren.
+  {% endif %}
+  {% if not mail_ok %}
+  <div class="intro-done__warn">De e-mailnotificatie lukte niet — {{ to_name }} ziet de intro wél bij de volgende login.</div>
+  {% endif %}
+</div>

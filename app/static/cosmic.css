@@ -3138,3 +3138,103 @@
   padding-top: 10px;
   border-top: 1px solid var(--line);
 }
+
+/* ============================================================ */
+/* Intro's / Connections (Tier 1 Fase 2)                        */
+/* ============================================================ */
+
+/* intro-formulier in de match-kaart */
+.cosmic .match-card__foot { margin-top: 4px; }
+.cosmic .match-card__intro:not(:empty) { margin-top: 12px; }
+.cosmic .intro-form {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+}
+.cosmic .intro-form textarea {
+  width: 100%;
+  margin-top: 6px;
+}
+.cosmic .intro-form__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.cosmic .intro-done {
+  font-size: 0.9rem;
+  color: var(--cyan);
+  padding: 10px 0;
+}
+.cosmic .intro-done__warn {
+  margin-top: 6px;
+  color: #ffd5d5;
+  font-size: 0.82rem;
+}
+
+/* connections-surface */
+.cosmic .conn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.cosmic .conn-card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  padding: 18px;
+  transition: border-color 0.3s, transform 0.25s;
+}
+.cosmic .conn-card--accepted { border-color: rgba(63, 210, 255, 0.4); }
+.cosmic .conn-card--declined { opacity: 0.62; }
+.cosmic .conn-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cosmic .conn-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.cosmic .conn-status {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.cosmic .conn-status--accepted { color: var(--cyan); }
+.cosmic .conn-status--declined { color: #ffb3b3; }
+.cosmic .conn-card__who {
+  font-family: "Fraunces", serif;
+  font-size: 1.08rem;
+  color: var(--text);
+}
+.cosmic .conn-card__msg {
+  margin: 0;
+  color: #c7cbe8;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.cosmic .conn-card__contact {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+  color: var(--cyan);
+}
+.cosmic .conn-card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
