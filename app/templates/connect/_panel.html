@@ -1,0 +1,43 @@
+{# Verbind-paneel als IN-CANVAS surface (Agent-Shell). Zelfde token-genereren +
+   commando + lijst als /profiel/verbind, maar materialiseert onder de chat. #}
+<div class="connect-panel">
+  <div class="connect-panel__head"><span aria-hidden="true">✦</span> Verbind je AI-tool</div>
+
+  <div class="connect-step">
+    <div class="connect-step__n">1</div>
+    <div>
+      <div class="connect-step__h">Genereer een token</div>
+      <p class="connect-step__p">Je ziet 'm één keer — bewaar 'm goed.</p>
+      <form class="connect-gen" hx-post="/profiel/verbind/token"
+            hx-target="#connect-result" hx-swap="innerHTML">
+        <input name="label" maxlength="80" placeholder="Bijv. Claude Code op mijn MacBook"
+               aria-label="Label voor dit token">
+        <button class="btn btn--sm" type="submit">Genereer token ✦</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="connect-result"></div>
+
+  <div class="connect-step mt-4">
+    <div class="connect-step__n">2</div>
+    <div>
+      <div class="connect-step__h">Voeg de server toe aan je tool</div>
+      <p class="connect-step__p">In Claude Code, met je token uit stap 1:</p>
+      <pre class="connect-cmd"><code>claude mcp add --transport http dewereldvan \
+  {{ mcp_url }} \
+  --header "Authorization: Bearer &lt;jouw-token&gt;"</code></pre>
+      <p class="connect-step__p">Daarna vraag je gewoon: <em>"voeg mijn project X toe aan
+        dewereldvan"</em> of <em>"laat mijn matches zien"</em>.</p>
+    </div>
+  </div>
+
+  <div class="connect-panel__tokens mt-4">
+    <div class="section-title mb-3">Jouw tokens</div>
+    <div id="connect-tokens">
+      {% include "connect/_tokens.html" %}
+    </div>
+  </div>
+
+  <a class="connect-panel__full link" href="/profiel/verbind">volledige pagina openen →</a>
+</div>

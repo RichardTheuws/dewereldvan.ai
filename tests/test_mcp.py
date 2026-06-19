@@ -166,6 +166,28 @@ def test_concierge_explains_mcp_connect():
     assert "verbind" in explain_tool["description"]
 
 
+def test_verbind_surface_loader_and_nav(SessionTest):
+    from app.routers import concierge as cr
+    from app.services import concierge_service as cs
+
+    s = SessionTest()
+    m = _member(s)
+    mid = m.id
+    s.close()
+
+    s2 = SessionTest()
+    loaded = cr._load_verbind(s2, {}, mid, False)
+    assert loaded is not None
+    tmpl, ctx = loaded
+    assert tmpl == "connect/_panel.html"
+    assert "mcp_url" in ctx
+    s2.close()
+
+    # in de surface-registry + navigate /profiel/verbind mapt naar de surface
+    assert "verbind" in cs.SURFACE_REGISTRY
+    assert cr._nav_to_surface("/profiel/verbind") == ("verbind", {})
+
+
 # --------------------------------------------------------------------------- #
 # AVG: token mee-gewist bij accountverwijdering                                #
 # --------------------------------------------------------------------------- #

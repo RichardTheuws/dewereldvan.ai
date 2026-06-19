@@ -3,6 +3,15 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.29.2] - 2026-06-19
+### Fixed — agent-canvas: je vraag + de "verbind"-pagina in beeld
+- **Je vraag verdween**: de canvas toonde alleen het antwoord, niet wat je vroeg. De stream rendert nu je
+  vraag als bubbel boven het antwoord (`_stream.html`).
+- **"Ik breng je er even heen" deed niets**: `/profiel/verbind` was geen surface, dus de agent probeerde
+  weg te navigeren (gebeurde niet in de canvas). Nu is **`verbind` een in-canvas surface** — het token-paneel
+  (genereer-knop + `claude mcp add`-commando + tokenlijst) materialiseert ónder de chat. Navigate naar
+  `/profiel/verbind` mapt naar de surface; de agent gebruikt `surface verbind` i.p.v. navigeren.
+
 ## [0.29.1] - 2026-06-19
 ### Fixed
 - **De concierge kon de MCP-koppeling niet uitleggen** (viel buiten de 5 vaste `explain`-onderwerpen →

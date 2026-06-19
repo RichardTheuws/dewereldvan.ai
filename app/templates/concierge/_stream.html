@@ -18,6 +18,12 @@
    verse proxy die via hx-target="#concierge-results" hx-swap="beforeend" appendt. #}
 {% set sid = range(100000, 999999) | random %}
 <div id="csse-{{ sid }}" data-concierge-sse-host>
+  {# De vraag van het lid — zodat zichtbaar blijft wat je vroeg (niet alleen het
+     antwoord). Eenvoudige bubbel, geen markdown. #}
+  {% if vraag %}
+  <div class="bubble bubble--user concierge-question">{{ vraag }}</div>
+  {% endif %}
+
   {# Het transiënte "AI aan het werk"-paneel — wordt op `done` opgeruimd (zie de
      done-proxy), terwijl het antwoord + de kaarten/surfaces blijven staan. #}
   <div id="reasoning-{{ sid }}">{% include "ai/_reasoning_panel.html" %}</div>
@@ -118,6 +124,7 @@
           // Surfaces met een geneste hx-ext="sse"-host of hx-post-form (profielbouw,
           // draft-formulieren): verwerk ze expliciet zodat de bindingen actief worden.
           if (node.dataset.surface === 'profile_builder' ||
+              node.dataset.surface === 'verbind' ||
               node.dataset.surface.indexOf('draft_') === 0) {
             try { window.htmx && htmx.process(node); } catch (e3) {}
           }

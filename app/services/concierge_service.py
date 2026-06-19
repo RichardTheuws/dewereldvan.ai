@@ -75,8 +75,8 @@ SYSTEM_PROMPT: str = (
     "surface matches. 'mijn intro's' / 'wie wil kennismaken?' / 'wie heeft "
     "gereageerd?' → surface connections. Wil het lid dewereldvan KOPPELEN aan z'n "
     "eigen AI-tool, of vraagt het naar de MCP-server / 'Claude Code' / 'Cursor' / "
-    "'verbind mijn tool' → leg het uit met explain (topic 'verbind') en navigeer "
-    "naar 'verbind' (de tokenpagina /profiel/verbind). 'bouw mijn profiel' "
+    "'verbind mijn tool' → materialiseer het paneel met surface verbind (in de "
+    "stroom, geen paginawissel) en geef er één duidende zin bij. 'bouw mijn profiel' "
     "/ 'maak mijn profiel' → surface profile_builder. Vraag pas om een onderwerp als het lid "
     "echt iets SPECIFIEKS zoekt ('wie bouwt voice-agents?' → search_members of "
     "surface members_grid met tag). Zeg NOOIT 'ik kan niet zonder filter' op een "
@@ -178,6 +178,7 @@ SURFACE_REGISTRY: dict[str, set[str]] = {
     "nieuws": set(),  # artikelen/interviews/uitgelicht werk (Post/nieuws)
     "matches": set(),  # vraag↔aanbod-koppelingen voor dit lid (Tier 1)
     "connections": set(),  # de intro's van dit lid (Tier 1 Fase 2)
+    "verbind": set(),  # het 'verbind je AI-tool'-paneel (MCP) in-canvas
     "profile_view": {"slug"},
     # De levende profielbouw in de canvas (hergebruikt de ai_profile-materialisatie).
     "profile_builder": set(),
@@ -288,6 +289,7 @@ TOOLS: list[dict] = [
             "agenda (meetups/events), nieuws (artikelen/interviews), "
             "matches (de vraag↔aanbod-koppelingen voor dit lid), "
             "connections (de intro's van dit lid), "
+            "verbind (het paneel om je AI-tool/MCP te koppelen), "
             "profile_view (slug)."
         ),
         "input_schema": {

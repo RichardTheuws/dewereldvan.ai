@@ -3333,3 +3333,17 @@
   color: var(--muted);
   margin-top: 2px;
 }
+
+/* Verbind-paneel als in-canvas surface + vraag-bubbel */
+.cosmic .concierge-question { margin-bottom: 12px; }
+.cosmic .connect-panel { display: flex; flex-direction: column; gap: 14px; }
+.cosmic .connect-panel__head {
+  font-family: "Fraunces", serif;
+  font-size: 1.2rem;
+  color: var(--text);
+}
+.cosmic .connect-panel__full {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}

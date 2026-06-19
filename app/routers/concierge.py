@@ -216,6 +216,22 @@ def _load_connections(db: Session, params: dict, member_id, is_admin):
     }
 
 
+def _load_verbind(db: Session, params: dict, member_id, is_admin):
+    """Het 'verbind je AI-tool'-paneel IN de canvas (Tier MCP): token genereren +
+    het ``claude mcp add``-commando, zonder de canvas te verlaten."""
+    if member_id is None:
+        return None
+    member = db.get(Member, member_id)
+    if member is None:
+        return None
+    from app.services import token_service
+
+    return "connect/_panel.html", {
+        "tokens": token_service.list_for_member(db, member),
+        "mcp_url": settings.mcp_base_url.rstrip("/"),
+    }
+
+
 def _load_profile_builder(db: Session, params: dict, member_id, is_admin):
     """De levende profielbouw IN de canvas (Agent-Shell A). Hergebruikt de
     ai_profile-materialisatie 1:1: zelfde #materialisatie-host + #profielvorm +
@@ -246,6 +262,7 @@ _SURFACE_LOADERS = {
     "nieuws": _load_nieuws,
     "matches": _load_matches,
     "connections": _load_connections,
+    "verbind": _load_verbind,
     "profile_builder": _load_profile_builder,
 }
 
@@ -269,6 +286,7 @@ _NAV_TO_SURFACE: dict[str, tuple[str, dict]] = {
     "/roadmap": ("roadmap_board", {}),
     "/agenda": ("agenda", {}),
     "/nieuws": ("nieuws", {}),
+    "/profiel/verbind": ("verbind", {}),
 }
 _MEMBER_SLUG_RE = re.compile(r"^/leden/([\w-]+)$")
 
@@ -324,7 +342,9 @@ def post_message(
     if member is not None and text:
         concierge_state.append_turn(db, member.id, "user", text[:2000])
         db.commit()
-    return _render(request, "concierge/_stream.html", {})
+    # Toon de vraag van het lid als bubbel boven het antwoord (anders verdwijnt
+    # wat je vroeg en zie je alleen het antwoord).
+    return _render(request, "concierge/_stream.html", {"vraag": text})
 
 
 def _render(request: Request, name: str, ctx: dict | None = None, **kw) -> HTMLResponse:
