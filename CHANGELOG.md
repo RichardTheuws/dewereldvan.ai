@@ -3,6 +3,12 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.22.0] - 2026-06-19
+### Changed (sfeerbeeld nu automatisch)
+- Ná de profielbouw genereert de AI nu **automatisch** een sfeerbeeld (fal.ai) — één keer per build,
+  niet per bericht (vlag + img-check voorkomen herhaling). Hergebruikt de bestaande cover-knop/CSRF; de
+  "Nieuwe cover"-knop blijft voor handmatig vervangen. Copy aangepast.
+
 ## [0.21.0] - 2026-06-19
 ### Added (nette AI-formatting · fal.ai-cover in de builder · rijkere demo)
 - **AI-antwoorden netjes geformatteerd**: een kleine, veilige markdown-renderer (`static/md.js`) rendert

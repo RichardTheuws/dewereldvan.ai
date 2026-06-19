@@ -90,6 +90,15 @@
           // Render het antwoord als nette markdown (geen kale ## / ** meer).
           var ans2 = root.querySelector('[data-answer]');
           if (ans2 && window.dwvFormatBubble) dwvFormatBubble(ans2);
+          // Auto-sfeerbeeld: genereer ná de build automatisch één cover (als er
+          // nog geen is). Hergebruikt de bestaande cover-knop (incl. CSRF); de
+          // autofired-vlag + de img-check voorkomen herhaling bij volgende beurten.
+          var coverBox = document.getElementById('cover');
+          var coverBtn = coverBox && coverBox.querySelector('button[hx-post="/profiel/ai/cover"]');
+          if (coverBtn && !coverBox.querySelector('img') && !coverBox.dataset.autofired) {
+            coverBox.dataset.autofired = '1';
+            setTimeout(function () { try { coverBtn.click(); } catch (e) {} }, 300);
+          }
         }
       });
 
