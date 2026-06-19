@@ -38,6 +38,14 @@
           <span class="concierge-form__spark">✦</span>
           <span class="demo-typed concierge-form__input">studio-nova.ai</span>
         </div>
+
+        {# Startknop: de demo speelt pas ná een klik (anders lijkt het een gewone
+           paginalaadt i.p.v. een demo die je vóór je ogen ziet bouwen). #}
+        <button type="button" id="demo-play" class="btn demo-play mt-6"
+                data-reveal style="--d:560ms">▶ Speel de demo af ✦</button>
+        <p class="muted text-sm mt-3" id="demo-hint" data-reveal style="--d:620ms">
+          Kijk hoe de AI uit één link een compleet profiel bouwt.
+        </p>
       </section>
 
       {# Reasoning-/scan-regel (gescript onthuld). #}
@@ -165,20 +173,31 @@
         }, 1000);
       }
 
-      if (reduce) {
-        if (reasoning) showNow(reasoning);
-        steps.forEach(showNow);
-        return;
+      var playBtn = document.getElementById('demo-play');
+      var hint = document.getElementById('demo-hint');
+
+      function play() {
+        if (playBtn) playBtn.style.display = 'none';
+        if (hint) hint.style.display = 'none';
+        if (reduce) {
+          if (reasoning) showNow(reasoning);
+          steps.forEach(showNow);
+          return;
+        }
+        // Gescripte sequentie: scan-regel → sfeerbeeld → velden één voor één → CTA.
+        var t = 250;
+        if (reasoning) setTimeout(function () {
+          materialize(reasoning);
+          reasoning.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, t);
+        t += 1100;
+        steps.forEach(function (el) {
+          setTimeout(function () { materialize(el); }, t);
+          t += 800;
+        });
       }
 
-      // Gescripte sequentie: scan-regel → velden één voor één → CTA.
-      var t = 600;
-      if (reasoning) setTimeout(function () { materialize(reasoning); }, t);
-      t += 900;
-      steps.forEach(function (el) {
-        setTimeout(function () { materialize(el); }, t);
-        t += 700;
-      });
+      if (playBtn) playBtn.addEventListener('click', play);
     })();
   </script>
 </body>

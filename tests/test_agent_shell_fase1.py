@@ -463,6 +463,9 @@ def test_demo_route_public_indexable_and_fictional(make_client):
     assert "/static/demo-nova-cover.jpg" in body
     assert "demo-timeline" in body
     assert "Andere makers" in body
+    # Startknop: de demo speelt pas ná een klik (geen instant auto-play).
+    assert 'id="demo-play"' in body
+    assert "Speel de demo af" in body
 
 
 def test_canvas_includes_markdown_renderer(make_client, SessionTest):

@@ -3,6 +3,25 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.23.0] - 2026-06-19
+### Changed (demo-startknop) + Fixed (materialisatie-cleanup)
+- **Demo speelt pas ná een klik**: `/demo` heeft nu een prominente "▶ Speel de demo af"-knop. De demo
+  speelde eerder meteen bij paginalaadt → leek een gewone laad i.p.v. een demo. Nu zie je 'm vóór je
+  ogen bouwen (rustiger pacing) ná de klik.
+- **`field--materializing`-cleanup**: bij outerHTML-slot-swaps is `htmx:afterSwap`'s `e.target` de ouder,
+  niet de verse slot — dus de class bleef hangen. Nu zoeken we de verse slots binnen root en ruimen hun
+  class op na de animatie (`field--ready`).
+
+## [0.22.3] - 2026-06-19
+### Fixed
+- Auto-cover aan het `f-*`-materialisatie-event gehangen (het `done`-event triggerde de listener niet
+  betrouwbaar door `sse-close`).
+
+## [0.22.2] - 2026-06-19
+### Fixed
+- Builder = singleton (elke "Bouw mijn profiel"-klik maakte een tweede builder → dubbele ids braken de
+  materialisatie/auto-cover); Enter in de builder-textarea submit nu (Shift+Enter = nieuwe regel).
+
 ## [0.22.1] - 2026-06-19
 ### Fixed (lege profielbouw-regressie + betrouwbare auto-cover)
 - **Regressie (v0.21.0): de profielbouw kwam leeg terug.** De "kort + plat"-tekstinstructie zat in

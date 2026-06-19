@@ -2845,3 +2845,6 @@
   color: var(--gold);
   min-width: 48px;
 }
+
+/* ---- Demo: prominente startknop ---- */
+.demo-play { font-size: 16px; padding: 14px 28px; }
