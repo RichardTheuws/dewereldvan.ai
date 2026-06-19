@@ -641,7 +641,9 @@ def _format_fetch(raw: str) -> str:
     label = labels.get(tool, tool)
     if state == "err":
         return json.dumps({"label": label, "state": "err"})
-    if count is not None:
+    # De maker-telling geldt alleen voor de ledenzoek; andere tools (zoals
+    # ``explain``, dat een snippet-telling teruggeeft) houden hun eigen label.
+    if count is not None and tool == "search_members":
         woord = "maker" if count == 1 else "makers"
         return json.dumps(
             {"label": f"{count} {woord} gevonden", "state": "ok"}

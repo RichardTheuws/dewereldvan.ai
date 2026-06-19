@@ -214,14 +214,21 @@ def stel_voor(maker_slug: str, bericht: str) -> dict:
 
 
 @mcp.tool()
-def hoe_werkt_dewereldvan() -> str:
-    """Korte uitleg over dewereldvan.ai voor je eigen agent."""
-    return (
-        "dewereldvan.ai is een besloten community van AI-makers in NL/BE. Maak een "
-        "profiel (wie je bent, wat je maakt, waar je naar zoekt); het platform brengt "
-        "vraag en aanbod bij elkaar en je kunt makers een intro sturen. Via deze "
-        "MCP-server doe je dat allemaal vanuit je eigen tool."
-    )
+def hoe_werkt_dewereldvan(vraag: str = "") -> str:
+    """Uitleg over hoe dewereldvan.ai werkt, uit de gecureerde kennisbank.
+
+    Geef optioneel een `vraag` in eigen woorden (bv. 'kost dit geld?', 'hoe log
+    ik in?', 'wat gebeurt er met mijn data?'); zonder vraag krijg je een
+    overzicht. De tekst komt uit dezelfde bron als de concierge."""
+    from app.services import knowledge
+
+    entries = knowledge.search(vraag) if vraag.strip() else [knowledge.overview()]
+    if not entries:
+        return (
+            "Daar heb ik geen gegrond antwoord op in de kennisbank. Stel je vraag "
+            "gerust anders of kijk op dewereldvan.ai."
+        )
+    return "\n\n".join(f"{e.title}: {e.text}" for e in entries)
 
 
 @mcp.tool()

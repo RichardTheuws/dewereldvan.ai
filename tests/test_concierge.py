@@ -304,15 +304,39 @@ def test_avg_gate_suspended_owner_not_surfaced(db, make_member, make_profile):
 # --------------------------------------------------------------------------- #
 
 
-def test_explain_uses_curated_text(db):
+def test_explain_retrieves_grounded_snippets(db):
+    """``explain`` doorzoekt nu de kennisbank op een vrije query (geen vaste dict).
+
+    Een term buiten de oude 6 onderwerpen ('kost dit geld?') levert een gegrond
+    fragment; back-compat: ``topic`` wordt nog als query behandeld."""
     result, _ = concierge_service.run_tool(
+        db, "explain", {"query": "wat gebeurt er met mijn data?"}, viewer=None
+    )
+    joined = " ".join(r["text"].lower() for r in result["results"])
+    assert "wis" in joined or "verwijder" in joined
+
+    geld, _ = concierge_service.run_tool(
+        db, "explain", {"query": "kost dit geld?"}, viewer=None
+    )
+    assert any("kost" in r["text"].lower() or "abonnement" in r["text"].lower()
+               for r in geld["results"])
+
+    # Back-compat: het oude ``topic``-argument werkt nog als query.
+    legacy, _ = concierge_service.run_tool(
         db, "explain", {"topic": "zichtbaarheid"}, viewer=None
     )
-    assert "besloten" in result["text"].lower()
-    bad, _ = concierge_service.run_tool(
-        db, "explain", {"topic": "onbekend"}, viewer=None
+    assert any("besloten" in r["text"].lower() for r in legacy["results"])
+
+
+def test_explain_unknown_query_returns_honest_fallback(db):
+    """Een echt onbekende vraag geeft GEEN harde fout meer maar een eerlijke note
+    (zodat de agent kan zeggen dat hij het niet weet i.p.v. te verzinnen)."""
+    result, _ = concierge_service.run_tool(
+        db, "explain", {"query": "xyzzy quux frobnicate"}, viewer=None
     )
-    assert "error" in bad
+    assert result["results"] == []
+    assert "note" in result
+    assert "error" not in result
 
 
 def test_navigate_route_table_and_member(db, make_member, make_profile):

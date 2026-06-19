@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.30.0] - 2026-06-19
+### Added — Concierge-intelligentie Fase 1: `explain` doorzoekt nu een kennisbank
+- **`explain` werd retrieval i.p.v. een vaste 6-topic-dict.** Vragen buiten die 6 onderwerpen gaven
+  "onbekend onderwerp" — een wow-killer. Nieuw: `app/services/knowledge.py` (gecureerde corpus van ~15
+  fragmenten: toegang, kosten, inloggen zonder wachtwoord, je data wissen, zichtbaarheid, matches, intro's,
+  AI-tool koppelen/MCP, agenda, nieuws, profielbouw, demo, ideeën, roadmap) + deterministische
+  keyword-retrieval (`search`). Geen LLM, geen dependency, geen pgvector (latere schaal-stap).
+- **`explain(query)`** neemt nu een vrije vraag (back-compat: `topic` werkt als query) en geeft de best
+  passende gegronde fragmenten terug. 0 hits → een eerlijke `note` (de agent zegt dat hij het niet weet)
+  i.p.v. een harde fout. De grounding-poort blijft: de agent synthetiseert alleen uit teruggegeven snippets.
+- **SYSTEM_PROMPT** stuurt nu élke "hoe werkt het platform"-vraag naar `explain` met de vraag van het lid.
+- **MCP-tool `hoe_werkt_dewereldvan(vraag="")`** gebruikt dezelfde kennisbank (één bron, ook vanuit je editor).
+- 508 tests groen (incl. retrieval-scoring, back-compat, eerlijke fallback). PRD: `docs/PRD-concierge-intelligentie.md`.
+
 ## [0.29.2] - 2026-06-19
 ### Fixed — agent-canvas: je vraag + de "verbind"-pagina in beeld
 - **Je vraag verdween**: de canvas toonde alleen het antwoord, niet wat je vroeg. De stream rendert nu je
