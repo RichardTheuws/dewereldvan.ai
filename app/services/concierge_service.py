@@ -689,6 +689,7 @@ def stream_concierge(
     *,
     db: Session,
     viewer: Member | None = None,
+    member_memory: str | None = None,
     on_card: Callable[[str], None] | None = None,
     on_navigate: Callable[[str], None] | None = None,
     on_surface: Callable[[dict], None] | None = None,
@@ -717,11 +718,17 @@ def stream_concierge(
     convo = list(messages)
     turns = 0
 
+    # Sessie-overstijgend geheugen (Fase 2): wat de concierge over dit lid weet,
+    # als achtergrond achter de basis-prompt geplakt (leeg → ongewijzigd).
+    from app.services import member_memory_service
+
+    system = SYSTEM_PROMPT + member_memory_service.build_memory_block(member_memory)
+
     while True:
         with client.messages.stream(
             model=MODEL,
             max_tokens=MAX_TOKENS,
-            system=SYSTEM_PROMPT,
+            system=system,
             thinking=THINKING,
             tools=TOOLS,
             messages=convo,

@@ -371,6 +371,9 @@ async def stream(
     pending = (request.session.get(_SESSION_MSG_KEY) or "").strip()
     member_id = member.id if member is not None else None
     _is_admin = bool(member is not None and member.role.value == "admin")
+    # Sessie-overstijgend geheugen (Fase 2): lees het nú als platte str (de tool-
+    # loop draait in de threadpool — geef geen request-gebonden ORM-attr door).
+    member_memory = member.member_memory if member is not None else None
 
     text_ch = ai_conversation._Channel()
     think_ch = ai_conversation._Channel()
@@ -406,6 +409,7 @@ async def stream(
                 text_ch.send,
                 db=db,
                 viewer=member,
+                member_memory=member_memory,
                 on_card=card_ch.send,
                 on_navigate=nav_ch.send,
                 on_surface=surface_ch.send,

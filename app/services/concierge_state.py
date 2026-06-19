@@ -59,9 +59,20 @@ def load_messages(db: Session, member_id: int, *, limit: int = 20) -> list[dict]
 
 
 def clear_turns(db: Session, member_id: int) -> None:
-    """Wis alle conversatie-turns van één lid (caller commit)."""
+    """Wis alle conversatie-turns van één lid + het eruit gedistilleerde geheugen.
+
+    Wat de concierge uit het gesprek onthield (``member_memory`` + hoogwatermerk)
+    gaat mee — anders blijft een geheugen hangen zonder de turns eronder. Caller
+    commit. (Bij volledige account-wissing verdwijnt alles al met de member-row.)
+    """
+    from app.models import Member
+
     for r in db.scalars(
         select(ConciergeTurn).where(ConciergeTurn.member_id == member_id)
     ).all():
         db.delete(r)
+    member = db.get(Member, member_id)
+    if member is not None:
+        member.member_memory = None
+        member.memory_synced_turn_id = None
     db.flush()

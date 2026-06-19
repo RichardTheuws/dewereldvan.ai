@@ -52,6 +52,13 @@ class Member(Base, TimestampMixin):
     # The community's origin story, told by a founder via the concierge. Kept
     # apart from the profile bio: a separate content-asset for the home/over page.
     origin_story: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Concierge-intelligentie Fase 2: een compact, AI-gedistilleerd geheugen over
+    # dit lid (wat het maakt/zoekt/expertise), opgebouwd uit eerdere gesprekken en
+    # geïnjecteerd in de concierge-system-prompt → sessie-overstijgend persoonlijk.
+    member_memory: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Hoogwatermerk: t/m welke concierge_turn.id het geheugen is bijgewerkt (maakt
+    # de distill-job idempotent — alleen leden met nieuwere turns hoeven opnieuw).
+    memory_synced_turn_id: Mapped[int | None] = mapped_column(nullable=True)
 
     profile: Mapped[Profile | None] = relationship(
         back_populates="member", uselist=False, cascade="all, delete-orphan"

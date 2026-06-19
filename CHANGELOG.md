@@ -3,6 +3,22 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.31.0] - 2026-06-19
+### Added — Concierge-intelligentie Fase 2: sessie-overstijgend geheugen
+- **De concierge onthoudt nu wie je bent over sessies heen.** Een compact, AI-gedistilleerd geheugen
+  (`member.member_memory`) over wat je maakt, zoekt en kunt — opgebouwd uit je eerdere gesprekken en
+  geïnjecteerd in de system-prompt, zodat een volgend gesprek meteen persoonlijk is.
+- **Periodieke distill i.p.v. synchroon** (`app/services/member_memory_service.py` + job
+  `python -m app.jobs.distill_memories`): één goedkope Claude-call per lid met nieuwe turns, gegated op
+  `AI_ENRICH_ENABLED`. Bewust een job (zoals `refresh_matches`): een LLM-call in de stream zou de UX
+  vertragen en de EventSource sluit op `done`. Idempotent via een hoogwatermerk (`memory_synced_turn_id`).
+- **Grounding + injectie-discipline**: het geheugen is achtergrond, expliciet GEEN instructie; alleen
+  duurzame, door het lid zelf vertelde feiten — geen chitchat, geen verzinsels.
+- **AVG**: het geheugen wordt meegewist bij volledige account-verwijdering (de member-row) én bij het
+  wissen van het concierge-gesprek (`clear_turns`). Resetbaar via `member_memory_service.clear`.
+- Migratie `0015_member_memory` (additief, dialect-neutraal: Text + Integer nullable; Postgres-pariteit
+  bewezen). 520 tests groen. PRD: `docs/PRD-concierge-intelligentie.md` (Fase 2).
+
 ## [0.30.0] - 2026-06-19
 ### Added — Concierge-intelligentie Fase 1: `explain` doorzoekt nu een kennisbank
 - **`explain` werd retrieval i.p.v. een vaste 6-topic-dict.** Vragen buiten die 6 onderwerpen gaven
