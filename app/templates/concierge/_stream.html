@@ -96,6 +96,9 @@
           row.className = 'fetch-line fetch-line--' + (isErr ? 'err' : 'ok');
           row.textContent = '·· ' + (label || 'de gids doorzoeken') + ' ' + (isErr ? '✗' : '✓');
           line.appendChild(row);
+        } else if (type === 'done') {
+          var ansd = root.querySelector('[data-answer]');
+          if (ansd && window.dwvFormatBubble) dwvFormatBubble(ansd);
         }
       });
 

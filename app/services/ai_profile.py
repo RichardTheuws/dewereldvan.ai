@@ -82,7 +82,11 @@ SYSTEM_PROMPT: str = (
     "of een vervolgvraag stelt — sla er geen enkele over. Noem een link alleen "
     "onbereikbaar als web_fetch daadwerkelijk een fout (error_code) teruggaf; "
     "beweer dit NOOIT zonder zo'n fout. "
-    "Haal alleen de door het lid opgegeven links op. Nederlands."
+    "Haal alleen de door het lid opgegeven links op. Nederlands. "
+    "Je begeleidende tekst aan het lid is KORT (1-3 zinnen) en in platte taal — "
+    "GEEN markdown, GEEN koppen (#), GEEN opsommingstekens, en schrijf het profiel "
+    "NIET opnieuw uit in je tekst: de velden verschijnen al vanzelf in beeld. Eén "
+    "rake zin volstaat ('Ik heb je profiel uit je site opgebouwd — klopt het?')."
 )
 
 # Aanvulling op de system-prompt voor de afsluitende structured-output-call.

@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.21.0] - 2026-06-19
+### Added (nette AI-formatting · fal.ai-cover in de builder · rijkere demo)
+- **AI-antwoorden netjes geformatteerd**: een kleine, veilige markdown-renderer (`static/md.js`) rendert
+  de antwoordbubbel op `done` (koppen/bold/lijsten/hr) i.p.v. kale `##`/`**`. Plus prompt-fix: de
+  profielbouw-tekst is nu KORT + plat (geen markdown-dump van het hele profiel — de velden tonen het al).
+- **fal.ai verfraait het profiel**: de cover-generatie (`/profiel/ai/cover`, fal.ai flux/schnell) zat
+  wél in de code maar nergens in de flow. Nu staat de "✦ sfeerbeeld — door AI"-sectie in de
+  canvas-builder (één klik → een gegenereerd sfeerbeeld dat zich aanpast op wat je maakt).
+- **Rijkere publieke demo**: `/demo` toont nu een écht door fal.ai gegenereerd sfeerbeeld
+  (`static/demo-nova-cover.jpg`), een tijdlijn en een "andere makers"-teaser (fictief). 446 tests groen.
+
 ## [0.20.0] - 2026-06-19
 ### Added (publieke demo/showcase — gescript, fictief, "door AI gemaakt")
 PRD: `docs/PRD-publieke-demo.md` (variant A). Publieke route `GET /demo` (geen login, indexeerbaar):

@@ -459,6 +459,16 @@ def test_demo_route_public_indexable_and_fictional(make_client):
     assert "studio-nova.ai" in body
     assert 'href="/register"' in body
     assert "noindex" not in body
+    # Rijker: door-AI gegenereerd sfeerbeeld + tijdlijn + makers-teaser.
+    assert "/static/demo-nova-cover.jpg" in body
+    assert "demo-timeline" in body
+    assert "Andere makers" in body
+
+
+def test_canvas_includes_markdown_renderer(make_client, SessionTest):
+    """De canvas laadt md.js zodat AI-antwoorden netjes gerenderd worden."""
+    mid = _seed_approved(SessionTest)
+    assert "/static/md.js" in make_client(mid).get("/").text
 
 
 def test_normal_page_keeps_single_overlay_host(make_client, SessionTest):

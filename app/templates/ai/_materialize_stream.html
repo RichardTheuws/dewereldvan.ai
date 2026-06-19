@@ -86,6 +86,10 @@
           row.className = 'fetch-line fetch-line--' + (isErr ? 'err' : 'ok');
           row.textContent = '✦ ' + (host2 || 'bron') + ' ophalen ' + (isErr ? '✗' : '✓');
           line.appendChild(row);
+        } else if (type === 'done') {
+          // Render het antwoord als nette markdown (geen kale ## / ** meer).
+          var ans2 = root.querySelector('[data-answer]');
+          if (ans2 && window.dwvFormatBubble) dwvFormatBubble(ans2);
         }
       });
 
