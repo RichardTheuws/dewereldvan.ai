@@ -30,7 +30,8 @@
     <textarea name="message" rows="2" required
               class="concierge-form__input profile-builder__input"
               aria-label="Je website, links, of een paar zinnen over jezelf"
-              placeholder="https://jouwsite.nl — of plak je GitHub/LinkedIn, of vertel kort wie je bent…"></textarea>
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.form.requestSubmit();}"
+              placeholder="https://jouwsite.nl — of plak je GitHub/LinkedIn, of vertel kort wie je bent… (Enter om te bouwen)"></textarea>
     <button class="btn profile-builder__go" type="submit"
             {% if not ai_enabled %}disabled{% endif %}>Bouw mee ✦</button>
   </form>

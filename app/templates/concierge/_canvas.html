@@ -75,14 +75,12 @@
         Zal ik je profiel opbouwen? Heb je een website? Dan scan ik die vast om te
         weten wie je bent — één link en ik doe de rest. Of vertel kort wie je bent.
       </p>
-      {# Deterministisch: open de builder direct (geen LLM-tool-gok), zodat de
-         knop ALTIJD werkt. htmx verwerkt het ingeswapte fragment (form + sse-host);
-         de na-request-hook is een vangnet voor de geneste hx-ext="sse". #}
+      {# Deterministisch + SINGLETON: open de builder direct (geen LLM-tool-gok).
+         Bestaat er al een builder, scroll er dan heen i.p.v. een tweede toe te
+         voegen — twee builders zouden dubbele ids (#materialisatie/#cover/#slot-*)
+         geven en de materialisatie + auto-cover breken. #}
       <button type="button" class="btn canvas-firstrun__go"
-              hx-get="/concierge/profielbouw"
-              hx-target="#concierge-results"
-              hx-swap="beforeend"
-              hx-on::after-request="try{window.htmx&&htmx.process(document.getElementById('concierge-results'))}catch(e){}">
+              onclick="(function(){var ex=document.querySelector('.profile-builder');if(ex){ex.scrollIntoView({behavior:'smooth',block:'center'});return;}if(window.htmx){htmx.ajax('GET','/concierge/profielbouw',{target:'#concierge-results',swap:'beforeend'});}})()">
         Bouw mijn profiel ✦</button>
     </div>
     {% endif %}
