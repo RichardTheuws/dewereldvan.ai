@@ -1,0 +1,45 @@
+{# Eén event-kaart (Post/event). De frequentie-badge licht op (kleur-gecodeerd:
+   terugkerend = cyaan/levend, eenmalig = goud); de eerstvolgende datum + relatieve
+   tijd staan groot. Werkt in de lijst én als swap-target na admin-moderatie. #}
+{% set freq = post.frequency.value if post.frequency else "eenmalig" %}
+<article id="post-{{ post.id }}" class="event-card event-card--{{ freq }}">
+  <div class="event-card__head">
+    <span class="freq-badge freq-badge--{{ freq }}">
+      <span aria-hidden="true">✦</span> {{ freq }}
+    </span>
+    {% if post.next_at %}
+    <span class="event-card__when">
+      <time datetime="{{ post.next_at.isoformat() }}">{{ post.next_at | relatieve_tijd }}</time>
+    </span>
+    {% endif %}
+  </div>
+
+  <h3 class="event-card__title">
+    {% if post.url %}
+    <a class="text-link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">{{ post.title }}</a>
+    {% else %}{{ post.title }}{% endif %}
+  </h3>
+
+  <div class="event-card__meta">
+    {% if post.location %}<span class="event-card__loc">📍 {{ post.location }}</span>{% endif %}
+    {% if post.cadence_note %}<span class="event-card__cadence">{{ post.cadence_note }}</span>{% endif %}
+  </div>
+
+  {% if post.description %}<p class="event-card__text">{{ post.description }}</p>{% endif %}
+
+  <div class="event-card__foot">
+    {% if post.added_by %}<span class="event-card__by">toegevoegd door {{ post.added_by.name }}</span>{% endif %}
+    {% if post.url %}<a class="event-card__link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">website ↗</a>{% endif %}
+  </div>
+
+  {% if is_admin %}
+  <div class="event-card__admin">
+    <button class="btn btn--ghost btn--sm"
+            hx-post="/admin/posts/{{ post.id }}/verberg"
+            hx-target="#post-{{ post.id }}" hx-swap="outerHTML">
+      {% if post.hidden %}Toon{% else %}Verberg{% endif %}
+    </button>
+    {% if post.hidden %}<span class="event-card__hidden">verborgen</span>{% endif %}
+  </div>
+  {% endif %}
+</article>

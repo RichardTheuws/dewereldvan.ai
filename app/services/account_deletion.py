@@ -45,6 +45,7 @@ from app.models import (
     Need,
     Offering,
     OfferingSlugHistory,
+    Post,
     Profile,
     ProfileLink,
     profile_tag,
@@ -107,6 +108,11 @@ def delete_member_completely(db: Session, member: Member) -> None:
         update(GroupInvite)
         .where(GroupInvite.created_by == member_id)
         .values(created_by=None)
+    )
+    # Agenda/nieuws-bijdragen blijven staan (community-waarde: een meetup of
+    # gedeeld artikel houdt nut voor de groep), maar verliezen de toevoeger-anker.
+    db.execute(
+        update(Post).where(Post.added_by_id == member_id).values(added_by_id=None)
     )
 
     # --- 4. Afhankelijke rijen verwijderen (kinderen vóór ouders) -------------

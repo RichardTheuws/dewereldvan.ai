@@ -66,6 +66,9 @@ class AuditAction(str, enum.Enum):
     # We bewaren één PII-loze audit-rij van de wissing zelf (actor/target genuld,
     # geen e-mail/naam). VARCHAR-enum → additieve waarde, geen migratie nodig.
     member_deleted = "member_deleted"
+    # Agenda/nieuws-moderatie (Post). Een lid plaatst direct zichtbaar; admin kan
+    # verbergen. VARCHAR-enum → additieve waarde, geen migratie nodig.
+    post_hidden = "post_hidden"
 
 
 class ProfileEmphasis(str, enum.Enum):
@@ -104,3 +107,36 @@ class RoadmapStatus(str, enum.Enum):
     gepland = "gepland"
     bezig = "bezig"
     gedaan = "gedaan"
+
+
+class PostKind(str, enum.Enum):
+    """Soort community-bijdrage (``Post``). Eén holistische entiteit voor alles
+    wat een lid direct publiceert; ``kind`` stuurt welke velden meedoen en op
+    welke pagina (/agenda · /nieuws) de bijdrage leeft. Langste waarde 'nieuws'
+    = 6 → de DDL-kolom is ``String(length=6)`` (zie 0010_post)."""
+
+    event = "event"
+    nieuws = "nieuws"
+
+
+class EventFrequency(str, enum.Enum):
+    """Cadans van een agenda-event. Voedt de zichtbare frequentie-badge; bewust
+    simpel (geen RRULE/iCal). Langste waarde 'tweewekelijks' = 13 → de DDL-kolom
+    is ``String(length=13)`` (zie 0010_post)."""
+
+    eenmalig = "eenmalig"
+    wekelijks = "wekelijks"
+    tweewekelijks = "tweewekelijks"
+    maandelijks = "maandelijks"
+    doorlopend = "doorlopend"
+
+
+class NewsRole(str, enum.Enum):
+    """Hoe een lid bij een nieuwsartikel betrokken is (kleine rol-badge op de
+    nieuwskaart). Langste waarde 'geinterviewd' = 12 → de DDL-kolom is
+    ``String(length=12)`` (zie 0010_post)."""
+
+    geschreven = "geschreven"  # zelf geschreven
+    geinterviewd = "geinterviewd"  # geïnterviewd / aan het woord
+    vermeld = "vermeld"  # genoemd / uitgelicht
+    gedeeld = "gedeeld"  # interessant, gewoon gedeeld

@@ -1,7 +1,10 @@
 # PRD — Agenda / Events: meetups die iedereen toevoegt
 
-**Status:** 🟡 TER GOEDKEURING (2026-06-19) — wacht op akkoord/fork vóór bouw
-**Versie-doel:** 0.24.0 (MINOR — nieuwe entiteit + pagina)
+**Status:** 🟢 FASE 1 GEBOUWD (v0.24.0, 2026-06-19) — fork A (direct publiceren) gekozen;
+scope uitgebreid met **nieuws** ("alles direct publiceren: events, nieuws, etc"). Datamodel
+geünificeerd tot één `Post`-entiteit met `kind` (event|nieuws|…) i.p.v. losse tabellen.
+Aparte `/agenda` + `/nieuws`-pagina's; nieuws met rol-badge. Fase 2 (agent-surfaces + draft-tools) volgt.
+**Versie:** 0.24.0 (MINOR — nieuwe entiteit + 2 pagina's)
 **Datum:** 2026-06-19
 **Aanleiding (eigenaar):** een agenda met meetups — `aimelo.nl` erin, plus de (wekelijkse?) meetup
 omgeving Meppel/Zwolle, met een **kaart per meetup en de frequentie duidelijk zichtbaar**. Het moet

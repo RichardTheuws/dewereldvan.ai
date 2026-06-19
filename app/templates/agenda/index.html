@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Agenda (Post/event) — standalone cosmic-document. Login-gated + noindex.
+   Iedereen voegt meetups toe; frequentie-badge + eerstvolgende countdown. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Agenda — dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    {% set nav_active = "agenda" %}
+    {% include "_cosmic_nav.html" %}
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">Samen, in de echte wereld</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Agenda.</h1>
+        <p class="lede mt-5" style="max-width:56ch;--d:380ms" data-reveal>
+          AI-meetups in NL/BE — wie, waar, en hoe vaak. <strong>Iedereen vult de
+          agenda aan:</strong> ken je een meetup, zet 'm erin. Zo mist niemand
+          iets.
+        </p>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:460ms">
+        {% include "agenda/_form.html" %}
+      </section>
+
+      <section class="mt-12" data-reveal style="--d:560ms">
+        <div class="section-title mb-5">Wat er te doen is</div>
+        <div id="agenda-list">
+          {% include "agenda/_list.html" %}
+        </div>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:680ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "_feedback_affordance.html" %}
+  {% set concierge_context = "agenda" %}
+  {% include "_concierge.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

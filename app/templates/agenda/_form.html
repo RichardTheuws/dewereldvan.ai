@@ -1,0 +1,62 @@
+{# Event-toevoegformulier (Post/event). Post naar /agenda; bij succes komt de
+   verse lijst terug en swapt #agenda-list. De always-zichtbare uitnodiging. #}
+{% set f = form if form is defined else {} %}
+<form class="idea-form event-form"
+      hx-post="/agenda"
+      hx-target="#agenda-list"
+      hx-swap="innerHTML"
+      hx-on::after-request="if(event.detail.successful){this.reset();this.querySelector('input[name=title]').focus();}">
+  <div class="event-form__lead">✦ Ken jij een AI-meetup? Zet 'm in de agenda.</div>
+
+  <div class="event-form__grid">
+    <div class="event-form__title">
+      <label class="field-label" for="event-title">Naam van de meetup / het event</label>
+      <input id="event-title" name="title" maxlength="200" required
+             value="{{ f.title or '' }}"
+             placeholder="Bijv. Aimelo — AI-community Almelo">
+    </div>
+    <div>
+      <label class="field-label" for="event-frequency">Hoe vaak?</label>
+      <select id="event-frequency" name="frequency" aria-label="Frequentie">
+        {% for fr in frequencies %}
+        <option value="{{ fr.value }}" {% if (f.frequency or 'wekelijks') == fr.value %}selected{% endif %}>{{ fr.value }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="event-form__grid mt-4">
+    <div>
+      <label class="field-label" for="event-next">Eerstvolgende datum + tijd <span class="muted">(optioneel)</span></label>
+      <input id="event-next" name="next_at" type="datetime-local" value="{{ f.next_at or '' }}">
+    </div>
+    <div>
+      <label class="field-label" for="event-location">Locatie <span class="muted">(optioneel)</span></label>
+      <input id="event-location" name="location" maxlength="160" value="{{ f.location or '' }}"
+             placeholder="Almelo / online / Meppel-Zwolle">
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <label class="field-label" for="event-cadence">Cadans in mensentaal <span class="muted">(optioneel)</span></label>
+    <input id="event-cadence" name="cadence_note" maxlength="120" value="{{ f.cadence_note or '' }}"
+           placeholder="Bijv. elke woensdag 18:00–20:00">
+  </div>
+
+  <div class="mt-4">
+    <label class="field-label" for="event-url">Link <span class="muted">(optioneel)</span></label>
+    <input id="event-url" name="url" type="url" maxlength="500" value="{{ f.url or '' }}"
+           placeholder="https://…">
+  </div>
+
+  <div class="mt-4">
+    <label class="field-label" for="event-desc">Waar gaat het over? <span class="muted">(optioneel)</span></label>
+    <textarea id="event-desc" name="description" rows="2" maxlength="4000"
+              placeholder="Eén of twee zinnen — voor wie, wat kun je verwachten.">{{ f.description or '' }}</textarea>
+  </div>
+
+  <div class="idea-form__foot">
+    <span class="idea-form__hint">De frequentie-badge maakt elke meetup in één oogopslag leesbaar.</span>
+    <button class="btn" type="submit">Aan de agenda toevoegen ✦</button>
+  </div>
+</form>

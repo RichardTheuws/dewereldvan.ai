@@ -1,0 +1,15 @@
+{# Nieuws-lijst-fragment — swap-target #nieuws-list. Fout/lege staat + kaarten
+   (nieuwste publicatie eerst). #}
+{% if error %}
+<p class="idea-form__err" role="alert">{{ error }}</p>
+{% endif %}
+
+{% if items %}
+<div class="news-grid">
+  {% for post in items %}
+    {% include "nieuws/_card.html" %}
+  {% endfor %}
+</div>
+{% else %}
+{% include "nieuws/_empty.html" %}
+{% endif %}

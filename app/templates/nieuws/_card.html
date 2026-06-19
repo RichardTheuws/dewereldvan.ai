@@ -1,0 +1,40 @@
+{# Eén nieuwskaart (Post/nieuws). Rol-badge ("hoe een lid bij het artikel zit") +
+   bron + publicatiedatum. Werkt in de lijst én als swap-target na admin-moderatie. #}
+{% set role = post.role.value if post.role else "gedeeld" %}
+{% set role_labels = {
+  "geschreven": "zelf geschreven",
+  "geinterviewd": "geïnterviewd",
+  "vermeld": "uitgelicht",
+  "gedeeld": "gedeeld",
+} %}
+<article id="post-{{ post.id }}" class="news-card news-card--{{ role }}">
+  <div class="news-card__head">
+    <span class="role-badge role-badge--{{ role }}">{{ role_labels.get(role, role) }}</span>
+    {% if post.published_at %}
+    <span class="news-card__date">{{ post.published_at | nl_datum }}</span>
+    {% endif %}
+  </div>
+
+  <h3 class="news-card__title">
+    <a class="text-link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">{{ post.title }}</a>
+  </h3>
+
+  {% if post.source %}<div class="news-card__source">{{ post.source }}</div>{% endif %}
+  {% if post.description %}<p class="news-card__text">{{ post.description }}</p>{% endif %}
+
+  <div class="news-card__foot">
+    {% if post.added_by %}<span class="news-card__by">gedeeld door {{ post.added_by.name }}</span>{% endif %}
+    <a class="news-card__link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">lezen ↗</a>
+  </div>
+
+  {% if is_admin %}
+  <div class="news-card__admin">
+    <button class="btn btn--ghost btn--sm"
+            hx-post="/admin/posts/{{ post.id }}/verberg"
+            hx-target="#post-{{ post.id }}" hx-swap="outerHTML">
+      {% if post.hidden %}Toon{% else %}Verberg{% endif %}
+    </button>
+    {% if post.hidden %}<span class="news-card__hidden">verborgen</span>{% endif %}
+  </div>
+  {% endif %}
+</article>

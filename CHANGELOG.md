@@ -3,6 +3,26 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.24.0] - 2026-06-19
+### Added — Agenda & Nieuws (Fase 1): iedereen publiceert direct
+- **Eén holistische `Post`-entiteit** (`kind` ∈ event | nieuws, + later "etc") i.p.v. losse tabellen:
+  gedeelde velden (titel/omschrijving/link/hidden) + type-specifieke nullable velden. Lage op-last bij
+  groei (één router, één rate-limit, één admin-verberg, één AVG-hook). Migratie `0010_post`.
+- **`/agenda`** — kosmische meetup-kaarten met prominente, kleur-gecodeerde **frequentie-badge**
+  (terugkerend = cyaan/levend met pulse, eenmalig = goud) + **eerstvolgende-countdown** ("over 3 dagen").
+  Aankomend-eerst gesorteerd. Altijd-zichtbare "iedereen voegt toe"-uitnodiging; lege staat = die
+  uitnodiging groot.
+- **`/nieuws`** — artikelen/interviews/uitgelicht werk van leden, nieuwste-eerst, met een kleine
+  **rol-badge** (zelf geschreven / geïnterviewd / uitgelicht / gedeeld). Link verplicht.
+- **Iedereen plaatst direct zichtbaar** (geen goedkeuringswachtrij, fork A); admin kan **verbergen**
+  (`hidden`, spiegelt ideeën-moderatie + AuditLog). Per-lid rate-limit (10/uur, gedeeld over events+nieuws).
+- **AVG**: `Post.added_by_id` is **SET NULL** → een community-meetup of gedeeld artikel blijft staan als de
+  toevoeger zijn account wist; opgenomen in `delete_member_completely`.
+- **Gegronde seed** (prod-only, idempotent, migratie `0011`): **Aimelo** (opgehaald van aimelo.nl — elke
+  woensdag 18:00–20:00, Almelo, eerstvolgend wo 24 juni) + **meetup Meppel/Zwolle** (als te-bevestigen
+  gemarkeerd). Plus **roadmap-cachet**: 9 voorbeeld-roadmap-items met statussen.
+- Nav uitgebreid (Agenda + Nieuws); `relatieve_tijd`/`nl_datum` Jinja-filters. 18 nieuwe tests (464 groen).
+
 ## [0.23.0] - 2026-06-19
 ### Changed (demo-startknop) + Fixed (materialisatie-cleanup)
 - **Demo speelt pas ná een klik**: `/demo` heeft nu een prominente "▶ Speel de demo af"-knop. De demo

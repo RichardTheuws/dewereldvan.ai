@@ -2848,3 +2848,221 @@
 
 /* ---- Demo: prominente startknop ---- */
 .demo-play { font-size: 16px; padding: 14px 28px; }
+
+/* ============================================================ */
+/* Agenda (event) + Nieuws (news) — Post-kaarten                */
+/* ============================================================ */
+
+.cosmic .event-grid,
+.cosmic .news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ---- gedeelde kaart-basis ---- */
+.cosmic .event-card,
+.cosmic .news-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 100% at 0% 0%, rgba(109, 93, 252, 0.07), transparent 60%),
+    var(--card);
+  padding: 20px;
+  transition: border-color 0.3s, transform 0.25s, box-shadow 0.35s;
+}
+.cosmic .event-card:hover,
+.cosmic .news-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(63, 210, 255, 0.4);
+  box-shadow: 0 18px 48px -24px rgba(63, 210, 255, 0.55);
+}
+
+.cosmic .event-card__head,
+.cosmic .news-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cosmic .event-card__title,
+.cosmic .news-card__title {
+  font-family: "Fraunces", serif;
+  font-weight: 400;
+  font-size: 1.28rem;
+  line-height: 1.18;
+  color: var(--text);
+  margin: 0;
+}
+.cosmic .event-card__text,
+.cosmic .news-card__text {
+  color: #c7cbe8;
+  font-size: 0.94rem;
+  margin: 0;
+}
+
+.cosmic .event-card__foot,
+.cosmic .news-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.cosmic .event-card__by,
+.cosmic .news-card__by {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.cosmic .event-card__link,
+.cosmic .news-card__link {
+  font-size: 0.85rem;
+  color: var(--cyan);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.cosmic .event-card__link:hover,
+.cosmic .news-card__link:hover { text-decoration: underline; }
+
+.cosmic .event-card__admin,
+.cosmic .news-card__admin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.cosmic .event-card__hidden,
+.cosmic .news-card__hidden {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ffb3b3;
+}
+
+/* ---- event-specifiek ---- */
+.cosmic .event-card__when {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.cosmic .event-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.cosmic .event-card__cadence { color: var(--cyan); }
+
+/* frequentie-badge — terugkerend = cyaan/levend, eenmalig = goud */
+.cosmic .freq-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 100px;
+  border: 1px solid rgba(63, 210, 255, 0.35);
+  color: var(--cyan);
+  background: rgba(63, 210, 255, 0.07);
+  white-space: nowrap;
+}
+.cosmic .freq-badge--eenmalig {
+  color: var(--gold);
+  border-color: rgba(246, 205, 134, 0.4);
+  background: rgba(246, 205, 134, 0.07);
+}
+.cosmic .freq-badge--doorlopend {
+  color: var(--magenta);
+  border-color: rgba(177, 92, 255, 0.4);
+  background: rgba(177, 92, 255, 0.07);
+}
+/* terugkerend krijgt een zachte, levende puls (reduced-motion-safe) */
+@media (prefers-reduced-motion: no-preference) {
+  .cosmic .freq-badge--wekelijks,
+  .cosmic .freq-badge--tweewekelijks,
+  .cosmic .freq-badge--maandelijks {
+    animation: freqpulse 3.4s ease-in-out infinite;
+  }
+}
+@keyframes freqpulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(63, 210, 255, 0); }
+  50% { box-shadow: 0 0 16px -2px rgba(63, 210, 255, 0.45); }
+}
+
+/* ---- nieuws-specifiek ---- */
+.cosmic .news-card__date {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.cosmic .news-card__source {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* rol-badge — hoe een lid bij het artikel zit */
+.cosmic .role-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 100px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.cosmic .role-badge--geschreven {
+  color: #c3b6ff;
+  border-color: rgba(109, 93, 252, 0.45);
+  background: rgba(109, 93, 252, 0.08);
+}
+.cosmic .role-badge--geinterviewd {
+  color: var(--cyan);
+  border-color: rgba(63, 210, 255, 0.4);
+  background: rgba(63, 210, 255, 0.07);
+}
+.cosmic .role-badge--vermeld {
+  color: var(--gold);
+  border-color: rgba(246, 205, 134, 0.4);
+  background: rgba(246, 205, 134, 0.07);
+}
+
+/* ---- toevoeg-formulier (event + nieuws) ---- */
+.cosmic .event-form__lead,
+.cosmic .news-form .event-form__lead {
+  font-family: "Fraunces", serif;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.cosmic .event-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 560px) {
+  .cosmic .event-form__grid { grid-template-columns: 1fr; }
+}
+.cosmic .event-form__title { grid-column: 1 / -1; }

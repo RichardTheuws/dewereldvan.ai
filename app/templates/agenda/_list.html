@@ -1,0 +1,15 @@
+{# Agenda-lijst-fragment — swap-target #agenda-list. Fout/lege staat + kaarten
+   (aankomend eerst). #}
+{% if error %}
+<p class="idea-form__err" role="alert">{{ error }}</p>
+{% endif %}
+
+{% if events %}
+<div class="event-grid">
+  {% for post in events %}
+    {% include "agenda/_card.html" %}
+  {% endfor %}
+</div>
+{% else %}
+{% include "agenda/_empty.html" %}
+{% endif %}

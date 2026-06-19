@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     # anonieme schrijf (storage-DoS) zonder het anonieme pad te schrappen.
     rate_limit_feedback_anon_per_hour: int = 6  # per IP
     rate_limit_idea_per_hour: int = 6  # per lid
+    # Agenda/nieuws plaatsen (Post) — per lid, glijdend uur-venster, over events
+    # en nieuws samen. Iets ruimer dan ideeën: een lid voegt soms een reeks
+    # meetups/artikelen tegelijk toe.
+    rate_limit_post_per_hour: int = 10  # per lid
     # Harde bovengrens op de body-lengte van een feedback-bericht (anti-abuse;
     # geldt voor zowel ingelogde als anonieme inzending).
     max_feedback_body_chars: int = 4000

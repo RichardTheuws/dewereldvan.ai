@@ -11,9 +11,12 @@ from app.models.audit import AuditLog
 from app.models.base import (
     AuditAction,
     Base,
+    EventFrequency,
     IdeaStatus,
     MemberRole,
     MemberStatus,
+    NewsRole,
+    PostKind,
     ProfileEmphasis,
     ProfileLinkKind,
     RoadmapStatus,
@@ -30,6 +33,7 @@ from app.models.member import Member
 from app.models.need import Need
 from app.models.offering import Offering
 from app.models.offering_slug_history import OfferingSlugHistory
+from app.models.post import Post
 from app.models.profile import Profile
 from app.models.profile_link import ProfileLink
 from app.models.roadmap_item import RoadmapItem
@@ -46,6 +50,9 @@ __all__ = [
     "ProfileLinkKind",
     "IdeaStatus",
     "RoadmapStatus",
+    "PostKind",
+    "EventFrequency",
+    "NewsRole",
     "Member",
     "MagicLinkToken",
     "Profile",
@@ -64,4 +71,5 @@ __all__ = [
     "Idea",
     "IdeaVote",
     "RoadmapItem",
+    "Post",
 ]

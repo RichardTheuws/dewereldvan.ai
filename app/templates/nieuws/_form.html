@@ -1,0 +1,55 @@
+{# Nieuws-toevoegformulier (Post/nieuws). Post naar /nieuws; bij succes komt de
+   verse lijst terug en swapt #nieuws-list. #}
+{% set f = form if form is defined else {} %}
+<form class="idea-form news-form"
+      hx-post="/nieuws"
+      hx-target="#nieuws-list"
+      hx-swap="innerHTML"
+      hx-on::after-request="if(event.detail.successful){this.reset();this.querySelector('input[name=title]').focus();}">
+  <div class="event-form__lead">✦ Iets verschenen — van of over jou? Deel het.</div>
+
+  <div class="event-form__title">
+    <label class="field-label" for="news-title">Kop van het artikel</label>
+    <input id="news-title" name="title" maxlength="200" required value="{{ f.title or '' }}"
+           placeholder="Bijv. 'Hoe deze NL-bouwer AI-agents inzet'">
+  </div>
+
+  <div class="mt-4">
+    <label class="field-label" for="news-url">Link naar het artikel</label>
+    <input id="news-url" name="url" type="url" maxlength="500" required value="{{ f.url or '' }}"
+           placeholder="https://…">
+  </div>
+
+  <div class="event-form__grid mt-4">
+    <div>
+      <label class="field-label" for="news-role">Jouw rol</label>
+      <select id="news-role" name="role" aria-label="Rol">
+        {% set role_labels = {"geschreven":"zelf geschreven","geinterviewd":"geïnterviewd","vermeld":"uitgelicht","gedeeld":"gewoon gedeeld"} %}
+        {% for r in roles %}
+        <option value="{{ r.value }}" {% if (f.role or 'gedeeld') == r.value %}selected{% endif %}>{{ role_labels.get(r.value, r.value) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="field-label" for="news-source">Bron <span class="muted">(optioneel)</span></label>
+      <input id="news-source" name="source" maxlength="160" value="{{ f.source or '' }}"
+             placeholder="Bijv. NRC / Emerce / eigen blog">
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <label class="field-label" for="news-date">Publicatiedatum <span class="muted">(optioneel)</span></label>
+    <input id="news-date" name="published_at" type="date" value="{{ f.published_at or '' }}">
+  </div>
+
+  <div class="mt-4">
+    <label class="field-label" for="news-desc">Korte toelichting <span class="muted">(optioneel)</span></label>
+    <textarea id="news-desc" name="description" rows="2" maxlength="4000"
+              placeholder="Waar gaat het over? Eén of twee zinnen.">{{ f.description or '' }}</textarea>
+  </div>
+
+  <div class="idea-form__foot">
+    <span class="idea-form__hint">Zo zien we elkaars werk en wat er speelt.</span>
+    <button class="btn" type="submit">Nieuws delen ✦</button>
+  </div>
+</form>

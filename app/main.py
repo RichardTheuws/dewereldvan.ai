@@ -37,12 +37,13 @@ from app.routers import (
     members,
     onboarding,
     photo,
+    posts,
     profiles,
     projects,
     roadmap,
     seo,
 )
-from app.services import members_service, seo_service
+from app.services import members_service, post_service, seo_service
 
 logging.basicConfig(level=logging.INFO)
 
@@ -84,6 +85,8 @@ templates = Jinja2Templates(
     directory=str(TEMPLATES_DIR), context_processors=[_csrf_context]
 )
 templates.env.filters["safe_url"] = safe_url
+templates.env.filters["relatieve_tijd"] = post_service.relatieve_tijd
+templates.env.filters["nl_datum"] = post_service.nl_datum
 
 
 def create_app() -> FastAPI:
@@ -142,6 +145,7 @@ def create_app() -> FastAPI:
     app.include_router(feedback.router)
     app.include_router(ideas.router)
     app.include_router(roadmap.router)
+    app.include_router(posts.router)
     app.include_router(onboarding.router)
     # Concierge-laag (Fase 1): intent-oppervlak + gegronde SSE-stroom.
     app.include_router(concierge.router)
