@@ -1,9 +1,33 @@
 {# Herbruikbare kosmische hoofdnav. Vervangt de ad-hoc .c-head-headers.
    Leest request.session voor login- én admin-state (geen per-route context nodig);
-   verwacht optioneel nav_active (str). Werkt zonder JS; reduced-motion-safe. #}
+   verwacht optioneel nav_active (str). Werkt zonder JS; reduced-motion-safe.
+
+   ÉÉN SHELL (Fase 3): een ingelogd, goedgekeurd lid krijgt GEEN sectie-menu hier —
+   voor hem is de agent-canvas/concierge de navigatie (de root-route serveert de
+   canvas; ⌘K/"Vraag de wereld" opent 'm overal). Anders zou er náást de canvas een
+   tweede, concurrerend menu-paradigma staan (precies de audit-bevinding). De echte
+   links blijven bereikbaar via de footer-fallback (a11y/no-JS-vangnet, op elke
+   pagina) en in-canvas. Anoniem/publiek houdt de volledige, crawlbare voordeur-nav
+   (ontdekken + login/register + SEO). #}
 <nav class="cnav" aria-label="Hoofdnavigatie" data-reveal style="--d:60ms">
   <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
 
+  {% if request.session.get("member_id") %}
+  {# Ingelogd lid → de shell zelf. Alleen de concierge-ingang + (admin) Beheer. #}
+  <div class="cnav__end">
+    <button type="button" class="cnav__concierge" data-concierge-open
+            aria-label="Vraag de wereld (⌘K)" title="Vraag de wereld — ⌘K of /">
+      <span class="cnav__concierge-spark" aria-hidden="true">✦</span>
+      <span class="cnav__concierge-text">Vraag de wereld</span>
+    </button>
+    {% if request.session.get("is_admin") %}
+    {# Operationeel: de admin houdt altijd toegang tot de goedkeur-queue. #}
+    <a class="cnav__link cnav__link--admin" href="/admin/queue">Beheer</a>
+    {% endif %}
+  </div>
+
+  {% else %}
+  {# Anoniem/publiek → de volledige crawlbare voordeur-nav. #}
   <div class="cnav__links">
     <a class="cnav__link {% if nav_active == 'leden' %}cnav__link--active{% endif %}"
        href="/leden" {% if nav_active == 'leden' %}aria-current="page"{% endif %}>Makers</a>
@@ -26,18 +50,8 @@
       <span class="cnav__concierge-spark" aria-hidden="true">✦</span>
       <span class="cnav__concierge-text">Vraag de wereld</span>
     </button>
-    {% if request.session.get("is_admin") %}
-    <a class="cnav__link cnav__link--admin" href="/admin/queue">Beheer</a>
-    {% endif %}
-    {% if request.session.get("member_id") %}
-    <a class="cnav__link {% if nav_active == 'verbind' %}cnav__link--active{% endif %}"
-       href="/profiel/verbind" {% if nav_active == 'verbind' %}aria-current="page"{% endif %}
-       title="Koppel dewereldvan aan je AI-tool">✦ Verbind tool</a>
-    <a class="cnav__link {% if nav_active == 'profiel' %}cnav__link--active{% endif %}"
-       href="/profiel/ai/bouwen" {% if nav_active == 'profiel' %}aria-current="page"{% endif %}>Mijn profiel</a>
-    {% else %}
     <a class="cnav__link" href="/login">Inloggen</a>
     <a class="btn btn--ghost btn--sm" href="/register">Word lid</a>
-    {% endif %}
   </div>
+  {% endif %}
 </nav>

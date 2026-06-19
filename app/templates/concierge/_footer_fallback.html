@@ -17,8 +17,11 @@
 
   <nav class="canvas-fallback__menu" id="canvas-fallback-menu" aria-label="Snelmenu" hidden>
     <a class="canvas-fallback__route" href="/leden">Makers</a>
+    <a class="canvas-fallback__route" href="/agenda">Agenda</a>
+    <a class="canvas-fallback__route" href="/nieuws">Nieuws</a>
     <a class="canvas-fallback__route" href="/ideeen">Ideeën</a>
     <a class="canvas-fallback__route" href="/roadmap">Roadmap</a>
+    <a class="canvas-fallback__route" href="/profiel/verbind">Verbind tool</a>
     <a class="canvas-fallback__route" href="/profiel/ai/bouwen">Mijn profiel</a>
     {% if request.session.get("is_admin") %}
     {# Operationeel: de admin houdt altijd toegang tot de goedkeur-queue, ook

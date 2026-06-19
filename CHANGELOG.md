@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.32.0] - 2026-06-19
+### Changed — Concierge-intelligentie Fase 3: één shell voor ingelogde leden
+- **Einde van de twee paradigma's.** Een ingelogd, goedgekeurd lid kreeg op de klassieke kosmische
+  pagina's nog het volledige `_cosmic_nav`-sectiemenu náást de agent-canvas. Nu krijgt zo'n lid een
+  minimale shell-nav (brand → canvas + "Vraag de wereld"-ingang + admin-`Beheer`); de canvas/concierge
+  is de navigatie. Anoniem/publiek houdt de volledige crawlbare voordeur-nav (ontdekken + login/register + SEO).
+- **Footer-fallback overal als a11y/no-JS-vangnet.** Waar de nav het sectiemenu nu verbergt, rendert
+  `_concierge.html` de bestaande footer-fallback (échte `<a href>` + logout-form, no-JS-zichtbaar) — één
+  keer (op de canvas bezit de shell 'm al). Fallback aangevuld met Agenda, Nieuws en Verbind tool.
+- Geen migratie (template-only). 524 tests groen incl. nav-states (anon volledig, lid minimaal + fallback,
+  admin houdt Beheer, canvas heeft precies één fallback). PRD: `docs/PRD-concierge-intelligentie.md` (Fase 3).
+
 ## [0.31.0] - 2026-06-19
 ### Added — Concierge-intelligentie Fase 2: sessie-overstijgend geheugen
 - **De concierge onthoudt nu wie je bent over sessies heen.** Een compact, AI-gedistilleerd geheugen

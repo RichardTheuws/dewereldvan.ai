@@ -512,3 +512,77 @@ def test_founder_session_key_canonical_in_auto_open(make_client, SessionTest):
     assert resp.status_code == 200
     # data-auto-open verschijnt alléén als de canonical sleutel gezet is.
     assert 'data-auto-open="1"' in resp.text
+
+
+# --------------------------------------------------------------------------- #
+# Fase 3: één shell — nav verbergt het sectie-menu voor een ingelogd lid       #
+# --------------------------------------------------------------------------- #
+
+
+def test_anon_sees_full_nav_no_fallback(make_client, SessionTest):
+    """Anoniem op een klassieke pagina → de volledige crawlbare voordeur-nav,
+    geen footer-fallback (dat is het shell-vangnet voor leden)."""
+    client = make_client(None)
+    resp = client.get("/leden")
+    assert resp.status_code == 200
+    # Volledige nav: sectie-links + login/register.
+    assert 'href="/agenda"' in resp.text
+    assert 'href="/roadmap"' in resp.text
+    assert 'href="/register"' in resp.text
+    assert 'href="/login"' in resp.text
+    # Geen footer-fallback voor anoniem.
+    assert "canvas-fallback__toggle" not in resp.text
+
+
+def test_member_nav_is_single_shell(make_client, SessionTest):
+    """Ingelogd lid op een klassieke pagina → GEEN sectie-menu/login in de nav,
+    wél de concierge-ingang; en de footer-fallback is het a11y/no-JS-vangnet."""
+    mid = _seed_member(SessionTest, name="Lid", email="shell@x.nl")
+    client = make_client(mid)
+    client.cookies.set("session", _session_cookie({"member_id": mid}))
+    resp = client.get("/leden")
+    assert resp.status_code == 200
+    # De concierge-ingang blijft (de shell).
+    assert "cnav__concierge" in resp.text
+    # Geen voordeur-nav meer: geen sectie-links of login/register in de nav.
+    assert "cnav__links" not in resp.text
+    assert 'href="/register"' not in resp.text
+    assert 'href="/login"' not in resp.text
+    # De footer-fallback (echte links, no-JS-vangnet) IS aanwezig.
+    assert "canvas-fallback__toggle" in resp.text
+    assert 'href="/agenda"' in resp.text  # via de fallback bereikbaar
+    assert 'href="/profiel/verbind"' in resp.text
+
+
+def test_admin_keeps_beheer_in_shell_nav(make_client, SessionTest):
+    """Een admin houdt de Beheer-link in de minimale shell-nav (queue-toegang)."""
+    s = SessionTest()
+    from app.models import MemberRole
+
+    m = Member(
+        email="admin@x.nl", name="Admin", status=MemberStatus.approved,
+        role=MemberRole.admin,
+    )
+    s.add(m)
+    s.commit()
+    mid = m.id
+    s.close()
+    client = make_client(mid)
+    client.cookies.set(
+        "session", _session_cookie({"member_id": mid, "is_admin": True})
+    )
+    resp = client.get("/leden")
+    assert resp.status_code == 200
+    assert 'href="/admin/queue"' in resp.text
+    assert "cnav__concierge" in resp.text
+
+
+def test_canvas_has_single_fallback(make_client, SessionTest):
+    """Op de canvas (root voor een ingelogd lid) staat de footer-fallback precies
+    één keer — _concierge.html voegt 'm daar NIET nog eens toe (host_owned)."""
+    mid = _seed_member(SessionTest, name="Canvas", email="canvas@x.nl")
+    client = make_client(mid)
+    client.cookies.set("session", _session_cookie({"member_id": mid}))
+    resp = client.get("/")
+    assert resp.status_code == 200
+    assert resp.text.count('id="canvas-fallback-toggle"') == 1

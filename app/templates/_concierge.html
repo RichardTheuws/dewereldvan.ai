@@ -115,6 +115,15 @@
   </div>
 </div>
 
+{# ÉÉN SHELL (Fase 3): op de klassieke kosmische pagina's verbergt de hoofdnav het
+   sectie-menu voor een ingelogd lid. De footer-fallback is hier het deterministische
+   a11y/no-JS-vangnet met de échte links (zoals onder de canvas). Op de canvas zelf
+   bezit die shell de fallback al (concierge_host_owned) → hier overslaan, anders
+   dubbele #canvas-fallback-* ids. Anoniem houdt de volledige nav → geen fallback. #}
+{% if _logged_in and not concierge_host_owned %}
+{% include "concierge/_footer_fallback.html" %}
+{% endif %}
+
 <script>
 (function () {
   var overlay = document.getElementById('concierge-overlay');

@@ -1,6 +1,6 @@
 # PRD — Concierge-intelligentie
 
-**Status**: Fase 1 in aanbouw · **Versie doc**: 1.0.0 · **Datum**: 2026-06-19
+**Status**: Fase 1+2+3 GELEVERD (v0.30.0–v0.32.0) · **Versie doc**: 1.1.0 · **Datum**: 2026-06-19
 **Aanleiding**: platform-audit 2026-06-19 — "AI-native intelligentie & agent-shell → FAIL".
 Zie `~/.claude/.../memory/dewereldvan-audit-roadmap.md` (Tier 2).
 
