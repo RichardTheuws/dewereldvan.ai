@@ -1,0 +1,22 @@
+{# Geretourneerd door POST /profiel/ai/ontdek/crystalliseer — de vondst is écht
+   gekoppeld (project → Offering + enrich; anders → nieuws-Post). Settelt met een
+   korte glow (.field--crystallized) en biedt een makkelijke undo: de POST naar
+   /ongedaan verwijdert de entiteit (self-only) en geeft de re-koppel-kaart terug.
+   De finding-fields reizen mee zodat ongedaan → opnieuw koppelen kan. #}
+<div class="surface-card ontdek-card ontdek-card--done field--crystallized">
+  <article class="card ontdek-card__inner">
+    <p class="ontdek-card__added" aria-live="polite">
+      <span class="ontdek-card__check" aria-hidden="true">✦</span>
+      <span><strong>{{ finding.title }}</strong> staat nu op je profiel.</span>
+    </p>
+    <form hx-post="/profiel/ai/ontdek/ongedaan"
+          hx-target="closest .surface-card" hx-swap="outerHTML">
+      <input type="hidden" name="kind" value="{{ result.kind }}">
+      <input type="hidden" name="id" value="{{ result.id }}">
+      <input type="hidden" name="title" value="{{ finding.title }}">
+      <input type="hidden" name="url" value="{{ finding.url | safe_url }}">
+      <input type="hidden" name="type" value="{{ finding.type }}">
+      <button type="submit" class="btn btn--ghost btn--sm">Ongedaan maken</button>
+    </form>
+  </article>
+</div>

@@ -428,3 +428,281 @@ def test_koppel_rejects_unsafe_url(make_client, approved_id):
         headers={"X-CSRF-Token": token},
     )
     assert resp.status_code == 400
+
+
+# --------------------------------------------------------------------------- #
+# Fase 1b — crystalliseer/bevestig-laag (service)                              #
+# --------------------------------------------------------------------------- #
+
+
+def test_is_high_confidence_threshold():
+    assert footprint_service.is_high_confidence(footprint_service.HIGH_CONFIDENCE)
+    assert footprint_service.is_high_confidence(100)
+    assert not footprint_service.is_high_confidence(footprint_service.HIGH_CONFIDENCE - 1)
+    assert not footprint_service.is_high_confidence(None)
+    assert not footprint_service.is_high_confidence("hoog")
+
+
+def test_crystallize_project_creates_offering(db, make_member, make_profile):
+    from app.models import Offering
+
+    member = make_member(name="Maker")
+    profile = make_profile(member, display_name="Maker")
+
+    res = footprint_service.crystallize(
+        db, profile, member, title="Mijn project", url="https://x.example", ftype="project"
+    )
+
+    assert res.kind == "offering"
+    off = db.get(Offering, res.id)
+    assert off is not None
+    assert off.url == "https://x.example"
+    assert off.profile_id == profile.id
+    assert off.slug  # ensure_slug liep
+
+
+def test_crystallize_media_creates_news_with_role(db, make_member, make_profile):
+    from app.models import Post, PostKind
+    from app.models.base import NewsRole
+
+    member = make_member(name="Spreker")
+    profile = make_profile(member, display_name="Spreker")
+
+    res = footprint_service.crystallize(
+        db, profile, member, title="Interview", url="https://nrc.example", ftype="media"
+    )
+
+    assert res.kind == "news"
+    post = db.get(Post, res.id)
+    assert post.kind == PostKind.nieuws
+    assert post.role == NewsRole.vermeld
+    assert post.added_by_id == member.id
+    assert post.url == "https://nrc.example"
+
+
+def test_crystallize_blog_role_geschreven(db, make_member, make_profile):
+    from app.models import Post
+    from app.models.base import NewsRole
+
+    member = make_member(name="Blogger")
+    profile = make_profile(member, display_name="Blogger")
+    res = footprint_service.crystallize(
+        db, profile, member, title="Mijn post", url="https://b.example", ftype="blog"
+    )
+    assert db.get(Post, res.id).role == NewsRole.geschreven
+
+
+def test_crystallize_unknown_type_falls_back_to_news(db, make_member, make_profile):
+    from app.models import Post
+    from app.models.base import NewsRole
+
+    member = make_member(name="Onbekend")
+    profile = make_profile(member, display_name="Onbekend")
+    res = footprint_service.crystallize(
+        db, profile, member, title="Iets", url="https://o.example", ftype="PODCAST"
+    )
+    assert res.kind == "news"
+    assert db.get(Post, res.id).role == NewsRole.gedeeld  # default-rol
+
+
+def test_undo_offering_removes_it(db, make_member, make_profile):
+    from app.models import Offering
+
+    member = make_member(name="Maker")
+    profile = make_profile(member, display_name="Maker")
+    res = footprint_service.crystallize(
+        db, profile, member, title="Project", url="https://x.example", ftype="project"
+    )
+    assert db.get(Offering, res.id) is not None
+
+    ok = footprint_service.undo_crystallize(
+        db, profile, member, kind="offering", entity_id=res.id
+    )
+    assert ok is True
+    assert db.get(Offering, res.id) is None
+
+
+def test_undo_news_requires_ownership(db, make_member, make_profile):
+    from app.models import Post
+
+    owner = make_member(name="Eigenaar", email="owner@example.com")
+    owner_profile = make_profile(owner, display_name="Eigenaar")
+    res = footprint_service.crystallize(
+        db, owner_profile, owner, title="Artikel", url="https://n.example", ftype="media"
+    )
+
+    # Een ánder lid mag deze nieuws-Post niet ongedaan maken (self-only).
+    intruder = make_member(name="Indringer", email="intruder@example.com")
+    intruder_profile = make_profile(intruder, display_name="Indringer")
+    ok = footprint_service.undo_crystallize(
+        db, intruder_profile, intruder, kind="news", entity_id=res.id
+    )
+    assert ok is False
+    assert db.get(Post, res.id) is not None  # blijft staan
+
+    # De eigenaar mag wél.
+    assert footprint_service.undo_crystallize(
+        db, owner_profile, owner, kind="news", entity_id=res.id
+    )
+    assert db.get(Post, res.id) is None
+
+
+def test_undo_offering_requires_ownership(db, make_member, make_profile):
+    from app.models import Offering
+
+    owner = make_member(name="Eigenaar", email="owner2@example.com")
+    owner_profile = make_profile(owner, display_name="Eigenaar")
+    res = footprint_service.crystallize(
+        db, owner_profile, owner, title="Project", url="https://x.example", ftype="project"
+    )
+    intruder = make_member(name="Indringer", email="intruder2@example.com")
+    intruder_profile = make_profile(intruder, display_name="Indringer")
+    ok = footprint_service.undo_crystallize(
+        db, intruder_profile, intruder, kind="offering", entity_id=res.id
+    )
+    assert ok is False
+    assert db.get(Offering, res.id) is not None
+
+
+# --------------------------------------------------------------------------- #
+# Fase 1b — crystalliseer/bevestig-laag (routes + kaart-markup)               #
+# --------------------------------------------------------------------------- #
+
+
+def test_stream_high_confidence_card_is_auto(make_client, approved_id, monkeypatch):
+    from app.services import footprint_service as fs
+
+    def _fake_discover(profile, send_event, *, client=None):
+        send_event("candidate", json.dumps({
+            "title": "Zeker project", "url": "https://x.example",
+            "type": "project", "confidence": 96, "why": "eigen domein"}))
+        send_event("done", "klaar")
+        return []
+
+    monkeypatch.setattr(fs, "discover", _fake_discover)
+    client = make_client(approved_id)
+    with client.stream("GET", "/profiel/ai/ontdek/stream") as resp:
+        body = "".join(resp.iter_text())
+
+    assert "ontdek-card--auto" in body
+    assert 'hx-trigger="load' in body
+    assert "/profiel/ai/ontdek/crystalliseer" in body
+    assert "Ik koppel dit aan je profiel" in body
+
+
+def test_stream_low_confidence_card_is_confirm_row(make_client, approved_id, monkeypatch):
+    from app.services import footprint_service as fs
+
+    def _fake_discover(profile, send_event, *, client=None):
+        send_event("candidate", json.dumps({
+            "title": "Misschien jij", "url": "https://maybe.example",
+            "type": "media", "confidence": 55, "why": "naamgenoot?"}))
+        send_event("done", "klaar")
+        return []
+
+    monkeypatch.setattr(fs, "discover", _fake_discover)
+    client = make_client(approved_id)
+    with client.stream("GET", "/profiel/ai/ontdek/stream") as resp:
+        body = "".join(resp.iter_text())
+
+    assert "ontdek-card--auto" not in body
+    assert "Klopt dit?" in body
+    assert "✓ Koppelen" in body
+    assert "hx-trigger=\"load" not in body
+
+
+def test_crystalliseer_project_persists_and_renders_undo(
+    make_client, approved_id, monkeypatch
+):
+    from app.services import project_enrich_service
+
+    triggered: list[int] = []
+    monkeypatch.setattr(
+        project_enrich_service, "trigger_async", lambda oid: triggered.append(oid)
+    )
+
+    client = make_client(approved_id)
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/ontdek/crystalliseer",
+        data={"title": "Mijn project", "url": "https://x.example",
+              "type": "project", "confidence": 95},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    assert "ontdek-card--done" in resp.text
+    assert 'hx-post="/profiel/ai/ontdek/ongedaan"' in resp.text
+    assert "staat nu op je profiel" in resp.text
+    assert triggered  # project-enrich getriggerd
+
+
+def test_crystalliseer_news_does_not_trigger_enrich(make_client, approved_id, monkeypatch):
+    from app.services import project_enrich_service
+
+    triggered: list[int] = []
+    monkeypatch.setattr(
+        project_enrich_service, "trigger_async", lambda oid: triggered.append(oid)
+    )
+    client = make_client(approved_id)
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/ontdek/crystalliseer",
+        data={"title": "Interview", "url": "https://nrc.example",
+              "type": "media", "confidence": 95},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    assert "ontdek-card--done" in resp.text
+    assert triggered == []  # nieuws → geen project-enrich
+
+
+def test_crystalliseer_rejects_unsafe_url(make_client, approved_id):
+    client = make_client(approved_id)
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/ontdek/crystalliseer",
+        data={"title": "x", "url": "javascript:alert(1)", "type": "project"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 400
+
+
+def test_ongedaan_removes_and_offers_relink(make_client, approved_id, monkeypatch):
+    from app.services import project_enrich_service
+
+    monkeypatch.setattr(project_enrich_service, "trigger_async", lambda oid: None)
+    client = make_client(approved_id)
+    token = _csrf(client)
+    # Eerst koppelen om een echte id te krijgen.
+    made = client.post(
+        "/profiel/ai/ontdek/crystalliseer",
+        data={"title": "Mijn project", "url": "https://x.example",
+              "type": "project", "confidence": 95},
+        headers={"X-CSRF-Token": token},
+    )
+    import re
+
+    m = re.search(r'name="id" value="(\d+)"', made.text)
+    assert m
+    oid = m.group(1)
+
+    resp = client.post(
+        "/profiel/ai/ontdek/ongedaan",
+        data={"kind": "offering", "id": oid, "title": "Mijn project",
+              "url": "https://x.example", "type": "project"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    assert "Ongedaan gemaakt" in resp.text
+    assert "Toch koppelen" in resp.text
+    assert 'hx-post="/profiel/ai/ontdek/crystalliseer"' in resp.text
+
+
+def test_crystalliseer_anonymous_blocked(make_client):
+    client = make_client(None)
+    resp = client.post(
+        "/profiel/ai/ontdek/crystalliseer",
+        data={"title": "x", "url": "https://x.example", "type": "project"},
+        follow_redirects=False,
+    )
+    assert resp.status_code in (302, 303, 403)

@@ -1,0 +1,19 @@
+{# Geretourneerd door POST /profiel/ai/ontdek/ongedaan — de koppeling is weer weg.
+   Rustige bevestiging + een tweede kans: "Toch koppelen" crystalliseert opnieuw
+   (de fields reizen mee). "✗ Negeren" haalt de kaart weg. #}
+<div class="surface-card ontdek-card ontdek-card--undone field--ready">
+  <article class="card ontdek-card__inner">
+    <p class="ontdek-card__ask muted" aria-live="polite">Ongedaan gemaakt — niets toegevoegd.</p>
+    <div class="ontdek-card__actions">
+      <form hx-post="/profiel/ai/ontdek/crystalliseer"
+            hx-target="closest .surface-card" hx-swap="outerHTML">
+        <input type="hidden" name="title" value="{{ finding.title }}">
+        <input type="hidden" name="url" value="{{ finding.url | safe_url }}">
+        <input type="hidden" name="type" value="{{ finding.type }}">
+        <button type="submit" class="btn btn--ghost btn--sm">Toch koppelen</button>
+      </form>
+      <button type="button" class="btn btn--ghost btn--sm"
+              onclick="this.closest('.surface-card').remove()">✗ Negeren</button>
+    </div>
+  </article>
+</div>

@@ -41,7 +41,16 @@ from app.models import Profile
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["Finding", "discover", "VALID_TYPES"]
+__all__ = [
+    "Finding",
+    "Crystallized",
+    "discover",
+    "crystallize",
+    "undo_crystallize",
+    "is_high_confidence",
+    "VALID_TYPES",
+    "HIGH_CONFIDENCE",
+]
 
 # --- Anthropic constanten (zie SDK-contract) ---
 
@@ -53,6 +62,12 @@ WEB_TOOLS: list[dict[str, str]] = [
 MAX_PAUSE_TURNS: int = 6  # server-tool-loop cap (kosten/iteratie-guard)
 MAX_TOKENS: int = 8000  # grote max_tokens -> streaming vereist
 MAX_FINDINGS: int = 12  # cap op de getoonde kandidaten (focus + kosten)
+
+# Crystalliseer-poort (Fase 1b, PRD-Beslissing 1): een vondst met een confidence
+# OP/BOVEN deze drempel crystalliseert live met undo; eronder gaat 'ie naar de
+# "klopt dit?"-bevestigrij (1-klik). Conservatief hoog gezet zodat een
+# false-positive — dodelijk voor dit expert-publiek — nooit ongevraagd landt.
+HIGH_CONFIDENCE: int = 90
 
 # Adaptive thinking is verplicht op Opus 4.8; budget_tokens/temperature NOOIT.
 THINKING: dict[str, str] = {"type": "adaptive"}
@@ -398,3 +413,103 @@ def _run(
 
         # end_turn / max_tokens: lees de record_findings-tool-output.
         return _read_findings(final)
+
+
+# --------------------------------------------------------------------------- #
+# Crystalliseer-laag (Fase 1b) — classificeer -> bestaande entiteiten         #
+# --------------------------------------------------------------------------- #
+#
+# De "classificatie -> bestaande entiteiten"-stap uit de PRD: een bevestigde
+# vondst wordt een ECHTE graaf-entiteit (project -> Offering met de bestaande
+# screenshot/summary-enrich-pijplijn; media/blog/talk/social/overig -> nieuws-
+# ``Post`` met de passende rol-badge). Dit leeft hier (niet in de route) zodat de
+# Scout (Fase 2) dezelfde crystalliseer-stap hergebruikt. Lazy imports voorkomen
+# import-cycles (profile_service/post_service importeren modellen die naar hier
+# kunnen wijzen). De caller dwingt self-only + commit/enrich-trigger af.
+
+
+def is_high_confidence(confidence: object) -> bool:
+    """True als deze confidence live mag crystalliseren (>= ``HIGH_CONFIDENCE``)."""
+    try:
+        return int(confidence) >= HIGH_CONFIDENCE
+    except (TypeError, ValueError):
+        return False
+
+
+# Vondst-type -> nieuws-rol-badge (gespiegeld van de koppel-route): blog = zelf
+# geschreven, talk/media = uitgelicht/vermeld, social/overig = gewoon gedeeld.
+def _news_role(ftype: str):
+    from app.models.base import NewsRole
+
+    if ftype == "blog":
+        return NewsRole.geschreven
+    if ftype in ("talk", "media"):
+        return NewsRole.vermeld
+    return NewsRole.gedeeld
+
+
+@dataclass(frozen=True)
+class Crystallized:
+    """Het resultaat van één crystallisatie — genoeg om de undo te tekenen."""
+
+    kind: str  # "offering" | "news"
+    id: int
+    title: str
+
+
+def crystallize(
+    db, profile: Profile, member, *, title: str, url: str, ftype: str
+) -> Crystallized:
+    """Maak van een bevestigde vondst een echte graaf-entiteit (geen commit).
+
+    project -> ``Offering`` (de caller triggert daarna de screenshot/summary-
+    enrich); anders -> nieuws-``Post`` met de passende rol-badge. ``ftype`` valt
+    terug op "other" als het buiten de enum valt. Flusht (id beschikbaar voor de
+    undo); de caller commit. Self-only wordt door de caller afgedwongen (het
+    ``profile``/``member`` van het ingelogde lid).
+    """
+    if ftype not in VALID_TYPES:
+        ftype = "other"
+    title = (title or "").strip()[:200]
+    url = (url or "").strip()[:500]
+
+    if ftype == "project":
+        from app.services import offering_slug, profile_service
+
+        offering = profile_service.add_offering(
+            db, profile, title=title or "Nieuw project", description=None
+        )
+        offering.url = url or None
+        offering_slug.ensure_slug(db, offering)
+        profile_service.recompute_completeness(profile)
+        db.flush()
+        return Crystallized("offering", offering.id, offering.title)
+
+    from app.services import post_service
+
+    post = post_service.create_news(
+        db, member=member, title=title, url=url, role=_news_role(ftype)
+    )
+    return Crystallized("news", post.id, post.title)
+
+
+def undo_crystallize(db, profile: Profile, member, *, kind: str, entity_id: int) -> bool:
+    """Maak een zojuist gecrystalliseerde entiteit ongedaan (no commit).
+
+    Self-only: een ``Offering`` moet bij ``profile`` horen; een nieuws-``Post`` bij
+    ``member`` (``added_by_id``). Returnt True bij een echte verwijdering.
+    """
+    if kind == "offering":
+        from app.services import profile_service
+
+        return profile_service.remove_offering(db, profile, entity_id)
+    if kind == "news":
+        from app.models import Post, PostKind
+
+        post = db.get(Post, entity_id)
+        if post is None or post.kind != PostKind.nieuws or post.added_by_id != member.id:
+            return False
+        db.delete(post)
+        db.flush()
+        return True
+    return False

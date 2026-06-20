@@ -3,6 +3,25 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.39.0] - 2026-06-20
+### Added — Discovery (Fase 1b): de crystalliseer/bevestig-laag
+- **Een vondst wordt nu écht je profiel.** Waar 1a kandidaten liet voorbijvliegen, koppelt 1b ze: een vondst
+  met **hoge zekerheid** (`footprint_service.HIGH_CONFIDENCE` = 90) **crystalliseert live** — de kaart koppelt
+  zichzelf na de fly-in (htmx `load`-trigger) mét een korte settle-glow en een makkelijke **"Ongedaan maken"**.
+  Een **twijfelgeval** gaat naar de 1-klik **"klopt dit?"-bevestigrij** (✓ Koppelen / Aanpassen / ✗ Negeren).
+  Conservatief hoge drempel zodat een false-positive — dodelijk voor dit expert-publiek — nooit ongevraagd landt.
+- **Crystalliseren maakt echte graaf-entiteiten** via de bestaande paden (geen duplicatie): project → `Offering`
+  (+ automatische screenshot/samenvatting-enrich via `trigger_async`); media/blog/talk/social/overig → nieuws-
+  `Post` met de passende **rol-badge** (blog = geschreven, talk/media = vermeld, rest = gedeeld). De
+  crystalliseer-stap leeft in `footprint_service` zodat de **Scout (Fase 2)** 'm hergebruikt.
+- **Self-only + reversibel**: nieuwe routes `POST /profiel/ai/ontdek/crystalliseer` (koppelt, geeft de undo-kaart)
+  en `POST /profiel/ai/ontdek/ongedaan` (verwijdert de entiteit, eigendom afgedwongen: Offering↔profiel,
+  Post↔`added_by_id`) + her-koppel-affordance. CSRF via de hx-headers op `<body>`; grounding-poort
+  (leeg/onveilig URL → geen koppeling). prefers-reduced-motion-veilig.
+- 15 nieuwe tests (crystalliseer project→Offering & media→nieuws + rol-mapping, undo + ownership-poort,
+  threshold, auto-vs-bevestigrij-markup, enrich-trigger alleen bij project). **586 tests groen**, ruff clean.
+  PRD: `docs/PRD-discovery.md` (Fase 1). Volgt: in-canvas concierge-integratie + de Scout (Fase 2).
+
 ## [0.38.1] - 2026-06-20
 ### Changed — werkveld zet nu de tijdsverwachting eerlijk
 - Het werkveld toont een **persistente verwachtings-regel** (roteert niet: "Goed speurwerk kost even — ik zoek

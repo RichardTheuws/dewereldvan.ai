@@ -12,11 +12,20 @@ lid (``require_member``). CSRF via ``hx-headers``. Spiegelt de SSE-machinerie va
 ``ai_profile`` (``_sse_event`` + ``ai_conversation._Channel`` + ``run_in_threadpool``-
 drain + ``CHANNEL_TIMEOUT_SEC``).
 
+Fase 1b — de crystalliseer/bevestig-laag: een vondst met hoge confidence
+(``footprint_service.HIGH_CONFIDENCE``) crystalliseert live mét undo; een
+twijfelgeval gaat naar de 1-klik "klopt dit?"-bevestigrij. Crystalliseren maakt
+een ECHTE entiteit (project -> Offering + enrich; anders -> nieuws-Post).
+
 Routes:
-1. ``POST /profiel/ai/ontdek``        — start (render de discovery-host; opent de SSE).
-2. ``GET  /profiel/ai/ontdek/stream`` — de SSE-stroom (search/reasoning/candidate/done).
-3. ``POST /profiel/ai/ontdek/koppel`` — render het voorgevulde draft-formulier voor
-   één kandidaat (GEEN write; het lid bevestigt via het bestaande endpoint).
+1. ``POST /profiel/ai/ontdek``           — start (render de discovery-host; opent de SSE).
+2. ``GET  /profiel/ai/ontdek/stream``    — de SSE-stroom (search/reasoning/candidate/done).
+3. ``POST /profiel/ai/ontdek/koppel``    — render het voorgevulde draft-formulier voor
+   één kandidaat (GEEN write; "aanpassen voor je koppelt").
+4. ``POST /profiel/ai/ontdek/crystalliseer`` — koppel één vondst écht (Offering/nieuws),
+   geef de "toegevoegd · ongedaan maken"-kaart terug. Self-only.
+5. ``POST /profiel/ai/ontdek/ongedaan``  — maak een zojuist gecrystalliseerde vondst
+   ongedaan (verwijdert de entiteit, self-only) → re-koppel-affordance.
 """
 
 from __future__ import annotations
@@ -34,7 +43,12 @@ from app.config import settings
 from app.db import get_db
 from app.deps import require_member
 from app.models import Member
-from app.services import ai_conversation, footprint_service, profile_service
+from app.services import (
+    ai_conversation,
+    footprint_service,
+    profile_service,
+    project_enrich_service,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +181,14 @@ async def stream(
                 except (ValueError, TypeError):
                     continue
                 html = _render_str(
-                    request, "discovery/_candidate.html", {"finding": finding}
+                    request,
+                    "discovery/_candidate.html",
+                    {
+                        "finding": finding,
+                        "auto": footprint_service.is_high_confidence(
+                            finding.get("confidence")
+                        ),
+                    },
                 )
                 yield _sse_event("candidate", html)
                 # Choreografie-pauze (begrensd door het wall-clock-vangnet).
@@ -232,4 +253,87 @@ def link_candidate(
         request,
         "discovery/_draft_news.html",
         {"fields": {"title": title, "url": clean_url, "role": role}},
+    )
+
+
+# --------------------------------------------------------------------------- #
+# 4. Crystalliseer — koppel één vondst écht (Offering/nieuws), met undo        #
+# --------------------------------------------------------------------------- #
+
+
+@router.post("/profiel/ai/ontdek/crystalliseer", response_class=HTMLResponse)
+def crystallize_candidate(
+    request: Request,
+    title: str = Form(""),
+    url: str = Form(""),
+    type: str = Form("other"),
+    confidence: int = Form(0),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Koppel één vondst écht aan het profiel en geef de undo-kaart terug.
+
+    Eén chokepoint voor zowel de auto-crystallisatie (hoge confidence, de kaart
+    POST op ``load``) als de 1-klik-bevestiging uit de "klopt dit?"-rij. project →
+    ``Offering`` (+ achtergrond-enrich), anders → nieuws-``Post`` met rol-badge.
+    Self-only (``require_member`` + het eigen profiel). Grounding-poort: een
+    leeg/onveilig URL → geen koppeling.
+    """
+    title = title.strip()[:200]
+    clean_url = safe_url(url.strip())
+    if not title or not clean_url:
+        return _render(
+            request,
+            "discovery/_done.html",
+            {"message": "Deze kandidaat mist een geldige link."},
+            status_code=400,
+        )
+    profile = profile_service.get_or_create_profile(db, member)
+    result = footprint_service.crystallize(
+        db, profile, member, title=title, url=clean_url, ftype=type
+    )
+    db.commit()
+    # Een gekoppeld project pikt automatisch de screenshot+samenvatting op.
+    if result.kind == "offering":
+        project_enrich_service.trigger_async(result.id)
+    return _render(
+        request,
+        "discovery/_crystallized.html",
+        {
+            "result": {"kind": result.kind, "id": result.id},
+            "finding": {"title": title, "url": clean_url, "type": type},
+        },
+    )
+
+
+# --------------------------------------------------------------------------- #
+# 5. Ongedaan — verwijder een zojuist gecrystalliseerde entiteit (self-only)   #
+# --------------------------------------------------------------------------- #
+
+
+@router.post("/profiel/ai/ontdek/ongedaan", response_class=HTMLResponse)
+def undo_candidate(
+    request: Request,
+    kind: str = Form(""),
+    id: int = Form(0),
+    title: str = Form(""),
+    url: str = Form(""),
+    type: str = Form("other"),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Maak een zojuist gecrystalliseerde koppeling ongedaan (self-only).
+
+    Verwijdert de Offering/nieuws-Post (eigendom afgedwongen in de service) en
+    geeft een nette "ongedaan gemaakt"-kaart terug die de vondst nog laat
+    her-koppelen (de fields reizen mee). Idempotent: een al verdwenen entiteit
+    levert dezelfde kaart (geen 404-ruis in de live-flow).
+    """
+    profile = profile_service.get_or_create_profile(db, member)
+    footprint_service.undo_crystallize(db, profile, member, kind=kind, entity_id=id)
+    db.commit()
+    return _render(
+        request,
+        "discovery/_undone.html",
+        {"finding": {"title": title.strip()[:200], "url": safe_url(url.strip()), "type": type}},
     )

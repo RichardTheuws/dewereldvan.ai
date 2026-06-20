@@ -3506,6 +3506,56 @@
   display: flex;
   gap: 8px;
   margin-top: 14px;
+  flex-wrap: wrap;
+}
+.cosmic .ontdek-card__actions form { display: inline; margin: 0; }
+
+/* ---- Fase 1b: crystalliseer/bevestig-laag ---------------------------------- */
+/* De "klopt dit?"-vraag op een twijfelkaart en de "ik koppel dit…"-regel op een
+   auto-kaart — ingetogen, kosmisch, helder. */
+.cosmic .ontdek-card__ask {
+  font-size: 0.9rem;
+  margin: 4px 0 0;
+}
+.cosmic .ontdek-card__settling {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  margin: 12px 0 0;
+}
+.cosmic .ontdek-card__spark {
+  color: var(--gold);
+  animation: ontdek-spark 1.4s ease-in-out infinite;
+}
+@keyframes ontdek-spark {
+  0%, 100% { opacity: 0.45; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+/* Gekoppeld: een korte settle-glow, dan rust (een echte mijlpaal, geen lichtshow). */
+.cosmic .ontdek-card--done .ontdek-card__added {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+.cosmic .ontdek-card__check { color: var(--gold); font-size: 1.05rem; }
+.cosmic .field--crystallized {
+  animation: ontdek-crystallize 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes ontdek-crystallize {
+  0% { opacity: 0.6; transform: scale(0.985); box-shadow: 0 0 0 0 rgba(244, 196, 110, 0.35); }
+  45% { box-shadow: 0 0 26px 2px rgba(244, 196, 110, 0.28); }
+  100% { opacity: 1; transform: none; box-shadow: 0 0 0 0 rgba(244, 196, 110, 0); }
+}
+.cosmic .ontdek-card--undone { opacity: 0.92; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmic .ontdek-card__spark,
+  .cosmic .field--crystallized { animation: none; }
 }
 
 /* ----------------------------------------------------------------------- */

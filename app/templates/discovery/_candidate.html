@@ -1,13 +1,28 @@
 {# Eén echte web-vondst als kosmische kaart (server-side gerenderd, geen nep-reel).
    Vliegt binnen met field--materializing (de host-script doet de afterSwap-animatie
-   → field--ready). "✓ Koppelen" rendert een voorgevuld draft-formulier IN deze
-   kaart (POST /profiel/ai/ontdek/koppel — GEEN write); "✗ Negeren" verwijdert de
-   kaart. Niets wordt gepersisteerd zonder de bevestig-klik in het draft. #}
+   → field--ready), en crystalliseert dan:
+
+   • `auto` (confidence ≥ HIGH_CONFIDENCE): de kaart koppelt zichzelf live —
+     na de fly-in POST't 'ie naar /crystalliseer en wordt vervangen door de
+     "toegevoegd · ongedaan maken"-kaart. De drempel houdt false-positives buiten.
+   • twijfel (eronder): de "klopt dit?"-bevestigrij — 1-klik ✓ Koppelen (→ écht
+     gekoppeld), ✗ Negeren (kaart weg), of "aanpassen" (voorgevuld draft).
+
+   Niets wordt gepersisteerd zonder de drempel óf de klik. CSRF reist mee via de
+   hx-headers op <body>. #}
 {% set type_labels = {
   "project": "project", "media": "media", "blog": "blog",
   "talk": "talk", "social": "sociaal", "other": "overig"
 } %}
-<div class="surface-card ontdek-card field--materializing">
+<div class="surface-card ontdek-card field--materializing{% if auto %} ontdek-card--auto{% endif %}"
+     {% if auto %}hx-post="/profiel/ai/ontdek/crystalliseer"
+     hx-trigger="load delay:700ms" hx-target="closest .surface-card" hx-swap="outerHTML"{% endif %}>
+  {% if auto %}
+  <input type="hidden" name="title" value="{{ finding.title }}">
+  <input type="hidden" name="url" value="{{ finding.url | safe_url }}">
+  <input type="hidden" name="type" value="{{ finding.type }}">
+  <input type="hidden" name="confidence" value="{{ finding.confidence }}">
+  {% endif %}
   <article class="card ontdek-card__inner">
     <div class="ontdek-card__head">
       <span class="chip">{{ type_labels.get(finding.type, finding.type) }}</span>
@@ -21,16 +36,33 @@
       {{ finding.url | safe_url }}
     </a>
 
+    {% if auto %}
+    {# Hoge zekerheid: koppelt zichzelf. De regel hieronder is eerlijk — er gebeurt
+       écht iets (de POST loopt); undo verschijnt zodra 'ie geland is. #}
+    <p class="ontdek-card__settling muted" aria-live="polite">
+      <span class="ontdek-card__spark" aria-hidden="true">✦</span> Ik koppel dit aan je profiel…
+    </p>
+    {% else %}
+    <p class="ontdek-card__ask muted">Klopt dit? Dan koppel ik het aan je profiel.</p>
     <div class="ontdek-card__actions">
+      <form hx-post="/profiel/ai/ontdek/crystalliseer"
+            hx-target="closest .surface-card" hx-swap="outerHTML">
+        <input type="hidden" name="title" value="{{ finding.title }}">
+        <input type="hidden" name="url" value="{{ finding.url | safe_url }}">
+        <input type="hidden" name="type" value="{{ finding.type }}">
+        <input type="hidden" name="confidence" value="{{ finding.confidence }}">
+        <button type="submit" class="btn btn--sm">✓ Koppelen</button>
+      </form>
       <form hx-post="/profiel/ai/ontdek/koppel"
             hx-target="closest .surface-card" hx-swap="innerHTML">
         <input type="hidden" name="title" value="{{ finding.title }}">
         <input type="hidden" name="url" value="{{ finding.url | safe_url }}">
         <input type="hidden" name="type" value="{{ finding.type }}">
-        <button type="submit" class="btn btn--sm">✓ Koppelen</button>
+        <button type="submit" class="btn btn--ghost btn--sm">Aanpassen</button>
       </form>
       <button type="button" class="btn btn--ghost btn--sm"
               onclick="this.closest('.surface-card').remove()">✗ Negeren</button>
     </div>
+    {% endif %}
   </article>
 </div>
