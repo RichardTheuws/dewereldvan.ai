@@ -1,0 +1,26 @@
+{# Schrijf-surface: voorgevuld "wat ik maak" uit een bevestigde web-vondst. Post
+   naar het BESTAANDE AI-endpoint (POST /profiel/ai/offering — neemt url+title aan
+   en triggert de screenshot/summary-enrichment automatisch) + CSRF. Bij succes
+   her-rendert de projecten-sectie (#slot-projects, OOB-status). "laat maar" sluit
+   de kaart zonder iets op te slaan (geen write). #}
+<form class="concierge-draft"
+      hx-post="/profiel/ai/offering"
+      hx-target="closest .surface-card"
+      hx-swap="outerHTML">
+  <div class="concierge-draft__head">
+    <span aria-hidden="true">✦</span> Je project koppelen — klopt het? Pas gerust aan.
+  </div>
+  <span class="field-label">Titel</span>
+  <input name="title" class="concierge-draft__field" maxlength="160" required
+         aria-label="Titel van het project"
+         value="{{ fields.title | default('') }}">
+  <span class="field-label">Link</span>
+  <input name="url" type="url" class="concierge-draft__field" maxlength="500"
+         aria-label="Link naar het project"
+         value="{{ fields.url | default('') }}" placeholder="https://…">
+  <div class="concierge-draft__actions">
+    <button type="submit" class="btn btn--sm">✦ Toevoegen</button>
+    <button type="button" class="btn btn--ghost btn--sm"
+            onclick="this.closest('.surface-card').remove()">laat maar</button>
+  </div>
+</form>

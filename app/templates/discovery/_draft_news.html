@@ -1,0 +1,34 @@
+{# Schrijf-surface: voorgevuld nieuws-item uit een bevestigde web-vondst (media/
+   blog/talk/social/overig). Post naar het BESTAANDE endpoint (POST /nieuws,
+   NewsForm + CSRF + rate-limit, met rol-badge). Bij succes vervangt het verse
+   nieuws de kaart. "laat maar" sluit zonder op te slaan. #}
+{% set roles = [["geschreven","zelf geschreven"],["geinterviewd","geïnterviewd"],["vermeld","uitgelicht"],["gedeeld","gewoon gedeeld"]] %}
+{% set chosen = fields.role | default('gedeeld') %}
+<form class="concierge-draft"
+      hx-post="/nieuws"
+      hx-target="closest .surface-card"
+      hx-swap="outerHTML">
+  <div class="concierge-draft__head">
+    <span aria-hidden="true">✦</span> Vermelding koppelen — klopt het? Pas gerust aan.
+  </div>
+  <span class="field-label">Kop van het artikel</span>
+  <input name="title" class="concierge-draft__field" maxlength="200" required
+         aria-label="Kop van het artikel" value="{{ fields.title | default('') }}">
+
+  <span class="field-label">Link naar het artikel</span>
+  <input name="url" type="url" class="concierge-draft__field" maxlength="500" required
+         aria-label="Link" value="{{ fields.url | default('') }}" placeholder="https://…">
+
+  <span class="field-label">Jouw rol</span>
+  <select name="role" class="concierge-draft__field" aria-label="Rol">
+    {% for value, label in roles %}
+    <option value="{{ value }}" {% if chosen == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+
+  <div class="concierge-draft__actions">
+    <button type="submit" class="btn btn--sm">✦ Nieuws delen</button>
+    <button type="button" class="btn btn--ghost btn--sm"
+            onclick="this.closest('.surface-card').remove()">laat maar</button>
+  </div>
+</form>

@@ -34,6 +34,7 @@ from app.routers import (
     concierge,
     connect,
     connections,
+    discovery,
     feedback,
     ideas,
     invite,
@@ -158,6 +159,7 @@ def create_app() -> FastAPI:
     app.include_router(profiles.router)
     app.include_router(admin.router)
     app.include_router(ai_profile.router)
+    app.include_router(discovery.router)
     # Ledenpagina-feature (L1-L4): stubs nu, bodies door SERVICES/ROUTES+UI.
     app.include_router(members.router)
     app.include_router(projects.router)

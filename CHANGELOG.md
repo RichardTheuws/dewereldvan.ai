@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.37.0] - 2026-06-20
+### Added — Discovery (Fase 1a): live ontdekking van je online voetafdruk
+- **Vraag de AI om je op te zoeken** → de footprint-engine doet een slimme web-search, beslist per resultaat
+  of het ÉCHT jij bent (entity-resolution met de eigen links als anker, om naamgenoten uit te sluiten),
+  classificeert (project / media / blog / talk / social / overig) met een confidence + "waarom dit jij is",
+  en laat de kandidaten **live in de canvas voorbijvliegen + crystalliseren** (SSE, kosmische animatie).
+- **`footprint_service`**: één Claude-call met de web_search/web_fetch server-tools + een `record_findings`-tool
+  (pause_turn-veilig, geen `.parse()`, Opus-contract). Strikte grounding: findings zonder echte http(s)-URL
+  vallen weg, confidence geklemd 0-100, type naar de enum, javascript:-URLs gedropt. Gegated op
+  `AI_ENRICH_ENABLED`, best-effort (nette `done` op elke faaltak).
+- **Self-only + consent**: alleen je eigen profiel (`require_member`), CSRF op de POSTs, en NIETS wordt
+  opgeslagen zonder jouw **"Klopt dit? ✓ Koppelen"**-klik → een voorgevuld draft naar de bestaande endpoints
+  (project → `/profiel/ai/offering` → pikt automatisch de screenshot+samenvatting op; media/blog → `/nieuws`
+  met rol-badge). Geen persoonsfoto-scraping (Fase 3). Geen eigen fetch-surface (geen SSRF).
+- Gebouwd + adversarieel gereviewd (XSS/grounding/AVG/SSE-loop/SSRF → PASS, geen blockers). 571 tests groen.
+  PRD: `docs/PRD-discovery.md`. Volgt: in-canvas concierge-integratie + de Scout die de engine continu draait.
+
 ## [0.36.0] - 2026-06-20
 ### Added — AI-toolsets op profielen (selecteer leden op tool/toolset)
 - **Leden voegen de AI-tools toe die ze gebruiken** (Claude Code, Cursor, Perplexity, Obsidian, …), mét logo +

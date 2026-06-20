@@ -70,6 +70,21 @@
         </form>
       </section>
 
+      {# ---- Ontdek-dok: zoek het lid online op en bouw het profiel aan (Discovery 1a) ---- #}
+      <section class="mt-10" id="ontdek-dok" data-reveal style="--d:500ms">
+        <form hx-post="/profiel/ai/ontdek"
+              hx-target="#ontdek-resultaat" hx-swap="innerHTML">
+          <button class="btn btn--ghost" type="submit" {% if not ai_enabled %}disabled{% endif %}>
+            ✦ Zal ik je online opzoeken en je profiel aanvullen?
+          </button>
+        </form>
+        <p class="muted text-sm mt-3" style="max-width:54ch">
+          Ik zoek je werk, projecten en vermeldingen op het web. Je beslist per
+          resultaat zelf of het klopt — niets wordt toegevoegd zonder jouw klik.
+        </p>
+        <div id="ontdek-resultaat" class="mt-6"></div>
+      </section>
+
       {# ---- Materialisatie: denkpaneel + levende profielvorm onder één EventSource ---- #}
       <div id="materialisatie" hx-ext="sse">
         {# Gloeiend "AI aan het werk"-paneel + tekst-deltas verschijnen hier. #}

@@ -1,0 +1,36 @@
+{# Eén echte web-vondst als kosmische kaart (server-side gerenderd, geen nep-reel).
+   Vliegt binnen met field--materializing (de host-script doet de afterSwap-animatie
+   → field--ready). "✓ Koppelen" rendert een voorgevuld draft-formulier IN deze
+   kaart (POST /profiel/ai/ontdek/koppel — GEEN write); "✗ Negeren" verwijdert de
+   kaart. Niets wordt gepersisteerd zonder de bevestig-klik in het draft. #}
+{% set type_labels = {
+  "project": "project", "media": "media", "blog": "blog",
+  "talk": "talk", "social": "sociaal", "other": "overig"
+} %}
+<div class="surface-card ontdek-card field--materializing">
+  <article class="card ontdek-card__inner">
+    <div class="ontdek-card__head">
+      <span class="chip">{{ type_labels.get(finding.type, finding.type) }}</span>
+      <span class="ontdek-card__conf" title="Hoe zeker dit jou is">{{ finding.confidence }}%</span>
+    </div>
+    <h3 class="ontdek-card__title">{{ finding.title }}</h3>
+    {% if finding.why %}
+    <p class="ontdek-card__why muted">{{ finding.why }}</p>
+    {% endif %}
+    <a class="ontdek-card__link" href="{{ finding.url | safe_url }}" target="_blank" rel="noopener nofollow noreferrer">
+      {{ finding.url | safe_url }}
+    </a>
+
+    <div class="ontdek-card__actions">
+      <form hx-post="/profiel/ai/ontdek/koppel"
+            hx-target="closest .surface-card" hx-swap="innerHTML">
+        <input type="hidden" name="title" value="{{ finding.title }}">
+        <input type="hidden" name="url" value="{{ finding.url | safe_url }}">
+        <input type="hidden" name="type" value="{{ finding.type }}">
+        <button type="submit" class="btn btn--sm">✓ Koppelen</button>
+      </form>
+      <button type="button" class="btn btn--ghost btn--sm"
+              onclick="this.closest('.surface-card').remove()">✗ Negeren</button>
+    </div>
+  </article>
+</div>
