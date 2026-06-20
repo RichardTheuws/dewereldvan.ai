@@ -3606,6 +3606,22 @@
   opacity: 0;
   transform: translateY(4px);
 }
+/* Persistente, eerlijke verwachtings-regel (roteert niet) + subtiele teller. */
+.cosmic-working__hint {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  color: var(--muted);
+  opacity: 0.66;
+  text-align: center;
+  max-width: 46ch;
+  margin: -6px 0 0;
+}
+.cosmic-working__elapsed {
+  color: var(--cyan);
+  opacity: 0.85;
+}
 /* Tijdens reasoning klopt de kern sneller (echte denk-intensiteit). */
 .cosmic-working--thinking .cosmic-working__core {
   animation-duration: 1.4s;

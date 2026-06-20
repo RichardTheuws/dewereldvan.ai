@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.38.1] - 2026-06-20
+### Changed — werkveld zet nu de tijdsverwachting eerlijk
+- Het werkveld toont een **persistente verwachtings-regel** (roteert niet: "Goed speurwerk kost even — ik zoek
+  het web echt af … meestal een halve tot een hele minuut") + een **subtiele live seconden-teller** (eerlijk
+  "het loopt", geen nep-balk). De Discovery-CTA-copy benoemt de duur ook vooraf. Zo weet een lid dat de AI hier
+  echt tijd voor nodig heeft i.p.v. te denken dat het hangt.
+
 ## [0.38.0] - 2026-06-20
 ### Added — een levend "de agent is bezig"-werkveld (herbruikbaar) + echte voortgang in Discovery
 - **Probleem**: bij trage AI-acties (Discovery web-search ~20-40s) zag je alleen een statisch tekstje en leek

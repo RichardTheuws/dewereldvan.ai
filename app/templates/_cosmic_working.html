@@ -19,6 +19,12 @@
   </div>
   <p class="cosmic-working__status" data-cosmic-status
      sse-swap="search,fetch,progress" hx-swap="innerHTML">{{ working_status | default("Ik ben voor je aan het werk…") }}</p>
+  {# Persistente, eerlijke verwachting (roteert NIET) + een subtiele live teller
+     zodat zichtbaar is dat het écht doorloopt — geen nep-voortgangsbalk. #}
+  <p class="cosmic-working__hint">
+    {{ working_hint | default("Dit kost even — de AI doet hier echt werk.") }}
+    <span class="cosmic-working__elapsed" data-cosmic-elapsed aria-hidden="true"></span>
+  </p>
 </div>
 
 <script>
@@ -29,6 +35,15 @@
         root.dataset.cwBound = '1';
         var statusEl = root.querySelector('[data-cosmic-status]');
         if (!statusEl) return;
+        // Eerlijke live seconden-teller (geen %): laat zien dat het écht doorloopt.
+        var elapsedEl = root.querySelector('[data-cosmic-elapsed]');
+        var t0 = Date.now();
+        var etimer = setInterval(function () {
+          if (!document.contains(root)) { clearInterval(etimer); return; }
+          if (elapsedEl) {
+            elapsedEl.textContent = ' · ' + Math.round((Date.now() - t0) / 1000) + 's';
+          }
+        }, 1000);
         var idle = [
           'Ik weeg wat écht van jou is…',
           'Even geduld — ik wil het zeker weten…',
