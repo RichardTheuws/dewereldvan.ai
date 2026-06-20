@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.41.0] - 2026-06-20
+### Changed — Discovery-seintje weg van e-mail + directe deeplink naar je resultaat
+- **Geen e-mail meer voor de ontdekking** (e-mail blijft alléén voor de magic-link). Richting: e-mail is een
+  verouderd concept; notificaties horen waar de aandacht al is. De discovery-job stuurt nu **geen mail** — het
+  seintje is de pull-based **in-app chip** ("Je ontdekking is klaar"). Sluit aan op de Scout-PRD-pivot
+  ("pull-only, geen e-mail, geen push").
+- **Chip → directe deeplink**: de "klaar"-chip linkt nu naar een nieuwe pagina **`GET /profiel/ai/ontdek/resultaat`**
+  die meteen je bewaarde resultaat toont (en `seen_at` zet → chip verdwijnt). Nog lopend / niets / mislukt →
+  terug naar de bouwpagina. Standalone kosmische pagina (`discovery/resultaat.html`), hergebruikt de 1b-kaarten
+  in review-modus.
+- **Copy gelijkgetrokken**: het werkveld, de bouw-CTA en de tail-time-out zeggen nu "ik geef je een seintje in
+  de app" i.p.v. "ik mail je".
+- Voorbereiding op een **lid-gekozen notificatiekanaal** (Telegram + uitbreidbaar) — aparte voorkeurslaag,
+  volgt in een eigen PRD.
+- Tests bijgewerkt (geen-e-mail in de job, deeplink-pagina toont/markeert/redirect, chip linkt naar de deeplink).
+  **602 tests groen**, ruff clean op de gewijzigde bestanden.
+
 ## [0.40.0] - 2026-06-20
 ### Changed — Discovery draait nu als achtergrond-job (weglopen → seintje → terugkeren)
 - **Probleem**: het speurwerk duurt vaak >5 min, maar de live-SSE-stream sneuvelde al na **2 min**

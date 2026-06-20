@@ -6,8 +6,12 @@ op de 2-min-drain-cap (``CHANNEL_TIMEOUT_SEC``) vóór het einde. Daarom draait 
 engine hier in een **achtergrond-thread** (eigen sessie, zoals
 ``project_enrich_service.trigger_async``) die de bevindingen wegschrijft naar
 ``DiscoveryRun``. De live-view *tailt* die rij over SSE; wie wegklikt verliest
-niets — bij terugkeer staat het resultaat er nog, en een seintje (in-app chip +
-e-mail) haalt het lid terug.
+niets — bij terugkeer staat het resultaat er nog, en een **in-app seintje** (de
+``chip_discovery``-chip in de canvas) haalt het lid terug.
+
+Notificatie-kanaal: bewust **geen e-mail** (e-mail alleen nog voor de magic-link).
+De notificatie is nu de pull-based in-app chip; een lid-gekozen push-kanaal
+(Telegram, en uitbreidbaar) komt via een aparte notificatie-voorkeurslaag.
 
 Self-only (de caller dwingt ``require_member`` + het eigen profiel af). Best-effort:
 een fout markeert de run ``failed`` en breekt nooit de app/thread. Gegated op
@@ -23,7 +27,6 @@ import threading
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.config import settings
 from app.db import SessionLocal
 from app.models import DiscoveryRun, Member
 from app.security import naive_utc, utcnow
@@ -146,26 +149,22 @@ def run_job(
     *,
     session_factory: sessionmaker = SessionLocal,
     client=None,
-    send_email: bool = True,
 ) -> None:
     """Draai de ontdekking in een EIGEN sessie en persisteer de bevindingen.
 
     Schrijft elke binnenkomende kandidaat meteen naar de run (progressive persist:
     de tail toont ze zodra ze er zijn) en finaliseert de status op het eind.
-    Best-effort: vangt alles, markeert ``failed`` en stuurt nooit de thread om
-    zeep. Synchroon aanroepbaar in tests (geef ``session_factory`` + ``client``).
+    Het seintje is de pull-based in-app chip (``chip_discovery``), gedreven door
+    de run-status — geen actieve verzending (bewust geen e-mail). Best-effort:
+    vangt alles, markeert ``failed`` en stuurt nooit de thread om zeep. Synchroon
+    aanroepbaar in tests (geef ``session_factory`` + ``client``).
     """
-    member_email: str | None = None
-    member_name: str | None = None
-    count = 0
     try:
         with session_factory() as db:
             run = get_run(db, member_id)
             member = db.get(Member, member_id)
             if run is None or member is None:
                 return
-            member_email = member.email
-            member_name = member.name
             profile = profile_service.get_or_create_profile(db, member)
             db.commit()
 
@@ -193,17 +192,12 @@ def run_job(
             run.status = STATUS_DONE if findings else STATUS_EMPTY
             run.finished_at = naive_utc(utcnow())
             db.commit()
-            count = len(findings)
     except Exception:  # noqa: BLE001 — achtergrond-job mag nooit crashen
         logger.exception("Discovery-job faalde voor member %s", member_id)
         _mark_failed(member_id, session_factory)
     finally:
         with _inflight_lock:
             _inflight.discard(member_id)
-
-    # Seintje (best-effort, buiten de DB-sessie): e-mail als er iets gevonden is.
-    if send_email and count and member_email:
-        _notify_email(member_email, member_name, count)
 
 
 def _mark_failed(member_id: int, session_factory: sessionmaker) -> None:
@@ -217,37 +211,3 @@ def _mark_failed(member_id: int, session_factory: sessionmaker) -> None:
                 db.commit()
     except Exception:  # noqa: BLE001
         logger.exception("Discovery-job: kon run niet als failed markeren (%s)", member_id)
-
-
-def _notify_email(to: str, name: str | None, count: int) -> None:
-    """Stuur "je ontdekking is klaar"-mail (best-effort; faalt stil)."""
-    try:
-        from app.email import EmailMessage, get_email_sender
-
-        voornaam = (name or "").strip().split(" ")[0] if name else ""
-        groet = f"Hoi {voornaam}," if voornaam else "Hoi,"
-        woord = "vermelding" if count == 1 else "vermeldingen"
-        link = f"{settings.base_url.rstrip('/')}/profiel/ai/bouwen"
-        text = (
-            f"{groet}\n\n"
-            f"Ik heb je online opgezocht en {count} mogelijke {woord} gevonden. "
-            f"Bekijk ze en kies wat op je profiel mag:\n{link}\n\n"
-            "— dewereldvan.ai"
-        )
-        html = (
-            f"<p>{groet}</p>"
-            f"<p>Ik heb je online opgezocht en <strong>{count} mogelijke {woord}</strong> "
-            f"gevonden. Bekijk ze en kies wat op je profiel mag:</p>"
-            f'<p><a href="{link}">Bekijk je ontdekking</a></p>'
-            "<p>— dewereldvan.ai</p>"
-        )
-        get_email_sender().send(
-            EmailMessage(
-                to=to,
-                subject=f"Je ontdekking is klaar — {count} {woord}",
-                text_body=text,
-                html_body=html,
-            )
-        )
-    except Exception:  # noqa: BLE001 — een seintje mag de job niet beïnvloeden
-        logger.warning("Discovery: kon klaar-mail niet sturen naar %s", to, exc_info=True)

@@ -36,7 +36,7 @@ import logging
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -174,6 +174,35 @@ def start(
 
 
 # --------------------------------------------------------------------------- #
+# 1b. Resultaat-deeplink — de "klaar"-chip landt hier op het bewaarde resultaat #
+# --------------------------------------------------------------------------- #
+
+
+@router.get("/profiel/ai/ontdek/resultaat", response_class=HTMLResponse)
+def result_page(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+):
+    """Toon het bewaarde ontdekkings-resultaat (de in-app chip linkt hierheen).
+
+    Afgeronde run (done/empty) → de resultaatpagina (markeert ``seen_at``, stilt
+    de chip). Nog lopend / niets / mislukt → terug naar de bouwpagina (daar kan
+    het lid de live-ontdekking starten of reconnecten). Self-only.
+    """
+    run = discovery_job_service.get_run(db, member.id)
+    if run is None or run.status not in (
+        discovery_job_service.STATUS_DONE,
+        discovery_job_service.STATUS_EMPTY,
+    ):
+        return RedirectResponse("/profiel/ai/bouwen", status_code=303)
+    findings = discovery_job_service.findings_of(run)
+    discovery_job_service.mark_seen(db, run)
+    db.commit()
+    return _render(request, "discovery/resultaat.html", {"findings": findings})
+
+
+# --------------------------------------------------------------------------- #
 # 2. SSE-tail — volg de gepersisteerde run (job draait losgekoppeld)           #
 # --------------------------------------------------------------------------- #
 
@@ -240,8 +269,9 @@ async def stream(
             "done",
             _render_str(
                 request, "discovery/_done.html",
-                {"message": "Dit duurt langer dan verwacht — ik geef je een seintje "
-                            "per e-mail zodra het klaar is."},
+                {"message": "Dit duurt langer dan verwacht — kijk gerust rond; ik "
+                            "zet je resultaat klaar en geef een seintje in de app "
+                            "zodra het klaar is."},
             ),
         )
 

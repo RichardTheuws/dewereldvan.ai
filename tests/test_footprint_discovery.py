@@ -778,7 +778,7 @@ def test_run_job_persists_findings_and_marks_done(SessionTest, approved_id, monk
          "confidence": 95, "why": "x"},
     ])]}])
     discovery_job_service.run_job(
-        approved_id, session_factory=SessionTest, client=fake, send_email=False
+        approved_id, session_factory=SessionTest, client=fake
     )
 
     with SessionTest() as s:
@@ -798,48 +798,34 @@ def test_run_job_marks_empty_when_nothing_found(SessionTest, approved_id, monkey
     fake = FakeAnthropic([{"stop_reason": "end_turn",
                            "content": [_findings_block([])]}])
     discovery_job_service.run_job(
-        approved_id, session_factory=SessionTest, client=fake, send_email=False
+        approved_id, session_factory=SessionTest, client=fake
     )
     with SessionTest() as s:
         assert discovery_job_service.get_run(s, approved_id).status == "empty"
 
 
-def test_run_job_notifies_on_findings(SessionTest, approved_id, monkeypatch):
+def test_run_job_sends_no_email(SessionTest, approved_id, monkeypatch):
+    """Notificatie = pull-based in-app chip; de job stuurt bewust GEEN e-mail."""
     from app.services import discovery_job_service, footprint_service
 
     monkeypatch.setattr(footprint_service.settings, "ai_enrich_enabled", True)
     _seed_running_run(SessionTest, approved_id)
-    notified: list[tuple] = []
+    # Mocht er ooit per ongeluk een sender geraakt worden → vang het.
+    import app.email as email_pkg
+
+    sent: list = []
     monkeypatch.setattr(
-        discovery_job_service, "_notify_email",
-        lambda to, name, count: notified.append((to, count)),
+        email_pkg, "get_email_sender",
+        lambda: type("S", (), {"send": lambda self, m: sent.append(m)})(),
     )
     fake = FakeAnthropic([{"stop_reason": "end_turn", "content": [_findings_block([
         {"title": "P", "url": "https://p.example", "type": "media",
          "confidence": 70, "why": "x"},
     ])]}])
-    discovery_job_service.run_job(
-        approved_id, session_factory=SessionTest, client=fake, send_email=True
-    )
-    assert notified and notified[0][1] == 1
-
-
-def test_run_job_empty_does_not_notify(SessionTest, approved_id, monkeypatch):
-    from app.services import discovery_job_service, footprint_service
-
-    monkeypatch.setattr(footprint_service.settings, "ai_enrich_enabled", True)
-    _seed_running_run(SessionTest, approved_id)
-    notified: list = []
-    monkeypatch.setattr(
-        discovery_job_service, "_notify_email",
-        lambda to, name, count: notified.append(count),
-    )
-    fake = FakeAnthropic([{"stop_reason": "end_turn",
-                           "content": [_findings_block([])]}])
-    discovery_job_service.run_job(
-        approved_id, session_factory=SessionTest, client=fake, send_email=True
-    )
-    assert notified == []
+    discovery_job_service.run_job(approved_id, session_factory=SessionTest, client=fake)
+    assert sent == []  # geen e-mail
+    # run is wél afgerond → de chip drijft het seintje
+    assert "_notify_email" not in dir(discovery_job_service)
 
 
 # --------------------------------------------------------------------------- #
@@ -957,3 +943,67 @@ def test_discovery_chip_absent_when_seen(db, make_member, make_profile):
 
     kinds = [c.kind for c in nudge_service.select_chips(db, member)]
     assert "chip_discovery" not in kinds
+
+
+def test_discovery_chip_links_to_result_deeplink(db, make_member, make_profile):
+    from app.models import DiscoveryRun
+    from app.routers.concierge import _chip_view_model
+    from app.services import nudge_service
+
+    member = make_member(name="Lid")
+    make_profile(member, display_name="Lid")
+    db.add(DiscoveryRun(
+        member_id=member.id, status="done",
+        findings_json=json.dumps([
+            {"title": "A", "url": "https://a.example", "type": "media", "confidence": 70},
+        ]),
+    ))
+    db.flush()
+
+    chip = nudge_service.select_chips(db, member)[0]
+    vm = _chip_view_model(chip)
+    assert vm["url"] == "/profiel/ai/ontdek/resultaat"
+
+
+# --------------------------------------------------------------------------- #
+# Resultaat-deeplink (GET-pagina)                                             #
+# --------------------------------------------------------------------------- #
+
+
+def test_result_page_shows_saved_findings_and_marks_seen(
+    make_client, approved_id, SessionTest
+):
+    _seed_done_run(SessionTest, approved_id, [
+        {"title": "Bewaard project", "url": "https://x.example", "type": "media",
+         "confidence": 80, "why": "eerder gevonden"},
+    ])
+    client = make_client(approved_id)
+    resp = client.get("/profiel/ai/ontdek/resultaat")
+    assert resp.status_code == 200
+    assert "Bewaard project" in resp.text
+    assert "Dit vond ik voor je" in resp.text
+    with SessionTest() as s:
+        from app.services import discovery_job_service
+
+        assert discovery_job_service.get_run(s, approved_id).seen_at is not None
+
+
+def test_result_page_redirects_when_no_run(make_client, approved_id):
+    client = make_client(approved_id)
+    resp = client.get("/profiel/ai/ontdek/resultaat", follow_redirects=False)
+    assert resp.status_code == 303
+    assert resp.headers["location"].endswith("/profiel/ai/bouwen")
+
+
+def test_result_page_redirects_when_still_running(make_client, approved_id, SessionTest):
+    _seed_running_run(SessionTest, approved_id)
+    client = make_client(approved_id)
+    resp = client.get("/profiel/ai/ontdek/resultaat", follow_redirects=False)
+    assert resp.status_code == 303
+
+
+def test_result_page_anonymous_blocked(make_client):
+    client = make_client(None)
+    resp = client.get("/profiel/ai/ontdek/resultaat", follow_redirects=False)
+    assert resp.status_code in (302, 303)
+    assert resp.headers["location"].endswith("/login")

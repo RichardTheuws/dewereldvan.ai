@@ -303,7 +303,7 @@ def select_chips(
                     kind="chip_discovery",
                     message=f"Je ontdekking is klaar — {found} {woord}",
                     action_label="bekijk je ontdekking",
-                    action="navigate:/profiel/ai/bouwen",
+                    action="navigate:/profiel/ai/ontdek/resultaat",
                 )
             )
 
