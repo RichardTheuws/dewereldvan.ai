@@ -1,0 +1,28 @@
+{# Terugkeer-view: het bewaarde resultaat van een afgeronde ontdekking. Getoond
+   door POST /profiel/ai/ontdek als er een afgeronde run is (geen nieuwe zoektocht).
+   Alle kaarten staan hier als bewuste keuze (geen auto-koppeling op terugkeer —
+   `auto=false` — zodat een herbezoek nooit ongevraagd iets toevoegt of dupliceert;
+   crystalliseren is bovendien idempotent op URL). "Opnieuw zoeken" herstart de job. #}
+<div class="ontdek ontdek--result">
+  {% if findings %}
+  <p class="ontdek__result muted">
+    Dit vond ik eerder voor je — kies wat op je profiel mag.
+  </p>
+  <div class="ontdek__cards" data-ontdek-cards>
+    {% for finding in findings %}
+      {% set auto = false %}
+      {% include "discovery/_candidate.html" %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="ontdek__result muted">
+    Ik kon online niets met zekerheid aan jou koppelen. Misschien lukt het nu wel.
+  </p>
+  {% endif %}
+
+  <form class="mt-6" hx-post="/profiel/ai/ontdek"
+        hx-target="closest .ontdek" hx-swap="outerHTML">
+    <input type="hidden" name="force" value="1">
+    <button type="submit" class="btn btn--ghost btn--sm">✦ Opnieuw zoeken</button>
+  </form>
+</div>

@@ -351,13 +351,20 @@ def _csrf(client) -> str:
     return m.group(1)
 
 
-def test_start_renders_discovery_host(make_client, approved_id):
+def test_start_renders_discovery_host(make_client, approved_id, monkeypatch):
+    from app.services import discovery_job_service
+
+    started: list[int] = []
+    monkeypatch.setattr(
+        discovery_job_service, "start", lambda db, member: started.append(member.id)
+    )
     client = make_client(approved_id)
     token = _csrf(client)
     resp = client.post("/profiel/ai/ontdek", headers={"X-CSRF-Token": token})
     assert resp.status_code == 200
     assert "/profiel/ai/ontdek/stream" in resp.text
     assert "data-ontdek-host" in resp.text
+    assert started == [approved_id]  # achtergrond-job gestart
 
 
 def test_stream_anonymous_blocked(make_client):
@@ -368,18 +375,14 @@ def test_stream_anonymous_blocked(make_client):
     assert resp.headers["location"].endswith("/login")
 
 
-def test_stream_emits_candidates_and_done(make_client, approved_id, monkeypatch):
-    from app.services import footprint_service as fs
+def test_stream_tails_run_candidates_and_done(make_client, approved_id, monkeypatch):
+    from app.routers import discovery as disc
 
-    def _fake_discover(profile, send_event, *, client=None):
-        send_event("search", "Ik zoek je op het web…")
-        send_event("candidate", json.dumps({
-            "title": "Mijn project", "url": "https://x.example",
-            "type": "project", "confidence": 90, "why": "eigen domein"}))
-        send_event("done", "Ik vond 1 mogelijke vermeldingen.")
-        return []
-
-    monkeypatch.setattr(fs, "discover", _fake_discover)
+    # De tail leest de gepersisteerde run; we leveren een afgeronde snapshot.
+    monkeypatch.setattr(disc, "_snapshot", lambda mid: ("done", [
+        {"title": "Mijn project", "url": "https://x.example",
+         "type": "project", "confidence": 90, "why": "eigen domein"},
+    ]))
 
     client = make_client(approved_id)
     with client.stream("GET", "/profiel/ai/ontdek/stream") as resp:
@@ -387,11 +390,29 @@ def test_stream_emits_candidates_and_done(make_client, approved_id, monkeypatch)
         assert resp.headers["content-type"].startswith("text/event-stream")
         body = "".join(resp.iter_text())
 
-    assert "event: search" in body
     assert "event: candidate" in body
     assert "Mijn project" in body
     assert "field--materializing" in body  # de kaart vliegt binnen
     assert "event: done" in body
+    assert "id: 1" in body  # SSE-id voor Last-Event-ID-hervatting
+
+
+def test_stream_resumes_after_last_event_id(make_client, approved_id, monkeypatch):
+    """Met Last-Event-ID overslaan we al-getoonde kaarten (geen herhaling)."""
+    from app.routers import discovery as disc
+
+    monkeypatch.setattr(disc, "_snapshot", lambda mid: ("done", [
+        {"title": "Eerste", "url": "https://a.example", "type": "media", "confidence": 80},
+        {"title": "Tweede", "url": "https://b.example", "type": "media", "confidence": 80},
+    ]))
+    client = make_client(approved_id)
+    with client.stream(
+        "GET", "/profiel/ai/ontdek/stream", headers={"Last-Event-ID": "1"}
+    ) as resp:
+        body = "".join(resp.iter_text())
+
+    assert "Tweede" in body
+    assert "Eerste" not in body  # al getoond vóór de reconnect
 
 
 def test_koppel_project_renders_offering_draft(make_client, approved_id):
@@ -570,16 +591,12 @@ def test_undo_offering_requires_ownership(db, make_member, make_profile):
 
 
 def test_stream_high_confidence_card_is_auto(make_client, approved_id, monkeypatch):
-    from app.services import footprint_service as fs
+    from app.routers import discovery as disc
 
-    def _fake_discover(profile, send_event, *, client=None):
-        send_event("candidate", json.dumps({
-            "title": "Zeker project", "url": "https://x.example",
-            "type": "project", "confidence": 96, "why": "eigen domein"}))
-        send_event("done", "klaar")
-        return []
-
-    monkeypatch.setattr(fs, "discover", _fake_discover)
+    monkeypatch.setattr(disc, "_snapshot", lambda mid: ("done", [
+        {"title": "Zeker project", "url": "https://x.example",
+         "type": "project", "confidence": 96, "why": "eigen domein"},
+    ]))
     client = make_client(approved_id)
     with client.stream("GET", "/profiel/ai/ontdek/stream") as resp:
         body = "".join(resp.iter_text())
@@ -591,16 +608,12 @@ def test_stream_high_confidence_card_is_auto(make_client, approved_id, monkeypat
 
 
 def test_stream_low_confidence_card_is_confirm_row(make_client, approved_id, monkeypatch):
-    from app.services import footprint_service as fs
+    from app.routers import discovery as disc
 
-    def _fake_discover(profile, send_event, *, client=None):
-        send_event("candidate", json.dumps({
-            "title": "Misschien jij", "url": "https://maybe.example",
-            "type": "media", "confidence": 55, "why": "naamgenoot?"}))
-        send_event("done", "klaar")
-        return []
-
-    monkeypatch.setattr(fs, "discover", _fake_discover)
+    monkeypatch.setattr(disc, "_snapshot", lambda mid: ("done", [
+        {"title": "Misschien jij", "url": "https://maybe.example",
+         "type": "media", "confidence": 55, "why": "naamgenoot?"},
+    ]))
     client = make_client(approved_id)
     with client.stream("GET", "/profiel/ai/ontdek/stream") as resp:
         body = "".join(resp.iter_text())
@@ -706,3 +719,241 @@ def test_crystalliseer_anonymous_blocked(make_client):
         follow_redirects=False,
     )
     assert resp.status_code in (302, 303, 403)
+
+
+def test_crystallize_is_idempotent_on_url(db, make_member, make_profile):
+    """Tweemaal dezelfde project-URL koppelen maakt GEEN duplicaat (auto re-render)."""
+    member = make_member(name="Maker")
+    profile = make_profile(member, display_name="Maker")
+    r1 = footprint_service.crystallize(
+        db, profile, member, title="Project", url="https://x.example", ftype="project"
+    )
+    r2 = footprint_service.crystallize(
+        db, profile, member, title="Project (weer)", url="https://x.example", ftype="project"
+    )
+    assert r1.id == r2.id
+    assert len([o for o in profile.offerings if o.url == "https://x.example"]) == 1
+
+
+def test_crystallize_news_idempotent_on_url(db, make_member, make_profile):
+    from app.models import Post, PostKind
+
+    member = make_member(name="X")
+    profile = make_profile(member, display_name="X")
+    r1 = footprint_service.crystallize(
+        db, profile, member, title="A", url="https://n.example", ftype="media"
+    )
+    r2 = footprint_service.crystallize(
+        db, profile, member, title="A weer", url="https://n.example", ftype="media"
+    )
+    assert r1.id == r2.id
+    posts = [
+        p for p in db.query(Post).all()
+        if p.kind == PostKind.nieuws and p.url == "https://n.example"
+    ]
+    assert len(posts) == 1
+
+
+# --------------------------------------------------------------------------- #
+# Achtergrond-job: run_job persist/status/notify (synchroon)                  #
+# --------------------------------------------------------------------------- #
+
+
+def _seed_running_run(SessionTest, member_id):
+    from app.models import DiscoveryRun
+
+    with SessionTest() as s:
+        s.add(DiscoveryRun(member_id=member_id, status="running"))
+        s.commit()
+
+
+def test_run_job_persists_findings_and_marks_done(SessionTest, approved_id, monkeypatch):
+    from app.services import discovery_job_service, footprint_service
+
+    monkeypatch.setattr(footprint_service.settings, "ai_enrich_enabled", True)
+    _seed_running_run(SessionTest, approved_id)
+
+    fake = FakeAnthropic([{"stop_reason": "end_turn", "content": [_findings_block([
+        {"title": "P", "url": "https://p.example", "type": "project",
+         "confidence": 95, "why": "x"},
+    ])]}])
+    discovery_job_service.run_job(
+        approved_id, session_factory=SessionTest, client=fake, send_email=False
+    )
+
+    with SessionTest() as s:
+        run = discovery_job_service.get_run(s, approved_id)
+        assert run.status == "done"
+        assert run.finished_at is not None
+        data = json.loads(run.findings_json)
+        assert len(data) == 1 and data[0]["url"] == "https://p.example"
+
+
+def test_run_job_marks_empty_when_nothing_found(SessionTest, approved_id, monkeypatch):
+    from app.services import discovery_job_service, footprint_service
+
+    monkeypatch.setattr(footprint_service.settings, "ai_enrich_enabled", True)
+    _seed_running_run(SessionTest, approved_id)
+
+    fake = FakeAnthropic([{"stop_reason": "end_turn",
+                           "content": [_findings_block([])]}])
+    discovery_job_service.run_job(
+        approved_id, session_factory=SessionTest, client=fake, send_email=False
+    )
+    with SessionTest() as s:
+        assert discovery_job_service.get_run(s, approved_id).status == "empty"
+
+
+def test_run_job_notifies_on_findings(SessionTest, approved_id, monkeypatch):
+    from app.services import discovery_job_service, footprint_service
+
+    monkeypatch.setattr(footprint_service.settings, "ai_enrich_enabled", True)
+    _seed_running_run(SessionTest, approved_id)
+    notified: list[tuple] = []
+    monkeypatch.setattr(
+        discovery_job_service, "_notify_email",
+        lambda to, name, count: notified.append((to, count)),
+    )
+    fake = FakeAnthropic([{"stop_reason": "end_turn", "content": [_findings_block([
+        {"title": "P", "url": "https://p.example", "type": "media",
+         "confidence": 70, "why": "x"},
+    ])]}])
+    discovery_job_service.run_job(
+        approved_id, session_factory=SessionTest, client=fake, send_email=True
+    )
+    assert notified and notified[0][1] == 1
+
+
+def test_run_job_empty_does_not_notify(SessionTest, approved_id, monkeypatch):
+    from app.services import discovery_job_service, footprint_service
+
+    monkeypatch.setattr(footprint_service.settings, "ai_enrich_enabled", True)
+    _seed_running_run(SessionTest, approved_id)
+    notified: list = []
+    monkeypatch.setattr(
+        discovery_job_service, "_notify_email",
+        lambda to, name, count: notified.append(count),
+    )
+    fake = FakeAnthropic([{"stop_reason": "end_turn",
+                           "content": [_findings_block([])]}])
+    discovery_job_service.run_job(
+        approved_id, session_factory=SessionTest, client=fake, send_email=True
+    )
+    assert notified == []
+
+
+# --------------------------------------------------------------------------- #
+# Start: resume / running / restart                                           #
+# --------------------------------------------------------------------------- #
+
+
+def _seed_done_run(SessionTest, member_id, findings):
+    from app.models import DiscoveryRun
+    from app.security import naive_utc, utcnow
+
+    with SessionTest() as s:
+        s.add(DiscoveryRun(
+            member_id=member_id, status="done",
+            findings_json=json.dumps(findings),
+            finished_at=naive_utc(utcnow()),
+        ))
+        s.commit()
+
+
+def test_start_resumes_done_run_shows_result(make_client, approved_id, SessionTest):
+    _seed_done_run(SessionTest, approved_id, [
+        {"title": "Bewaard", "url": "https://x.example", "type": "media",
+         "confidence": 80, "why": "eerder gevonden"},
+    ])
+    client = make_client(approved_id)
+    token = _csrf(client)
+    resp = client.post("/profiel/ai/ontdek", headers={"X-CSRF-Token": token})
+    assert resp.status_code == 200
+    assert "Bewaard" in resp.text
+    assert "Opnieuw zoeken" in resp.text
+    assert "data-ontdek-host" not in resp.text  # geen nieuwe stream
+    # gemarkeerd als gezien
+    with SessionTest() as s:
+        from app.services import discovery_job_service
+
+        assert discovery_job_service.get_run(s, approved_id).seen_at is not None
+
+
+def test_start_running_run_shows_host_without_restart(
+    make_client, approved_id, SessionTest, monkeypatch
+):
+    from app.services import discovery_job_service
+
+    _seed_running_run(SessionTest, approved_id)
+    started: list = []
+    monkeypatch.setattr(
+        discovery_job_service, "start", lambda db, member: started.append(member.id)
+    )
+    client = make_client(approved_id)
+    token = _csrf(client)
+    resp = client.post("/profiel/ai/ontdek", headers={"X-CSRF-Token": token})
+    assert resp.status_code == 200
+    assert "data-ontdek-host" in resp.text  # reconnect op lopende job
+    assert started == []  # geen herstart
+
+
+def test_start_force_restarts_done_run(make_client, approved_id, SessionTest, monkeypatch):
+    from app.services import discovery_job_service
+
+    _seed_done_run(SessionTest, approved_id, [{"title": "Oud", "url": "https://o.example",
+                                               "type": "media", "confidence": 80}])
+    started: list = []
+    monkeypatch.setattr(
+        discovery_job_service, "start", lambda db, member: started.append(member.id)
+    )
+    client = make_client(approved_id)
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/ontdek", data={"force": "1"}, headers={"X-CSRF-Token": token}
+    )
+    assert resp.status_code == 200
+    assert "data-ontdek-host" in resp.text
+    assert started == [approved_id]  # opnieuw gezocht
+
+
+# --------------------------------------------------------------------------- #
+# In-app chip: "ontdekking klaar"                                             #
+# --------------------------------------------------------------------------- #
+
+
+def test_discovery_ready_chip_appears(db, make_member, make_profile):
+    from app.models import DiscoveryRun
+    from app.services import nudge_service
+
+    member = make_member(name="Lid")
+    make_profile(member, display_name="Lid")
+    db.add(DiscoveryRun(
+        member_id=member.id, status="done",
+        findings_json=json.dumps([
+            {"title": "A", "url": "https://a.example", "type": "media", "confidence": 70},
+        ]),
+    ))
+    db.flush()
+
+    chips = nudge_service.select_chips(db, member)
+    assert chips and chips[0].kind == "chip_discovery"
+    assert "1 vermelding" in chips[0].message
+
+
+def test_discovery_chip_absent_when_seen(db, make_member, make_profile):
+    from app.models import DiscoveryRun
+    from app.security import naive_utc, utcnow
+    from app.services import nudge_service
+
+    member = make_member(name="Lid")
+    make_profile(member, display_name="Lid")
+    db.add(DiscoveryRun(
+        member_id=member.id, status="done", seen_at=naive_utc(utcnow()),
+        findings_json=json.dumps([
+            {"title": "A", "url": "https://a.example", "type": "media", "confidence": 70},
+        ]),
+    ))
+    db.flush()
+
+    kinds = [c.kind for c in nudge_service.select_chips(db, member)]
+    assert "chip_discovery" not in kinds

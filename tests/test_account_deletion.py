@@ -105,6 +105,10 @@ def _seed_full_member(db, *, email: str, shared_tag=None):
     db.flush()
     db.add(IdeaVote(idea_id=idea.id, member_id=member.id))
 
+    from app.models import DiscoveryRun
+
+    db.add(DiscoveryRun(member_id=member.id, status="done", findings_json="[]"))
+
     db.flush()
     return member, photo_path, shared_tag
 
@@ -117,6 +121,7 @@ def test_delete_member_completely_removes_everything(db):
         AiChatTurn,
         ConciergeNudgeDismissal,
         ConciergeTurn,
+        DiscoveryRun,
         Feedback,
         Idea,
         IdeaVote,
@@ -161,6 +166,7 @@ def test_delete_member_completely_removes_everything(db):
     assert _count(Feedback, Feedback.member_id) == 0
     assert _count(Idea, Idea.member_id) == 0
     assert _count(IdeaVote, IdeaVote.member_id) == 0
+    assert _count(DiscoveryRun, DiscoveryRun.member_id) == 0
 
     # Profiel-kinderen (via profile_id) ook weg — geen wees-data.
     victim_profile_ids = list(

@@ -36,12 +36,13 @@ from app.models import (
     AuditLog,
     ConciergeNudgeDismissal,
     ConciergeTurn,
+    Connection,
+    DiscoveryRun,
     Feedback,
     GroupInvite,
     Idea,
     IdeaVote,
     MagicLinkToken,
-    Connection,
     MatchSuggestion,
     Member,
     Need,
@@ -180,6 +181,7 @@ def delete_member_completely(db: Session, member: Member) -> None:
         )
     )
     db.execute(delete(PersonalToken).where(PersonalToken.member_id == member_id))
+    db.execute(delete(DiscoveryRun).where(DiscoveryRun.member_id == member_id))
     db.execute(delete(ConciergeTurn).where(ConciergeTurn.member_id == member_id))
     db.execute(delete(AiChatTurn).where(AiChatTurn.member_id == member_id))
     db.execute(delete(MagicLinkToken).where(MagicLinkToken.member_id == member_id))

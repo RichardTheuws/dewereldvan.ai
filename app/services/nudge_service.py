@@ -290,6 +290,23 @@ def select_chips(
 
     chips: list[Nudge] = []
 
+    # 0z. Ontdekking klaar (hoogste prioriteit) — een persoonlijk, net-af resultaat
+    #     dat op terugkeer wacht. De achtergrond-job vulde 'm terwijl het lid rondkeek.
+    if viewer is not None and "chip_discovery" not in dismissed:
+        from app.services import discovery_job_service
+
+        found = discovery_job_service.unseen_result_count(db, viewer.id)
+        if found >= 1:
+            woord = "vermelding" if found == 1 else "vermeldingen"
+            chips.append(
+                Nudge(
+                    kind="chip_discovery",
+                    message=f"Je ontdekking is klaar — {found} {woord}",
+                    action_label="bekijk je ontdekking",
+                    action="navigate:/profiel/ai/bouwen",
+                )
+            )
+
     # 0a. Inkomende intro's (hoogste prioriteit) — iemand wacht op je antwoord.
     if viewer is not None and "chip_intros" not in dismissed:
         from app.services import connection_service

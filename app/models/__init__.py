@@ -27,6 +27,7 @@ from app.models.base import (
 )
 from app.models.concierge import ConciergeNudgeDismissal, ConciergeTurn
 from app.models.connection import Connection
+from app.models.discovery_run import DiscoveryRun
 from app.models.feedback import Feedback
 from app.models.group_invite import GroupInvite
 from app.models.idea import Idea
@@ -85,4 +86,5 @@ __all__ = [
     "MatchSuggestion",
     "Connection",
     "PersonalToken",
+    "DiscoveryRun",
 ]

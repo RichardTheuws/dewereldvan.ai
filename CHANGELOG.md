@@ -3,6 +3,29 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.40.0] - 2026-06-20
+### Changed — Discovery draait nu als achtergrond-job (weglopen → seintje → terugkeren)
+- **Probleem**: het speurwerk duurt vaak >5 min, maar de live-SSE-stream sneuvelde al na **2 min**
+  (`CHANNEL_TIMEOUT_SEC`) — de ontdekking bereikte het einde nooit, en niets werd bewaard, dus terugkeren
+  naar het resultaat kon niet.
+- **Oplossing**: de ontdekking is **ontkoppeld van het browservenster**. Een achtergrond-thread
+  (`discovery_job_service`, eigen sessie zoals de project-enrich) draait de engine en **persisteert** de
+  bevindingen naar een nieuw `DiscoveryRun`-model (migratie 0019, één run per lid, CASCADE + AVG-wis). De
+  live-view **tailt** die run over SSE; `Last-Event-ID` laat 'm na een reconnect hervatten zonder kaarten te
+  herhalen. De 2-min-cap raakt de job niet meer.
+- **Je mag wegklikken**: het werkveld zegt nu eerlijk *"Dit duurt een paar minuten — kijk gerust rond, ik mail
+  je zodra het klaar is en bewaar het resultaat."* De job loopt door als je weggaat.
+- **Seintje bij klaar (beide kanalen)**: een **in-app chip** ("Je ontdekking is klaar — N vermeldingen",
+  hoogste prioriteit in de canvas-nudge-laag) **én** een **e-mail** met een link terug. De e-mail is de fix
+  voor wie de site verliet.
+- **Terugkeren**: open de ontdek-actie opnieuw → je ziet meteen het **bewaarde resultaat** (en het markeert
+  zich als gezien, chip verdwijnt). "Opnieuw zoeken" (`force`) herstart de job. Op terugkeer koppelt niets
+  automatisch (review-modus); crystalliseren is bovendien **idempotent op URL** → geen duplicaten bij
+  her-render/dubbelklik/reload.
+- 12 nieuwe tests (job persist/empty/notify, tail + Last-Event-ID-hervatting, resume/running/force,
+  klaar-chip aan/uit, URL-idempotentie) + DiscoveryRun in de account-wis-compleetheidstest. Migratie 0019
+  up/down bewezen op SQLite. **598 tests groen**, ruff clean op de gewijzigde bestanden.
+
 ## [0.39.0] - 2026-06-20
 ### Added — Discovery (Fase 1b): de crystalliseer/bevestig-laag
 - **Een vondst wordt nu écht je profiel.** Waar 1a kandidaten liet voorbijvliegen, koppelt 1b ze: een vondst

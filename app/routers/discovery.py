@@ -1,16 +1,17 @@
-"""Discovery-routes (Fase 1a) — de live-streamende footprint-ontdekking.
+"""Discovery-routes — de footprint-ontdekking als achtergrond-job + live-tail.
 
 De expliciete profiel-actie "Zal ik je online opzoeken en je profiel aanvullen?"
-→ ``footprint_service.discover`` zoekt het lid op, disambigueert, classificeert en
-streamt de gegronde bevindingen live de canvas in (kosmische kaarten die
-voorbijvliegen + crystalliseren). Per kaart: ✓ Koppelen (→ voorgevuld draft naar
-een bestaand endpoint) / ✗ Negeren (kaart verdwijnt). NIETS wordt gepersisteerd
-zonder de bevestig-klik.
+start een **achtergrond-job** (``discovery_job_service``) die ``footprint_service.
+discover`` draait en de gegronde bevindingen persisteert naar ``DiscoveryRun``. De
+ontdekking duurt minuten; daarom houden we 'm NIET in de request: de SSE-route
+*tailt* de gepersisteerde run. Wie wegklikt verliest niets — terugkeren toont het
+bewaarde resultaat, en een seintje (in-app chip + e-mail) haalt het lid terug.
+Per kaart: hoge confidence crystalliseert live mét undo; twijfel → 1-klik "klopt
+dit?"-bevestigrij. NIETS wordt op het profiel gepersisteerd zonder de drempel/klik.
 
 Self-only (AVG): elke route opereert UITSLUITEND op het profiel van het ingelogde
-lid (``require_member``). CSRF via ``hx-headers``. Spiegelt de SSE-machinerie van
-``ai_profile`` (``_sse_event`` + ``ai_conversation._Channel`` + ``run_in_threadpool``-
-drain + ``CHANNEL_TIMEOUT_SEC``).
+lid (``require_member``). CSRF via ``hx-headers``. ``Last-Event-ID`` laat de tail
+na een reconnect hervatten zonder kaarten te herhalen.
 
 Fase 1b — de crystalliseer/bevestig-laag: een vondst met hoge confidence
 (``footprint_service.HIGH_CONFIDENCE``) crystalliseert live mét undo; een
@@ -18,8 +19,9 @@ twijfelgeval gaat naar de 1-klik "klopt dit?"-bevestigrij. Crystalliseren maakt
 een ECHTE entiteit (project -> Offering + enrich; anders -> nieuws-Post).
 
 Routes:
-1. ``POST /profiel/ai/ontdek``           — start (render de discovery-host; opent de SSE).
-2. ``GET  /profiel/ai/ontdek/stream``    — de SSE-stroom (search/reasoning/candidate/done).
+1. ``POST /profiel/ai/ontdek``           — start/hervat de job, of toon meteen het
+   bewaarde resultaat (terugkeren). ``force`` = opnieuw zoeken.
+2. ``GET  /profiel/ai/ontdek/stream``    — tail de run over SSE (candidate/done).
 3. ``POST /profiel/ai/ontdek/koppel``    — render het voorgevulde draft-formulier voor
    één kandidaat (GEEN write; "aanpassen voor je koppelt").
 4. ``POST /profiel/ai/ontdek/crystalliseer`` — koppel één vondst écht (Offering/nieuws),
@@ -30,13 +32,11 @@ Routes:
 
 from __future__ import annotations
 
-import json
 import logging
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import HTMLResponse, StreamingResponse
-from markupsafe import escape
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -44,7 +44,7 @@ from app.db import get_db
 from app.deps import require_member
 from app.models import Member
 from app.services import (
-    ai_conversation,
+    discovery_job_service,
     footprint_service,
     profile_service,
     project_enrich_service,
@@ -76,40 +76,105 @@ def safe_url(value: str | None) -> str:
     return _safe_url(value)
 
 
-def _sse_event(event: str | None, data: str) -> str:
-    """Format one SSE event. Multi-line ``data`` is split into ``data:`` lines."""
-    lines = "".join(f"data: {line}\n" for line in data.split("\n"))
+def _sse_event(event: str | None, data: str, *, event_id: int | None = None) -> str:
+    """Format one SSE event. Multi-line ``data`` is split into ``data:`` lines.
+
+    ``event_id`` zet het SSE ``id:``-veld → de browser stuurt het bij een
+    reconnect terug als ``Last-Event-ID``, zodat de tail hervat zonder al
+    getoonde kaarten te herhalen."""
+    id_line = f"id: {event_id}\n" if event_id is not None else ""
     prefix = f"event: {event}\n" if event else ""
-    return f"{prefix}{lines}\n"
+    lines = "".join(f"data: {line}\n" for line in data.split("\n"))
+    return f"{id_line}{prefix}{lines}\n"
+
+
+# Tail-parameters: de live-view tailt de gepersisteerde run. De job draait
+# losgekoppeld in een thread, dus de tail mag rustig pollen en heeft een ruime
+# wall-clock-veiligheidsklep (niet de oude 2-min-cap die het einde miste).
+_TAIL_POLL_SEC: float = 1.2
+_TAIL_MAX_SEC: float = 600.0
+
+
+def _snapshot(member_id: int) -> tuple[str | None, list[dict]]:
+    """(status, findings) van de run in een EIGEN sessie (voor de async tail).
+
+    Aparte helper zodat de tail niet de request-sessie minutenlang vasthoudt —
+    en zodat tests 'm kunnen patchen zonder DB.
+    """
+    from app.db import SessionLocal
+
+    with SessionLocal() as db:
+        return discovery_job_service.snapshot(db, member_id)
+
+
+def _candidate_html(request: Request, finding: dict) -> str:
+    return _render_str(
+        request,
+        "discovery/_candidate.html",
+        {
+            "finding": finding,
+            "auto": footprint_service.is_high_confidence(finding.get("confidence")),
+        },
+    )
 
 
 # --------------------------------------------------------------------------- #
-# 1. Start — render de discovery-host (opent de SSE)                           #
+# 1. Start — (her)start de job, of toon meteen een afgerond resultaat          #
 # --------------------------------------------------------------------------- #
 
 
 @router.post("/profiel/ai/ontdek", response_class=HTMLResponse)
 def start(
     request: Request,
+    force: str = Form(""),
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
-    """Open de live-ontdekking (SSE-host). Self-only: het eigen profiel."""
+    """Start/hervat de ontdekking, of toon een al-afgerond resultaat (self-only).
+
+    - Geen/failed run, of ``force`` ("opnieuw zoeken") → start een achtergrond-job
+      en render de live-host (de SSE tailt de run).
+    - Lopende run → render de live-host (reconnect op de lopende job).
+    - Afgeronde run (done/empty) zonder ``force`` → toon meteen het bewaarde
+      resultaat (terugkeren) en markeer 'm als gezien (stilt de "klaar"-chip).
+    """
     if not settings.ai_enrich_enabled:
         return _render(
-            request,
-            "discovery/_done.html",
-            {"message": "AI-ontdekking staat momenteel uit."},
-            status_code=200,
+            request, "discovery/_done.html",
+            {"message": "AI-ontdekking staat momenteel uit."}, status_code=200,
         )
-    # Borg dat het eigen profiel bestaat (de stream opereert erop).
     profile_service.get_or_create_profile(db, member)
     db.commit()
+
+    run = discovery_job_service.get_run(db, member.id)
+    restart = bool(force.strip())
+
+    if run is not None and not restart and run.status in (
+        discovery_job_service.STATUS_DONE,
+        discovery_job_service.STATUS_EMPTY,
+    ):
+        # Terugkeren: toon het bewaarde resultaat (geen nieuwe zoektocht).
+        findings = discovery_job_service.findings_of(run)
+        discovery_job_service.mark_seen(db, run)
+        db.commit()
+        return _render(
+            request,
+            "discovery/_result.html",
+            {
+                "findings": findings,
+                "high": footprint_service.HIGH_CONFIDENCE,
+                "resumed": True,
+            },
+        )
+
+    if run is None or restart or run.status == discovery_job_service.STATUS_FAILED:
+        discovery_job_service.start(db, member)
+
     return _render(request, "discovery/_stream_host.html", {})
 
 
 # --------------------------------------------------------------------------- #
-# 2. SSE-stream — search / reasoning / candidate / done                       #
+# 2. SSE-tail — volg de gepersisteerde run (job draait losgekoppeld)           #
 # --------------------------------------------------------------------------- #
 
 
@@ -119,92 +184,66 @@ async def stream(
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ):
-    """Server-Sent Events voor de footprint-ontdekking (self-only).
+    """Tail de ``DiscoveryRun`` over SSE (self-only).
 
-    ``footprint_service.discover`` draait in een threadpool en duwt (event, data)
-    via één ``_Channel``; de async generator pompt die naar de browser. De
-    ``candidate``-events dragen een server-side gerenderde kosmische kaart (echte
-    data). Faal-takken leveren altijd een nette ``done``.
+    De achtergrond-job vult de run; deze generator leest 'm periodiek en zendt
+    nieuwe kandidaten als kosmische kaarten + een afsluitende ``done``. ``Last-
+    Event-ID`` (reconnect) laat de tail hervatten zonder kaarten te herhalen. De
+    job loopt door als het lid wegklikt — terugkeren toont het bewaarde resultaat.
     """
-    profile = profile_service.get_or_create_profile(db, member)
     member_id = member.id
-    ch = ai_conversation._Channel()
-
-    def _run() -> None:
-        try:
-            footprint_service.discover(
-                profile, lambda event, data: ch.send((event, data))
-            )
-        except Exception:  # noqa: BLE001 — surface as a friendly done, no traceback
-            logger.exception("Discovery faalde voor member %s", member_id)
-            ch.send(("done", "Er ging iets mis bij het zoeken."))
-        finally:
-            ch.close()
 
     async def _gen():
         if not settings.ai_enrich_enabled:
             yield _sse_event(
                 "done",
-                _render_str(
-                    request, "discovery/_done.html",
-                    {"message": "AI-ontdekking staat momenteel uit."},
-                ),
+                _render_str(request, "discovery/_done.html",
+                            {"message": "AI-ontdekking staat momenteel uit."}),
             )
             return
 
         import asyncio
         import time
 
-        from app.services.ai_conversation import CHANNEL_TIMEOUT_SEC
+        try:
+            sent = int(request.headers.get("last-event-id", "") or 0)
+        except (TypeError, ValueError):
+            sent = 0
 
-        task = asyncio.ensure_future(run_in_threadpool(_run))
-        deadline = time.monotonic() + CHANNEL_TIMEOUT_SEC
+        deadline = time.monotonic() + _TAIL_MAX_SEC
+        while time.monotonic() < deadline:
+            status, findings = await run_in_threadpool(_snapshot, member_id)
 
-        done = False
-        while not done:
-            if time.monotonic() > deadline:
-                logger.warning(
-                    "Discovery stream-drain timeout voor member %s; stop.", member_id
-                )
-                break
-            item = await run_in_threadpool(ch.get, 0.05)
-            if item is None and task.done() and ch.q.empty():
-                done = True
+            while sent < len(findings):
+                html = _candidate_html(request, findings[sent])
+                sent += 1
+                yield _sse_event("candidate", html, event_id=sent)
+
+            if status is None or status == discovery_job_service.STATUS_RUNNING:
+                await asyncio.sleep(_TAIL_POLL_SEC)
                 continue
-            if item is None:
-                continue
-            event, data = item
-            if event == "candidate":
-                # Render de echte kandidaat als kosmische kaart (server-side).
-                try:
-                    finding = json.loads(data)
-                except (ValueError, TypeError):
-                    continue
-                html = _render_str(
-                    request,
-                    "discovery/_candidate.html",
-                    {
-                        "finding": finding,
-                        "auto": footprint_service.is_high_confidence(
-                            finding.get("confidence")
-                        ),
-                    },
-                )
-                yield _sse_event("candidate", html)
-                # Choreografie-pauze (begrensd door het wall-clock-vangnet).
-                await run_in_threadpool(time.sleep, 0.12)
-            elif event == "done":
-                yield _sse_event(
-                    "done", _render_str(request, "discovery/_done.html", {"message": data})
-                )
-            else:  # search / reasoning
-                yield _sse_event(event, str(escape(data)))
 
-        if not task.done():
-            try:
-                await asyncio.wait_for(asyncio.shield(task), timeout=1.0)
-            except TimeoutError:
-                pass
+            # Terminale status → afsluitende melding en stop.
+            if status == discovery_job_service.STATUS_FAILED:
+                msg = "Er ging iets mis bij het zoeken. Probeer het later opnieuw."
+            elif len(findings):
+                msg = f"Ik vond {len(findings)} mogelijke vermeldingen."
+            else:
+                msg = "Ik kon online niets met zekerheid aan jou koppelen."
+            yield _sse_event(
+                "done", _render_str(request, "discovery/_done.html", {"message": msg})
+            )
+            return
+
+        # Veiligheidsklep: job loopt nog na de ruime tail-deadline.
+        yield _sse_event(
+            "done",
+            _render_str(
+                request, "discovery/_done.html",
+                {"message": "Dit duurt langer dan verwacht — ik geef je een seintje "
+                            "per e-mail zodra het klaar is."},
+            ),
+        )
 
     return StreamingResponse(_gen(), media_type="text/event-stream")
 

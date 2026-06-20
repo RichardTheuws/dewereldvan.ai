@@ -35,6 +35,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 import anthropic
+from sqlalchemy import select
 
 from app.config import settings
 from app.models import Profile
@@ -476,6 +477,14 @@ def crystallize(
     if ftype == "project":
         from app.services import offering_slug, profile_service
 
+        # Idempotent op URL: een herhaalde koppeling (auto-card her-gerenderd na een
+        # reload, of twee keer geklikt) maakt GEEN duplicaat — geef de bestaande terug.
+        existing = next(
+            (o for o in profile.offerings if (o.url or "") == url and url), None
+        )
+        if existing is not None:
+            return Crystallized("offering", existing.id, existing.title)
+
         offering = profile_service.add_offering(
             db, profile, title=title or "Nieuw project", description=None
         )
@@ -485,7 +494,20 @@ def crystallize(
         db.flush()
         return Crystallized("offering", offering.id, offering.title)
 
+    from app.models import Post, PostKind
     from app.services import post_service
+
+    # Idempotent op URL: geen dubbele nieuws-Post bij her-render/dubbelklik.
+    if url:
+        dupe = db.scalar(
+            select(Post).where(
+                Post.added_by_id == member.id,
+                Post.kind == PostKind.nieuws,
+                Post.url == url,
+            )
+        )
+        if dupe is not None:
+            return Crystallized("news", dupe.id, dupe.title)
 
     post = post_service.create_news(
         db, member=member, title=title, url=url, role=_news_role(ftype)
