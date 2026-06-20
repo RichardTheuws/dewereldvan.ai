@@ -70,8 +70,24 @@
         </form>
       </section>
 
-      {# ---- Ontdek-dok: zoek het lid online op en bouw het profiel aan (Discovery) ---- #}
+      {# ---- Ontdek-dok: zoek het lid online op (Discovery). De CTA past zich aan op
+             wat je al deed — geen "verse" knop als je jezelf al hebt opgezocht. ---- #}
       <section class="mt-10" id="ontdek-dok" data-reveal style="--d:500ms">
+        {% if discovery_done %}
+        {# Al opgezocht → toon de uitkomst (de resultaat-view biedt zelf de
+           vervolgstappen aan, incl. media-verdieping als die nog niet liep). #}
+        <form hx-post="/profiel/ai/ontdek"
+              hx-target="#ontdek-resultaat" hx-swap="innerHTML">
+          <button class="btn btn--ghost" type="submit" {% if not ai_enabled %}disabled{% endif %}>
+            ✦ Bekijk je ontdekking
+          </button>
+        </form>
+        <p class="muted text-sm mt-3" style="max-width:54ch">
+          Ik heb je al online opgezocht{% if not discovery_media_done %} — je kunt nu ook
+          media óver je laten zoeken (interviews, artikelen){% endif %}. Bekijk je resultaat
+          en kies wat op je profiel mag.
+        </p>
+        {% else %}
         <form hx-post="/profiel/ai/ontdek"
               hx-target="#ontdek-resultaat" hx-swap="innerHTML">
           <button class="btn btn--ghost" type="submit" {% if not ai_enabled %}disabled{% endif %}>
@@ -85,6 +101,7 @@
           en bewaar het resultaat voor als je terugkomt. Je beslist per resultaat
           zelf of het klopt.
         </p>
+        {% endif %}
         <p class="text-sm mt-2">
           <a class="text-link" href="/profiel/notificaties">Liever een seintje via Telegram? Stel je notificaties in →</a>
         </p>

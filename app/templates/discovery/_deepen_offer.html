@@ -1,6 +1,16 @@
-{# Verdiepings-aanbod (opt-in): de agent stelt voor om gericht naar media ÓVER het
-   lid te zoeken. "Ja" start de media-pass (verdieping=media → append) en vervangt
-   de host door de live-tail; "nee" haalt de kaart weg. Eenvoudige, heldere taal. #}
+{# Verdiepings-aanbod (opt-in), PAST ZICH AAN op wat al gedaan is: zolang de
+   media-pass niet liep biedt de agent 'm aan; daarna toont 'ie dat media al is
+   doorzocht (geen dode knop). Verwacht ``media_done`` in de context. #}
+{% if media_done %}
+<div class="surface-card ontdek-deepen ontdek-deepen--done field--ready">
+  <article class="card ontdek-card__inner">
+    <p class="muted text-sm">
+      <span class="ontdek-card__check" aria-hidden="true">✦</span>
+      Ik heb ook naar media óver je gezocht. Vond je later meer? Dan kun je opnieuw zoeken.
+    </p>
+  </article>
+</div>
+{% else %}
 <div class="surface-card ontdek-deepen field--ready">
   <article class="card ontdek-card__inner">
     <p class="ontdek-card__ask">Kom je weleens in het nieuws of media?</p>
@@ -18,3 +28,4 @@
     </div>
   </article>
 </div>
+{% endif %}

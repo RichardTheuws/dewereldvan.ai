@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.47.0] - 2026-06-20
+### Changed — Discovery is nu progress-bewust (geen "verse" affordance die al gebruikt is)
+- **Probleem** (Richard): na een ontdekking bleef de CTA "Zal ik je online opzoeken?" staan alsof het vers
+  was, en het media-aanbod bleef "zoek media" tonen ook nadat de media-pass al gelopen had. De interface moet
+  begrijpen wat al gebruikt is en de vervolgstap aanpassen.
+- **Stateful**: `DiscoveryRun.passes` (migr. 0021) onthoudt welke focus-passes voltooid zijn (`["broad","media"]`).
+  Elke voltooide pass voegt zich toe; een verse brede zoektocht reset 'm.
+- **Aangepaste affordances**:
+  - Bouw-pagina-CTA: nog niet opgezocht → "Zal ik je online opzoeken?"; al wél → "Bekijk je ontdekking"
+    (+ hint dat je nu media kunt laten zoeken als die pass nog niet liep).
+  - Verdiepings-aanbod: zolang media niet liep → "Kom je weleens in het nieuws? → Ja, zoek media"; daarna →
+    "Ik heb ook naar media gezocht" (geen dode knop). Geldt op de resultaat-view én na een live-pass.
+- 6 nieuwe tests (passes per focus, reset bij verse zoektocht, offer toont/verbergt). **633 tests groen**.
+
 ## [0.46.0] - 2026-06-20
 ### Added — Discovery-verdieping: gerichte media-pass (opt-in)
 - Na de brede ontdekking (eigen werk) biedt de agent een **verdieping** aan: *"Kom je weleens in het nieuws of

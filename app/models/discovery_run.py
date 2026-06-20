@@ -43,6 +43,10 @@ class DiscoveryRun(Base):
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="running")
     # JSON-lijst van gesaneerde finding-dicts (title/url/type/confidence/why).
     findings_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # JSON-lijst van VOLTOOIDE focus-passes (bv. ["broad","media"]) — zodat de UI de
+    # vervolgstap kan aanpassen ("media al gedaan" → bied iets anders aan). Reset bij
+    # een verse brede zoektocht; uitgebreid bij elke voltooide pass.
+    passes: Mapped[str | None] = mapped_column(Text, nullable=True)
     error: Mapped[str | None] = mapped_column(String(300), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(), nullable=False

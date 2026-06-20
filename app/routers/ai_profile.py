@@ -150,6 +150,11 @@ def build_page(
     """
     profile = profile_service.get_or_create_profile(db, member)
     db.commit()
+    # Discovery-staat zodat de ontdek-CTA zich aanpast (geen "verse" knop tonen als
+    # je jezelf al hebt opgezocht).
+    from app.services import discovery_job_service
+
+    drun = discovery_job_service.get_run(db, member.id)
     return _render(
         request,
         "ai/live.html",
@@ -158,6 +163,10 @@ def build_page(
             profile,
             ai_enabled=settings.ai_enrich_enabled,
             uncertain=bool(profile.ai_enriched),
+            discovery_done=drun is not None and drun.status in (
+                discovery_job_service.STATUS_DONE, discovery_job_service.STATUS_EMPTY
+            ),
+            discovery_media_done="media" in discovery_job_service.passes_of(drun),
         ),
     )
 

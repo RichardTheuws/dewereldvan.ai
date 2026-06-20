@@ -79,6 +79,22 @@ def findings_of(run: DiscoveryRun | None) -> list[dict]:
     return [f for f in data if isinstance(f, dict)]
 
 
+def passes_of(run: DiscoveryRun | None) -> set[str]:
+    """De voltooide focus-passes van een run (leeg bij None/onleesbaar)."""
+    if run is None or not run.passes:
+        return set()
+    try:
+        data = json.loads(run.passes)
+    except (ValueError, TypeError):
+        return set()
+    return {p for p in data if isinstance(p, str)}
+
+
+def media_done(db: Session, member_id: int) -> bool:
+    """True als de media-verdieping al een keer gedraaid heeft voor dit lid."""
+    return "media" in passes_of(get_run(db, member_id))
+
+
 def snapshot(db: Session, member_id: int) -> tuple[str | None, list[dict]]:
     """(status, findings) voor de live-tail — None-status = (nog) geen run."""
     run = get_run(db, member_id)
@@ -131,6 +147,7 @@ def start(
         run.status = STATUS_RUNNING
         if not append:
             run.findings_json = None
+            run.passes = None  # verse brede zoektocht → reset de pas-historie
         run.error = None
         run.finished_at = None
         run.seen_at = None
@@ -220,6 +237,9 @@ def run_job(
             run.findings_json = json.dumps(merged)
             run.status = STATUS_DONE if merged else STATUS_EMPTY
             run.finished_at = naive_utc(utcnow())
+            # Onthoud dat deze pass gedraaid heeft (ook bij 0 resultaten — "we hebben
+            # gekeken") zodat de UI 'm niet opnieuw als verse stap aanbiedt.
+            run.passes = json.dumps(sorted(passes_of(run) | {focus}))
             db.commit()
 
             # Push-seintje naar het lid-gekozen kanaal (no-op bij in-app: de

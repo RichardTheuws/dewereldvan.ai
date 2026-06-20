@@ -107,6 +107,14 @@ def _snapshot(member_id: int) -> tuple[str | None, list[dict]]:
         return discovery_job_service.snapshot(db, member_id)
 
 
+def _media_done(member_id: int) -> bool:
+    """Of de media-verdieping al liep (eigen sessie, voor de async tail)."""
+    from app.db import SessionLocal
+
+    with SessionLocal() as db:
+        return discovery_job_service.media_done(db, member_id)
+
+
 def _candidate_html(request: Request, finding: dict) -> str:
     return _render_str(
         request,
@@ -172,6 +180,7 @@ def start(
                 "findings": findings,
                 "high": footprint_service.HIGH_CONFIDENCE,
                 "resumed": True,
+                "media_done": "media" in discovery_job_service.passes_of(run),
             },
         )
 
@@ -205,9 +214,14 @@ def result_page(
     ):
         return RedirectResponse("/profiel/ai/bouwen", status_code=303)
     findings = discovery_job_service.findings_of(run)
+    media_done = "media" in discovery_job_service.passes_of(run)
     discovery_job_service.mark_seen(db, run)
     db.commit()
-    return _render(request, "discovery/resultaat.html", {"findings": findings})
+    return _render(
+        request,
+        "discovery/resultaat.html",
+        {"findings": findings, "media_done": media_done},
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -269,8 +283,12 @@ async def stream(
                 msg = "Ik kon online niets met zekerheid aan jou koppelen."
             done_html = _render_str(request, "discovery/_done.html", {"message": msg})
             if status == discovery_job_service.STATUS_DONE and findings:
-                # Bied de gerichte media-verdieping aan (opt-in) na een gelukte pass.
-                done_html += _render_str(request, "discovery/_deepen_offer.html", {})
+                # Bied de gerichte media-verdieping aan (opt-in) — of toon dat 'ie al
+                # liep. De partial past zich aan op ``media_done`` (geen dode knop).
+                done_html += _render_str(
+                    request, "discovery/_deepen_offer.html",
+                    {"media_done": await run_in_threadpool(_media_done, member_id)},
+                )
             yield _sse_event("done", done_html)
             return
 

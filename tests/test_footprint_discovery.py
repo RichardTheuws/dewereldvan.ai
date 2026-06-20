@@ -379,6 +379,7 @@ def test_stream_tails_run_candidates_and_done(make_client, approved_id, monkeypa
     from app.routers import discovery as disc
 
     # De tail leest de gepersisteerde run; we leveren een afgeronde snapshot.
+    monkeypatch.setattr(disc, "_media_done", lambda mid: False)
     monkeypatch.setattr(disc, "_snapshot", lambda mid: ("done", [
         {"title": "Mijn project", "url": "https://x.example",
          "type": "project", "confidence": 90, "why": "eigen domein"},
@@ -401,6 +402,7 @@ def test_stream_resumes_after_last_event_id(make_client, approved_id, monkeypatc
     """Met Last-Event-ID overslaan we al-getoonde kaarten (geen herhaling)."""
     from app.routers import discovery as disc
 
+    monkeypatch.setattr(disc, "_media_done", lambda mid: False)
     monkeypatch.setattr(disc, "_snapshot", lambda mid: ("done", [
         {"title": "Eerste", "url": "https://a.example", "type": "media", "confidence": 80},
         {"title": "Tweede", "url": "https://b.example", "type": "media", "confidence": 80},
@@ -593,6 +595,7 @@ def test_undo_offering_requires_ownership(db, make_member, make_profile):
 def test_stream_high_confidence_card_is_auto(make_client, approved_id, monkeypatch):
     from app.routers import discovery as disc
 
+    monkeypatch.setattr(disc, "_media_done", lambda mid: False)
     monkeypatch.setattr(disc, "_snapshot", lambda mid: ("done", [
         {"title": "Zeker project", "url": "https://x.example",
          "type": "project", "confidence": 96, "why": "eigen domein"},
@@ -610,6 +613,7 @@ def test_stream_high_confidence_card_is_auto(make_client, approved_id, monkeypat
 def test_stream_low_confidence_card_is_confirm_row(make_client, approved_id, monkeypatch):
     from app.routers import discovery as disc
 
+    monkeypatch.setattr(disc, "_media_done", lambda mid: False)
     monkeypatch.setattr(disc, "_snapshot", lambda mid: ("done", [
         {"title": "Misschien jij", "url": "https://maybe.example",
          "type": "media", "confidence": 55, "why": "naamgenoot?"},
@@ -1111,3 +1115,94 @@ def test_result_page_offers_media_deepening(make_client, approved_id, SessionTes
     assert resp.status_code == 200
     assert "Kom je weleens in het nieuws" in resp.text
     assert 'name="verdieping" value="media"' in resp.text
+
+
+# --------------------------------------------------------------------------- #
+# Stateful: onthoud welke passes liepen → pas de vervolg-affordance aan        #
+# --------------------------------------------------------------------------- #
+
+
+def test_passes_recorded_per_focus(SessionTest, approved_id, monkeypatch):
+    from app.services import discovery_job_service, footprint_service
+
+    monkeypatch.setattr(footprint_service.settings, "ai_enrich_enabled", True)
+    _seed_running_run(SessionTest, approved_id)
+
+    fake_broad = FakeAnthropic([{"stop_reason": "end_turn", "content": [_findings_block([
+        {"title": "P", "url": "https://p.example", "type": "project", "confidence": 95},
+    ])]}])
+    discovery_job_service.run_job(
+        approved_id, session_factory=SessionTest, client=fake_broad, focus="broad"
+    )
+    with SessionTest() as s:
+        run = discovery_job_service.get_run(s, approved_id)
+        assert discovery_job_service.passes_of(run) == {"broad"}
+        assert discovery_job_service.media_done(s, approved_id) is False
+
+    fake_media = FakeAnthropic([{"stop_reason": "end_turn", "content": [_findings_block([
+        {"title": "Interview", "url": "https://m.example",
+         "type": "media", "confidence": 80, "why": "x"},
+    ])]}])
+    discovery_job_service.run_job(
+        approved_id, session_factory=SessionTest, client=fake_media,
+        focus="media", append=True,
+    )
+    with SessionTest() as s:
+        run = discovery_job_service.get_run(s, approved_id)
+        assert discovery_job_service.passes_of(run) == {"broad", "media"}
+        assert discovery_job_service.media_done(s, approved_id) is True
+
+
+def test_fresh_broad_resets_passes(SessionTest, approved_id, monkeypatch):
+    """Opnieuw (verse brede) zoeken wist de pas-historie (media weer aan te bieden)."""
+    from app.models import DiscoveryRun, Member
+    from app.services import discovery_job_service
+
+    monkeypatch.setattr(discovery_job_service, "run_job", lambda *a, **k: None)
+    with SessionTest() as s:
+        s.add(DiscoveryRun(member_id=approved_id, status="done",
+                           findings_json="[]", passes=json.dumps(["broad", "media"])))
+        s.commit()
+    with SessionTest() as s:
+        member = s.get(Member, approved_id)
+        discovery_job_service.start(s, member, focus="broad", append=False)
+    with SessionTest() as s:
+        # De reset (passes=None) gebeurt synchroon in start().
+        run = discovery_job_service.get_run(s, approved_id)
+        assert discovery_job_service.passes_of(run) == set()
+
+
+def _seed_done_run_with_passes(SessionTest, member_id, findings, passes):
+    from app.models import DiscoveryRun
+    from app.security import naive_utc, utcnow
+
+    with SessionTest() as s:
+        s.add(DiscoveryRun(
+            member_id=member_id, status="done", findings_json=json.dumps(findings),
+            passes=json.dumps(passes), finished_at=naive_utc(utcnow()),
+        ))
+        s.commit()
+
+
+def test_result_view_offers_media_when_not_done(make_client, approved_id, SessionTest):
+    _seed_done_run_with_passes(
+        SessionTest, approved_id,
+        [{"title": "P", "url": "https://x.example", "type": "project", "confidence": 95}],
+        ["broad"],
+    )
+    client = make_client(approved_id)
+    resp = client.get("/profiel/ai/ontdek/resultaat")
+    assert "Ja, zoek media over me" in resp.text
+    assert 'name="verdieping" value="media"' in resp.text
+
+
+def test_result_view_hides_media_offer_when_done(make_client, approved_id, SessionTest):
+    _seed_done_run_with_passes(
+        SessionTest, approved_id,
+        [{"title": "P", "url": "https://x.example", "type": "project", "confidence": 95}],
+        ["broad", "media"],
+    )
+    client = make_client(approved_id)
+    resp = client.get("/profiel/ai/ontdek/resultaat")
+    assert "Ja, zoek media over me" not in resp.text  # geen dode knop
+    assert "Ik heb ook naar media" in resp.text  # toont dat 't al liep
