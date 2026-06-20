@@ -476,6 +476,29 @@ def test_surface_tool_registered_with_contract():
     assert concierge_service.THINKING == {"type": "adaptive"}
 
 
+def test_surface_notificaties_passes_grounding_gate(db, install_loop):
+    """'telegram'/notificaties → surface notificaties overleeft de grounding-poort
+    (de view staat in SURFACE_REGISTRY) en wordt geëmit — niet naar search_members."""
+    assert "notificaties" in concierge_service.SURFACE_REGISTRY
+    surf = _Block(
+        type="tool_use", id="n1", name="surface",
+        input={"view": "notificaties", "params": {}},
+    )
+    install_loop([
+        {"deltas": [], "stop_reason": "tool_use", "content": [surf]},
+        {"deltas": ["ok"], "stop_reason": "end_turn",
+         "content": [{"type": "text", "text": "ok"}]},
+    ])
+    signals: list[dict] = []
+    concierge_service.stream_concierge(
+        [{"role": "user", "content": "telegram"}],
+        lambda _t: None,
+        db=db,
+        on_surface=signals.append,
+    )
+    assert signals == [{"view": "notificaties", "params": {}}]
+
+
 # --------------------------------------------------------------------------- #
 # m1: connect-kaart draagt de shared_tags-"waarom" mee als kaart-signaal.       #
 # --------------------------------------------------------------------------- #

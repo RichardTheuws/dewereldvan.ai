@@ -265,6 +265,39 @@ def test_settings_page_anonymous_blocked(make_client):
     assert resp.headers["location"].endswith("/login")
 
 
+# --------------------------------------------------------------------------- #
+# Concierge-integratie: "telegram"/notificaties vindt de instellingen          #
+# --------------------------------------------------------------------------- #
+
+
+def test_concierge_loads_notifications_surface(SessionTest, approved_id):
+    """De concierge kan het notificatie-paneel IN de canvas materialiseren."""
+    from app.routers.concierge import _load_notifications
+
+    with SessionTest() as s:
+        loaded = _load_notifications(s, {}, approved_id, False)
+    assert loaded is not None
+    tmpl, ctx = loaded
+    assert tmpl == "notifications/_panel.html"
+    assert ctx["channel"] == "in_app"
+
+
+def test_instant_index_lists_notifications_for_member(make_client, approved_id):
+    client = make_client(approved_id)
+    data = client.get("/concierge/index").json()
+    routes = {r["url"]: r for r in data["routes"]}
+    assert "/profiel/notificaties" in routes
+    # 'telegram' is een trefwoord → de instant-laag vindt de instellingen direct.
+    assert "telegram" in routes["/profiel/notificaties"]["keywords"]
+
+
+def test_instant_index_omits_notifications_for_anon(make_client):
+    client = make_client(None)
+    data = client.get("/concierge/index").json()
+    urls = [r["url"] for r in data["routes"]]
+    assert "/profiel/notificaties" not in urls
+
+
 def test_set_channel_persists(make_client, approved_id, SessionTest):
     client = make_client(approved_id)
     token = _csrf(client)

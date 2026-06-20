@@ -254,6 +254,24 @@ def _load_profile_builder(db: Session, params: dict, member_id, is_admin):
     }
 
 
+def _load_notifications(db: Session, params: dict, member_id, is_admin):
+    """Het notificatie-instellingen-paneel IN de canvas: kies je kanaal + koppel
+    Telegram, zonder de canvas te verlaten (agent-is-de-shell)."""
+    if member_id is None:
+        return None
+    member = db.get(Member, member_id)
+    if member is None:
+        return None
+    from app.services import notification_service, telegram_service
+
+    return "notifications/_panel.html", {
+        "channel": notification_service.preferred_channel(db, member),
+        "tg_status": notification_service.telegram_status(db, member),
+        "tg_configured": telegram_service.configured(),
+        "link_url": None,
+    }
+
+
 _SURFACE_LOADERS = {
     "members_grid": _load_members_grid,
     "member_detail": _load_member_detail,
@@ -265,6 +283,7 @@ _SURFACE_LOADERS = {
     "matches": _load_matches,
     "connections": _load_connections,
     "verbind": _load_verbind,
+    "notificaties": _load_notifications,
     "profile_builder": _load_profile_builder,
 }
 
@@ -289,6 +308,7 @@ _NAV_TO_SURFACE: dict[str, tuple[str, dict]] = {
     "/agenda": ("agenda", {}),
     "/nieuws": ("nieuws", {}),
     "/profiel/verbind": ("verbind", {}),
+    "/profiel/notificaties": ("notificaties", {}),
 }
 _MEMBER_SLUG_RE = re.compile(r"^/leden/([\w-]+)$")
 
@@ -865,6 +885,14 @@ _INSTANT_ROUTE_CONNECT: dict = {
     "url": "/profiel/verbind",
     "keywords": ["verbind", "mcp", "tool", "claude code", "cursor", "koppelen", "token", "api"],
 }
+_INSTANT_ROUTE_NOTIF: dict = {
+    "label": "Notificaties",
+    "url": "/profiel/notificaties",
+    "keywords": [
+        "notificaties", "notificatie", "meldingen", "melding", "seintje", "seintjes",
+        "telegram", "instellingen", "settings", "voorkeur", "voorkeuren", "bericht",
+    ],
+}
 
 
 @router.get("/concierge/index")
@@ -884,6 +912,7 @@ def instant_index(
     if member is not None:
         routes.append(_INSTANT_ROUTE_PROFILE)
         routes.append(_INSTANT_ROUTE_CONNECT)
+        routes.append(_INSTANT_ROUTE_NOTIF)
 
     profiles = members_service.list_public_profiles(db)
     items = [

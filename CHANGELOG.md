@@ -3,6 +3,22 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.44.0] - 2026-06-20
+### Fixed — de concierge vindt nu je notificatie-instellingen ("telegram" → instellingen, niet maker-zoek)
+- **Probleem**: een lid dat z'n instellingen niet vond, vroeg de concierge "telegram" — die zocht er een
+  *maker* bij ("geen makers met telegram gevonden") i.p.v. naar de notificatie-instellingen te leiden. Tegen
+  het "agent-is-de-shell"-mandaat: de concierge is de navigatie, dus die moet z'n eigen instellingen kennen.
+- **Notificaties als in-canvas surface** (zoals `verbind`): nieuwe `notificaties`-surface materialiseert het
+  kanaal/Telegram-paneel ín de canvas (geen paginawissel). Bedraad op drie lagen:
+  1. **Instant-laag** (⌘K): nieuwe route "Notificaties" met trefwoorden incl. *telegram, seintje, meldingen,
+     instellingen* → directe hit zonder LLM (alleen voor ingelogde leden).
+  2. **Concierge-engine**: `notificaties` in `SURFACE_REGISTRY` + route-tabel; systeem-prompt leidt
+     *telegram/seintjes/meldingen/instellingen* expliciet naar `surface notificaties` — en stuurt "telegram"
+     NOOIT meer naar `search_members`.
+  3. **Router**: `_load_notifications`-loader + `/profiel/notificaties` → in-canvas surface-mapping.
+- 6 nieuwe tests (surface overleeft de grounding-poort, loader rendert het paneel, instant-index toont/verbergt
+  de route). **622 tests groen**.
+
 ## [0.43.0] - 2026-06-20
 ### Added — Bot-avatar + rich Telegram-content
 - **Eigen kosmische avatar** voor @dewereldvanaibot: een on-brand beeld (deep-indigo + nebula-gloed + de gouden

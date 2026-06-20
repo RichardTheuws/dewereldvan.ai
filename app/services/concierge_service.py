@@ -76,7 +76,11 @@ SYSTEM_PROMPT: str = (
     "gereageerd?' → surface connections. Wil het lid dewereldvan KOPPELEN aan z'n "
     "eigen AI-tool, of vraagt het naar de MCP-server / 'Claude Code' / 'Cursor' / "
     "'verbind mijn tool' → materialiseer het paneel met surface verbind (in de "
-    "stroom, geen paginawissel) en geef er één duidende zin bij. 'bouw mijn profiel' "
+    "stroom, geen paginawissel) en geef er één duidende zin bij. Vraagt het lid naar "
+    "z'n NOTIFICATIES / 'seintjes' / 'meldingen' / 'instellingen' / 'Telegram' / "
+    "'waar krijg ik bericht' / 'wil ik via Telegram' → surface notificaties (het "
+    "paneel om je kanaal te kiezen + Telegram te koppelen; 'telegram' gaat NOOIT naar "
+    "search_members — het is een notificatie-kanaal, geen maker). 'bouw mijn profiel' "
     "/ 'maak mijn profiel' → surface profile_builder. Vraag pas om een onderwerp als het lid "
     "echt iets SPECIFIEKS zoekt ('wie bouwt voice-agents?' → search_members of "
     "surface members_grid met tag; 'wie gebruikt Claude Code?' → search_members of "
@@ -119,6 +123,7 @@ _ROUTE_TABLE: dict[str, tuple[str, str]] = {
     "roadmap": ("/roadmap", "de roadmap"),
     "profiel": ("/profiel/ai/bouwen", "je eigen profiel"),
     "verbind": ("/profiel/verbind", "de pagina om je AI-tool te koppelen"),
+    "notificaties": ("/profiel/notificaties", "je notificatie-instellingen"),
 }
 
 # De gecureerde kennisbank + retrieval leven in ``app.services.knowledge``
@@ -140,6 +145,7 @@ SURFACE_REGISTRY: dict[str, set[str]] = {
     "matches": set(),  # vraag↔aanbod-koppelingen voor dit lid (Tier 1)
     "connections": set(),  # de intro's van dit lid (Tier 1 Fase 2)
     "verbind": set(),  # het 'verbind je AI-tool'-paneel (MCP) in-canvas
+    "notificaties": set(),  # notificatie-instellingen (kanaal + Telegram) in-canvas
     "profile_view": {"slug"},
     # De levende profielbouw in de canvas (hergebruikt de ai_profile-materialisatie).
     "profile_builder": set(),
