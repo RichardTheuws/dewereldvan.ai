@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-20 · **Versie**: 0.44.1 · **Branch**: `main`
+**Laatste update**: 2026-06-20 · **Versie**: 0.45.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -40,7 +40,11 @@ source-of-truth-opschoning (dit document). De engine + integraties staan; de nad
 **ervaring polijsten + de keten live valideren** (Discovery-precisie meten, Telegram end-to-end testen).
 
 ## Open taken
-- [ ] **Telegram end-to-end testen** door een lid (koppel-flow + push) → eerste Discovery-precisie-signalen.
+- [x] **Telegram end-to-end gevalideerd in prod** (2026-06-20): koppelen → discovery-job (12 findings, ~3,5 min)
+      → push met knop. Koppelen is nu opt-in (voorkeur auto op telegram, v0.45.0).
+- [ ] **Discovery-precisie meten**: hoeveel van de 12 findings laat een lid staan vs. afwijzen? (drempel ≥90 ijken).
+- [ ] **Zombie-run-vangnet**: een container-restart midden in een job laat `discovery_run` op `running` staan
+      (geen levende thread markeert 'm). Startup-sweep die verweesde `running`-runs → `failed` zet.
 - [ ] Browser-verificatie auto-crystallisatie-op-`load` (1b; JS, niet in TestClient te dekken).
 - [ ] Bot-token **roteren** via @BotFather vóór publieke launch (token was in chat gedeeld).
 - [ ] Bij launch: apex-ingress teaser→app + wachtlijst-adressen → `member`-tabel.
