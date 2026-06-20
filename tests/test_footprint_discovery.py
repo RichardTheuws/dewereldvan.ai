@@ -982,6 +982,7 @@ def test_result_page_shows_saved_findings_and_marks_seen(
     assert resp.status_code == 200
     assert "Bewaard project" in resp.text
     assert "Dit vond ik voor je" in resp.text
+    assert "classList.add('ready')" in resp.text  # entrance-gate (geen leeg scherm)
     with SessionTest() as s:
         from app.services import discovery_job_service
 

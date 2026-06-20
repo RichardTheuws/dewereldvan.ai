@@ -3,6 +3,12 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.44.1] - 2026-06-20
+### Fixed — leeg scherm op /profiel/notificaties (en /…/ontdek/resultaat)
+- De standalone kosmische pagina's includeden `ai/_cosmic_canvas.html` niet → `.ready` werd nooit op `<body>`
+  gezet, dus alle `[data-reveal]`-inhoud bleef op `opacity:0` (leeg scherm). Beide pagina's includen nu de
+  entrance-gate. Regressie-borg in de tests (de pagina bevat `classList.add('ready')`). 622 tests groen.
+
 ## [0.44.0] - 2026-06-20
 ### Fixed — de concierge vindt nu je notificatie-instellingen ("telegram" → instellingen, niet maker-zoek)
 - **Probleem**: een lid dat z'n instellingen niet vond, vroeg de concierge "telegram" — die zocht er een

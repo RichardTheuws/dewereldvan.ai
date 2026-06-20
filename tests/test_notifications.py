@@ -256,6 +256,9 @@ def test_settings_page_renders(make_client, approved_id):
     assert resp.status_code == 200
     assert "Waar wil je een seintje" in resp.text
     assert "notif-panel" in resp.text
+    # Entrance-gate moet aanwezig zijn, anders blijft [data-reveal] op opacity:0
+    # hangen (leeg scherm). Regressie-borg voor de standalone cosmic-pagina.
+    assert "classList.add('ready')" in resp.text
 
 
 def test_settings_page_anonymous_blocked(make_client):
