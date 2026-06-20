@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.35.0] - 2026-06-20
+### Changed — fal.ai-sfeerbeeld reflecteert nu écht het profiel
+- **Cover-art-director** (`cover_art_service.build_prompt`): de oude prompt plakte rauwe bio-tekst in een vaste
+  kosmische stijl (een beeldmodel maakt daar generieke nevels van). Nu vertaalt één goedkope Claude-call de
+  essentie van het profiel (headline, wat je maakt, projecten, onderwerpen) naar een CONCRETE visuele metafoor
+  (bv. voice-agents → "soundwaves dissolving into a constellation"), gezet in het vaste kosmische stijl-anker
+  (deep indigo/glow, geen tekst/gezichten/logo's). Het sfeerbeeld wordt zo persoonlijk én blijft on-brand.
+- Gegrond + best-effort: gegated op `AI_ENRICH_ENABLED`; bij uit/leeg/fout terug naar de deterministische
+  `cover_prompt`. Raakt zowel de handmatige "Nieuwe cover" als de automatische cover na de profielbouw (één
+  chokepoint, `POST /profiel/ai/cover`). 544 tests groen.
+
 ## [0.34.0] - 2026-06-19
 ### Added — een nieuw project wordt nu direct verrijkt (niet pas 's nachts)
 - **Async-na-opslaan**: zodra je een project met een link toevoegt of de link wijzigt (inline-editor),

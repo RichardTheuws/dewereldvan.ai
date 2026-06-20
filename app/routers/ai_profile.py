@@ -45,7 +45,7 @@ from fastapi.responses import (
 from markupsafe import escape
 from sqlalchemy.orm import Session
 
-from app.ai import ImageGenerator, cover_prompt
+from app.ai import ImageGenerator
 from app.config import settings
 from app.db import get_db
 from app.deps import image_generator, require_member
@@ -60,6 +60,7 @@ from app.models import (
 from app.schemas.ai_profile import AcceptForm, ChatMessageForm
 from app.services import (
     ai_conversation,
+    cover_art_service,
     offering_slug,
     photo_service,
     profile_link_service,
@@ -521,9 +522,10 @@ def generate_cover(
 ) -> HTMLResponse:
     """Genereer een cover op basis van de profiel-essentie (faalt gracieus)."""
     profile = profile_service.get_or_create_profile(db, member)
-    prompt = cover_prompt(
-        profile.bio or profile.headline, [t.name for t in profile.tags]
-    )
+    # Gegronde art-director: vertaal de essentie van dít profiel naar een concrete
+    # visuele metafoor in de kosmische stijl (valt terug op de deterministische
+    # cover_prompt bij AI-uit/fout). Zo reflecteert het sfeerbeeld de pagina écht.
+    prompt = cover_art_service.build_prompt(profile)
     try:
         result = generator.generate(prompt)
         url = getattr(result, "url", None)
