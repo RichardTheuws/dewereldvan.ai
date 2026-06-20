@@ -1,17 +1,18 @@
 """Connections-router (Tier 1 Fase 2) — intro's verzilveren + accept/decline.
 
 Verzilvert een match: "stel me voor" → voorgevuld intro-bericht → bevestigen →
-``Connection`` gepersisteerd + de ontvanger gemaild (en een chip). De ontvanger
-accepteert/wijst af; bij accept opent de contact-poort (consent).
+``Connection`` gepersisteerd + een seintje naar de ontvanger via diens
+voorkeurskanaal (in-app pull-chip + optioneel Telegram-push; **geen e-mail**). De
+ontvanger accepteert/wijst af; bij accept opent de contact-poort (consent).
 
 Routes:
 - GET  ``/intro/nieuw?match={id}``  — voorgevuld intro-formulier (require_member).
-- POST ``/intro``                   — maak intro + mail de ontvanger (rate-limit).
+- POST ``/intro``                   — maak intro + seintje (rate-limit).
 - POST ``/intro/{id}/accept``       — ontvanger accepteert (contact ontsloten).
 - POST ``/intro/{id}/decline``      — ontvanger wijst af.
 
-E-mail faalt nooit silent (``EmailSendError`` getoond, intro blijft staan). CSRF
-via ``hx-headers``.
+Het seintje is best-effort (faalt nooit hard); de intro staat hoe dan ook klaar
+(``chip_intros`` bij binnenkomst). CSRF via ``hx-headers``.
 """
 
 from __future__ import annotations
@@ -21,14 +22,11 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.config import settings
 from app.db import get_db
-from app.deps import email_sender, require_member
-from app.email import EmailMessage, EmailSender, EmailSendError
-from app.email import templates as email_templates
+from app.deps import require_member
 from app.models import ConnectionStatus, Member, MemberStatus, Profile
 from app.models.match_suggestion import MatchSuggestion
-from app.services import connection_service
+from app.services import connection_service, notification_service
 
 router = APIRouter(tags=["connections"])
 
@@ -103,9 +101,8 @@ def create_intro(
     naar: str = Form(""),
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
-    sender: EmailSender = Depends(email_sender),
 ) -> HTMLResponse:
-    """Maak de intro, zet de match op ``acted``, mail de ontvanger."""
+    """Maak de intro, zet de match op ``acted``, seintje naar de ontvanger."""
     text = (message or "").strip()
     if not text:
         return HTMLResponse("Schrijf even een kort bericht.", status_code=400)
@@ -139,30 +136,22 @@ def create_intro(
     )
     db.commit()
 
-    # Notificatie — faalt nooit silent. Bij fout blijft de intro staan (de
-    # ontvanger ziet 'm bij volgende login); we melden het netjes.
-    login_url = f"{settings.base_url.rstrip('/')}/login"
-    email = EmailMessage(
-        to=to_member.email,
-        subject=f"{member.name} wil kennismaken — dewereldvan.ai",
-        text_body=(
-            f"Hoi {to_member.name},\n\n{member.name} wil graag met je kennismaken "
-            f"via dewereldvan.ai:\n\n{text}\n\nLog in om te reageren: {login_url}\n"
-        ),
-        html_body=email_templates.render_intro(
-            to_member.name, member.name, text, login_url
-        ),
+    # Seintje naar de ontvanger via diens voorkeurskanaal (geen e-mail). De intro
+    # staat hoe dan ook klaar: de ontvanger ziet 'm bij binnenkomst (chip_intros);
+    # koos die Telegram, dan pusht ``notify`` ook daarheen. Best-effort.
+    notification_service.notify(
+        db, to_member, notification_service.Notification(
+            kind="intro_received",
+            title=f"{member.name} wil kennismaken",
+            body=text,
+            url="/",
+        )
     )
-    mail_ok = True
-    try:
-        sender.send(email)
-    except EmailSendError:
-        mail_ok = False
 
     return _render(
         request,
         "connections/_intro_done.html",
-        {"to_name": to_member.name, "mail_ok": mail_ok, "already": conn.status != ConnectionStatus.pending},
+        {"to_name": to_member.name, "already": conn.status != ConnectionStatus.pending},
     )
 
 

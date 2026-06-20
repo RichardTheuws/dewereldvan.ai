@@ -35,6 +35,8 @@ from app.models.idea_vote import IdeaVote
 from app.models.magic_link import MagicLinkToken
 from app.models.match_suggestion import MatchSuggestion
 from app.models.member import Member
+from app.models.member_channel import MemberChannel
+from app.models.notification_pref import NotificationPref
 from app.models.need import Need
 from app.models.offering import Offering
 from app.models.offering_slug_history import OfferingSlugHistory
@@ -87,4 +89,6 @@ __all__ = [
     "Connection",
     "PersonalToken",
     "DiscoveryRun",
+    "MemberChannel",
+    "NotificationPref",
 ]

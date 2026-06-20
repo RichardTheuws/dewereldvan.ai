@@ -132,8 +132,15 @@ def test_counterpart_and_create_sets_acted(SessionTest, seed):
 # --------------------------------------------------------------------------- #
 # Route: intro starten + notificatie                                          #
 # --------------------------------------------------------------------------- #
-def test_post_intro_creates_and_emails(make_client, seed, SessionTest):
+def test_post_intro_creates_connection_and_notifies(make_client, seed, SessionTest, monkeypatch):
     from app.models.connection import Connection
+    from app.services import notification_service
+
+    notified: list = []
+    monkeypatch.setattr(
+        notification_service, "notify",
+        lambda db, member, notif: notified.append((member.id, notif.kind)),
+    )
 
     factory, sender = make_client
     client = factory(seed["a"])  # Alice stelt zich voor aan Bob
@@ -153,9 +160,9 @@ def test_post_intro_creates_and_emails(make_client, seed, SessionTest):
     assert rows[0].to_member_id == seed["b"]
     s.close()
 
-    assert len(sender.sent) == 1
-    assert sender.sent[0].to == "b@x.nl"
-    assert "kennismaken" in sender.sent[0].subject or "kennismaken" in sender.sent[0].text_body
+    # Geen e-mail meer; wél een seintje naar de ontvanger via diens voorkeurskanaal.
+    assert sender.sent == []
+    assert notified == [(seed["b"], "intro_received")]
 
 
 def test_intro_form_prefilled(make_client, seed):

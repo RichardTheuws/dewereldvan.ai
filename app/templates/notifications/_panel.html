@@ -1,0 +1,48 @@
+{# Notificatie-instellingen-paneel (htmx-swapbaar). Toont het gekozen kanaal +
+   de Telegram-koppelstatus. Posts richten zich op #notif-panel (outerHTML). #}
+<div id="notif-panel" class="notif-panel">
+
+  <div class="notif-panel__group">
+    <p class="field-label">Waar wil je een seintje?</p>
+    <div class="notif-choice">
+      <form hx-post="/profiel/notificaties/kanaal" hx-target="#notif-panel" hx-swap="outerHTML">
+        <input type="hidden" name="channel" value="in_app">
+        <button type="submit" class="notif-opt{% if channel == 'in_app' %} notif-opt--on{% endif %}">
+          <span class="notif-opt__title">In de app</span>
+          <span class="notif-opt__sub">Je ziet het zodra je langskomt — altijd aan.</span>
+        </button>
+      </form>
+      <form hx-post="/profiel/notificaties/kanaal" hx-target="#notif-panel" hx-swap="outerHTML">
+        <input type="hidden" name="channel" value="telegram">
+        <button type="submit" class="notif-opt{% if channel == 'telegram' %} notif-opt--on{% endif %}"
+                {% if tg_status != 'linked' %}disabled title="Koppel eerst Telegram"{% endif %}>
+          <span class="notif-opt__title">Telegram</span>
+          <span class="notif-opt__sub">Een directe push, ook als je de site niet open hebt.</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="notif-panel__group">
+    <p class="field-label">Telegram</p>
+    {% if not tg_configured %}
+      <p class="muted text-sm">Telegram-koppeling komt binnenkort beschikbaar.</p>
+    {% elif tg_status == 'linked' %}
+      <p class="text-sm"><span class="notif-ok">✓</span> Gekoppeld — je seintjes komen in Telegram binnen.</p>
+      <form hx-post="/profiel/notificaties/telegram/ontkoppel" hx-target="#notif-panel" hx-swap="outerHTML">
+        <button type="submit" class="btn btn--ghost btn--sm">Ontkoppelen</button>
+      </form>
+    {% else %}
+      {% if link_url %}
+        <p class="text-sm">Bijna klaar — open Telegram en druk op <b>Start</b> om te bevestigen:</p>
+        <p><a class="btn btn--sm" href="{{ link_url }}" target="_blank" rel="noopener">Open Telegram →</a></p>
+        <p class="muted text-sm mt-2">Deze pagina ververst vanzelf zodra het gelukt is — of herlaad 'm.</p>
+      {% else %}
+        <p class="muted text-sm">Koppel Telegram om directe seintjes te krijgen.</p>
+        <form hx-post="/profiel/notificaties/telegram/start" hx-target="#notif-panel" hx-swap="outerHTML">
+          <button type="submit" class="btn btn--sm">✦ Verbind Telegram</button>
+        </form>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>

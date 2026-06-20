@@ -60,6 +60,13 @@ class CSRFMiddleware:
             await self.app(scope, receive, send)
             return
 
+        # De Telegram-webhook is een externe POST van Telegram (geen cookie/sessie).
+        # Eigen verdediging: de secret-token-header (zie de webhook-route). CSRF (een
+        # sessie-cookie-verdediging) is hier niet van toepassing.
+        if scope.get("path", "") == "/telegram/webhook":
+            await self.app(scope, receive, send)
+            return
+
         request = Request(scope, receive=receive)
         expected = get_csrf_token(request)  # mints + stores on first use
 

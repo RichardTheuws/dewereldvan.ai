@@ -105,9 +105,11 @@ def _seed_full_member(db, *, email: str, shared_tag=None):
     db.flush()
     db.add(IdeaVote(idea_id=idea.id, member_id=member.id))
 
-    from app.models import DiscoveryRun
+    from app.models import DiscoveryRun, MemberChannel, NotificationPref
 
     db.add(DiscoveryRun(member_id=member.id, status="done", findings_json="[]"))
+    db.add(MemberChannel(member_id=member.id, channel="telegram", address="123"))
+    db.add(NotificationPref(member_id=member.id, channel="telegram"))
 
     db.flush()
     return member, photo_path, shared_tag
@@ -123,6 +125,8 @@ def test_delete_member_completely_removes_everything(db):
         ConciergeTurn,
         DiscoveryRun,
         Feedback,
+        MemberChannel,
+        NotificationPref,
         Idea,
         IdeaVote,
         Member,
@@ -167,6 +171,8 @@ def test_delete_member_completely_removes_everything(db):
     assert _count(Idea, Idea.member_id) == 0
     assert _count(IdeaVote, IdeaVote.member_id) == 0
     assert _count(DiscoveryRun, DiscoveryRun.member_id) == 0
+    assert _count(MemberChannel, MemberChannel.member_id) == 0
+    assert _count(NotificationPref, NotificationPref.member_id) == 0
 
     # Profiel-kinderen (via profile_id) ook weg — geen wees-data.
     victim_profile_ids = list(

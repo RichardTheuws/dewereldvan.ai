@@ -12,6 +12,7 @@ import logging
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -39,6 +40,7 @@ from app.routers import (
     ideas,
     invite,
     members,
+    notifications,
     onboarding,
     photo,
     posts,
@@ -99,6 +101,18 @@ async def _lifespan(app: FastAPI):
     draaien (anders 'Task group is not initialized'). Importeer lazy zodat de
     app-import niet aan de mcp-dep hangt als die ontbreekt."""
     from app.mcp_server import mcp
+
+    # Telegram-webhook idempotent registreren als de bot-creds er zijn (anders
+    # no-op). Best-effort: een mislukte registratie mag de app nooit ophouden.
+    try:
+        from app.services import telegram_service
+
+        if telegram_service.configured():
+            await run_in_threadpool(telegram_service.set_webhook)
+    except Exception:  # noqa: BLE001
+        logging.getLogger(__name__).warning(
+            "Telegram-webhook registreren overgeslagen", exc_info=True
+        )
 
     async with mcp.session_manager.run():
         yield
@@ -172,6 +186,7 @@ def create_app() -> FastAPI:
     app.include_router(roadmap.router)
     app.include_router(posts.router)
     app.include_router(connections.router)
+    app.include_router(notifications.router)
     app.include_router(connect.router)
     app.include_router(onboarding.router)
     # Concierge-laag (Fase 1): intent-oppervlak + gegronde SSE-stroom.

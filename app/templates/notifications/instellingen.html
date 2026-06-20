@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Notificatie-instellingen — standalone cosmic-doc (extend base.html NIET),
+   zelfde shell als ai/live.html. Kies waar je een seintje wilt + koppel Telegram. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notificaties — dewereldvan.ai</title>
+  <meta name="robots" content="noindex">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    {% set nav_active = "profiel" %}
+    {% include "_cosmic_nav.html" %}
+
+    <main class="flex-1 pb-16">
+      <div class="eyebrow" data-reveal style="--d:160ms">Notificaties</div>
+      <h1 class="headline mt-5" data-reveal style="--d:260ms">Waar wil je een seintje?</h1>
+      <p class="lede mt-5 max-w-xl" data-reveal style="--d:380ms">
+        We mailen niet. Je ziet alles in de app — en wil je een directe push, ook
+        als de site dicht is, koppel dan Telegram.
+      </p>
+
+      <section class="mt-10" data-reveal style="--d:460ms">
+        {% include "notifications/_panel.html" %}
+      </section>
+
+      <p class="mt-10" data-reveal style="--d:560ms">
+        <a class="text-link" href="/profiel/ai/bouwen">← terug naar je profiel</a>
+      </p>
+    </main>
+  </div>
+</body>
+</html>

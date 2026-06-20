@@ -3,6 +3,26 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.42.0] - 2026-06-20
+### Added — Lid-gekozen notificatiekanaal (Telegram) + e-mail eruit (behalve magic-link)
+- **Richting** (Richard): e-mail is verouderd → we sturen geen e-mail meer behalve de magic-link. Alle overige
+  seintjes gaan naar een **door het lid gekozen kanaal**. Zie `docs/PRD-notificaties.md` + memory.
+- **Uitbreidbare notificatie-laag** (AUGMENT, geen tweede systeem): in-app blijft de bestaande state-derived
+  pull-chips; een nieuwe `notify(member, event)`-dispatcher voegt een **push** toe naar het voorkeurskanaal.
+  Nieuw kanaal = een Notifier erbij. Modellen `member_channel` (gekoppeld adres per kanaal) + `notification_pref`
+  (gekozen kanaal, default `in_app`) — migratie 0020, CASCADE + AVG-wis.
+- **Telegram** (gegate op `TELEGRAM_BOT_TOKEN`): koppelen via deep-link `t.me/<bot>?start=<token>` + **webhook**
+  (`POST /telegram/webhook`, secret-header-validatie, CSRF-exempt), idempotente `setWebhook` bij startup.
+  Verzenden via de Bot API. Instellingen-pagina **`/profiel/notificaties`** (kanaalkeuze + koppelen/ontkoppelen).
+- **E-mail eruit**: de discovery-klaar- én de matchmaking-intro-mails lopen nu via `notify()` (in-app pull +
+  optioneel Telegram-push). Magic-link blijft de enige e-mail. Trade-off: een lid met default in-app dat de app
+  niet opent mist realtime — Telegram is dé manier voor push (bewuste keuze).
+- 15 nieuwe tests (parse_start, voorkeur + koppel-flow + dispatch-gating, webhook secret/koppelen,
+  instellingen-route) + `member_channel`/`notification_pref` in de account-wis-compleetheidstest; intro-test
+  van e-mail → notify. Migratie 0020 up/down bewezen. **617 tests groen**, ruff clean op de nieuwe bestanden.
+- **Setup (Richard, eenmalig)**: bot via @BotFather → zet `TELEGRAM_BOT_TOKEN` + `TELEGRAM_BOT_USERNAME` +
+  `TELEGRAM_WEBHOOK_SECRET` in de M4-`.env` → redeploy (webhook registreert zichzelf).
+
 ## [0.41.0] - 2026-06-20
 ### Changed — Discovery-seintje weg van e-mail + directe deeplink naar je resultaat
 - **Geen e-mail meer voor de ontdekking** (e-mail blijft alléén voor de magic-link). Richting: e-mail is een

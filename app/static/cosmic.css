@@ -3558,6 +3558,40 @@
   .cosmic .field--crystallized { animation: none; }
 }
 
+/* ---- Notificatie-instellingen-paneel ------------------------------------- */
+.cosmic .notif-panel { display: flex; flex-direction: column; gap: 26px; }
+.cosmic .notif-panel__group { display: flex; flex-direction: column; gap: 10px; }
+.cosmic .notif-choice {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.cosmic .notif-choice form { margin: 0; }
+.cosmic .notif-opt {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.cosmic .notif-opt:hover:not([disabled]) { border-color: var(--cyan); }
+.cosmic .notif-opt--on {
+  border-color: var(--gold);
+  box-shadow: 0 0 22px -6px rgba(244, 196, 110, 0.4);
+  background: rgba(244, 196, 110, 0.06);
+}
+.cosmic .notif-opt[disabled] { opacity: 0.5; cursor: not-allowed; }
+.cosmic .notif-opt__title { font-weight: 500; }
+.cosmic .notif-opt__sub { font-size: 0.85rem; color: var(--muted); }
+.cosmic .notif-ok { color: var(--gold); }
+
 /* ----------------------------------------------------------------------- */
 /* Cosmic working-state — een levend "de agent is bezig"-denkveld.          */
 /* Herbruikbaar: include _cosmic_working.html binnen een SSE-host. Beweegt   */

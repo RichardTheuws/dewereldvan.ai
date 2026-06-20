@@ -192,6 +192,22 @@ def run_job(
             run.status = STATUS_DONE if findings else STATUS_EMPTY
             run.finished_at = naive_utc(utcnow())
             db.commit()
+
+            # Push-seintje naar het lid-gekozen kanaal (no-op bij in-app: de
+            # pull-chip dekt 't al). Best-effort; geen e-mail.
+            if findings:
+                from app.services import notification_service
+
+                woord = "vermelding" if len(findings) == 1 else "vermeldingen"
+                notification_service.notify(
+                    db, member, notification_service.Notification(
+                        kind="discovery_ready",
+                        title="Je ontdekking is klaar",
+                        body=f"Ik vond {len(findings)} mogelijke {woord} — "
+                             "kies wat op je profiel mag.",
+                        url="/profiel/ai/ontdek/resultaat",
+                    )
+                )
     except Exception:  # noqa: BLE001 — achtergrond-job mag nooit crashen
         logger.exception("Discovery-job faalde voor member %s", member_id)
         _mark_failed(member_id, session_factory)

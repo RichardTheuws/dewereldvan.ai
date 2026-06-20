@@ -67,6 +67,12 @@ class Settings(BaseSettings):
     # De publieke MCP-server-URL (eigen Cloudflare-ingress, los van base_url). Wordt
     # getoond in het `claude mcp add`-commando op de "verbind je tool"-pagina.
     mcp_base_url: str = "https://mcp.dewereldvan.ai"  # MCP_BASE_URL
+    # Telegram-notificatiekanaal (lid-gekozen push). Gegate: zonder token is het
+    # kanaal niet beschikbaar (de UI toont 'binnenkort'). De webhook-secret valideert
+    # dat een /telegram/webhook-call écht van Telegram komt (secret-token-header).
+    telegram_bot_token: str | None = None  # TELEGRAM_BOT_TOKEN (@BotFather)
+    telegram_bot_username: str | None = None  # TELEGRAM_BOT_USERNAME (voor de deep-link)
+    telegram_webhook_secret: str | None = None  # TELEGRAM_WEBHOOK_SECRET
     # Harde bovengrens op de body-lengte van een feedback-bericht (anti-abuse;
     # geldt voor zowel ingelogde als anonieme inzending).
     max_feedback_body_chars: int = 4000
