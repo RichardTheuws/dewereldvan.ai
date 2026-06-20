@@ -9,6 +9,7 @@ Filters (alle server-side, optioneel, combineerbaar):
 - ``tag``   : profielen met een tag waarvan naam/slug op de term matcht.
 - ``maakt`` : term in ``makes_summary`` of een offering-``title``.
 - ``zoekt`` : term in een need-``title``.
+- ``tool``  : profielen die een tool gebruiken waarvan naam/slug op de term matcht.
 """
 
 from __future__ import annotations
@@ -23,8 +24,10 @@ from app.models import (
     Offering,
     Profile,
     Tag,
+    Tool,
     Visibility,
     profile_tag,
+    profile_tool,
 )
 
 __all__ = ["list_public_profiles"]
@@ -53,6 +56,7 @@ def list_public_profiles(
     tag: str | None = None,
     maakt: str | None = None,
     zoekt: str | None = None,
+    tool: str | None = None,
 ) -> list[Profile]:
     """Publieke, goedgekeurde profielen voor de constellatie, optioneel gefilterd.
 
@@ -95,11 +99,27 @@ def list_public_profiles(
         )
         stmt = stmt.where(need_match.exists())
 
+    tool_q = (tool or "").strip()
+    if tool_q:
+        # EXISTS-subquery (geen join) zodat de tool-filter de tag-join + distinct
+        # niet kruist; naam/slug-match, lowercased like (spiegelt de tag-filter).
+        like = f"%{tool_q.lower()}%"
+        tool_match = (
+            select(profile_tool.c.profile_id)
+            .join(Tool, Tool.id == profile_tool.c.tool_id)
+            .where(
+                profile_tool.c.profile_id == Profile.id,
+                or_(Tool.slug.ilike(like), Tool.name.ilike(like)),
+            )
+        )
+        stmt = stmt.where(tool_match.exists())
+
     stmt = (
         stmt.distinct()
         .order_by(Profile.display_name.asc(), Profile.id.asc())
         .options(
             selectinload(Profile.tags),
+            selectinload(Profile.tools),
             selectinload(Profile.offerings),
             selectinload(Profile.needs),
             selectinload(Profile.member),

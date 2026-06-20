@@ -6,6 +6,7 @@
 #   1. refresh_matches   — herrekent de vraag↔aanbod-matchsuggesties (Tier 1).
 #   2. distill_memories  — werkt het sessie-overstijgend concierge-geheugen bij (F2).
 #   3. enrich_projects   — screenshot-hero + AI-samenvatting op de projectpagina's.
+#   4. enrich_tool_logos — best-effort favicon/og:image-logo per tool-URL.
 #
 # Bewust GEEN `set -e`: faalt job 1, dan moet job 2 alsnog draaien. Elke job is
 # zelf best-effort (een fout in de AI-laag mag niets breken).
@@ -30,5 +31,9 @@ echo "--- $(ts) distill_memories ---"
 echo "--- $(ts) enrich_projects ---"
 "$DOCKER" compose exec -T web python -m app.jobs.enrich_projects || \
   echo "WAARSCHUWING: enrich_projects eindigde met een fout"
+
+echo "--- $(ts) enrich_tool_logos ---"
+"$DOCKER" compose exec -T web python -m app.jobs.enrich_tool_logos || \
+  echo "WAARSCHUWING: enrich_tool_logos eindigde met een fout"
 
 echo "=== $(ts) nightly-jobs done ==="

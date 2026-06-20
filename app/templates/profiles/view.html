@@ -135,6 +135,15 @@
       {% endif %}
       {% endmacro %}
 
+      {% macro section_tools() %}
+      {% if profile.tools %}
+      <section class="mt-14" data-reveal style="--d:490ms">
+        <div class="section-title mb-4">Tools die ik gebruik</div>
+        {% set tools = profile.tools %}{% include "profiles/_cosmic_tools.html" %}
+      </section>
+      {% endif %}
+      {% endmacro %}
+
       {% macro section_seeking() %}
       {% if profile.needs %}
       <section class="mt-14" data-reveal style="--d:520ms">
@@ -157,11 +166,13 @@
         {{ section_projects() }}
         {{ section_bio() }}
         {{ section_roles() }}
+        {{ section_tools() }}
         {{ section_seeking() }}
       {% else %}
         {{ section_bio() }}
         {{ section_roles() }}
         {{ section_projects() }}
+        {{ section_tools() }}
         {{ section_seeking() }}
       {% endif %}
 

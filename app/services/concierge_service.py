@@ -10,8 +10,8 @@ tot ``end_turn``. Identieke cap-discipline als de ``pause_turn``-loop
 
 De vijf tools (PRD §3):
 
-- ``search_members`` {tag?, maakt?, zoekt?} (≥1) → [{slug, display_name,
-  headline, tags[], makes_summary}] (alleen public+approved).
+- ``search_members`` {tag?, maakt?, zoekt?, tool?} (≥1) → [{slug, display_name,
+  headline, tags[], tools[], makes_summary}] (alleen public+approved).
 - ``navigate`` {target} → {url, label}.
 - ``connect`` {slug} → {display_name, slug, shared_tags[], url}.
 - ``explain`` {topic} → vaste, gecureerde NL-tekst.
@@ -79,7 +79,8 @@ SYSTEM_PROMPT: str = (
     "stroom, geen paginawissel) en geef er één duidende zin bij. 'bouw mijn profiel' "
     "/ 'maak mijn profiel' → surface profile_builder. Vraag pas om een onderwerp als het lid "
     "echt iets SPECIFIEKS zoekt ('wie bouwt voice-agents?' → search_members of "
-    "surface members_grid met tag). Zeg NOOIT 'ik kan niet zonder filter' op een "
+    "surface members_grid met tag; 'wie gebruikt Claude Code?' → search_members of "
+    "surface members_grid met tool). Zeg NOOIT 'ik kan niet zonder filter' op een "
     "brede toon-intent — toon gewoon iedereen.\n\n"
     "ACTIES VOORSTELLEN (draft-tools): wil het lid iets TOEVOEGEN, gebruik dan een "
     "draft-tool — je SCHRIJFT NIETS, je stelt voor. 'voeg een project toe …' / "
@@ -130,7 +131,7 @@ _ROUTE_TABLE: dict[str, tuple[str, str]] = {
 # De ENGINE kent alleen view-namen + param-keys; de router bezit de echte
 # template/loader-koppeling en rendert server-side uit de DB (grounding-poort).
 SURFACE_REGISTRY: dict[str, set[str]] = {
-    "members_grid": {"tag", "maakt", "zoekt"},
+    "members_grid": {"tag", "maakt", "zoekt", "tool"},
     "member_detail": {"slug"},
     "ideas_list": set(),
     "roadmap_board": set(),
@@ -192,6 +193,10 @@ TOOLS: list[dict] = [
                     "type": "string",
                     "description": "Term in wat iemand zoekt.",
                 },
+                "tool": {
+                    "type": "string",
+                    "description": "AI-tool die iemand gebruikt, bv. 'Claude Code'.",
+                },
             },
         },
     },
@@ -252,7 +257,7 @@ TOOLS: list[dict] = [
         "description": (
             "Materialiseer een interface in de stroom (gebruik dit i.p.v. naar een "
             "pagina navigeren). view is een van: members_grid (params: tag?, "
-            "maakt?, zoekt?), member_detail (slug), ideas_list, roadmap_board, "
+            "maakt?, zoekt?, tool?), member_detail (slug), ideas_list, roadmap_board, "
             "agenda (meetups/events), nieuws (artikelen/interviews), "
             "matches (de vraag↔aanbod-koppelingen voor dit lid), "
             "connections (de intro's van dit lid), "
@@ -406,6 +411,7 @@ def _profile_summary(profile: Profile) -> dict:
         "display_name": profile.display_name,
         "headline": (profile.headline or "").strip() or None,
         "tags": [t.name for t in profile.tags],
+        "tools": [t.name for t in profile.tools],
         "makes_summary": makes or None,
     }
 
@@ -419,11 +425,12 @@ def tool_search_members(db: Session, args: dict) -> dict:
     tag = (args.get("tag") or "").strip() or None
     maakt = (args.get("maakt") or "").strip() or None
     zoekt = (args.get("zoekt") or "").strip() or None
-    if not (tag or maakt or zoekt):
-        return {"error": "Geef minstens één filter (tag, maakt of zoekt)."}
+    tool = (args.get("tool") or "").strip() or None
+    if not (tag or maakt or zoekt or tool):
+        return {"error": "Geef minstens één filter (tag, maakt, zoekt of tool)."}
 
     profiles = members_service.list_public_profiles(
-        db, tag=tag, maakt=maakt, zoekt=zoekt
+        db, tag=tag, maakt=maakt, zoekt=zoekt, tool=tool
     )[:SEARCH_LIMIT]
     results = [_profile_summary(p) for p in profiles]
     return {"count": len(results), "members": results}

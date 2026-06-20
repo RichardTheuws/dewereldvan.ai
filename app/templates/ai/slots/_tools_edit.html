@@ -1,0 +1,21 @@
+{# Edit-formulier voor tools (komma-gescheiden namen). PATCH -> lees-slot. Esc
+   annuleert. Vrij toevoegen van een tool buiten de catalogus werkt (get_or_create);
+   bekende namen koppelen aan de gedeelde catalogus-rij (incl. logo). #}
+<form id="slot-tools" class="slot-edit field-edit"
+      hx-patch="/profiel/ai/veld/tools"
+      hx-target="#slot-tools" hx-swap="outerHTML"
+      hx-on::after-swap="this.querySelector('input')?.focus()">
+  <label class="field-label" for="edit-tools">Tools (komma-gescheiden)</label>
+  <input id="edit-tools" name="value" type="text" maxlength="1000"
+         autofocus
+         value="{{ profile.tools | map(attribute='name') | join(', ') }}"
+         placeholder="bijv. Claude Code, Cursor, n8n, Midjourney"
+         hx-get="/profiel/ai/veld/tools" hx-target="#slot-tools"
+         hx-swap="outerHTML" hx-trigger="keyup[key=='Escape']">
+  <div class="field-edit__actions">
+    <button class="btn btn--sm" type="submit">Bewaar</button>
+    <button class="btn btn--sm btn--ghost" type="button"
+            hx-get="/profiel/ai/veld/tools"
+            hx-target="#slot-tools" hx-swap="outerHTML">Annuleer</button>
+  </div>
+</form>

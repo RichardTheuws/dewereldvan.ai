@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.36.0] - 2026-06-20
+### Added — AI-toolsets op profielen (selecteer leden op tool/toolset)
+- **Leden voegen de AI-tools toe die ze gebruiken** (Claude Code, Cursor, Perplexity, Obsidian, …), mét logo +
+  link. Gestructureerde **`Tool`-catalogus** (geseed met 30 bekende tools) + `profile_tool` M2M (spiegelt het
+  tag-systeem). Vrij toevoegen van een tool die nog niet in de catalogus zit werkt (dedup op slug).
+- **Filteren op tool/toolset** in de ledengids + de concierge (`surface(members_grid)` met `tool`-param);
+  de tool-zoekintent levert nu ook de tools per maker terug.
+- **Logo's** best-effort opgehaald (favicon/og:image) via een nachtelijke job `app.jobs.enrich_tool_logos`
+  (toegevoegd aan de runner); nette letter-tile-fallback tot een logo er is. **SSRF-guard** op de logo-fetch
+  (privé/loopback/link-local IP's geweigerd, redirects per hop gevalideerd — geldt ook voor og:image/icon-
+  kandidaten).
+- **AVG**: `profile_tool`-koppelrijen mee gewist bij account-verwijdering (de gedeelde `tool`-master blijft);
+  DB-cascade bewezen op Postgres. Migraties `0017_tool_profile_tool` + `0018_seed_tools` (additief, idempotente
+  seed, Postgres-pariteit bewezen).
+- Gebouwd via een ultracode-workflow (map → implement → adversarieel review); 4 majors + cleanups uit het
+  review verwerkt. 557 tests groen.
+
 ## [0.35.0] - 2026-06-20
 ### Changed — fal.ai-sfeerbeeld reflecteert nu écht het profiel
 - **Cover-art-director** (`cover_art_service.build_prompt`): de oude prompt plakte rauwe bio-tekst in een vaste

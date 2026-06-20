@@ -123,6 +123,7 @@ def _load_members_grid(db: Session, params: dict, member_id, is_admin) -> tuple[
         tag=params.get("tag") or None,
         maakt=params.get("maakt") or None,
         zoekt=params.get("zoekt") or None,
+        tool=params.get("tool") or None,
     )
     return "members/_grid.html", {
         "profiles": profiles,
@@ -131,6 +132,7 @@ def _load_members_grid(db: Session, params: dict, member_id, is_admin) -> tuple[
         "tag": params.get("tag", ""),
         "maakt": params.get("maakt", ""),
         "zoekt": params.get("zoekt", ""),
+        "tool": params.get("tool", ""),
     }
 
 

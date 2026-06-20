@@ -66,6 +66,7 @@ from app.services import (
     profile_link_service,
     profile_service,
     project_enrich_service,
+    tool_service,
 )
 from app.services import ai_profile as ai_service
 from app.services import visibility as visibility_service
@@ -86,9 +87,15 @@ def safe_url(value: str | None) -> str:
 
 
 # Velden die per-veld bewerkbaar zijn als losse tekst-slots.
-_TEXT_FIELDS = {"headline", "bio", "seeking", "tags"}
+_TEXT_FIELDS = {"headline", "bio", "seeking", "tags", "tools"}
 # Maximale lengtes (spiegelen het datamodel / contract §A.1).
-_MAXLEN = {"headline": 200, "bio": 4000, "seeking": 2000, "tags": 1000}
+_MAXLEN = {
+    "headline": 200,
+    "bio": 4000,
+    "seeking": 2000,
+    "tags": 1000,
+    "tools": 1000,
+}
 
 
 # --------------------------------------------------------------------------- #
@@ -410,6 +417,7 @@ async def stream(
             ("f-projects", "ai/slots/_projects.html", {}),
             ("f-seeking", "ai/slots/_seeking.html", {"uncertain": True}),
             ("f-tags", "ai/slots/_tags.html", {}),
+            ("f-tools", "ai/slots/_tools.html", {}),
         ]
         for event, tmpl, extra in slot_events:
             html = _render_str(
@@ -625,6 +633,8 @@ def _patch_text_field(db: Session, profile: Profile, naam: str, value: str) -> N
             profile.needs.remove(primary)
     elif naam == "tags":
         profile_service.set_tags(db, profile, value)
+    elif naam == "tools":
+        tool_service.set_tools(db, profile, value)
     profile_service.recompute_completeness(profile)
     db.flush()
 

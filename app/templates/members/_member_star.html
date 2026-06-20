@@ -45,6 +45,22 @@
       {% for tag in profile.tags[:3] %}<span class="chip">{{ tag.name }}</span>{% endfor %}
     </div>
     {% endif %}
+
+    {% if profile.tools %}
+    <div class="member-star__tools">
+      {% for tool in profile.tools[:3] %}
+      {% set _logo = tool.logo_url | safe_url if tool.logo_url else '' %}
+      <span class="tool-pill tool-pill--mini" title="{{ tool.name }}">
+        {% if _logo %}
+        <img class="tool-pill__logo" src="{{ _logo }}" alt="" loading="lazy" width="18" height="18">
+        {% else %}
+        <span class="tool-pill__tile" aria-hidden="true">{{ tool.name[:1] | upper }}</span>
+        {% endif %}
+        <span class="tool-pill__name">{{ tool.name }}</span>
+      </span>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
 
   <span class="member-star__pull" aria-hidden="true">Bekijk →</span>

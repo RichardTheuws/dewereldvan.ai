@@ -1,7 +1,7 @@
 {# Filter/zoek-balk voor de constellatie. Mono-labels + glas-inputs (bestaande
    .cosmic input-focus-gloed). htmx: bij wijziging GET /leden → #grid met het
    _grid.html-fragment. `hx-push-url` houdt de gefilterde URL deelbaar +
-   indexeerbaar. Verwacht: `tag`, `maakt`, `zoekt` (huidige waarden). #}
+   indexeerbaar. Verwacht: `tag`, `maakt`, `zoekt`, `tool` (huidige waarden). #}
 <form class="member-filters"
       hx-get="/leden"
       hx-target="#grid"
@@ -23,5 +23,10 @@
     <label class="field-label" for="f-zoekt">Waar ik zoek</label>
     <input id="f-zoekt" name="zoekt" type="search" value="{{ zoekt or '' }}"
            placeholder="bijv. co-founder, pilot, data" autocomplete="off">
+  </div>
+  <div class="member-filters__field">
+    <label class="field-label" for="f-tool">Tool</label>
+    <input id="f-tool" name="tool" type="search" value="{{ tool or '' }}"
+           placeholder="bijv. Claude Code, Cursor, n8n" autocomplete="off">
   </div>
 </form>

@@ -151,7 +151,7 @@ def test_build_page_approved_member_ok(make_client, seed):
     assert "tekst/event-stream" not in resp.text  # sanity: it's HTML
     # De levende vorm rendert uit DB-staat: de slot-ankers staan op de pagina.
     for slot in ("slot-headline", "slot-bio", "slot-seeking", "slot-tags",
-                 "slot-roles", "slot-projects"):
+                 "slot-tools", "slot-roles", "slot-projects"):
         assert f'id="{slot}"' in resp.text
     # Eén kosmische look + materialisatie-host (geen tweede stijl).
     assert 'id="materialisatie"' in resp.text
@@ -864,6 +864,29 @@ def test_patch_tags_sets_tags(make_client, seed, SessionTest):
         member = s.get(Member, seed["approved"])
         profile = get_or_create_profile(s, member)
         assert {t.name for t in profile.tags} == {"ai", "zorg", "ontwerp"}
+    finally:
+        s.close()
+
+
+def test_patch_tools_sets_tools(make_client, seed, SessionTest):
+    from app.models import Member
+    from app.services.profile_service import get_or_create_profile
+
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+    resp = client.patch(
+        "/profiel/ai/veld/tools",
+        data={"value": "Claude Code, Cursor, claude code"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    assert "slot-tools" in resp.text
+    s = SessionTest()
+    try:
+        member = s.get(Member, seed["approved"])
+        profile = get_or_create_profile(s, member)
+        # Dedup op slug → twee tools, eerste casing behouden.
+        assert {t.slug for t in profile.tools} == {"claude-code", "cursor"}
     finally:
         s.close()
 

@@ -431,6 +431,76 @@
   padding: 6px 13px;
 }
 
+/* ---- tool-stack (AI-toolsets op een profiel) ---- */
+.cosmic .tool-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.cosmic .tool-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(168, 130, 255, 0.28);
+  background: rgba(168, 130, 255, 0.06);
+  border-radius: 100px;
+  padding: 5px 13px 5px 5px;
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.cosmic a.tool-pill:hover {
+  border-color: rgba(168, 130, 255, 0.55);
+  background: rgba(168, 130, 255, 0.12);
+  transform: translateY(-1px);
+}
+.cosmic .tool-pill__logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.04);
+  flex: 0 0 auto;
+}
+.cosmic .tool-pill__tile {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--violet, #a882ff);
+  background: rgba(168, 130, 255, 0.16);
+  flex: 0 0 auto;
+}
+.cosmic .tool-pill__name {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+}
+.cosmic .member-star__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.cosmic .tool-pill--mini {
+  gap: 6px;
+  padding: 3px 10px 3px 3px;
+}
+.cosmic .tool-pill--mini .tool-pill__logo,
+.cosmic .tool-pill--mini .tool-pill__tile {
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+}
+.cosmic .tool-pill--mini .tool-pill__name {
+  font-size: 10.5px;
+}
+
 /* ---- buttons ---- */
 .cosmic .btn {
   position: relative;

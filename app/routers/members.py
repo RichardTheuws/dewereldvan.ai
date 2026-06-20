@@ -50,6 +50,7 @@ def members_index(
     tag: str = Query("", alias="tag"),
     maakt: str = Query("", alias="maakt"),
     zoekt: str = Query("", alias="zoekt"),
+    tool: str = Query("", alias="tool"),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
     """De kosmische constellatie van publieke leden + server-side filter/zoek.
@@ -59,10 +60,10 @@ def members_index(
     indexeerbare pagina (zodat een gedeelde gefilterde URL ook stand-alone werkt).
     """
     profiles = members_service.list_public_profiles(
-        db, tag=tag, maakt=maakt, zoekt=zoekt
+        db, tag=tag, maakt=maakt, zoekt=zoekt, tool=tool
     )
     ctx = _grid_context(profiles)
-    ctx.update({"tag": tag, "maakt": maakt, "zoekt": zoekt})
+    ctx.update({"tag": tag, "maakt": maakt, "zoekt": zoekt, "tool": tool})
 
     if request.headers.get("HX-Request"):
         return _render(request, "members/_grid.html", ctx)

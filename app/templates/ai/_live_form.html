@@ -36,14 +36,20 @@
   {% macro s_projects() %}
   <section class="mt-14" data-reveal style="--d:460ms">{% include "ai/slots/_projects.html" %}</section>
   {% endmacro %}
+  {% macro s_tools() %}
+  <section class="mt-14" data-reveal style="--d:490ms">
+    <div class="section-title mb-4">Tools die ik gebruik</div>
+    {% include "ai/slots/_tools.html" %}
+  </section>
+  {% endmacro %}
   {% macro s_seeking() %}
   <section class="mt-14" data-reveal style="--d:520ms">{% include "ai/slots/_seeking.html" %}</section>
   {% endmacro %}
 
   {% if emphasis_cls == "emphasis-projects" %}
-    {{ s_projects() }}{{ s_bio() }}{{ s_roles() }}{{ s_seeking() }}
+    {{ s_projects() }}{{ s_bio() }}{{ s_roles() }}{{ s_tools() }}{{ s_seeking() }}
   {% else %}
-    {{ s_bio() }}{{ s_roles() }}{{ s_projects() }}{{ s_seeking() }}
+    {{ s_bio() }}{{ s_roles() }}{{ s_projects() }}{{ s_tools() }}{{ s_seeking() }}
   {% endif %}
 
 </div>

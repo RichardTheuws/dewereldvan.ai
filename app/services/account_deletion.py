@@ -52,6 +52,7 @@ from app.models import (
     Profile,
     ProfileLink,
     profile_tag,
+    profile_tool,
 )
 from app.services.photo_service import delete_photo
 
@@ -153,10 +154,13 @@ def delete_member_completely(db: Session, member: Member) -> None:
         db.execute(
             delete(ProfileLink).where(ProfileLink.profile_id.in_(profile_ids))
         )
-        # M2M-associaties wissen — NIET de gedeelde ``tag``-rijen zelf (die horen
-        # bij andere leden). We raken alleen de koppelrijen van dit profiel.
+        # M2M-associaties wissen — NIET de gedeelde ``tag``/``tool``-rijen zelf
+        # (die horen bij andere leden). We raken alleen de koppelrijen van dit profiel.
         db.execute(
             delete(profile_tag).where(profile_tag.c.profile_id.in_(profile_ids))
+        )
+        db.execute(
+            delete(profile_tool).where(profile_tool.c.profile_id.in_(profile_ids))
         )
 
     # idea → idea_vote: eerst alle stemmen die bij de ideeën van dit lid horen,

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from app.models.offering import Offering
     from app.models.profile_link import ProfileLink
     from app.models.tag import Tag
+    from app.models.tool import Tool
 
 
 class Profile(Base, TimestampMixin):
@@ -76,6 +77,9 @@ class Profile(Base, TimestampMixin):
     )
     tags: Mapped[list[Tag]] = relationship(
         secondary="profile_tag", back_populates="profiles"
+    )
+    tools: Mapped[list[Tool]] = relationship(
+        secondary="profile_tool", back_populates="profiles"
     )
     profile_links: Mapped[list[ProfileLink]] = relationship(
         back_populates="profile",

@@ -101,6 +101,113 @@ def test_seed_migration_ran_on_postgres(pg):
     assert roadmap >= 1
 
 
+def test_tool_seed_ran_on_postgres(pg):
+    """0018 seed draaide: de gegronde AI-tool-catalogus staat erin (dialect-proof
+    op Postgres, incl. de TimestampMixin-default ``created_at``)."""
+    engine, _ = pg
+    with engine.begin() as conn:
+        tools = conn.execute(text("SELECT count(*) FROM tool")).scalar()
+        claude = conn.execute(
+            text("SELECT created_at FROM tool WHERE slug = 'claude-code'")
+        ).first()
+    assert tools >= 25  # ~30 gezaaide tools
+    assert claude is not None and claude[0] is not None  # server_default now()
+
+
+def test_profile_tool_link_writes_on_postgres(pg):
+    """Smoke-CRUD op de nieuwe M2M: een profiel ↔ tool-koppeling schrijft + leest
+    op Postgres (composite-PK + dubbele CASCADE-FK + unique-constraint)."""
+    engine, _ = pg
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO member (email, name, status, role) "
+                "VALUES ('pg-tool@example.com', 'PG Tool', 'approved', 'member')"
+            )
+        )
+        mid = conn.execute(
+            text("SELECT id FROM member WHERE email = 'pg-tool@example.com'")
+        ).scalar()
+        conn.execute(
+            text(
+                "INSERT INTO profile (member_id, slug, display_name, visibility, "
+                "completeness, emphasis, ai_enriched) "
+                "VALUES (:mid, 'pg-tool', 'PG Tool', 'public', 0, 'balanced', false)"
+            ).bindparams(mid=mid)
+        )
+        pid = conn.execute(
+            text("SELECT id FROM profile WHERE slug = 'pg-tool'")
+        ).scalar()
+        tid = conn.execute(
+            text("SELECT id FROM tool WHERE slug = 'claude-code'")
+        ).scalar()
+        conn.execute(
+            text(
+                "INSERT INTO profile_tool (profile_id, tool_id) VALUES (:p, :t)"
+            ).bindparams(p=pid, t=tid)
+        )
+        linked = conn.execute(
+            text(
+                "SELECT count(*) FROM profile_tool WHERE profile_id = :p "
+                "AND tool_id = :t"
+            ).bindparams(p=pid, t=tid)
+        ).scalar()
+    assert linked == 1
+
+
+def test_profile_tool_cascade_on_profile_delete_on_postgres(pg):
+    """AVG-vangnet: delete het profiel → de ``profile_tool``-koppelrij verdwijnt
+    automatisch (DB-CASCADE vuurt) terwijl de gedeelde ``tool``-master blijft."""
+    engine, _ = pg
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO member (email, name, status, role) "
+                "VALUES ('pg-casc@example.com', 'PG Cascade', 'approved', 'member')"
+            )
+        )
+        mid = conn.execute(
+            text("SELECT id FROM member WHERE email = 'pg-casc@example.com'")
+        ).scalar()
+        conn.execute(
+            text(
+                "INSERT INTO profile (member_id, slug, display_name, visibility, "
+                "completeness, emphasis, ai_enriched) "
+                "VALUES (:mid, 'pg-casc', 'PG Cascade', 'public', 0, 'balanced', "
+                "false)"
+            ).bindparams(mid=mid)
+        )
+        pid = conn.execute(
+            text("SELECT id FROM profile WHERE slug = 'pg-casc'")
+        ).scalar()
+        tid = conn.execute(
+            text("SELECT id FROM tool WHERE slug = 'claude-code'")
+        ).scalar()
+        conn.execute(
+            text(
+                "INSERT INTO profile_tool (profile_id, tool_id) VALUES (:p, :t)"
+            ).bindparams(p=pid, t=tid)
+        )
+
+    # Delete het profiel → de CASCADE-FK moet de koppelrij meenemen.
+    with engine.begin() as conn:
+        conn.execute(
+            text("DELETE FROM profile WHERE id = :p").bindparams(p=pid)
+        )
+
+    with engine.begin() as conn:
+        links = conn.execute(
+            text(
+                "SELECT count(*) FROM profile_tool WHERE profile_id = :p"
+            ).bindparams(p=pid)
+        ).scalar()
+        tool_still = conn.execute(
+            text("SELECT count(*) FROM tool WHERE id = :t").bindparams(t=tid)
+        ).scalar()
+    assert links == 0  # CASCADE vuurde: koppelrij weg
+    assert tool_still == 1  # gedeelde master blijft bestaan
+
+
 def test_downgrade_base_and_back(pg):
     """De keten is volledig reversibel op Postgres (downgrade base → upgrade head)."""
     engine, cfg = pg

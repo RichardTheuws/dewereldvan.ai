@@ -147,6 +147,35 @@ def save_screenshot(raw: bytes, offering_id: int) -> str | None:
     return f"{settings.upload_url_prefix}/{name}"
 
 
+def save_logo(raw: bytes, tool_id: int) -> str | None:
+    """Verwerk + schrijf een tool-logo weg; retourneer het serveer-pad of None.
+
+    Anders dan ``save_screenshot`` (landschap, ``convert("RGB")`` dropt alpha):
+    een logo wil transparantie behouden en niet bijgesneden worden. We doen een
+    vierkante "contain" (geen crop) op 256px met transparante rand via
+    ``convert("RGBA")`` + ``ImageOps.pad``, en bewaren als lossless WEBP zodat een
+    PNG/raster-logo scherp blijft en brede wordmarks niet wegvallen. Ongeldige
+    bytes → ``None`` (best-effort; de logo-laag mag nooit crashen).
+    """
+    px = 256
+    try:
+        img = Image.open(BytesIO(raw))
+        img = img.convert("RGBA")  # behoud alpha (transparante rand mogelijk)
+        # Vierkante "contain": schaal binnen px×px, vul de rest transparant op.
+        img = ImageOps.pad(
+            img, (px, px), Image.LANCZOS, color=(0, 0, 0, 0), centering=(0.5, 0.5)
+        )
+        out = BytesIO()
+        img.save(out, format="WEBP", lossless=True, quality=90, method=6)
+    except (UnidentifiedImageError, OSError, ValueError):
+        return None
+    name = f"logo-{tool_id}-{secrets.token_hex(8)}.webp"
+    path = _abs_path(name)  # anti-traversal-guard
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(out.getvalue())
+    return f"{settings.upload_url_prefix}/{name}"
+
+
 def delete_photo(photo_url: str | None) -> None:
     """Verwijder het bestand achter ``photo_url`` (idempotent, AVG).
 
