@@ -78,6 +78,21 @@ def test_link_flow_then_prefer_telegram(db, make_member, make_profile, monkeypat
     assert notification_service.set_preference(db, member, "telegram") == "telegram"
 
 
+def test_link_auto_sets_telegram_preference(db, make_member, make_profile, monkeypatch):
+    """Succesvol koppelen zet het voorkeurskanaal meteen op telegram (opt-in)."""
+    monkeypatch.setattr(telegram_service, "configured", lambda: True)
+    monkeypatch.setattr(telegram_service, "link_url", lambda tok: f"https://t.me/b?start={tok}")
+    member = make_member()
+    make_profile(member)
+    assert notification_service.preferred_channel(db, member) == "in_app"
+
+    notification_service.begin_telegram_link(db, member)
+    ch = db.query(MemberChannel).filter_by(member_id=member.id).one()
+    notification_service.link_telegram_from_start(db, ch.link_token, "42")
+
+    assert notification_service.preferred_channel(db, member) == "telegram"
+
+
 def test_begin_link_returns_none_when_not_configured(db, make_member, make_profile, monkeypatch):
     monkeypatch.setattr(telegram_service, "configured", lambda: False)
     member = make_member()
@@ -351,3 +366,5 @@ def test_webhook_links_chat_id(make_client, approved_id, SessionTest, monkeypatc
         assert ch.address == "31337"
         assert ch.verified_at is not None
         assert ch.link_token is None
+        # Koppelen = opt-in → voorkeur staat nu op telegram (geen losse stap nodig).
+        assert s.get(NotificationPref, approved_id).channel == "telegram"

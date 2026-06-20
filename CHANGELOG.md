@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.45.0] - 2026-06-20
+### Fixed — Telegram koppelen is nu opt-in (voorkeur auto op telegram)
+- **Probleem**: een lid dat Telegram koppelde kreeg tóch geen push — het voorkeurskanaal bleef op de default
+  `in_app` (koppelen en voorkeur-kiezen waren twee losse stappen). Wie de moeite neemt te verbinden, wil daar
+  z'n seintjes.
+- **Fix**: `link_telegram_from_start` zet bij een succesvolle koppeling het `notification_pref` meteen op
+  `telegram` (omkeerbaar in het paneel). 2 tests toegevoegd/aangescherpt (webhook + service). 623 tests groen.
+
 ## [0.44.2] - 2026-06-20
 ### Changed — source-of-truth-opschoning (audit-fix)
 - Audit wees uit dat de canonieke context-docs ~29 versies waren weggedreven (en de richting tégenspraken,

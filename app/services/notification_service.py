@@ -138,6 +138,13 @@ def link_telegram_from_start(db: Session, token: str, chat_id: str) -> bool:
     ch.address = chat_id
     ch.verified_at = naive_utc(utcnow())
     ch.link_token = None
+    # Koppelen ÍS opt-in: wie de moeite neemt Telegram te verbinden, wil daar z'n
+    # seintjes — zet het voorkeurskanaal meteen op telegram (omkeerbaar in het paneel).
+    pref = db.get(NotificationPref, ch.member_id)
+    if pref is None:
+        db.add(NotificationPref(member_id=ch.member_id, channel=CHANNEL_TELEGRAM))
+    else:
+        pref.channel = CHANNEL_TELEGRAM
     db.flush()
     return True
 
