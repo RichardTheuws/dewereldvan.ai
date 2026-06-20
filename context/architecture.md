@@ -1,63 +1,99 @@
-# Architectuur
+# Architectuur — canonieke systeemkaart
+
+> Bijwerken bij structurele wijzigingen (nieuwe router/model/integratie/migratie).
+> Voor "waar staan we" zie `status.md`; voor "waarom" zie `decisions.md`.
 
 ## Systeem Overzicht
-Eén self-hosted webapplicatie (server-rendered) achter een Cloudflare Tunnel. Geen aparte
-SPA/JS-buildpipeline — interactiviteit via htmx. Dit houdt de operationele last laag en laat
-de stack unattended draaien (kerneis).
+Eén self-hosted, server-rendered webapplicatie achter een Cloudflare Tunnel. Geen
+SPA/JS-buildpipeline — interactiviteit via **htmx** (+ SSE voor live-streams). Lage
+operationele last, draait unattended (kerneis).
 
 ```
 Bezoeker ──HTTPS──► Cloudflare (DNS + WAF + Tunnel edge)
-                          │  (cloudflared tunnel, geen open poorten)
+                          │  (cloudflared, geen open poorten)
                           ▼
                  ┌─────────────────────────────┐
                  │  Mac mini M4 (server-mini)   │
-                 │  Docker Compose netwerk      │
+                 │  Docker Compose              │
                  │  ┌────────┐   ┌────────────┐ │
-                 │  │ web    │──►│ postgres   │ │
+                 │  │ web    │──►│ postgres 16│ │
                  │  │FastAPI │   │ (volume)   │ │
                  │  └───┬────┘   └────────────┘ │
                  │      │  cloudflared (sidecar) │
                  └──────┼──────────────────────┘
-                        ▼
-                 Transactionele e-mail (magic-link + admin-notificaties)
+        ┌──────────────┼───────────────┬───────────────┐
+        ▼              ▼                ▼               ▼
+   Anthropic      Cloudflare        fal.ai         Telegram Bot API
+  (web_search,   Browser Render   (cover-art)     (push-notificaties)
+   profielbouw,  (screenshots)
+   concierge,
+   discovery)
 ```
+Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.ai**
+(teaser). MCP-server gemount op `/mcp` (eigen Bearer-auth).
 
-## Componenten
-| Component | Doel | Locatie |
-|-----------|------|---------|
-| `web` | FastAPI app: routes, Jinja2-templates, htmx-partials, auth, admin | `app/` |
-| `postgres` | Profielen, leden, tags, offerings/needs, posts | Docker service + volume |
-| `cloudflared` | Cloudflare Tunnel — exposeert `web` zonder poortforwarding | Docker service |
-| e-mail | Verzendt magic-links en goedkeurings-notificaties | externe provider (OPEN) |
+## Componenten (`app/`)
+- **routers/** (20): HTTP-endpoints (zie route-inventaris). **services/**: de logica
+  (engine-loops, persistentie, integraties). **models/**: SQLAlchemy 2.x (25 tabellen).
+  **templates/**: Jinja2 + htmx-partials. **email/**: EmailSender-adapters (alleen nog
+  magic-link). **mcp_server.py**: FastMCP op `/mcp`.
+- **Sleutel-services**: `profile_service`, `concierge_service` (agent-shell function-tool-loop +
+  `surface`-registry), `footprint_service` (discovery-engine), `discovery_job_service`
+  (achtergrond-job), `notification_service` + `telegram_service`, `project_enrich_service`,
+  `match_service`/`connection_service`, `nudge_service` (pull-chips), `cover_art_service`,
+  `tool_service`, `member_memory_service`, `account_deletion`.
 
-## Data Flow — toegang & profiel (Fase 1)
-1. Bezoeker vult open registratieformulier in (naam, e-mail) → status `pending`.
-2. Admin (Richard) krijgt notificatie; keurt goed in admin-queue (één klik) → status `approved`.
-3. Lid vraagt magic-link aan → ontvangt e-mail → klikt → server-side sessie.
-4. Lid bewerkt profiel: over jezelf, wat je maakt (offerings), waar je naar zoekt (needs),
-   tags/skills, en **zichtbaarheid per profiel** (default: alleen-leden).
-5. Directory toont profielen volgens zichtbaarheid; publieke profielen krijgen een
-   openbare URL + zijn indexeerbaar, besloten profielen `noindex` + alleen voor ingelogde leden.
+## Route-inventaris (gegroepeerd)
+- **Auth/toegang**: `/register`, `/login`, `/auth/verify`, `/logout`, `/welkom`,
+  `/uitnodiging/{token}`.
+- **Profiel (AI-bouw)**: `/profiel/ai/bouwen`, `/profiel/ai/bericht|stream|opnieuw|publiceren|cover`,
+  `/profiel/ai/offering|rol|veld/*` (CRUD/inline), `/profiel/ai/maak-draft`.
+- **Profiel (klassiek + AVG)**: `/profiel/bewerken`, `/profiel/zichtbaarheid`, `/profiel/emphasis`,
+  `/profiel/foto*`, `/profiel/need|offering*`, `/profiel/verwijderen`, `/profiel/gewist`.
+- **Discovery**: `/profiel/ai/ontdek` (start/hervat/resume), `/ontdek/stream` (SSE-tail),
+  `/ontdek/resultaat` (deeplink), `/ontdek/koppel|crystalliseer|ongedaan`.
+- **Notificaties**: `/profiel/notificaties` (+ `/kanaal`, `/telegram/start|ontkoppel`),
+  `/telegram/webhook` (extern, secret-header, CSRF-exempt).
+- **Concierge/agent-shell**: `/concierge/bericht|stream|chips|index|nudge|profielbouw|founder/verhaal`.
+- **Community**: `/leden`, `/leden/{slug}`, `/projecten/{slug}`, `/agenda`, `/nieuws`, `/ideeen`,
+  `/roadmap`, `/intro/*`, `/feedback*`.
+- **MCP/koppelen**: `/mcp`, `/profiel/verbind` (+ token-CRUD).
+- **Admin**: `/queue`, `/members/{id}/approve|reject|suspend`, `/admin/*` (roadmap, ideeën,
+  posts, feedback, uitnodiging).
+- **SEO**: `/robots.txt`, `/sitemap.xml`.
 
-## Datamodel (holistisch ontworpen, gefaseerd gevuld)
-Ontworpen om alle vier visie-richtingen te dragen zonder herbouw:
-- `member` (account: e-mail, status pending/approved/suspended, rol, magic-link tokens, sessies)
-- `profile` (1:1 member: bio, "wat ik maak", visibility public/members, slug, completeness)
-- `tag` + `profile_tag` (skills/interesses, voedt directory-filter én matchmaking)
-- `offering` (wat een lid maakt/aanbiedt) en `need` (waar een lid naar zoekt) → matchmaking-basis
-- `match` (suggestie offering↔need, Fase 3)
-- `post` + `comment` (community, Fase 4)
-- `audit_log` (goedkeuringen, zichtbaarheidswijzigingen — AVG-traceerbaarheid)
+## Datamodel (25 tabellen, migraties 0001–0020)
+- **Kern**: `member`, `magic_link_token`, `profile`, `profile_link`, `tag`+`profile_tag`,
+  `tool`+`profile_tool`, `offering`+`offering_slug_history`, `need`.
+- **Community**: `post` (agenda+nieuws), `idea`+`idea_vote`, `roadmap_item`, `feedback`,
+  `group_invite`.
+- **Matchmaking**: `match_suggestion`, `connection`.
+- **Agent/AI**: `concierge_turn`, `concierge_nudge_dismissal`, `ai_chat_turn` (het
+  gedistilleerde concierge-geheugen leeft als `member.member_memory`-kolom, migr. 0015).
+- **Discovery**: `discovery_run` (0019).
+- **Notificaties**: `member_channel` + `notification_pref` (0020).
+- **Auth/MCP/audit**: `personal_token` (MCP Bearer), `audit_log`.
+- **AVG**: alle member-gebonden rijen worden expliciet gewist in `account_deletion`
+  (test-bewijsbaar, niet op DB-cascade leunend).
 
-## Fasering
-- **Fase 0** — Fundering: Docker Compose, Alembic, base-layout, Cloudflare Tunnel, healthcheck.
-- **Fase 1 (MVP)** — Registratie → goedkeuring → magic-link → profiel bewerken → zichtbaarheid.
-- **Fase 2** — Directory: doorzoekbaar/filterbaar, publieke profielpagina's, AVG-export/-delete.
-- **Fase 3** — Matchmaking: offering↔need-koppeling + tag-suggesties.
-- **Fase 4** — Community: posts/reacties + moderatie.
-- **Fase 5** — Publieke showcase: etalage naar buiten, SEO, OG-tags.
+## Env-vars (gegate integraties; zie `.env.example`)
+`SECRET_KEY` (verplicht), `DATABASE_URL`, `BASE_URL`, `ADMIN_EMAILS`, `EMAIL_BACKEND`
+(+ Cloudflare/Resend-creds — alleen magic-link), `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL`,
+`FAL_KEY`, `AI_ENRICH_ENABLED`, `CLOUDFLARE_ACCOUNT_ID`/`_API_TOKEN` (Browser Rendering),
+`MCP_BASE_URL`, `TELEGRAM_BOT_TOKEN`/`_BOT_USERNAME`/`_WEBHOOK_SECRET`, diverse
+`RATE_LIMIT_*`. Ontbrekende creds → de feature is een nette no-op (geen crash).
+
+## Fasering — status
+- **Fase 0–1 (fundering + toegang + profiel)** — ✅ live.
+- **Fase 2 (directory + AVG + agent-shell schrijf-surfaces)** — ✅ live.
+- **Fase 3 (matchmaking)** — ✅ live (suggesties + intro-flow + push-chips).
+- **Community (agenda/nieuws/ideeën/roadmap)** — ✅ live.
+- **MCP-server** — ✅ live.
+- **Discovery (footprint-engine + achtergrond-job + crystalliseer)** — ✅ live; Scout (Fase 2) volgt.
+- **Notificaties (lid-gekozen kanaal + Telegram)** — ✅ live; per-event-voorkeuren later.
 
 ## Operationele eisen (unattended)
-- Nightly Postgres-backup (sluit aan op bestaande M1-backupserver-routine).
-- Healthcheck-endpoint + container `restart: unless-stopped`.
-- Geen handmatige stappen in normale werking behalve de goedkeurings-queue (lichtgewicht).
+- Nightly Postgres-backup + nachtelijke jobs (`refresh_matches`, `distill_memories`,
+  `enrich_projects`) via LaunchAgent op de M4.
+- Healthcheck `/healthz` + container `restart`-policy; migraties bij startup (Dockerfile-CMD).
+- Enige handmatige stap in normale werking: de lichtgewicht goedkeurings-queue.

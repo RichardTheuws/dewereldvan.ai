@@ -124,3 +124,74 @@ DNS (apex + www) via de Cloudflare API. Live op https://dewereldvan.ai.
 
 **Gevolgen**: Throwaway/transitioneel. Bij go-live van het platform neemt de volledige app de
 tunnel-ingress over en migreren we de wachtlijst-adressen naar de `member`-tabel.
+
+---
+
+## [2026-06-20] Discovery: footprint-engine, gefaseerd, met confirm-poort
+
+**Context**: leden moeten hun online werk/vermeldingen makkelijk op hun profiel krijgen. De markt
+faalt op disambiguatie (naamgenoten). Engine wordt later hergebruikt door de Scout.
+
+**Beslissing**: één `footprint_service` (zoek → entity-resolution → classificeer) met twee
+consumenten (Discovery nu, Scout later). Gebouwd in fasen: **1a** = live-streamende ontdekking +
+kandidaten; **1b** = crystalliseer/bevestig-laag. Hoge confidence (**≥90**, `HIGH_CONFIDENCE`)
+crystalliseert auto mét undo; twijfel → 1-klik "klopt dit?"-bevestigrij. Crystalliseren is
+idempotent op URL (geen duplicaten). KILL-conditie: zakt de precisie, val terug op
+confirm-everything (engine blijft, auto-magie eruit).
+
+**Alternatieven**:
+- Alles altijd handmatig bevestigen: afgewezen — Richard koos auto-≥90 (PRD-default) voor de wow.
+- Links dumpen zonder entity-resolution: afgewezen — disambiguatie ÍS de moat.
+
+**Gevolgen**: false-positive-risico afgedekt door drempel + undo + idempotentie. PRD: `docs/PRD-discovery.md`.
+
+## [2026-06-20] Discovery draait als achtergrond-job (niet inline)
+
+**Context**: de ontdekking duurt vaak >5 min; de inline-SSE sneuvelde op de 2-min-cap
+(`CHANNEL_TIMEOUT_SEC`) en bewaarde niets → terugkeren onmogelijk.
+
+**Beslissing**: ontkoppel van het browservenster. Achtergrond-thread (`discovery_job_service`,
+eigen sessie) draait de engine en persisteert naar **`DiscoveryRun`** (migr. 0019). Live-view
+*tailt* de run over SSE met `Last-Event-ID`-hervatting; wie wegklikt verliest niets (terugkeer-view +
+in-app chip). Webhook/2-min-cap raakt de job niet meer.
+
+**Alternatieven**:
+- Timeout ophogen: afgewezen — houdt iemand minuten op een breekbare tab.
+- htmx-polling i.p.v. SSE-tail: afgewezen — SSE-tail over gepersisteerde staat hergebruikt de
+  bestaande view en herstelt prima via Last-Event-ID.
+- Progressive render (engine-fasering): uitgesteld — lost >5min niet op; persist maakt 't later goedkoop.
+
+**Gevolgen**: foundation die de Scout (Fase 2) deelt. PRD: `docs/PRD-discovery.md`.
+
+## [2026-06-20] Geen e-mail meer (behalve magic-link) → lid-gekozen notificatiekanaal
+
+**Context**: e-mail past niet bij dit AI-native publiek; notificaties horen waar de aandacht al is.
+Sluit aan op de Scout-PRD-pivot ("pull-only, geen e-mail, geen push").
+
+**Beslissing**: e-mail blijft **alléén** voor de magic-link. Alle overige seintjes via een
+**lid-gekozen kanaal**. AUGMENT, geen tweede systeem: in-app blijft de state-derived pull-chip;
+een `notify()`-dispatcher voegt **push** toe naar het voorkeurskanaal. Default = in-app.
+Discovery-klaar én matchmaking-intro lopen nu via `notify()` (e-mail verwijderd). Modellen
+`member_channel` + `notification_pref` (migr. 0020); uitbreidbaar (nieuw kanaal = een Notifier erbij).
+
+**Alternatieven**:
+- E-mail houden voor intro's (1-op-1, tijdkritisch): afgewezen — Richard koos "álles via voorkeur-kanaal".
+- Notificatie-inbox bouwen: afgewezen — de pull-chips dekken in-app al (lage op-last).
+
+**Gevolgen**: een lid met default in-app dat de app niet opent mist realtime — Telegram is dé
+push-route (bewuste trade-off). PRD: `docs/PRD-notificaties.md` · memory `dewereldvan-notificaties`.
+
+## [2026-06-20] Telegram als eerste push-kanaal (deep-link + webhook)
+
+**Context**: een echt push-kanaal naast in-app, met de laagste op-last.
+
+**Beslissing**: bot **@dewereldvanaibot**. Koppelen via deep-link `t.me/<bot>?start=<token>`;
+de bot-**webhook** (`POST /telegram/webhook`, secret-token-header, CSRF-exempt) koppelt de chat_id.
+Eigen avatar via `setMyProfilePhoto` (Bot API 9.4). Rich content: HTML + inline-knop (robuust;
+`sendRichMessage` van 10.1 bewust nog niet gebruikt). Gegate op `TELEGRAM_BOT_TOKEN` → activeert via env.
+
+**Alternatieven**:
+- Long-poll worker i.p.v. webhook: afgewezen — we hebben al een tunnel (webhook = lager op-last).
+
+**Gevolgen**: creds in M4-`.env` (niet in git); webhook registreert zichzelf bij startup. Token
+ooit roteren vóór publieke launch. Memory `dewereldvan-notificaties`.

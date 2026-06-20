@@ -80,3 +80,8 @@ Geen poortforwarding op de router. Details in context/architecture.md.
 ## Werkwijze
 Volgt de globale workflow (~/.claude/CLAUDE.md): SemVer + CHANGELOG bij elke wijziging,
 PRD-first voor nieuwe features, conventional commits op `main`, tests in dezelfde sessie.
+
+**Source of truth**: `context/status.md` (waar staan we) en `context/decisions.md` (waarom) worden
+**samen met elke `VERSION`/`CHANGELOG`-bump** bijgewerkt — anders drijven ze weg en misleiden ze.
+`context/architecture.md` bijwerken bij structurele wijzigingen (nieuwe router/model/integratie).
+Begin een sessie door `context/status.md` te lezen; dat is de canonieke toestand.

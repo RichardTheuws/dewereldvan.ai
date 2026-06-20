@@ -1,30 +1,58 @@
-# Project Status
+# Project Status — single source of truth
 
-**Laatste update**: 2026-06-19
+> **Onderhoudsregel**: dit bestand + `decisions.md` worden bijgewerkt **samen met
+> elke `VERSION`/`CHANGELOG`-bump** (uitbreiding van Gouden Regel #1). Het is de
+> "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
+> details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-## Huidige Focus
-**Agent-Shell Fase 1 gebouwd (v0.15.0)** — voor ingelogde, goedgekeurde leden is de site nu een
-levende agent-canvas (geen menu/links; interfaces materialiseren in-stroom via de surface-tool over een
-vaste registry). Anoniem/publiek houdt de crawlbare pagina's. Gebouwd via understand→design→red-team
-workflow (6 blockers gesloten), 430 tests groen, gecommit+gepusht op `main`. Nog **niet** gedeployed
-naar de M4-preview (handmatige stap — wacht op go).
+**Laatste update**: 2026-06-20 · **Versie**: 0.44.1 · **Branch**: `main`
 
-Volgende kandidaten: **Fase 2** (schrijf-surfaces: draft-tools "tonen + 1-klik bevestigen") of
-deploy v0.15.0 naar de preview om de canvas live te beoordelen.
+## Waar het draait
+- **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
+  Compose (`web` FastAPI + `postgres` 16 + `cloudflared`), eigen tunnel `dewereldvan-app`.
+  Redeploy = `rsync ./ → ~/dewereldvan-app/` (excl. `.env`/`data`/`.venv`/`teaser`) +
+  `docker compose up -d --build web`; migraties draaien via Dockerfile-CMD. Details:
+  memory `dewereldvan-deploy`.
+- **Teaser (apex)**: https://dewereldvan.ai — losse wachtlijst-service, eigen tunnel
+  `dewereldvan-teaser`. Bij echte launch: apex-ingress overzetten naar de app.
+- AI/integraties live op preview: `ANTHROPIC_API_KEY`, `FAL_KEY`, `AI_ENRICH_ENABLED=true`,
+  Cloudflare Browser Rendering (screenshots), **Telegram-bot** (@dewereldvanaibot).
 
-## Open Taken
-- [ ] Email Sending-scope op het CF-token rond + verzenddomein onboarden (SPF/DKIM)
-- [ ] CloudflareEmailSender-adapter toevoegen achter de bestaande EmailSender-interface
-- [ ] Fase 0+1-app deployen op M4 → tunnel-ingress overzetten van teaser naar volledige app
-- [ ] Wachtlijst-adressen (teaser SQLite) migreren naar de `member`-tabel
-- [ ] CF API-token roteren / minimaal e-mail-only runtime-token maken
+## Wat er staat (live op preview)
+- **Toegang**: open registratie → admin-goedkeuring → passwordless magic-link → server-side sessie.
+- **Agent-Shell**: voor ingelogde leden ís de concierge de navigatie (geen menu); interfaces
+  materialiseren in-stroom via de `surface`-tool (registry in `concierge_service`).
+- **Profiel**: levende AI-profielbouw (`/profiel/ai/bouwen`), inline editen, fal-cover, AI-toolsets.
+- **Projecten**: screenshot-hero + AI-samenvatting (Cloudflare Browser Rendering, async + nachtjob).
+- **Community**: agenda + nieuws (`Post`), ideeënbus, roadmap.
+- **Matchmaking**: `MatchSuggestion` + intro-flow (`Connection`) + push-chips.
+- **Discovery** (footprint-engine): zoekt een lid online op → entity-resolution → classificeer →
+  crystalliseer. Draait als **achtergrond-job** (`DiscoveryRun`), live-tail over SSE, terugkeer-view,
+  in-app "klaar"-chip. Hoge confidence (≥90) crystalliseert auto met undo; twijfel = 1-klik bevestigrij.
+- **Notificaties**: **geen e-mail** (behalve magic-link) → lid-gekozen kanaal. In-app pull-chips +
+  optioneel **Telegram-push** (rich: vette titel + actieknop). Instellingen op `/profiel/notificaties`
+  (ook als concierge-surface). Modellen `member_channel` + `notification_pref`.
+- **MCP-server**: `/mcp` (Bearer-token per lid) — "praat met dewereldvan vanuit je eigen AI-tool".
+
+## Huidige focus
+Net afgerond: notificatie-pivot (e-mail eruit, Telegram + avatar + rich content) en de
+source-of-truth-opschoning (dit document). De engine + integraties staan; de nadruk verschuift naar
+**ervaring polijsten + de keten live valideren** (Discovery-precisie meten, Telegram end-to-end testen).
+
+## Open taken
+- [ ] **Telegram end-to-end testen** door een lid (koppel-flow + push) → eerste Discovery-precisie-signalen.
+- [ ] Browser-verificatie auto-crystallisatie-op-`load` (1b; JS, niet in TestClient te dekken).
+- [ ] Bot-token **roteren** via @BotFather vóór publieke launch (token was in chat gedeeld).
+- [ ] Bij launch: apex-ingress teaser→app + wachtlijst-adressen → `member`-tabel.
+- [ ] CF API-token roteren / minimaal-scope runtime-token vóór publieke launch.
 
 ## Blokkades
-- Geen harde blokkades. E-mail kan via console-outbox in dev terwijl CF-scope wordt afgerond.
+- Geen harde blokkades.
 
-## Recent Voltooid
-- [x] Project geïnitialiseerd, git op `main`, scaffolding + plan (v0.1.0)
-- [x] Fase 0+1 gebouwd via multi-agent workflow: fundering + profielen-MVP, CSRF, tests groen (v0.4.0)
-- [x] Teaser live op https://dewereldvan.ai — M4 + eigen Cloudflare Tunnel `dewereldvan-teaser`,
-      DNS (apex + www) via CF API, wachtlijst → SQLite (v0.5.0)
-- [x] Beslissing e-mail: Cloudflare Email Service (Workers Paid actief) — zie decisions.md
+## Pointers (waar staat de rest van de waarheid)
+- **Recente historie + per-versie details**: `CHANGELOG.md` (canoniek, append-only).
+- **Beslissingen (waarom)**: `context/decisions.md`.
+- **Systeemkaart (routes, datamodel, env)**: `context/architecture.md`.
+- **Per-feature PRD's**: `docs/PRD-*.md` (discovery, notificaties, scout, matchmaking, mcp, concierge, …).
+- **Operationele/infra-kennis + valkuilen**: memory-dir (`MEMORY.md`-index → deploy, notificaties,
+  ai-engine-constraints, toolsets, agent-shell, audit-roadmap).

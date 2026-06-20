@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.44.2] - 2026-06-20
+### Changed — source-of-truth-opschoning (audit-fix)
+- Audit wees uit dat de canonieke context-docs ~29 versies waren weggedreven (en de richting tégenspraken,
+  bv. e-mail-taken die we kilden). Hersteld:
+  - **`context/status.md`** herschreven als levende single source of truth: huidige versie, wat er live staat,
+    échte focus + open taken, en een pointer-map naar CHANGELOG/PRD's/decisions/memory.
+  - **`context/decisions.md`** bijgewerkt met de 5 onvastgelegde keuzes (Discovery-fasering + auto-≥90,
+    achtergrond-job, geen-e-mail/lid-gekozen-kanaal, Telegram-webhook).
+  - **`context/architecture.md`** herschreven als canonieke systeemkaart: route-inventaris, datamodel
+    (25 tabellen ↔ migraties 0001–0020), env-vars, fase-status.
+  - **Discipline** vastgelegd in project-`CLAUDE.md`: status + decisions updaten bij elke VERSION/CHANGELOG-bump.
+- **Repo-hygiëne**: 3 stray git-tracked duplicaten verwijderd (`app/services/ai_profile 2.py`,
+  `app/templates/demo 2.html`, `docs/PRD-verificatie-links 2.md`) — nergens geïmporteerd. 622 tests groen.
+
 ## [0.44.1] - 2026-06-20
 ### Fixed — leeg scherm op /profiel/notificaties (en /…/ontdek/resultaat)
 - De standalone kosmische pagina's includeden `ai/_cosmic_canvas.html` niet → `.ready` werd nooit op `<body>`
