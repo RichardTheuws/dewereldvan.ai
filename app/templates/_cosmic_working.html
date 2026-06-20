@@ -1,0 +1,61 @@
+{# Herbruikbaar "de agent is bezig"-werkveld (cosmic working-state).
+
+   Plaats binnen een SSE-host (een element met hx-ext="sse" + sse-connect). De
+   statusregel swapt declaratief op de échte fase-events (search/fetch/progress)
+   via htmx-ext-sse — gegarandeerde levering, los van JS-event-detectie. Tussen
+   events (stilte) roteert het bind-script on-brand geruststellingen zodat het
+   NOOIT bevriest; een MutationObserver reset die rotatie zodra een echt event de
+   status verandert (echt wint altijd). Geen nep-voortgangsbalk.
+
+   Zet desgewenst `working_status` vóór de include voor de openingsregel.
+   Drop-in elders (concierge-stream, profielbouw) zodra die een SSE-host hebben. #}
+<div class="cosmic-working" data-cosmic-working role="status" aria-live="polite" aria-busy="true">
+  <div class="cosmic-working__field" aria-hidden="true">
+    <span class="cosmic-working__nebula"></span>
+    <span class="cosmic-working__orbit cosmic-working__orbit--c"><i class="cosmic-working__node"></i></span>
+    <span class="cosmic-working__orbit cosmic-working__orbit--b"><i class="cosmic-working__node"></i></span>
+    <span class="cosmic-working__orbit cosmic-working__orbit--a"><i class="cosmic-working__node"></i></span>
+    <span class="cosmic-working__core"></span>
+  </div>
+  <p class="cosmic-working__status" data-cosmic-status
+     sse-swap="search,fetch,progress" hx-swap="innerHTML">{{ working_status | default("Ik ben voor je aan het werk…") }}</p>
+</div>
+
+<script>
+  (function () {
+    if (!window.dwvCosmicWorking) {
+      window.dwvCosmicWorking = function (root) {
+        if (!root || root.dataset.cwBound) return;
+        root.dataset.cwBound = '1';
+        var statusEl = root.querySelector('[data-cosmic-status]');
+        if (!statusEl) return;
+        var idle = [
+          'Ik weeg wat écht van jou is…',
+          'Even geduld — ik wil het zeker weten…',
+          'Ik leg verbanden tussen de signalen…',
+          'Ik filter de ruis weg…'
+        ];
+        var i = 0, timer = null, mine = false;
+        function arm() {
+          clearTimeout(timer);
+          timer = setTimeout(function tick() {
+            if (!document.contains(statusEl)) return; // werkveld weg → stop
+            mine = true;                              // markeer eigen schrijfactie
+            statusEl.textContent = idle[i++ % idle.length];
+            timer = setTimeout(tick, 3400);
+          }, 2800);
+        }
+        // Elke EXTERNE wijziging (htmx sse-swap van een echt event) wint en reset
+        // de rotatie; onze eigen idle-schrijfacties negeren we (de mine-vlag).
+        var mo = new MutationObserver(function () {
+          if (mine) { mine = false; return; }
+          arm();
+        });
+        mo.observe(statusEl, { childList: true, characterData: true, subtree: true });
+        arm();
+      };
+    }
+    document.querySelectorAll('[data-cosmic-working]:not([data-cw-bound])')
+      .forEach(window.dwvCosmicWorking);
+  })();
+</script>

@@ -353,6 +353,16 @@ def _run(
     pauses = 0
 
     while True:
+        # Echte fase-narratie tijdens de (trage) call: de web-search loopt server-
+        # side binnen deze turn, dus we melden de fase die nú draait. Elke
+        # pause_turn-continuatie is een echte vervolgronde van zoeken/lezen. Het
+        # werkveld toont dit; tussen events vult het zelf met on-brand rotatie.
+        send_event(
+            "fetch",
+            "Ik doorzoek het web…"
+            if pauses == 0
+            else "Ik lees de bronnen en weeg wat écht van jou is…",
+        )
         with client.messages.stream(
             model=MODEL,
             max_tokens=MAX_TOKENS,

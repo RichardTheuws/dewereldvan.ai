@@ -10,20 +10,18 @@
 <div id="ontdek-{{ sid }}" class="ontdek" hx-ext="sse"
      sse-connect="/profiel/ai/ontdek/stream" sse-close="done" data-ontdek-host>
 
-  {# Gloeiend "ik zoek…"-paneel: search/reasoning landen hier (live redenering). #}
-  <div class="ontdek__pulse" data-ontdek-pulse aria-live="polite">
-    <span class="ontdek__orb" aria-hidden="true"></span>
-    <span class="ontdek__status" data-ontdek-status sse-swap="search" hx-swap="innerHTML">Ik zoek je op het web…</span>
-  </div>
-  <div class="ontdek__reason muted text-sm" data-ontdek-reason
-       sse-swap="reasoning" hx-swap="beforeend" aria-live="polite" style="display:none"></div>
+  {# Het levende werkveld: beweegt continu + narreert de echte fases (search/
+     fetch/reasoning via het bind-script in de partial). Tussen events roteren
+     on-brand geruststellingen zodat het nooit dood lijkt. #}
+  {% set working_status = "Ik zoek je op het web…" %}
+  {% include "_cosmic_working.html" %}
 
   {# Kandidaten vliegen hierin binnen (beforeend = één voor één). #}
   <div class="ontdek__cards" data-ontdek-cards sse-swap="candidate" hx-swap="beforeend"
        aria-live="polite" aria-atomic="false"></div>
 
-  {# Terminerend done-event: vervang het pulse-paneel door de klaar-melding. #}
-  <div data-ontdek-done sse-swap="done" hx-target="[data-ontdek-pulse]" hx-swap="outerHTML"
+  {# Terminerend done-event: vervang het werkveld door de klaar-melding. #}
+  <div data-ontdek-done sse-swap="done" hx-target="[data-cosmic-working]" hx-swap="outerHTML"
        style="display:none"></div>
 </div>
 
@@ -32,15 +30,6 @@
     var host = document.querySelector('#ontdek-{{ sid }}');
     if (!host || host.dataset.ontdekBound) return;
     host.dataset.ontdekBound = '1';
-
-    host.addEventListener('htmx:sseMessage', function (e) {
-      if (!e.detail) return;
-      var type = e.detail.type;
-      if (type === 'reasoning') {
-        var r = host.querySelector('[data-ontdek-reason]');
-        if (r) r.style.display = '';
-      }
-    });
 
     // Verse kandidaat-kaarten spelen de materialisatie-animatie en gaan daarna
     // naar 'ready' (één keer per kaart). prefers-reduced-motion -> direct ready.

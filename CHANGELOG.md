@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.38.0] - 2026-06-20
+### Added — een levend "de agent is bezig"-werkveld (herbruikbaar) + echte voortgang in Discovery
+- **Probleem**: bij trage AI-acties (Discovery web-search ~20-40s) zag je alleen een statisch tekstje en leek
+  er niets te gebeuren. Nu een herbruikbaar **cosmic working-state** component (`_cosmic_working.html` +
+  `.cosmic-working` in cosmic.css): een constellatie-denkveld dat continu beweegt (orbiterende lichtpunten +
+  pulserende kern + ademende nevel), met een statusregel die de **echte fases narreert** en — bij stilte —
+  on-brand geruststellingen roteert zodat het nooit bevriest. prefers-reduced-motion-veilig, aria-live, weinig
+  DOM-nodes (alleen transform/opacity).
+- **Waarheidsgetrouw**: `footprint_service` emit nu tijdens de stream echte `fetch`-fase-events ("Ik doorzoek
+  het web…", "Ik lees de bronnen en weeg wat écht van jou is…"); de statusregel swapt daarop declaratief
+  (htmx-ext-sse), een MutationObserver laat een echt event altijd de idle-rotatie overrulen. Geen
+  nep-voortgangsbalk.
+- **Herbruikbaar**: drop-in in elke SSE-host; klaar voor de concierge-stream en profielbouw. 571 tests groen.
+
 ## [0.37.0] - 2026-06-20
 ### Added — Discovery (Fase 1a): live ontdekking van je online voetafdruk
 - **Vraag de AI om je op te zoeken** → de footprint-engine doet een slimme web-search, beslist per resultaat

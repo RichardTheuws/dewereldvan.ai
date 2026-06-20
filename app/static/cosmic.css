@@ -3507,3 +3507,122 @@
   gap: 8px;
   margin-top: 14px;
 }
+
+/* ----------------------------------------------------------------------- */
+/* Cosmic working-state — een levend "de agent is bezig"-denkveld.          */
+/* Herbruikbaar: include _cosmic_working.html binnen een SSE-host. Beweegt   */
+/* altijd (constellatie-echo) + een statusregel gevoed door echte events;   */
+/* tussen events roteren on-brand geruststellingen (de JS in de partial).   */
+/* Performant: alleen transform/opacity. prefers-reduced-motion-veilig.     */
+/* ----------------------------------------------------------------------- */
+.cosmic-working {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 0;
+}
+.cosmic-working__field {
+  position: relative;
+  width: 148px;
+  height: 148px;
+  flex: none;
+}
+/* Nevel-glow die langzaam ademt. */
+.cosmic-working__nebula {
+  position: absolute;
+  inset: -18%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, var(--violet), transparent 60%);
+  opacity: 0.22;
+  filter: blur(14px);
+  animation: cw-breathe 6s ease-in-out infinite;
+}
+/* Pulserende kern. */
+.cosmic-working__core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 10px 2px var(--gold), 0 0 28px 7px rgba(109, 93, 252, 0.5);
+  animation: cw-core 2.4s ease-in-out infinite;
+}
+/* Faint ringen (constellatie-echo) die ronddraaien, elk met een driftende node. */
+.cosmic-working__orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  will-change: transform;
+}
+.cosmic-working__orbit--a {
+  width: 64px; height: 64px; margin: -32px 0 0 -32px;
+  animation: cw-spin 9s linear infinite;
+}
+.cosmic-working__orbit--b {
+  width: 104px; height: 104px; margin: -52px 0 0 -52px;
+  animation: cw-spin 15s linear infinite reverse;
+}
+.cosmic-working__orbit--c {
+  width: 146px; height: 146px; margin: -73px 0 0 -73px;
+  animation: cw-spin 24s linear infinite;
+}
+.cosmic-working__node {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px 1px var(--cyan);
+}
+.cosmic-working__orbit--b .cosmic-working__node {
+  background: var(--magenta);
+  box-shadow: 0 0 8px 1px var(--magenta);
+}
+.cosmic-working__orbit--c .cosmic-working__node {
+  background: var(--violet);
+  box-shadow: 0 0 8px 1px var(--violet);
+}
+.cosmic-working__status {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  text-align: center;
+  min-height: 1.3em;
+  max-width: 44ch;
+  margin: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.cosmic-working__status.is-swapping {
+  opacity: 0;
+  transform: translateY(4px);
+}
+/* Tijdens reasoning klopt de kern sneller (echte denk-intensiteit). */
+.cosmic-working--thinking .cosmic-working__core {
+  animation-duration: 1.4s;
+}
+@keyframes cw-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes cw-breathe {
+  0%, 100% { opacity: 0.16; transform: scale(0.92); }
+  50% { opacity: 0.30; transform: scale(1.08); }
+}
+@keyframes cw-core {
+  0%, 100% { opacity: 0.7; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cosmic-working__orbit,
+  .cosmic-working__nebula { animation: none; }
+  .cosmic-working__core { animation: cw-core 3s ease-in-out infinite; }
+}
