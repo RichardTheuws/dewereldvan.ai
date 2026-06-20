@@ -214,3 +214,21 @@ crystalliseert naar nieuws-`Post` (bestaand). **Media-first**; events als eigen 
 
 **Gevolgen**: precisie-risico (naamgenoten in het nieuws) afgedekt door ankers + drempel + bevestigrij;
 KILL de media-pass bij lage precisie (brede pass blijft). PRD: `docs/PRD-discovery-verdieping.md`.
+
+## [2026-06-20] Affordances zijn progress-bewust (geen reeds-gebruikte verse knop)
+
+**Context** (Richard): een ontdek-CTA bleef "Zal ik je opzoeken?" tonen ná de ontdekking, en het
+media-aanbod bleef "zoek media" ook nadat die pass liep. Principe: de interface moet begrijpen wat
+al gebruikt is en de vervolgstap aanpassen — geen dode/verse affordances laten staan.
+
+**Beslissing**: stateful maken via `DiscoveryRun.passes` (voltooide focus-passes). CTA's en aanbiedingen
+lezen die staat en passen zich aan (opzoeken→bekijken; "zoek media"→"al gezocht"). Dit is een **algemeen
+ontwerpprincipe** voor de hele app, niet alleen Discovery: bied geen actie aan die al verbruikt is zonder
+dat te tonen.
+
+**Alternatieven**:
+- Statische affordances + uitleg-tekst: afgewezen — misleidt (verse knop op verbruikte actie).
+- Afleiden uit findings-types i.p.v. expliciet bijhouden: afgewezen — onbetrouwbaar (een 0-resultaat-pass
+  laat geen spoor); expliciet `passes` bijhouden is eerlijk.
+
+**Gevolgen**: nieuwe meertraps-flows houden hun voortgang bij en sturen de UI. PRD: `docs/PRD-discovery-verdieping.md`.
