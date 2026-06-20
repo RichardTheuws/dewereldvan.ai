@@ -206,6 +206,7 @@ def run_job(
                         body=f"Ik vond {len(findings)} mogelijke {woord} — "
                              "kies wat op je profiel mag.",
                         url="/profiel/ai/ontdek/resultaat",
+                        action_label="Bekijk je ontdekking",
                     )
                 )
     except Exception:  # noqa: BLE001 — achtergrond-job mag nooit crashen

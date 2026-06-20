@@ -107,7 +107,10 @@ def test_unlink_resets_preference(db, make_member, make_profile, monkeypatch):
 
 def test_notify_in_app_does_not_push(db, make_member, make_profile, monkeypatch):
     sent: list = []
-    monkeypatch.setattr(telegram_service, "send_message", lambda cid, txt: sent.append((cid, txt)))
+    monkeypatch.setattr(
+        telegram_service, "send_message",
+        lambda cid, txt, **kw: sent.append((cid, txt, kw)),
+    )
     member = make_member()
     make_profile(member)
     notification_service.notify(
@@ -116,11 +119,14 @@ def test_notify_in_app_does_not_push(db, make_member, make_profile, monkeypatch)
     assert sent == []  # default in-app → geen push
 
 
-def test_notify_telegram_pushes(db, make_member, make_profile, monkeypatch):
+def test_notify_telegram_pushes_rich(db, make_member, make_profile, monkeypatch):
     sent: list = []
     monkeypatch.setattr(telegram_service, "configured", lambda: True)
     monkeypatch.setattr(telegram_service, "link_url", lambda tok: f"https://t.me/b?start={tok}")
-    monkeypatch.setattr(telegram_service, "send_message", lambda cid, txt: sent.append((cid, txt)))
+    monkeypatch.setattr(
+        telegram_service, "send_message",
+        lambda cid, txt, **kw: sent.append((cid, txt, kw)),
+    )
     member = make_member()
     make_profile(member)
     notification_service.begin_telegram_link(db, member)
@@ -130,12 +136,42 @@ def test_notify_telegram_pushes(db, make_member, make_profile, monkeypatch):
 
     notification_service.notify(
         db, member, notification_service.Notification(
-            "discovery_ready", "Klaar", "2 vermeldingen", url="/profiel/ai/ontdek/resultaat"
+            "discovery_ready", "Klaar", "2 vermeldingen",
+            url="/profiel/ai/ontdek/resultaat", action_label="Bekijk je ontdekking",
         )
     )
     assert len(sent) == 1
-    assert sent[0][0] == "777"
-    assert "Klaar" in sent[0][1] and "resultaat" in sent[0][1]
+    cid, txt, kw = sent[0]
+    assert cid == "777"
+    assert "<b>Klaar</b>" in txt and "2 vermeldingen" in txt  # rich HTML, geen rauwe URL
+    assert "resultaat" not in txt  # de link zit in de knop, niet in de tekst
+    assert kw["button_text"] == "Bekijk je ontdekking"
+    assert kw["button_url"].endswith("/profiel/ai/ontdek/resultaat")
+
+
+def test_notify_escapes_html_in_body(db, make_member, make_profile, monkeypatch):
+    """User-content (intro-tekst/naam) wordt ge-escaped — geen markup-injectie."""
+    sent: list = []
+    monkeypatch.setattr(telegram_service, "configured", lambda: True)
+    monkeypatch.setattr(telegram_service, "link_url", lambda tok: f"https://t.me/b?start={tok}")
+    monkeypatch.setattr(
+        telegram_service, "send_message",
+        lambda cid, txt, **kw: sent.append((cid, txt, kw)),
+    )
+    member = make_member()
+    make_profile(member)
+    notification_service.begin_telegram_link(db, member)
+    ch = db.query(MemberChannel).filter_by(member_id=member.id).one()
+    notification_service.link_telegram_from_start(db, ch.link_token, "5")
+    notification_service.set_preference(db, member, "telegram")
+
+    notification_service.notify(
+        db, member, notification_service.Notification(
+            "x", "Titel", "<script>alert(1)</script>", url="/"
+        )
+    )
+    assert "<script>" not in sent[0][1]
+    assert "&lt;script&gt;" in sent[0][1]
 
 
 # --------------------------------------------------------------------------- #
@@ -260,7 +296,7 @@ def test_webhook_links_chat_id(make_client, approved_id, SessionTest, monkeypatc
     from app.config import settings
 
     monkeypatch.setattr(settings, "telegram_webhook_secret", "geheim")
-    monkeypatch.setattr(telegram_service, "send_message", lambda cid, txt: None)
+    monkeypatch.setattr(telegram_service, "send_message", lambda cid, txt, **kw: None)
 
     # Zet een pending channel met een bekend token.
     with SessionTest() as s:

@@ -121,7 +121,10 @@ async def telegram_webhook(request: Request, db: Session = Depends(get_db)) -> R
             db.commit()
             telegram_service.send_message(
                 chat_id,
-                "Gelukt — je bent gekoppeld. Je krijgt voortaan hier je seintjes "
-                "van dewereldvan.ai.",
+                "<b>Gelukt — je bent gekoppeld.</b>\n\nJe krijgt voortaan hier je "
+                "seintjes van dewereldvan.ai: zodra je profiel-ontdekking klaar is "
+                "of iemand met je wil kennismaken.",
+                button_text="Open dewereldvan.ai",
+                button_url=f"{settings.base_url.rstrip('/')}/profiel/ai/bouwen",
             )
     return Response(status_code=200)

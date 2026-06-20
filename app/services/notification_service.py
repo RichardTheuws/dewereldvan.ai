@@ -13,6 +13,7 @@ Geen e-mail (bewust): e-mail blijft alléén voor de magic-link. Zie
 
 from __future__ import annotations
 
+import html
 import logging
 import secrets
 from dataclasses import dataclass
@@ -46,12 +47,14 @@ __all__ = [
 
 @dataclass(frozen=True)
 class Notification:
-    """Eén te bezorgen seintje. ``url`` mag relatief zijn (wordt geabsoluteerd)."""
+    """Eén te bezorgen seintje. ``url`` mag relatief zijn (wordt geabsoluteerd);
+    ``action_label`` is het label van de tikbare knop bij een push (Telegram)."""
 
     kind: str
     title: str
     body: str
     url: str | None = None
+    action_label: str = "Bekijk"
 
 
 # --------------------------------------------------------------------------- #
@@ -163,19 +166,19 @@ def _absolute(url: str | None) -> str | None:
     return f"{settings.base_url.rstrip('/')}/{url.lstrip('/')}"
 
 
-def _format(notif: Notification) -> str:
-    parts = [notif.title.strip(), notif.body.strip()]
-    url = _absolute(notif.url)
-    if url:
-        parts.append(url)
-    return "\n\n".join(p for p in parts if p)
+def _html_text(notif: Notification) -> str:
+    """Rich Telegram-tekst: vette titel + body (HTML-escaped tegen injectie)."""
+    title = html.escape(notif.title.strip())
+    body = html.escape(notif.body.strip())
+    return f"<b>{title}</b>\n\n{body}" if body else f"<b>{title}</b>"
 
 
 def notify(db: Session, member: Member, notif: Notification) -> None:
     """Push het seintje naar het voorkeurskanaal van het lid (best-effort).
 
     ``in_app`` (default) → no-op: de state-derived pull-chip dekt 't al. Een
-    verifieerd push-kanaal (Telegram) → stuur het bericht. Faalt nooit hard.
+    verifieerd push-kanaal (Telegram) → stuur een rich bericht (vette titel + een
+    tikbare knop naar de actie). Faalt nooit hard.
     """
     try:
         if preferred_channel(db, member) != CHANNEL_TELEGRAM:
@@ -183,6 +186,12 @@ def notify(db: Session, member: Member, notif: Notification) -> None:
         ch = _verified_telegram(db, member)
         if ch is None or not ch.address:
             return
-        telegram_service.send_message(ch.address, _format(notif))
+        url = _absolute(notif.url)
+        telegram_service.send_message(
+            ch.address,
+            _html_text(notif),
+            button_text=notif.action_label if url else None,
+            button_url=url,
+        )
     except Exception:  # noqa: BLE001 — een seintje mag de aanroeper nooit breken
         logger.warning("notify faalde voor member %s (%s)", member.id, notif.kind, exc_info=True)

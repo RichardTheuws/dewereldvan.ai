@@ -145,6 +145,7 @@ def create_intro(
             title=f"{member.name} wil kennismaken",
             body=text,
             url="/",
+            action_label="Bekijk de intro",
         )
     )
 

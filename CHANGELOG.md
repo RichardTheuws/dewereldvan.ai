@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.43.0] - 2026-06-20
+### Added — Bot-avatar + rich Telegram-content
+- **Eigen kosmische avatar** voor @dewereldvanaibot: een on-brand beeld (deep-indigo + nebula-gloed + de gouden
+  ✦ key-star, eigen achtergrond) gegenereerd en via **`setMyProfilePhoto`** (Bot API 9.4, feb 2026) live op de
+  bot gezet. Asset: `app/static/telegram-avatar.jpeg`. Bot heeft ook een omschrijving + `/start`-commando.
+- **Rich content versturen**: `telegram_service.send_message` ondersteunt nu `parse_mode=HTML` (vette titel) +
+  een **tikbare inline-knop** (`button_text`/`button_url`) i.p.v. een kale URL. `notify()` stuurt voortaan een
+  rich bericht: vette titel, body (HTML-escaped tegen injectie) en een knop naar de actie ("Bekijk je
+  ontdekking" → de resultaatpagina; "Bekijk de intro"). De koppel-bevestiging in de bot is ook rich.
+- Onderbouwd op de Telegram Bot API-releases van 2026 (9.4 profielfoto-beheer; 10.1 rich messages). We
+  gebruiken de robuuste HTML + inline-keyboard-route (breed ondersteund).
+- 3 tests bijgewerkt/toegevoegd (rich tekst + knop-args, HTML-escaping van user-content). **618 tests groen**,
+  ruff clean op de nieuwe bestanden.
+
 ## [0.42.0] - 2026-06-20
 ### Added — Lid-gekozen notificatiekanaal (Telegram) + e-mail eruit (behalve magic-link)
 - **Richting** (Richard): e-mail is verouderd → we sturen geen e-mail meer behalve de magic-link. Alle overige

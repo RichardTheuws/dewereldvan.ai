@@ -45,18 +45,36 @@ def _base() -> str:
     return f"{_API}/bot{settings.telegram_bot_token}"
 
 
-def send_message(chat_id: str, text: str) -> bool:
-    """Stuur één bericht naar een chat_id (best-effort; faalt stil → False)."""
+def send_message(
+    chat_id: str,
+    text: str,
+    *,
+    parse_mode: str = "HTML",
+    button_text: str | None = None,
+    button_url: str | None = None,
+) -> bool:
+    """Stuur één (rich) bericht naar een chat_id (best-effort; faalt stil → False).
+
+    Rich content: ``parse_mode`` (default HTML, zodat <b>…</b> vet wordt) + een
+    optionele tikbare **inline-knop** (``button_text`` + https ``button_url``) —
+    een directe call-to-action i.p.v. een kale URL in de tekst.
+    """
     if not configured() or not chat_id:
         return False
+    payload: dict = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": parse_mode,
+        "disable_web_page_preview": True,
+    }
+    if button_text and button_url:
+        payload["reply_markup"] = {
+            "inline_keyboard": [[{"text": button_text, "url": button_url}]]
+        }
     try:
-        resp = httpx.post(
-            f"{_base()}/sendMessage",
-            json={"chat_id": chat_id, "text": text, "disable_web_page_preview": True},
-            timeout=_TIMEOUT,
-        )
+        resp = httpx.post(f"{_base()}/sendMessage", json=payload, timeout=_TIMEOUT)
         if resp.status_code != 200:
-            logger.warning("Telegram sendMessage gaf %s", resp.status_code)
+            logger.warning("Telegram sendMessage gaf %s: %s", resp.status_code, resp.text[:200])
             return False
         return True
     except httpx.HTTPError:
