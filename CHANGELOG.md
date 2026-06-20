@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.46.0] - 2026-06-20
+### Added — Discovery-verdieping: gerichte media-pass (opt-in)
+- Na de brede ontdekking (eigen werk) biedt de agent een **verdieping** aan: *"Kom je weleens in het nieuws of
+  media? Dan zoek ik ook naar interviews, artikelen en vermeldingen óver jou."* → [Ja, zoek media] / [nee].
+- **Focus-parameter op de engine**: `footprint_service.discover(..., focus="media")` richt de zoek-intent op
+  media WAARIN het lid genoemd/geïnterviewd wordt (niet eigen projecten), classificeert als media/talk, met
+  dezelfde anker-disambiguatie.
+- **Append-model** (geen schema-wijziging): de media-pass draait als dezelfde achtergrond-job en **vult de
+  bestaande `DiscoveryRun` aan**, gededupeerd op URL (projecten blijven, media erbij); `seen_at` reset zodat het
+  klaar-seintje opnieuw afgaat (push meldt alleen de NIEUW gevonden media). Crystalliseren → nieuws-`Post`
+  (al ondersteund). Het aanbod staat op de resultaat-view én na een gelukte live-pass.
+- **Events** als eigen focus uitgesteld (fast-follow; de focus-parameter generaliseert). PRD:
+  `docs/PRD-discovery-verdieping.md`. 8 nieuwe tests. **629 tests groen**, ruff clean.
+
 ## [0.45.0] - 2026-06-20
 ### Fixed — Telegram koppelen is nu opt-in (voorkeur auto op telegram)
 - **Probleem**: een lid dat Telegram koppelde kreeg tóch geen push — het voorkeurskanaal bleef op de default

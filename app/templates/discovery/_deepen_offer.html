@@ -1,0 +1,20 @@
+{# Verdiepings-aanbod (opt-in): de agent stelt voor om gericht naar media ÓVER het
+   lid te zoeken. "Ja" start de media-pass (verdieping=media → append) en vervangt
+   de host door de live-tail; "nee" haalt de kaart weg. Eenvoudige, heldere taal. #}
+<div class="surface-card ontdek-deepen field--ready">
+  <article class="card ontdek-card__inner">
+    <p class="ontdek-card__ask">Kom je weleens in het nieuws of media?</p>
+    <p class="muted text-sm">
+      Dan zoek ik ook naar interviews, artikelen en vermeldingen óver jou — voor wat
+      meer context bij je profiel. Je eigen projecten heb ik al.
+    </p>
+    <div class="ontdek-card__actions">
+      <form hx-post="/profiel/ai/ontdek" hx-target="closest .ontdek" hx-swap="outerHTML">
+        <input type="hidden" name="verdieping" value="media">
+        <button type="submit" class="btn btn--sm">✦ Ja, zoek media over me</button>
+      </form>
+      <button type="button" class="btn btn--ghost btn--sm"
+              onclick="this.closest('.ontdek-deepen').remove()">nee, hoeft niet</button>
+    </div>
+  </article>
+</div>

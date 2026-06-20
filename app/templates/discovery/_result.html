@@ -20,6 +20,9 @@
   </p>
   {% endif %}
 
+  {# Verdiepings-aanbod: gericht naar media óver het lid zoeken (opt-in). #}
+  <div class="mt-8">{% include "discovery/_deepen_offer.html" %}</div>
+
   <form class="mt-6" hx-post="/profiel/ai/ontdek"
         hx-target="closest .ontdek" hx-swap="outerHTML">
     <input type="hidden" name="force" value="1">

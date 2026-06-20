@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-20 · **Versie**: 0.45.0 · **Branch**: `main`
+**Laatste update**: 2026-06-20 · **Versie**: 0.46.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -29,6 +29,8 @@
 - **Discovery** (footprint-engine): zoekt een lid online op → entity-resolution → classificeer →
   crystalliseer. Draait als **achtergrond-job** (`DiscoveryRun`), live-tail over SSE, terugkeer-view,
   in-app "klaar"-chip. Hoge confidence (≥90) crystalliseert auto met undo; twijfel = 1-klik bevestigrij.
+  **Verdieping** (opt-in): na de brede pass biedt de agent een gerichte **media-pass** aan (`focus="media"`,
+  append + dedup) die interviews/artikelen/vermeldingen óver het lid zoekt. Events = fast-follow.
 - **Notificaties**: **geen e-mail** (behalve magic-link) → lid-gekozen kanaal. In-app pull-chips +
   optioneel **Telegram-push** (rich: vette titel + actieknop). Instellingen op `/profiel/notificaties`
   (ook als concierge-surface). Modellen `member_channel` + `notification_pref`.

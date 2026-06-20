@@ -127,11 +127,14 @@ def _candidate_html(request: Request, finding: dict) -> str:
 def start(
     request: Request,
     force: str = Form(""),
+    verdieping: str = Form(""),
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
     """Start/hervat de ontdekking, of toon een al-afgerond resultaat (self-only).
 
+    - ``verdieping="media"`` → gerichte media-pass die de bestaande findings AANVULT
+      (append) en de live-host rendert.
     - Geen/failed run, of ``force`` ("opnieuw zoeken") → start een achtergrond-job
       en render de live-host (de SSE tailt de run).
     - Lopende run → render de live-host (reconnect op de lopende job).
@@ -145,6 +148,11 @@ def start(
         )
     profile_service.get_or_create_profile(db, member)
     db.commit()
+
+    # Verdieping: gerichte media-pass die aanvult op wat er al is.
+    if verdieping.strip() == "media":
+        discovery_job_service.start(db, member, focus="media", append=True)
+        return _render(request, "discovery/_stream_host.html", {})
 
     run = discovery_job_service.get_run(db, member.id)
     restart = bool(force.strip())
@@ -252,16 +260,18 @@ async def stream(
                 await asyncio.sleep(_TAIL_POLL_SEC)
                 continue
 
-            # Terminale status → afsluitende melding en stop.
+            # Terminale status → afsluitende melding (+ verdiepings-aanbod) en stop.
             if status == discovery_job_service.STATUS_FAILED:
                 msg = "Er ging iets mis bij het zoeken. Probeer het later opnieuw."
             elif len(findings):
                 msg = f"Ik vond {len(findings)} mogelijke vermeldingen."
             else:
                 msg = "Ik kon online niets met zekerheid aan jou koppelen."
-            yield _sse_event(
-                "done", _render_str(request, "discovery/_done.html", {"message": msg})
-            )
+            done_html = _render_str(request, "discovery/_done.html", {"message": msg})
+            if status == discovery_job_service.STATUS_DONE and findings:
+                # Bied de gerichte media-verdieping aan (opt-in) na een gelukte pass.
+                done_html += _render_str(request, "discovery/_deepen_offer.html", {})
+            yield _sse_event("done", done_html)
             return
 
         # Veiligheidsklep: job loopt nog na de ruime tail-deadline.

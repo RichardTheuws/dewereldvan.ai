@@ -111,13 +111,17 @@ def unseen_result_count(db: Session, member_id: int) -> int:
 # --------------------------------------------------------------------------- #
 
 
-def start(db: Session, member: Member) -> DiscoveryRun:
+def start(
+    db: Session, member: Member, *, focus: str = "broad", append: bool = False
+) -> DiscoveryRun:
     """(Her)start de ontdekking voor ``member`` en spawn de achtergrond-thread.
 
-    Upsert: één run per lid — een nieuwe zoektocht reset de bestaande rij naar
-    ``running`` (oude findings/tijdstempels gewist). De caller commit NIET; wij
-    committen hier zodat de thread de verse rij ziet. Dubbel-werk-guard via
-    ``_inflight`` (een al lopende job wordt niet herstart).
+    ``focus`` = "broad" (eigen werk) of "media" (verdieping naar vermeldingen óver
+    de persoon). ``append`` houdt bestaande findings (verdieping vult aan i.p.v.
+    overschrijven); zonder append wordt de run vers gereset. Status → ``running``,
+    ``seen_at`` reset zodat het klaar-seintje opnieuw afgaat. De caller commit NIET;
+    wij committen hier zodat de thread de verse rij ziet. Dubbel-werk-guard via
+    ``_inflight``.
     """
     run = get_run(db, member.id)
     if run is None:
@@ -125,7 +129,8 @@ def start(db: Session, member: Member) -> DiscoveryRun:
         db.add(run)
     else:
         run.status = STATUS_RUNNING
-        run.findings_json = None
+        if not append:
+            run.findings_json = None
         run.error = None
         run.finished_at = None
         run.seen_at = None
@@ -139,9 +144,27 @@ def start(db: Session, member: Member) -> DiscoveryRun:
         _inflight.add(member_id)
 
     threading.Thread(
-        target=run_job, args=(member_id,), name=f"discover-{member_id}", daemon=True
+        target=run_job,
+        args=(member_id,),
+        kwargs={"focus": focus, "append": append},
+        name=f"discover-{member_id}-{focus}",
+        daemon=True,
     ).start()
     return run
+
+
+def _merge_dedup(existing: list[dict], fresh: list[dict]) -> list[dict]:
+    """Voeg ``fresh`` toe aan ``existing``, gededupeerd op URL (bestaande blijven)."""
+    seen = {f.get("url") for f in existing if isinstance(f, dict) and f.get("url")}
+    merged = list(existing)
+    for f in fresh:
+        url = f.get("url") if isinstance(f, dict) else None
+        if url and url in seen:
+            continue
+        if url:
+            seen.add(url)
+        merged.append(f)
+    return merged
 
 
 def run_job(
@@ -149,14 +172,15 @@ def run_job(
     *,
     session_factory: sessionmaker = SessionLocal,
     client=None,
+    focus: str = "broad",
+    append: bool = False,
 ) -> None:
     """Draai de ontdekking in een EIGEN sessie en persisteer de bevindingen.
 
-    Schrijft elke binnenkomende kandidaat meteen naar de run (progressive persist:
-    de tail toont ze zodra ze er zijn) en finaliseert de status op het eind.
-    Het seintje is de pull-based in-app chip (``chip_discovery``), gedreven door
-    de run-status — geen actieve verzending (bewust geen e-mail). Best-effort:
-    vangt alles, markeert ``failed`` en stuurt nooit de thread om zeep. Synchroon
+    ``focus`` = "broad"/"media"; ``append`` voegt de nieuwe findings toe aan de
+    bestaande (gededupeerd op URL — de verdieping vult aan i.p.v. te overschrijven).
+    Het seintje is de pull-based in-app chip (``chip_discovery``) + een push naar het
+    lid-gekozen kanaal. Best-effort: vangt alles, markeert ``failed``. Synchroon
     aanroepbaar in tests (geef ``session_factory`` + ``client``).
     """
     try:
@@ -166,6 +190,7 @@ def run_job(
             if run is None or member is None:
                 return
             profile = profile_service.get_or_create_profile(db, member)
+            base = findings_of(run) if append else []
             db.commit()
 
             collected: list[dict] = []
@@ -179,32 +204,46 @@ def run_job(
                     collected.append(json.loads(data))
                 except (ValueError, TypeError):
                     return
-                run.findings_json = json.dumps(collected)
+                run.findings_json = json.dumps(_merge_dedup(base, collected))
                 db.commit()
 
-            findings = footprint_service.discover(profile, _on_event, client=client)
+            fresh = footprint_service.discover(
+                profile, _on_event, client=client, focus=focus
+            )
+            fresh_dicts = [f.as_event() for f in fresh]
+            merged = _merge_dedup(base, fresh_dicts)
 
             # Finaliseer op de gesaneerde retourlijst (canon), niet op de losse events.
             run = get_run(db, member_id)
             if run is None:
                 return
-            run.findings_json = json.dumps([f.as_event() for f in findings])
-            run.status = STATUS_DONE if findings else STATUS_EMPTY
+            run.findings_json = json.dumps(merged)
+            run.status = STATUS_DONE if merged else STATUS_EMPTY
             run.finished_at = naive_utc(utcnow())
             db.commit()
 
             # Push-seintje naar het lid-gekozen kanaal (no-op bij in-app: de
-            # pull-chip dekt 't al). Best-effort; geen e-mail.
-            if findings:
+            # pull-chip dekt 't al). Best-effort; geen e-mail. Bij de verdieping
+            # melden we alleen de NIEUW gevonden media.
+            new_count = len(merged) - len(base)
+            if new_count > 0:
                 from app.services import notification_service
 
-                woord = "vermelding" if len(findings) == 1 else "vermeldingen"
+                if focus == "media":
+                    woord = "media-vermelding" if new_count == 1 else "media-vermeldingen"
+                    title, body = "Ik vond media over je", (
+                        f"{new_count} {woord} gevonden — kies wat op je profiel mag."
+                    )
+                else:
+                    woord = "vermelding" if new_count == 1 else "vermeldingen"
+                    title, body = "Je ontdekking is klaar", (
+                        f"Ik vond {new_count} mogelijke {woord} — kies wat op je profiel mag."
+                    )
                 notification_service.notify(
                     db, member, notification_service.Notification(
                         kind="discovery_ready",
-                        title="Je ontdekking is klaar",
-                        body=f"Ik vond {len(findings)} mogelijke {woord} — "
-                             "kies wat op je profiel mag.",
+                        title=title,
+                        body=body,
                         url="/profiel/ai/ontdek/resultaat",
                         action_label="Bekijk je ontdekking",
                     )

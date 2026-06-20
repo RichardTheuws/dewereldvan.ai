@@ -1008,3 +1008,106 @@ def test_result_page_anonymous_blocked(make_client):
     resp = client.get("/profiel/ai/ontdek/resultaat", follow_redirects=False)
     assert resp.status_code in (302, 303)
     assert resp.headers["location"].endswith("/login")
+
+
+# --------------------------------------------------------------------------- #
+# Verdieping — gerichte media-pass (focus + append)                           #
+# --------------------------------------------------------------------------- #
+
+
+def test_seed_prompt_media_focus_adds_guidance():
+    broad = footprint_service._seed_prompt("Jan", ["https://jan.example"], "broad")
+    media = footprint_service._seed_prompt("Jan", ["https://jan.example"], "media")
+    assert "MEDIA" not in broad
+    assert "MEDIA" in media and "interviews" in media.lower()
+
+
+def test_discover_media_focus_in_prompt(db, make_member, make_profile, monkeypatch):
+    monkeypatch.setattr(footprint_service.settings, "ai_enrich_enabled", True)
+    member = make_member(name="Mediagenic")
+    profile = make_profile(member, display_name="Mediagenic")
+    fake = FakeAnthropic([{"stop_reason": "end_turn", "content": [_findings_block([])]}])
+
+    footprint_service.discover(profile, lambda e, d: None, client=fake, focus="media")
+
+    sent_prompt = fake.stream_kwargs[0]["messages"][0]["content"]
+    assert "MEDIA" in sent_prompt
+
+
+def test_discover_media_empty_message(db, make_member, make_profile, monkeypatch):
+    monkeypatch.setattr(footprint_service.settings, "ai_enrich_enabled", True)
+    member = make_member(name="Stil")
+    profile = make_profile(member, display_name="Stil")
+    fake = FakeAnthropic([{"stop_reason": "end_turn", "content": [_findings_block([])]}])
+    events: list[tuple[str, str]] = []
+
+    footprint_service.discover(
+        profile, lambda e, d: events.append((e, d)), client=fake, focus="media"
+    )
+    assert events[-1] == ("done", "Ik kon geen media-vermeldingen over je vinden.")
+
+
+def test_run_job_append_merges_and_dedups(SessionTest, approved_id, monkeypatch):
+    """De media-pass voegt nieuwe findings toe en dedupt op URL (bestaande blijven)."""
+    from app.models import DiscoveryRun
+    from app.services import discovery_job_service, footprint_service
+
+    monkeypatch.setattr(footprint_service.settings, "ai_enrich_enabled", True)
+    # Bestaande (brede) run met 2 projecten.
+    with SessionTest() as s:
+        s.add(DiscoveryRun(
+            member_id=approved_id, status="done",
+            findings_json=json.dumps([
+                {"title": "Project A", "url": "https://a.example",
+                 "type": "project", "confidence": 95},
+                {"title": "Project B", "url": "https://b.example",
+                 "type": "project", "confidence": 95},
+            ]),
+        ))
+        s.commit()
+
+    # Media-pass vindt B (dubbel) + een nieuw media-item C.
+    fake = FakeAnthropic([{"stop_reason": "end_turn", "content": [_findings_block([
+        {"title": "B weer", "url": "https://b.example",
+         "type": "media", "confidence": 80, "why": "x"},
+        {"title": "Interview C", "url": "https://c.example",
+         "type": "media", "confidence": 80, "why": "y"},
+    ])]}])
+    discovery_job_service.run_job(
+        approved_id, session_factory=SessionTest, client=fake, focus="media", append=True
+    )
+
+    with SessionTest() as s:
+        run = discovery_job_service.get_run(s, approved_id)
+        urls = [f["url"] for f in discovery_job_service.findings_of(run)]
+    assert urls == ["https://a.example", "https://b.example", "https://c.example"]  # B niet dubbel
+
+
+def test_start_media_verdieping_appends(make_client, approved_id, monkeypatch):
+    from app.services import discovery_job_service
+
+    calls: list[dict] = []
+    monkeypatch.setattr(
+        discovery_job_service, "start",
+        lambda db, member, **kw: calls.append(kw) or None,
+    )
+    client = make_client(approved_id)
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/ontdek", data={"verdieping": "media"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    assert "data-ontdek-host" in resp.text
+    assert calls == [{"focus": "media", "append": True}]
+
+
+def test_result_page_offers_media_deepening(make_client, approved_id, SessionTest):
+    _seed_done_run(SessionTest, approved_id, [
+        {"title": "Project", "url": "https://x.example", "type": "project", "confidence": 95},
+    ])
+    client = make_client(approved_id)
+    resp = client.get("/profiel/ai/ontdek/resultaat")
+    assert resp.status_code == 200
+    assert "Kom je weleens in het nieuws" in resp.text
+    assert 'name="verdieping" value="media"' in resp.text

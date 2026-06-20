@@ -195,3 +195,22 @@ Eigen avatar via `setMyProfilePhoto` (Bot API 9.4). Rich content: HTML + inline-
 
 **Gevolgen**: creds in M4-`.env` (niet in git); webhook registreert zichzelf bij startup. Token
 ooit roteren vóór publieke launch. Memory `dewereldvan-notificaties`.
+
+## [2026-06-20] Discovery-verdieping: gerichte media-pass (append, media-first)
+
+**Context**: de brede ontdekking vindt vooral eigen werk; media ÓVER een persoon
+(interviews/artikelen) is een andere zoekintent. Natuurlijk agent-moment om dieper te graven.
+
+**Beslissing**: een **focus-parameter** op de engine (`discover(..., focus="media")`) + een
+opt-in-aanbod ("kom je weleens in het nieuws?"). De media-pass **append**t op de bestaande
+`DiscoveryRun` (gededupeerd op URL) i.p.v. een aparte run/modus — geen schema-wijziging. Media
+crystalliseert naar nieuws-`Post` (bestaand). **Media-first**; events als eigen focus uitgesteld.
+
+**Alternatieven**:
+- Aparte run per modus (`mode`-kolom + unique (member, mode)): afgewezen — append houdt schema +
+  tail/resultaat/chip ongewijzigd; re-run dedupt.
+- Alles in één brede pass: afgewezen — media-intent verdrinkt; opt-in spaart kosten/latency.
+- Events nu meenemen: uitgesteld — eigen crystallisatie-doel (agenda) + eigen aanbod-copy.
+
+**Gevolgen**: precisie-risico (naamgenoten in het nieuws) afgedekt door ankers + drempel + bevestigrij;
+KILL de media-pass bij lage precisie (brede pass blijft). PRD: `docs/PRD-discovery-verdieping.md`.

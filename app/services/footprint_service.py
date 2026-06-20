@@ -194,7 +194,23 @@ def _seed(profile: Profile) -> tuple[str, list[str]]:
     return name, anchors
 
 
-def _seed_prompt(name: str, anchors: list[str]) -> str:
+# Focus-modi voor de zoek-intent. "broad" = de standaard brede pass (eigen werk);
+# "media" = de gerichte verdieping naar vermeldingen ÓVER de persoon.
+VALID_FOCUS: frozenset[str] = frozenset({"broad", "media"})
+
+_FOCUS_GUIDANCE: dict[str, str] = {
+    "media": (
+        "\n\nVERDIEPING — MEDIA: zoek nu SPECIFIEK naar media WAARIN deze persoon "
+        "genoemd of aan het woord is: nieuwsberichten, interviews, podcasts, panels/"
+        "keynotes, persvermeldingen. NIET hun eigen projecten of homepages. Classificeer "
+        "deze als 'media' (of 'talk' bij een optreden). Corroboreer met de ankers dat het "
+        "écht om deze persoon gaat (sluit naamgenoten in het nieuws uit). Laat eigen "
+        "projecten/sites weg — die zijn al gevonden."
+    ),
+}
+
+
+def _seed_prompt(name: str, anchors: list[str], focus: str = "broad") -> str:
     lines = [f"Zoek deze persoon op: {name or '(naam onbekend)'}"]
     if anchors:
         lines.append("\nBekende ankers (gebruik deze om te disambigueren):")
@@ -204,6 +220,9 @@ def _seed_prompt(name: str, anchors: list[str]) -> str:
             "\nGeen ankers bekend — wees extra streng: neem alleen resultaten op "
             "die je sterk kunt corroboreren."
         )
+    guidance = _FOCUS_GUIDANCE.get(focus)
+    if guidance:
+        lines.append(guidance)
     return "\n".join(lines)
 
 
@@ -315,8 +334,12 @@ def discover(
     send_event: Callable[[str, str], None],
     *,
     client: anthropic.Anthropic | None = None,
+    focus: str = "broad",
 ) -> list[Finding]:
     """Zoek het lid online op en stream de gegronde bevindingen.
+
+    ``focus`` stuurt de zoek-intent: "broad" (standaard, eigen werk) of "media" (de
+    gerichte verdieping naar vermeldingen ÓVER de persoon — interviews/artikelen).
 
     ``send_event(event, data)`` is de stream-callback (de route duwt 'm over SSE):
     - ``search``    — er wordt gezocht (begeleidende tekst aan het lid);
@@ -331,12 +354,17 @@ def discover(
     if not settings.ai_enrich_enabled:
         send_event("done", "AI-ontdekking staat momenteel uit.")
         return []
+    if focus not in VALID_FOCUS:
+        focus = "broad"
 
     name, anchors = _seed(profile)
-    send_event("search", "Ik zoek je op het web…")
+    send_event(
+        "search",
+        "Ik zoek naar media over je…" if focus == "media" else "Ik zoek je op het web…",
+    )
 
     try:
-        findings = _run(name, anchors, send_event, client=client)
+        findings = _run(name, anchors, send_event, client=client, focus=focus)
     except Exception:  # noqa: BLE001 — best-effort; nooit de stream/app breken
         logger.exception("footprint.discover faalde voor profiel %s", profile.id)
         send_event("done", "Er ging iets mis bij het zoeken. Probeer het later opnieuw.")
@@ -350,6 +378,8 @@ def discover(
 
     if findings:
         send_event("done", f"Ik vond {len(findings)} mogelijke vermeldingen.")
+    elif focus == "media":
+        send_event("done", "Ik kon geen media-vermeldingen over je vinden.")
     else:
         send_event("done", "Ik kon online niets met zekerheid aan jou koppelen.")
     return findings
@@ -361,11 +391,14 @@ def _run(
     send_event: Callable[[str, str], None],
     *,
     client: anthropic.Anthropic | None = None,
+    focus: str = "broad",
 ) -> list[Finding]:
     """De Claude-call met de server-tools + ``record_findings`` (pause-loop)."""
     client = client or _client()
     tools = [*WEB_TOOLS, RECORD_TOOL]
-    convo: list[dict] = [{"role": "user", "content": _seed_prompt(name, anchors)}]
+    convo: list[dict] = [
+        {"role": "user", "content": _seed_prompt(name, anchors, focus)}
+    ]
     pauses = 0
 
     while True:
