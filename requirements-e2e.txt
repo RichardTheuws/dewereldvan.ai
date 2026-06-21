@@ -1,0 +1,8 @@
+# Browser-UAT (Laag 3) — alleen voor de e2e-suite (pytest -m e2e).
+# Niet in requirements.txt: zwaar (Chromium) + draait nachtelijk/on-demand,
+# niet in de snelle suite. Setup:
+#   pip install -r requirements-e2e.txt
+#   python -m playwright install chromium
+#   pytest -m e2e tests/e2e/
+pytest-playwright==0.8.0
+playwright==1.60.0

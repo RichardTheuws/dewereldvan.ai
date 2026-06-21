@@ -28,3 +28,8 @@ venv/
 postgres-data/
 *.sqlite3
 data/outbox/
+
+# Browser-UAT (Laag 3) — screenshots zijn regenereerbare artefacten
+tests/e2e/*.png
+test-results/
+playwright-report/

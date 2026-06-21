@@ -1,0 +1,37 @@
+name: Browser-UAT (e2e)
+
+# Laag 3 — de echte ervaring in Chromium (JS/htmx/canvas/motion). Zwaar +
+# trager dan de unit-suite, dus NIET op elke PR: nachtelijk + handmatig.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *" # elke nacht 03:00 UTC
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: e2e-ci-secret-deterministic-0123456789abcdef
+      EMAIL_BACKEND: console
+      AI_ENRICH_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-e2e.txt
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+      - name: Run browser-UAT
+        run: pytest -m e2e tests/e2e/ -q
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: tests/e2e/*.png
+          if-no-files-found: ignore

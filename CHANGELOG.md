@@ -3,6 +3,22 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.67.0] - 2026-06-21
+### Added — Browser-UAT (Laag 3) compleet + uitgevoerd: de échte ervaring in Chromium
+- `tests/e2e/` (Playwright, `@pytest.mark.e2e`): start de **echte app** als uvicorn-subprocess tegen een geseede
+  SQLite-DB (publieke makers + project), **AI uit** (nul kosten/netwerk), en drijft Chromium door de kern-
+  journeys — wat TestClient per definitie niet kan (JS/htmx/SSE/canvas/motion).
+- **6 tests, allemaal groen + visueel door mij geverifieerd** (screenshots bekeken): homepage W2-demo
+  materialiseert écht (Lena Hart), W1-constellatie rendert 5 echte makers + verbindingslijnen, proef-chip opent
+  de concierge voorgevuld, `/demo` speelt af mét causaliteit-regels (Nova Belmonte), `/leden` toont verbonden
+  kaarten + graaf-graad, `/proef` rendert. **Harde JS-vangst**: elke pagina faalt bij een console-error/
+  page-exception → gebroken JS wordt nu gevangen.
+- `requirements-e2e.txt` (pytest-playwright/playwright) + nachtelijke/handmatige CI-job (`.github/workflows/e2e.yml`,
+  installeert Chromium, draait `pytest -m e2e`). Screenshots gegitignored (regenereerbaar). Snelle suite blijft
+  e2e uitsluiten (930 passed, 6 deselected).
+- **Werkregel vastgelegd** (memory `feedback-verify-before-done`): nooit "af"/"werkt" claimen zonder het zelf
+  gecontroleerd te hebben — voor UI in een echte browser.
+
 ## [0.66.1] - 2026-06-21
 ### Removed — Dode code opgeruimd (Tier 3 hygiëne)
 - `app/templates/base.html` (het oude lichte thema — niemand extend't 'm, de "tweede-look-val" uit de audit),
