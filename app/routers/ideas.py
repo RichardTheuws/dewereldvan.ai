@@ -15,7 +15,7 @@ service netjes (idempotent) afgehandeld. CSRF via ``hx-headers``.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Form, Request, status
+from fastapi import APIRouter, Depends, Form, Query, Request, status
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
@@ -76,6 +76,20 @@ def index(
     if request.headers.get("HX-Request"):
         return _render(request, "ideas/_list.html", ctx)
     return _render(request, "ideas/index.html", ctx)
+
+
+@router.get("/ideeen/lijkt-op", response_class=HTMLResponse)
+def similar(
+    request: Request,
+    title: str = Query(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Live 'lijkt-op'-hint tijdens het typen: tot 3 bestaande ideeën die lijken
+    op de ingetypte titel (anti-duplicaat). Leeg fragment = geen suggestie."""
+    ideas = idea_service.find_similar(db, title)
+    counts = idea_service.vote_counts(db, [i.id for i in ideas]) if ideas else {}
+    return _render(request, "ideas/_similar.html", {"similar": ideas, "counts": counts})
 
 
 @router.post("/ideeen", response_class=HTMLResponse)

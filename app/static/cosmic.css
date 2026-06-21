@@ -553,6 +553,42 @@
   color: var(--cyan);
 }
 
+/* ---- Ideeënbus: live 'lijkt-op'-hint (anti-duplicaat) ---- */
+.cosmic .idea-similar {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(63, 210, 255, 0.06);
+  padding: 10px 12px;
+}
+.cosmic .idea-similar__lead {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: var(--cyan);
+  margin-bottom: 6px;
+}
+.cosmic .idea-similar__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  text-decoration: none;
+  color: var(--text);
+  border-top: 1px solid var(--line);
+}
+.cosmic .idea-similar__row:first-of-type { border-top: none; }
+.cosmic .idea-similar__row:hover .idea-similar__title,
+.cosmic .idea-similar__row:focus-visible .idea-similar__title { color: var(--cyan); }
+.cosmic .idea-similar__title { font-size: 0.9rem; }
+.cosmic .idea-similar__votes {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--gold);
+  flex: none;
+}
+
 /* ---- typography ---- */
 .cosmic .eyebrow {
   font-family: "JetBrains Mono", monospace;

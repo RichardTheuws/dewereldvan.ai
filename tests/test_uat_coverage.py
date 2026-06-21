@@ -79,6 +79,7 @@ MEMBER_ONLY = {
     "/agenda",
     "/nieuws",
     "/ideeen",
+    "/ideeen/lijkt-op",
     "/roadmap",
     "/welkom",
     "/profiel/voorbeeld",

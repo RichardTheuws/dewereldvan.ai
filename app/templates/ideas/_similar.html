@@ -1,0 +1,15 @@
+{# Live 'lijkt-op'-hint onder het titelveld (anti-duplicaat). Tot 3 bestaande
+   ideeën die op de ingetypte titel lijken; elk linkt naar het bestaande idee in
+   de lijst (waar de stemknop zit) → "stem mee i.p.v. opnieuw indienen". Leeg
+   fragment als er niets lijkt. ``similar`` = list[Idea], ``counts`` = {id: votes}. #}
+{% if similar %}
+<div class="idea-similar" data-reveal>
+  <div class="idea-similar__lead">✦ Lijkt dit op iets dat er al is? Stem dan liever mee:</div>
+  {% for idea in similar %}
+  <a class="idea-similar__row" href="#idea-{{ idea.id }}">
+    <span class="idea-similar__title">{{ idea.title }}</span>
+    <span class="idea-similar__votes">{{ (counts or {}).get(idea.id, 0) }} ✦</span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}

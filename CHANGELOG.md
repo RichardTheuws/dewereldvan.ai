@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.64.0] - 2026-06-21
+### Added — Blok 3.5: ideeënbus krijgt een live 'lijkt-op'-hint (anti-duplicaat/anti-ruis)
+- Tijdens het typen van een idee-titel toont een **live hint** (htmx, 400ms debounce) tot 3 bestaande ideeën die
+  erop lijken, mét stemtelling, klikbaar naar het bestaande idee ("stem mee i.p.v. opnieuw indienen") — houdt de
+  graaf schoon (anti-ruis = de noordster-toets voor dit scherm).
+- **`idea_service.find_similar`**: Python-similariteit (difflib sequence-ratio + token-Jaccard, het maximum) →
+  werkt identiek op SQLite én Postgres, deterministisch, **nul AI, geen pg_trgm-afhankelijkheid**. Korte titels
+  (<4 tekens) geven niets (geen ruis bij de eerste letters).
+- Nieuwe route `GET /ideeen/lijkt-op` (leden-only) — door de **zelf-groeiende UAT** automatisch afgedwongen te
+  classificeren (de dekkingswacht deed precies z'n werk). +4 tests. **929 tests groen.**
+
 ## [0.63.1] - 2026-06-21
 ### Fixed — Blok 3.4: contextuele concierge-prompts (dode-haak-cluster, agenda + 5 anderen)
 - 9 pagina's zetten `concierge_context`, maar alleen 3 (leden/roadmap/member) hadden een branch → agenda, home,

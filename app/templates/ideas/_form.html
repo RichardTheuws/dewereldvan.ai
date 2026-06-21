@@ -9,7 +9,11 @@
     <div class="idea-form__title">
       <label class="field-label" for="idea-title">Je idee in één zin</label>
       <input id="idea-title" name="title" maxlength="160" required
-             placeholder="Bijv. Een live-changelog op de homepage">
+             placeholder="Bijv. Een live-changelog op de homepage"
+             hx-get="/ideeen/lijkt-op" hx-target="#idea-similar" hx-swap="innerHTML"
+             hx-trigger="input changed delay:400ms">
+      {# Live 'lijkt-op'-hint landt hier (anti-duplicaat). #}
+      <div id="idea-similar" aria-live="polite"></div>
     </div>
   </div>
   <div class="mt-4">

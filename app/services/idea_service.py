@@ -18,6 +18,7 @@ Verantwoordelijkheden:
 
 from __future__ import annotations
 
+import difflib
 from datetime import datetime, timedelta
 
 from sqlalchemy import func, select
@@ -42,6 +43,7 @@ __all__ = [
     "VoteResult",
     "check_idea_rate_limit",
     "create",
+    "find_similar",
     "list_visible",
     "get_visible",
     "vote_counts",
@@ -122,6 +124,38 @@ def create(
 # --------------------------------------------------------------------------- #
 # Weergave                                                                    #
 # --------------------------------------------------------------------------- #
+
+
+def _norm(text: str | None) -> str:
+    return " ".join((text or "").lower().split())
+
+
+def find_similar(
+    db: Session, title: str, *, limit: int = 3, threshold: float = 0.5
+) -> list[Idea]:
+    """Zichtbare ideeën die op ``title`` lijken — anti-duplicaat/anti-ruis op de graaf.
+
+    Pure Python-similariteit (difflib sequence-ratio + token-Jaccard, het maximum
+    van beide): werkt identiek op SQLite én Postgres, deterministisch, nul AI, geen
+    pg_trgm-afhankelijkheid. Korte/lege titels (<4 tekens) geven niets terug."""
+    q = _norm(title)
+    if len(q) < 4:
+        return []
+    q_tokens = set(q.split())
+    scored: list[tuple[float, Idea]] = []
+    for idea in list_visible(db):
+        cand = _norm(idea.title)
+        if not cand:
+            continue
+        ratio = difflib.SequenceMatcher(None, q, cand).ratio()
+        c_tokens = set(cand.split())
+        union = q_tokens | c_tokens
+        jaccard = len(q_tokens & c_tokens) / len(union) if union else 0.0
+        score = max(ratio, jaccard)
+        if score >= threshold:
+            scored.append((score, idea))
+    scored.sort(key=lambda t: (-t[0], -len(t[1].votes)))
+    return [idea for _, idea in scored[:limit]]
 
 
 def list_visible(db: Session) -> list[Idea]:

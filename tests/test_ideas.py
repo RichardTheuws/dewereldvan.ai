@@ -130,6 +130,47 @@ def test_index_approved_empty_state_ok(make_client, seed):
 # --------------------------------------------------------------------------- #
 # Indienen + rate-limit                                                        #
 # --------------------------------------------------------------------------- #
+def test_find_similar_matches_near_duplicate_titles(seed, SessionTest):
+    """Python-similariteit vindt bijna-duplicaten; ongerelateerde + te korte
+    titels geven niets (anti-ruis, werkt op SQLite + Postgres, nul AI)."""
+    from app.models import Idea
+    from app.services import idea_service
+
+    with SessionTest() as s:
+        s.add(Idea(member_id=seed["member"], title="Een donkere modus voor de site", body="x"))
+        s.add(Idea(member_id=seed["member"], title="Live changelog op de homepage", body="y"))
+        s.commit()
+        # Bijna-duplicaat van de eerste.
+        hits = idea_service.find_similar(s, "donkere modus voor de site")
+        assert any("donkere modus" in i.title.lower() for i in hits)
+        # Ongerelateerd → niets.
+        assert idea_service.find_similar(s, "een API voor weersvoorspelling xyz") == []
+        # Te kort → niets (geen ruis bij eerste letters).
+        assert idea_service.find_similar(s, "do") == []
+
+
+def test_similar_endpoint_returns_hint_fragment(make_client, seed, SessionTest):
+    """GET /ideeen/lijkt-op toont bestaande gelijkende ideeën als hint-fragment."""
+    from app.models import Idea
+
+    with SessionTest() as s:
+        s.add(Idea(member_id=seed["member"], title="Donkere modus voor de site", body="x"))
+        s.commit()
+    client = make_client(seed["member"])
+    resp = client.get("/ideeen/lijkt-op", params={"title": "donkere modus voor de site"})
+    assert resp.status_code == 200
+    assert "Lijkt dit op iets dat er al is?" in resp.text
+    assert "Donkere modus voor de site" in resp.text
+
+
+def test_similar_endpoint_requires_member(make_client, seed):
+    """Anon → /login (besloten, net als de rest van de ideeënbus)."""
+    resp = make_client(None).get(
+        "/ideeen/lijkt-op", params={"title": "iets"}, follow_redirects=False
+    )
+    assert resp.status_code == 303
+
+
 def test_submit_persists_idea(make_client, seed, SessionTest):
     from app.models import Idea
 
