@@ -22,7 +22,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
-  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}
+  .home-demo .demo-step,.home-demo [data-demo-reasoning]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
 </head>
 <body class="cosmic" data-reveal-scroll>
   {% include "profiles/_cosmic_bg.html" %}
@@ -39,62 +40,102 @@
           {% if logged_in %}WELKOM TERUG{% else %}DE WERELD VAN{% endif %}{% if member_count and member_count > 0 %} · {{ member_count }} MAKER{{ 'S' if member_count != 1 else '' }}{% endif %}
         </div>
         <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">
-          {% if logged_in %}Welkom in de wereld.{% else %}De wereld van de scherpste AI-makers.{% endif %}
+          {% if logged_in %}Welkom in de wereld.{% else %}Geef een link. De agent bouwt je profiel.{% endif %}
         </h1>
         <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
-          {% if logged_in %}Ga verder met je profiel, of ontdek wat de anderen maken.{% else %}Een besloten plek voor wie in NL &amp; BE serieus met AI bouwt. Maak je profiel, ontdek wat anderen maken, deel waar je naar zoekt.{% endif %}
+          {% if logged_in %}Ga verder met je profiel, of ontdek wat de anderen maken.{% else %}Een besloten plek voor wie in NL &amp; BE serieus met AI bouwt. Plak één link — de agent leest 'm en zet je profiel klaar.{% endif %}
         </p>
-        <div class="mt-8 flex flex-wrap items-center gap-3" data-reveal style="--d:480ms">
+
+        {% if not logged_in %}
+        {# W2-bewijs: laat de agent het vóór je ogen doen i.p.v. het te beweren. #}
+        <div class="mt-8" data-reveal style="--d:460ms">
+          {% include "_home_demo.html" %}
+        </div>
+        {% endif %}
+
+        <div class="mt-8 flex flex-wrap items-center gap-3" data-reveal style="--d:560ms">
           {% if logged_in %}
           <a class="btn" href="/profiel/ai/bouwen">Naar mijn profiel</a>
           <a class="btn btn--ghost" href="/leden">Ontdek de makers</a>
           {% else %}
           <a class="btn" href="/register">Word lid</a>
-          <a class="btn btn--ghost" href="/leden">Bekijk de makers</a>
-          {# Subtiele derde CTA (alleen anoniem): proef de agent zonder lid te zijn. #}
-          <a class="link" href="/proef">Probeer de agent</a>
+          {# Het echte intelligentie-bewijs, prominent: doe het met je eigen link. #}
+          <a class="btn btn--ghost" href="/proef">Probeer het met je eigen link</a>
+          <a class="link" href="#makers">Bekijk de makers</a>
           {% endif %}
         </div>
+
+        {% if not logged_in %}
+        {# Proef de agent: de chip vult het concierge-veld + toont directe matches
+           uit de graaf (client-side instant-laag). Voor anon is de betaalde
+           agent-stream in de UI geblokkeerd (concierge: anon = ontdekken, lid =
+           agent); de afsluit-rij wijst naar "word lid". Server-side cap = follow-up. #}
+        <div class="home-chips mt-6" data-reveal style="--d:640ms">
+          <span class="home-chips__lead">Vraag de agent:</span>
+          <button type="button" class="home-chip" data-concierge-prefill="wie bouwt voice-agents?">wie bouwt voice-agents?</button>
+          <button type="button" class="home-chip" data-concierge-prefill="ik zoek iemand voor RAG">ik zoek iemand voor RAG</button>
+          <span class="home-chips__note">Word lid om de hele graaf te doorzoeken.</span>
+        </div>
+        {% endif %}
       </section>
 
-      <section class="mt-16">
-        <div class="section-title" data-reveal style="--d:560ms">Het speelveld</div>
-        <div class="grid mt-6">
-          {# 1. De makers — echte deur (publiek). Toont een constellatie-preview
-             van echte leden bij ≥3 publieke makers; anders pure tekstkaart. #}
-          <a class="card" href="/leden" data-reveal="drift" style="--d:620ms">
-            <div class="card-label">De makers</div>
-            <div class="card-desc">Ontdek wie er in NL &amp; BE serieus met AI bouwt.</div>
-            {% if preview_stars and preview_stars | length >= 3 %}
-            <div class="home-gate__stars" aria-hidden="true">
-              {% for p in preview_stars %}
-              {% set _src = (p.photo_url | safe_url) if p.photo_url else '' %}
-              <span class="member-star__avatar {% if not _src %}member-star__avatar--initials{% endif %}">
+      {# W1-bewijs: een echte mini-constellatie van leden. Elke ster = een echt
+         lid; de lijnen tonen echte gedeelde grond (tag/tool). Bij <3 makers een
+         eerlijke tekst-fallback (nooit nep-sterren). #}
+      <section class="mt-20" id="makers">
+        <div class="section-title" data-reveal style="--d:160ms">De makers die er al zijn</div>
+        {% if preview_stars and preview_stars | length >= 3 %}
+        {% set coords = [[18,30],[44,15],[72,22],[87,46],[63,64],[37,75],[13,57],[52,43]] %}
+        <div class="home-constellation mt-6" data-reveal style="--d:240ms">
+          <svg class="home-constellation__links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {% for a, b in (star_links or []) %}
+            {% if a < (coords | length) and b < (coords | length) %}
+            <line x1="{{ coords[a][0] }}" y1="{{ coords[a][1] }}" x2="{{ coords[b][0] }}" y2="{{ coords[b][1] }}" vector-effect="non-scaling-stroke"></line>
+            {% endif %}
+            {% endfor %}
+          </svg>
+          <div class="home-constellation__stars">
+            {% for p in preview_stars %}
+            {% set c = coords[loop.index0] %}
+            {% set _src = (p.photo_url | safe_url) if p.photo_url else '' %}
+            <a class="home-star{% if loop.index0 < 3 %} home-star--gold{% endif %}"
+               href="/leden/{{ p.slug }}" style="left:{{ c[0] }}%;top:{{ c[1] }}%"
+               aria-label="{{ p.display_name }}{% if p.headline %} — {{ p.headline }}{% endif %}">
+              <span class="home-star__dot{% if not _src %} home-star__dot--initials{% endif %}">
                 {% if _src %}<img src="{{ _src }}" alt="" loading="lazy">{% else %}{{ (p.display_name or '?')[:1] | upper }}{% endif %}
               </span>
-              {% endfor %}
-            </div>
-            {% endif %}
-          </a>
+              <span class="home-star__name">{{ p.display_name }}</span>
+              {% if p.headline or p.makes_summary %}
+              <span class="home-star__card" aria-hidden="true">{{ p.headline or p.makes_summary }}</span>
+              {% endif %}
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        <a class="link home-constellation__all mt-6" href="/leden" data-reveal style="--d:320ms">Bekijk alle makers →</a>
+        {% else %}
+        <p class="lede mt-5" style="max-width:48ch" data-reveal style="--d:240ms">
+          De eerste makers zetten nu hun profiel op.{% if not logged_in %} Word lid en zet de jouwe ernaast.{% endif %}
+        </p>
+        {% if not logged_in %}<a class="btn mt-6" href="/register" data-reveal style="--d:320ms">Word lid</a>{% endif %}
+        {% endif %}
+      </section>
 
-          {# 2. Ideeën — voor leden; anon wijst eerlijk gelabeld naar de route
-             (die zelf naar /login redirect). #}
-          <a class="card" href="/ideeen" data-reveal="drift" style="--d:680ms">
+      {# Slim secundair: levende deuren naar de community (voor leden gelabeld). #}
+      <section class="mt-20">
+        <div class="grid">
+          <a class="card" href="/ideeen" data-reveal="drift" style="--d:160ms">
             <div class="card-label">Ideeën</div>
             <div class="card-desc">Stel voor wat dit platform moet worden — en stem mee.</div>
             {% if not logged_in %}<div class="home-gate__note">voor leden</div>{% endif %}
           </a>
-
-          {# 3. Roadmap — idem. #}
-          <a class="card" href="/roadmap" data-reveal="drift" style="--d:740ms">
+          <a class="card" href="/roadmap" data-reveal="drift" style="--d:220ms">
             <div class="card-label">Roadmap</div>
             <div class="card-desc">Zie waar we mee bezig zijn en wat eraan komt.</div>
             {% if not logged_in %}<div class="home-gate__note">voor leden</div>{% endif %}
           </a>
-
-          {# 4. Jouw profiel — alleen ingelogd. #}
           {% if logged_in %}
-          <a class="card" href="/profiel/ai/bouwen" data-reveal="drift" style="--d:800ms">
+          <a class="card" href="/profiel/ai/bouwen" data-reveal="drift" style="--d:280ms">
             <div class="card-label">Jouw profiel</div>
             <div class="card-desc">Bouw of verfijn je profiel — wie je bent en waar je naar zoekt.</div>
           </a>

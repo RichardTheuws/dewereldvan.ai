@@ -1,0 +1,53 @@
+{# Homepage-hero W2-bewijs: de agent bouwt een profiel vóór je ogen uit één link.
+   Gescript, fictief, NUL AI-kosten, indexeerbaar. Speelt één keer af zodra het in
+   beeld komt (data-demo-autoplay); reduced-motion toont alles direct. Deelt de
+   choreografie met /demo via /static/demo-play.js. Vaste min-height = CLS-guard. #}
+<div class="home-demo" data-demo data-demo-autoplay aria-label="Voorbeeld: de agent bouwt een profiel uit een link">
+  <div class="home-demo__badge" role="note">
+    <span aria-hidden="true">✦</span> Demo — fictief profiel, door AI opgebouwd
+  </div>
+
+  {# Faux invoerveld: de "ingevoerde" link wordt char-voor-char getypt. #}
+  <div class="concierge-form home-demo__field" aria-hidden="true">
+    <span class="concierge-form__spark">✦</span>
+    <span class="concierge-form__input" data-demo-type="lena-hart.ai">lena-hart.ai</span>
+  </div>
+
+  {# Scan-/reasoning-regel (materialiseert eerst). #}
+  <div class="reasoning reasoning--settled home-demo__reasoning" data-demo-reasoning
+       role="status" aria-live="polite" style="opacity:0">
+    <div class="reasoning__aura" aria-hidden="true">
+      <span class="reasoning__orbit"></span>
+      <span class="reasoning__orbit reasoning__orbit--2"></span>
+      <span class="reasoning__core"></span>
+    </div>
+    <div class="reasoning__body">
+      <div class="reasoning__label"><span aria-hidden="true">✦</span> de agent leest mee</div>
+      <div class="reasoning__fetch"><div class="fetch-line fetch-line--ok">·· lena-hart.ai scannen ✓</div></div>
+    </div>
+  </div>
+
+  {# De velden materialiseren één voor één — naam, headline, thema's, wat-ik-maak. #}
+  <div class="home-demo__profile">
+    <section class="demo-step home-demo__identity" style="opacity:0">
+      <div class="display-name">Lena Hart</div>
+      <div class="home-demo__headline">Bouwt AI-copiloten voor de zorg</div>
+    </section>
+
+    <section class="demo-step home-demo__themes" style="opacity:0">
+      <span class="demo-tag">clinical-AI</span>
+      <span class="demo-tag">copilots</span>
+      <span class="demo-tag">privacy</span>
+    </section>
+
+    <section class="demo-step" style="opacity:0">
+      <div class="card home-demo__card">
+        <div class="demo-card__title">Wat ik maak</div>
+        <p class="muted demo-card__desc">
+          Een copiloot die artsen meeschrijft in het dossier — sneller, met de privacy bewaakt.
+        </p>
+      </div>
+    </section>
+  </div>
+</div>
+<script src="/static/demo-play.js?v={{ asset_ver }}" defer></script>

@@ -65,6 +65,35 @@ def _csrf_context(request: Request) -> dict:
     return {"csrf_token": get_csrf_token(request)}
 
 
+def compute_graph_links(profiles: list, *, max_links: int = 12) -> list[list[int]]:
+    """Index-paren van profielen die ≥1 tag of tool delen — de constellatie-lijnen.
+
+    Strikt in-memory over de al eager-geladen ``tags``/``tools`` (geen extra query,
+    geen LLM → nul kosten, nul hallucinatie): elke lijn staat voor een ECHTE
+    gedeelde grond tussen twee makers. Gecapt zodat de hero leesbaar blijft."""
+    keys: list[set[str]] = []
+    for p in profiles:
+        ident: set[str] = set()
+        for t in getattr(p, "tags", None) or []:
+            slug = getattr(t, "slug", None) or getattr(t, "name", None)
+            if slug:
+                ident.add(f"tag:{str(slug).lower()}")
+        for t in getattr(p, "tools", None) or []:
+            slug = getattr(t, "slug", None) or getattr(t, "name", None)
+            if slug:
+                ident.add(f"tool:{str(slug).lower()}")
+        keys.append(ident)
+
+    links: list[list[int]] = []
+    for i in range(len(keys)):
+        for j in range(i + 1, len(keys)):
+            if keys[i] & keys[j]:
+                links.append([i, j])
+                if len(links) >= max_links:
+                    return links
+    return links
+
+
 def safe_url(value: str | None) -> str:
     """Return ``value`` only if it is a safe http(s)/relative URL, else ``''``.
 
@@ -256,12 +285,16 @@ def _register_core_routes(app: FastAPI) -> None:
         # constellatie-preview. Eén poort-call (zelfde eager-load als /leden),
         # daarna in-memory tellen + slicen — geen tweede query.
         public_profiles = members_service.list_public_profiles(db)
+        # De hero-constellatie toont tot 8 ECHTE makers; de lijnen tonen echte
+        # gedeelde grond (tag/tool). Eén poort-call, daarna in-memory — geen N+1.
+        preview_stars = public_profiles[:8]
         return templates.TemplateResponse(
             request,
             "index.html",
             {
                 "member_count": len(public_profiles),
-                "preview_stars": public_profiles[:5],
+                "preview_stars": preview_stars,
+                "star_links": compute_graph_links(preview_stars),
                 # Publieke voordeur: schone canonical/og:url (geen lege href="").
                 "canonical": seo_service.canonical_url("/"),
                 # Absolute basis voor og:image (publieke unfurl-kaart).

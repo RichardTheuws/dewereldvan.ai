@@ -24,7 +24,7 @@
   </div>
 
   <div class="wrap canvas">
-    <main role="main" aria-label="Demo — zo bouw je je profiel">
+    <main role="main" aria-label="Demo — zo bouw je je profiel" data-demo>
       <section class="canvas-intro mt-10">
         <div class="eyebrow" data-reveal style="--d:140ms">De wereld van AI</div>
         <h1 class="headline mt-5" data-reveal style="--d:240ms">Zo bouw je je profiel.</h1>
@@ -36,21 +36,21 @@
         {# Faux invoerveld: toont de "ingevoerde" fictieve site. #}
         <div class="concierge-form canvas-form mt-8" data-reveal style="--d:460ms" aria-hidden="true">
           <span class="concierge-form__spark">✦</span>
-          <span class="demo-typed concierge-form__input">studio-nova.ai</span>
+          <span class="demo-typed concierge-form__input" data-demo-type="studio-nova.ai">studio-nova.ai</span>
         </div>
 
         {# Startknop: de demo speelt pas ná een klik (anders lijkt het een gewone
            paginalaadt i.p.v. een demo die je vóór je ogen ziet bouwen). #}
-        <button type="button" id="demo-play" class="btn demo-play mt-6"
+        <button type="button" id="demo-play" data-demo-play class="btn demo-play mt-6"
                 data-reveal style="--d:560ms">▶ Speel de demo af ✦</button>
-        <p class="muted text-sm mt-3" id="demo-hint" data-reveal style="--d:620ms">
+        <p class="muted text-sm mt-3" id="demo-hint" data-demo-hint data-reveal style="--d:620ms">
           Kijk hoe de AI uit één link een compleet profiel bouwt.
         </p>
       </section>
 
       {# Reasoning-/scan-regel (gescript onthuld). #}
       <div class="demo-reasoning reasoning reasoning--settled mt-8" id="demo-reasoning"
-           role="status" aria-live="polite" style="opacity:0">
+           role="status" aria-live="polite" style="opacity:0" data-demo-reasoning>
         <div class="reasoning__aura" aria-hidden="true">
           <span class="reasoning__orbit"></span>
           <span class="reasoning__orbit reasoning__orbit--2"></span>
@@ -153,52 +153,7 @@
 
   {% include "ai/_cosmic_canvas.html" %}
 
-  <script>
-    (function () {
-      var steps = Array.prototype.slice.call(document.querySelectorAll('.demo-step'));
-      var reasoning = document.getElementById('demo-reasoning');
-      var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-
-      function showNow(el) { el.style.opacity = '1'; }
-      function materialize(el) {
-        el.style.opacity = '';
-        el.classList.add('field--materializing');
-        el.addEventListener('animationend', function () {
-          el.classList.remove('field--materializing');
-          el.classList.add('field--ready');
-        }, { once: true });
-        setTimeout(function () {
-          el.classList.remove('field--materializing');
-          el.classList.add('field--ready');
-        }, 1000);
-      }
-
-      var playBtn = document.getElementById('demo-play');
-      var hint = document.getElementById('demo-hint');
-
-      function play() {
-        if (playBtn) playBtn.style.display = 'none';
-        if (hint) hint.style.display = 'none';
-        if (reduce) {
-          if (reasoning) showNow(reasoning);
-          steps.forEach(showNow);
-          return;
-        }
-        // Gescripte sequentie: scan-regel → sfeerbeeld → velden één voor één → CTA.
-        var t = 250;
-        if (reasoning) setTimeout(function () {
-          materialize(reasoning);
-          reasoning.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, t);
-        t += 1100;
-        steps.forEach(function (el) {
-          setTimeout(function () { materialize(el); }, t);
-          t += 800;
-        });
-      }
-
-      if (playBtn) playBtn.addEventListener('click', play);
-    })();
-  </script>
+  {# Gedeelde demo-choreografie (ook gebruikt door de homepage-hero). #}
+  <script src="/static/demo-play.js?v={{ asset_ver }}" defer></script>
 </body>
 </html>

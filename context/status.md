@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.56.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.57.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -55,9 +55,12 @@ dus de meeste hoogste-leverage-ingrepen zijn "maak zichtbaar", niet "bouw". Gepr
 - **Blok 0 (klaar, v0.56.0)** — Slimme, zelf-groeiende **UAT**: Laag 1 (route-dekkingswacht, geen-5xx +
   auth-poorten + volledigheids-gate) + Laag 2 (ervaring-invarianten: cosmic-identiteit + fonts + noindex-poort).
   Laag 3 (browser-journeys, `e2e`-marker) voorbereid; bouwen ná het homepage-kopstuk.
-- **Blok 1 (volgende)** — **Homepage-kopstuk** = Concept B-hybride: gedeelde `_home_demo.html` (de agent bouwt
-  een profiel vóór je ogen, W2), echte mini-constellatie van leden (W1), proef-chips via bestaande
-  `[data-concierge-fill]`-haak. Bewijst de belofte in 20s op mobiel, nul AI-kosten.
+- **Blok 1 (klaar, v0.57.0)** — **Homepage-kopstuk** = Concept B-hybride: embedded agent-demo (W2, gedeelde
+  `_home_demo.html` + `static/demo-play.js`, ook door `/demo` gebruikt), echte makers-constellatie met gegronde
+  tag/tool-lijnen (W1, `compute_graph_links`), proef-chips via veilige `data-concierge-prefill`-haak (anon =
+  gratis instant-matches; betaalde stream UI-geblokkeerd voor anon), prominente `/proef`-CTA. Adversarieel
+  geverifieerd; 904 tests groen. **Follow-ups (geëscaleerd)**: server-side budget-cap op anon-concierge +
+  Tailwind-CDN→prebuilt-CSS (beide pre-existing, FOUC/kosten).
 - **Blok 2** — `/proef` (live-tail zichtbaar), `/demo` (scan→veld-causaliteit), publiek profiel (graaf-knoop via
   strict DB-`graph_service`), `/leden` (echte verbonden graaf).
 - **Blok 3** — project, nieuws, agenda, ideeën, roadmap, auth.

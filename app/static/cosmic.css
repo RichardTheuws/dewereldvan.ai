@@ -276,6 +276,201 @@
   color: var(--muted);
 }
 
+/* ---- Homepage-kopstuk: W2-demo (de agent bouwt vóór je ogen) ---- */
+.cosmic .home-demo {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 140% at 8% 0%, rgba(109, 93, 252, 0.16), transparent 60%),
+    var(--card);
+  padding: 22px 22px 26px;
+  max-width: 560px;
+  min-height: 300px; /* CLS-guard: ruimte gereserveerd vóór de velden landen */
+  overflow: hidden;
+}
+.cosmic .home-demo__badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.cosmic .home-demo__field {
+  margin-bottom: 6px;
+}
+.cosmic .home-demo__reasoning {
+  margin: 14px 0 4px;
+}
+.cosmic .home-demo__profile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 4px;
+}
+.cosmic .home-demo__identity .display-name {
+  font-family: "Fraunces", serif;
+  font-size: 1.7rem;
+  line-height: 1.05;
+  color: var(--text);
+}
+.cosmic .home-demo__headline {
+  font-family: "Fraunces", serif;
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.cosmic .home-demo__themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cosmic .home-demo__card {
+  margin: 0;
+}
+
+/* ---- Homepage-kopstuk: W1-constellatie van ECHTE makers ---- */
+.cosmic .home-constellation {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-width: 920px;
+}
+@media (max-width: 640px) {
+  .cosmic .home-constellation { aspect-ratio: 3 / 4; }
+}
+.cosmic .home-constellation__links {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.cosmic .home-constellation__links line {
+  stroke: rgba(120, 170, 255, 0.28);
+  stroke-width: 1;
+}
+.cosmic .home-constellation__stars {
+  position: absolute;
+  inset: 0;
+}
+.cosmic .home-star {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  color: var(--text);
+  width: 96px;
+  text-align: center;
+}
+.cosmic .home-star__dot {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--indigo);
+  border: 1px solid rgba(63, 210, 255, 0.4);
+  box-shadow: 0 0 16px -4px rgba(63, 210, 255, 0.5);
+  font-family: "Fraunces", serif;
+  font-size: 1.1rem;
+  color: var(--text);
+  transition: transform 0.25s, box-shadow 0.4s, border-color 0.3s;
+}
+.cosmic .home-star__dot img { width: 100%; height: 100%; object-fit: cover; }
+.cosmic .home-star--gold .home-star__dot {
+  border-color: rgba(246, 205, 134, 0.65);
+  box-shadow: 0 0 20px -3px rgba(246, 205, 134, 0.6);
+}
+.cosmic .home-star__name {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 96px;
+}
+.cosmic .home-star:hover .home-star__dot,
+.cosmic .home-star:focus-visible .home-star__dot {
+  transform: translateY(-3px) scale(1.06);
+  border-color: rgba(63, 210, 255, 0.7);
+}
+.cosmic .home-star:hover .home-star__name,
+.cosmic .home-star:focus-visible .home-star__name { color: var(--text); }
+.cosmic .home-star:focus-visible { outline: none; }
+.cosmic .home-star:focus-visible .home-star__dot {
+  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.22);
+}
+.cosmic .home-star__card {
+  position: absolute;
+  top: 58px;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  width: 180px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(10, 10, 36, 0.96);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 3;
+}
+.cosmic .home-star:hover .home-star__card,
+.cosmic .home-star:focus-visible .home-star__card {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.cosmic .home-constellation__all { display: inline-block; }
+
+/* ---- Homepage-kopstuk: proef-de-agent-chips ---- */
+.cosmic .home-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.cosmic .home-chips__lead {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cosmic .home-chip {
+  font-family: "Spline Sans", sans-serif;
+  font-size: 0.88rem;
+  color: var(--text);
+  background: rgba(109, 93, 252, 0.12);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: border-color 0.25s, background 0.25s, transform 0.2s;
+}
+.cosmic .home-chip:hover,
+.cosmic .home-chip:focus-visible {
+  outline: none;
+  border-color: rgba(63, 210, 255, 0.55);
+  background: rgba(63, 210, 255, 0.12);
+  transform: translateY(-1px);
+}
+.cosmic .home-chips__note {
+  font-size: 0.82rem;
+  color: var(--muted);
+  flex-basis: 100%;
+}
+
 /* ---- typography ---- */
 .cosmic .eyebrow {
   font-family: "JetBrains Mono", monospace;

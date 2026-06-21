@@ -244,17 +244,19 @@ def test_home_signal_shown_with_makers(client, SessionTest):
 
 
 # --------------------------------------------------------------------------- #
-# Preview-gating (constellatie-mini's in de Makers-kaart)                      #
+# Preview-gating (de echte makers-constellatie in het kopstuk, v0.57.0)        #
 # --------------------------------------------------------------------------- #
 def test_home_preview_hidden_below_three(client, SessionTest):
     _seed_public(SessionTest, 2)
     resp = client.get("/")
     assert resp.status_code == 200
-    assert "home-gate__stars" not in resp.text
+    # Geen nep-sterren onder de drempel: de constellatie verschijnt niet.
+    assert "home-constellation" not in resp.text
 
 
 def test_home_preview_shown_at_three(client, SessionTest):
     _seed_public(SessionTest, 3)
     resp = client.get("/")
     assert resp.status_code == 200
-    assert "home-gate__stars" in resp.text
+    # Het kopstuk toont de echte mini-constellatie van leden (W1).
+    assert "home-constellation" in resp.text

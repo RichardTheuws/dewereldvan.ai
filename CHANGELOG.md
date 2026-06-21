@@ -3,6 +3,27 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.57.0] - 2026-06-21
+### Added — Homepage-kopstuk (Blok 1, Concept B-hybride): de voordeur BEWIJST de belofte i.p.v. te beweren
+- **W2 — embedded agent-demo** (`_home_demo.html` + gedeelde `static/demo-play.js`): de agent bouwt vóór je
+  ogen een (fictief, gelabeld) profiel uit één getypte link — char-voor-char typen → scan-regel → velden
+  materialiseren één voor één. Speelt één keer af zodra het in beeld komt; reduced-motion toont alles direct;
+  **no-JS/crawler-vangnet** in de `<noscript>`. `/demo` deelt nu dezelfde choreografie (inline-script weg → geen drift).
+- **W1 — echte makers-constellatie** (`index.html` + `compute_graph_links` in `main.py`): tot 8 ECHTE publieke
+  makers als sterren (naam + headline + avatar), met verbindingslijnen die **echt gedeelde grond** (tag/tool)
+  tonen — strict in-memory, nul AI, nul extra query. Bij <3 makers een eerlijke tekst-fallback (nooit nep-sterren).
+- **Proef-de-agent-chips** (`data-concierge-prefill` in `_concierge.html`): vullen het concierge-veld en tonen
+  gratis client-side instant-matches uit de graaf. **Kosten-veiligheid**: voor een anonieme bezoeker is de
+  betaalde agent-stream in de UI geblokkeerd (afsluit-rij → "word lid"; `htmx:confirm` cancelt elke submit) —
+  noordster-grens: anon = ontdekken, lid = de agent.
+- **Prominente `/proef`-CTA** (van begraven tekstlink → tweede knop), kosmische styling in `cosmic.css`
+  (`.home-demo` / `.home-constellation` / `.home-star` / `.home-chip`), `preview_stars[:5]→[:8]`.
+- Adversarieel geverifieerd (4 lenzen): no-JS-vangnet + anon-kosten-funnel gevangen en gefixt vóór commit.
+  **+13 tests; 904 groen.**
+- **Bekende follow-ups (geen blokker, geëscaleerd)**: (1) server-side budget-cap op anon-concierge
+  (`/concierge/bericht`+`/stream` zijn nu ongecapt betaald voor anon — UI dicht, server volgt); (2) Tailwind
+  dev-CDN op publieke pagina's vervangen door een vooraf-gebouwde CSS (FOUC-risico mobiel). Beide pre-existing.
+
 ## [0.56.0] - 2026-06-21
 ### Added — Slimme, zelf-groeiende UAT (Laag 1 + 2): "weet altijd zeker dat álles werkt, ook terwijl we doorbouwen"
 - **Laag 1 — route-dekkingswacht** (`tests/test_uat_coverage.py`): enumereert via `app_get_routes` élke

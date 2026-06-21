@@ -130,6 +130,10 @@
   if (!overlay || overlay.dataset.bound) return;
   overlay.dataset.bound = '1';
 
+  // Anon = ontdekken (gratis instant-matches), lid = de agent. Voor anon wordt de
+  // betaalde stream-call in de UI geblokkeerd zodat een bezoeker 'm nooit triggert
+  // (de echte budget-poort hoort server-side; zie follow-up). Noordster-grens.
+  var loggedIn = {% if _logged_in %}true{% else %}false{% endif %};
   var panel = overlay.querySelector('.concierge-panel');
   var input = document.getElementById('concierge-input');
   var instant = document.getElementById('concierge-instant');
@@ -193,10 +197,18 @@
       return '<a class="concierge-instant__row" role="option" href="' + escapeHtml(r.url) + '">' +
              '<span class="concierge-instant__label">' + escapeHtml(r.label) + '</span>' + sub + '</a>';
     }).join('');
-    // Altijd de "laat de concierge het uitzoeken"-rij als afsluiter.
+    // Afsluit-rij: een lid laat de agent het uitzoeken (betaalde stream); een
+    // anonieme bezoeker krijgt i.p.v. een betaalde call de uitnodiging om lid te
+    // worden (geen submit → nul AI-kosten op de voordeur). Server-side bepaald, zodat
+    // de andere tak niet eens in de output lekt.
+    {% if _logged_in %}
     html += '<button type="button" class="concierge-instant__row concierge-instant__ask" role="option" ' +
             'onclick="document.getElementById(\'concierge-form\').requestSubmit()">' +
             '<span class="concierge-instant__label">✦ Vraag de concierge het uit te zoeken</span></button>';
+    {% else %}
+    html += '<a class="concierge-instant__row concierge-instant__ask" role="option" href="/register">' +
+            '<span class="concierge-instant__label">✦ Word lid om de agent dit te laten uitzoeken</span></a>';
+    {% endif %}
     instant.innerHTML = html;
   }
 
@@ -267,6 +279,18 @@
       if (form) form.requestSubmit();
       return;
     }
+    // Prefill (publieke voordeur): vul het veld + toon directe matches uit de
+    // graaf, maar submit NIET. De instant-laag is client-side (renderInstant over
+    // de lichte index) → nul AI-kosten; een anonieme bezoeker triggert dus nooit
+    // de betaalde agent-stream. Proef-zonder-risico.
+    var prefill = e.target.closest('[data-concierge-prefill]');
+    if (prefill) {
+      e.preventDefault();
+      if (input) input.value = prefill.getAttribute('data-concierge-prefill');
+      open();
+      if (input) input.dispatchEvent(new Event('input', { bubbles: true }));
+      return;
+    }
     var go = e.target.closest('[data-concierge-go]');
     if (go) { e.preventDefault(); window.location.href = go.getAttribute('data-concierge-go'); return; }
   });
@@ -275,6 +299,22 @@
   if (input) {
     input.addEventListener('input', renderInstant);
   }
+
+  // Anon-poort: blokkeer de betaalde agent-stream in de UI. htmx:confirm vuurt
+  // vóór elk verzoek; preventDefault() cancelt 'm zodat een anonieme bezoeker de
+  // (ongecapte) stream nooit triggert via Enter/de ↵-knop. Hij houdt de gratis
+  // instant-matches + de "word lid"-rij. (De definitieve budget-poort hoort
+  // server-side — zie follow-up.)
+  {% if not _logged_in %}
+  var cForm = document.getElementById('concierge-form');
+  if (cForm) {
+    cForm.addEventListener('htmx:confirm', function (e) {
+      e.preventDefault();
+      renderInstant();
+      if (input) input.focus();
+    });
+  }
+  {% endif %}
 
   // HX-Redirect uit de stream (navigate-tool) sluit het oppervlak vanzelf doordat
   // de pagina navigeert; niets extra nodig.
