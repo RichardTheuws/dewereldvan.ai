@@ -1,0 +1,31 @@
+{# Owner-only "bekijk-als-bezoeker"-chrome (route /profiel/voorbeeld). Een rustige,
+   sticky bovenbalk die de publieke profielpagina omkadert: de maker ziet exact wat
+   anderen zien, vóór publicatie. Plain microcopy (styleguide §3), kosmische tokens —
+   geen tweede look. Server-rendered, werkt zonder JS. De chip + de actie passen zich
+   aan op de live-zichtbaarheid (progress-bewust: geen "maak openbaar" als het al is). #}
+{% set _public = profile.visibility.value == "public" %}
+<div class="preview-frame" role="region" aria-label="Voorbeeldmodus" data-reveal style="--d:20ms">
+  <div class="preview-frame__inner">
+    <div class="preview-frame__lead">
+      <span class="preview-frame__eyebrow">
+        <span class="preview-frame__spark" aria-hidden="true">✦</span> Voorbeeld
+      </span>
+      <span class="preview-frame__text">
+        Zo ziet je profiel eruit voor anderen.
+        {% if _public %}
+        <span class="chip chip--ok">Openbaar</span>
+        {% else %}
+        <span class="chip chip--muted">Nog niet openbaar</span>
+        {% endif %}
+      </span>
+    </div>
+    <div class="preview-frame__actions">
+      <a class="link" href="/profiel/bewerken">Bewerken</a>
+      {% if _public %}
+      <a class="btn btn--ghost btn--sm" href="/profiel/bewerken#zichtbaarheid">Zichtbaarheid</a>
+      {% else %}
+      <a class="btn btn--sm" href="/profiel/bewerken#zichtbaarheid">Maak openbaar</a>
+      {% endif %}
+    </div>
+  </div>
+</div>

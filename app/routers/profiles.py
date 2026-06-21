@@ -116,6 +116,51 @@ def edit_submit(
 
 
 # --------------------------------------------------------------------------- #
+# "Bekijk als bezoeker" — publieke preview vóór publicatie                    #
+# --------------------------------------------------------------------------- #
+
+
+@router.get("/profiel/voorbeeld", response_class=HTMLResponse)
+def preview_profile(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Toon de eigenaar exact wat een bezoeker ziet — vóór publiceren.
+
+    Rendert dezelfde ``profiles/view.html`` als de publieke pagina, maar met
+    ``is_owner=False`` (de bezoekers-ervaring, niet de eigenaar-nav) en
+    ``preview=True`` (de preview-chrome). Dit werkt óók als het profiel nog
+    ``members``-only is: we omzeilen ``can_view`` bewust (het is de eigen route
+    van de eigenaar). De pagina is altijd ``noindex`` en emit nooit OG/JSON-LD —
+    een preview mag nooit in zoekmachines of link-unfurls lekken, ongeacht de
+    live-zichtbaarheid.
+    """
+    profile = profile_service.get_or_create_profile(db, member)
+    # Stabiele project-slugs voor de detail-links (idempotent), net als de
+    # publieke view — anders breken de "wat ik maak"-kaarten in de preview.
+    for off in profile.offerings:
+        if not off.slug:
+            offering_slug.ensure_slug(db, off)
+    db.commit()
+    return _render(
+        request,
+        "profiles/view.html",
+        {
+            "profile": profile,
+            "noindex": True,  # preview is nooit indexeerbaar
+            "is_owner": False,  # toon exact de bezoekers-ervaring
+            "preview": True,  # activeer de preview-chrome
+            "photo": photo_service.photo_or_initials(profile),
+            "emphasis_cls": emphasis_service.emphasis_class(profile),
+            "canonical": seo_service.canonical_url(f"/leden/{profile.slug}"),
+            "jsonld": None,
+            "og_image": None,
+        },
+    )
+
+
+# --------------------------------------------------------------------------- #
 # Offerings ("wat ik maak") — htmx                                            #
 # --------------------------------------------------------------------------- #
 

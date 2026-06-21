@@ -28,7 +28,7 @@
     <header class="c-head" data-reveal style="--d:60ms">
       <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
       <div class="links">
-        <a class="link" href="/leden/{{ profile.slug }}">Bekijk publieke pagina →</a>
+        <a class="link" href="/profiel/voorbeeld">Bekijk als bezoeker →</a>
       </div>
     </header>
 
@@ -142,11 +142,12 @@
       </section>
 
       {# --- Zichtbaarheid --- #}
-      <section class="card mt-8" style="padding:24px;--d:680ms" data-reveal>
+      <section class="card mt-8" id="zichtbaarheid" style="padding:24px;--d:680ms" data-reveal>
         <h2 class="section-title" style="margin-bottom:14px">Zichtbaarheid</h2>
         <p class="muted" style="margin:0 0 16px;font-size:0.95rem;line-height:1.5;max-width:54ch">
           Kies of je profiel openbaar is (voor iedereen zichtbaar en vindbaar) of
-          alleen voor ingelogde leden.
+          alleen voor ingelogde leden. Twijfel je hoe het overkomt?
+          <a class="link" href="/profiel/voorbeeld">Bekijk eerst als bezoeker →</a>
         </p>
         <form style="display:flex;flex-direction:column;gap:16px;align-items:flex-start"
               hx-post="/profiel/zichtbaarheid"

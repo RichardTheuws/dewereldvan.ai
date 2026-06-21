@@ -3,6 +3,29 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.48.0] - 2026-06-21
+### Added — "Bekijk als bezoeker": publieke preview vóór publicatie
+- **Waarom** (Richard): je moet je eigen publieke profiel heel makkelijk kunnen bekijken zoals
+  anderen het zien, **vóór** je het publiceert — zonder eerst openbaar te moeten zetten.
+- **Route** `GET /profiel/voorbeeld` (owner-only, `require_member`): rendert dezelfde
+  `profiles/view.html` als de publieke pagina maar met `is_owner=False` (de bezoekers-ervaring,
+  niet de eigenaar-nav) en `preview=True`. Werkt óók als het profiel nog `members`-only is —
+  `can_view` wordt bewust omzeild (het is de eigen route van de eigenaar).
+- **Altijd veilig voor SEO**: de preview is altijd `noindex` en emit nooit OG/JSON-LD, ongeacht de
+  live-zichtbaarheid (geen lek in zoekmachines of link-unfurls).
+- **Preview-chrome** (`profiles/_preview_frame.html` + `.preview-frame` in `cosmic.css`): een rustige,
+  sticky kosmische bovenbalk die de pagina omkadert. **Progress-bewust**: bij `members`-only toont 'ie
+  "Nog niet openbaar" + actie "Maak openbaar →"; bij `public` "Openbaar" + "Zichtbaarheid" (geen dode
+  knop). Plain microcopy (styleguide §3), hergebruikt bestaande tokens — geen tweede look.
+- **Ingangen** ("heel makkelijk"): bewerk-pagina-header ("Bekijk als bezoeker →"), de zichtbaarheid-sectie
+  (deep-link `#zichtbaarheid`) en de AI-publiceer-dok (opent in nieuw tabblad zodat de live-bouw niet
+  verloren gaat).
+- 4 nieuwe route-tests (guard anon/pending → /login; members-only toont bezoekers-view + chrome + noindex;
+  public toont openbaar-staat). **637 tests groen**.
+
+### Removed
+- 4 verouderde iCloud-conflictkopieën (`… 2.py`/`… 2.html`) opgeruimd; de originelen superseden ze.
+
 ## [0.47.0] - 2026-06-20
 ### Changed — Discovery is nu progress-bewust (geen "verse" affordance die al gebruikt is)
 - **Probleem** (Richard): na een ontdekking bleef de CTA "Zal ik je online opzoeken?" staan alsof het vers

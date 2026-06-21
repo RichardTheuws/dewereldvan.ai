@@ -2275,6 +2275,65 @@
 }
 .preview-banner__close:hover { color: var(--text, #eef0ff); }
 
+/* ---- "Bekijk als bezoeker"-preview-chrome (owner-only, /profiel/voorbeeld) ----
+   Rustige, sticky bovenbalk die de publieke profielpagina omkadert. Goud-getint
+   hairline + glas-blur in het Concierge-register; blijft in beeld bij scrollen
+   zodat "Bewerken"/"Maak openbaar" altijd één klik weg zijn. */
+.preview-frame {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid rgba(246, 205, 134, 0.22);
+  background: linear-gradient(180deg, rgba(246, 205, 134, 0.08), rgba(10, 10, 36, 0.72));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.preview-frame__inner {
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 11px 22px;
+  flex-wrap: wrap;
+}
+.preview-frame__lead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.preview-frame__eyebrow {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold, #f6cd86);
+  white-space: nowrap;
+}
+.preview-frame__spark { color: var(--gold, #f6cd86); }
+.preview-frame__text {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: "Spline Sans", system-ui, sans-serif;
+  font-size: 13.5px;
+  color: var(--text, #eef0ff);
+}
+.preview-frame__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+@media (max-width: 560px) {
+  .preview-frame__inner { padding: 9px 16px; }
+  .preview-frame__text { font-size: 12.5px; }
+}
+
 /* ---- Concierge-ingang in de nav ---- */
 .cosmic .cnav__concierge {
   display: inline-flex;
