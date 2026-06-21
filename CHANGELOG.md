@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.54.1] - 2026-06-21
+### Fixed — tool-review-call gaf 400 (thinking + geforceerde tool_choice)
+- Opus 4.8 weigert `thinking` zodra `tool_choice` tool-gebruik forceert ("Thinking may not be enabled when
+  tool_choice forces tool use") → alle reviews vielen op `failed` (best-effort hield de oude review). `thinking`
+  weggehaald uit de tool-review-call; de geforceerde `record_review` blijft (gegarandeerde structured output,
+  extended thinking onnodig voor een gegronde extractie). Regressie-test borgt dat `thinking`/`temperature`/
+  `budget_tokens` wegblijven. Gevonden door de eerste geobserveerde prod-run.
+
 ## [0.54.0] - 2026-06-21
 ### Added — AI-tool-reviews: de catalogus die zichzelf bijhoudt (Fase A+B)
 - Claude reviewt automatisch de tools die leden gebruiken (`docs/vision/03`), getoond als **AI-dossier — geen

@@ -62,9 +62,6 @@ _MAX_TOKENS = 1500  # gestructureerd, ~7 korte velden — ruim genoeg.
 _MARKDOWN_CHARS = 12_000  # cap de input naar het model (kosten + ruis).
 _REREVIEW_DAYS = 90  # re-review-cadans (§3.1).
 
-# Adaptive thinking is verplicht op Opus 4.8; budget_tokens/temperature NOOIT.
-_THINKING: dict[str, str] = {"type": "adaptive"}
-
 VALID_CONFIDENCE: frozenset[str] = frozenset({"high", "medium", "low"})
 
 # In-proces guard: voorkom dat dezelfde tool tegelijk door twee threads wordt
@@ -326,10 +323,14 @@ def review(db: Session, tool: Tool, *, client=None) -> bool:
 
     try:
         client = client or _client()
+        # GEEN thinking: Opus 4.8 weigert thinking zodra ``tool_choice`` tool-gebruik
+        # forceert ("Thinking may not be enabled when tool_choice forces tool use").
+        # We forceren ``record_review`` (gegarandeerde structured output) — voor een
+        # gegronde extractie is extended thinking niet nodig. budget_tokens/temperature
+        # blijven achterwege (zou 400 geven op Opus 4.8).
         msg = client.messages.create(
             model=_MODEL,
             max_tokens=_MAX_TOKENS,
-            thinking=_THINKING,
             system=_REVIEW_SYSTEM,
             tools=[RECORD_TOOL],
             tool_choice={"type": "tool", "name": "record_review"},

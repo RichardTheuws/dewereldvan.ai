@@ -246,3 +246,20 @@ def test_stale_review_is_reselected(db):
     tool2.tool_reviewed_at = naive_utc(utcnow()) - timedelta(days=10)
     db.flush()
     assert tool_review_service._is_reviewable(db, tool2) is False
+
+
+def test_call_omits_thinking_when_forcing_tool_choice(db):
+    """Regressie: Opus 4.8 geeft 400 ("Thinking may not be enabled when tool_choice
+    forces tool use") als ``thinking`` én een geforceerde ``tool_choice`` samengaan.
+    De call MOET de tool forceren (gegarandeerde structured output) en daarom GEEN
+    thinking meesturen. Gevonden door de eerste geobserveerde prod-run."""
+    tool = _make_tool(db, users=1)
+    fake = _good_fake()
+    ok = tool_review_service.review(db, tool, client=fake)
+    assert ok and tool.tool_review_status == "ok"
+    assert len(fake.calls) == 1
+    kwargs = fake.calls[0]
+    assert "thinking" not in kwargs, "thinking mag niet mee bij geforceerde tool_choice"
+    assert kwargs.get("tool_choice", {}).get("name") == "record_review"
+    # En de bekende 400-triggers blijven weg op Opus 4.8.
+    assert "temperature" not in kwargs and "budget_tokens" not in kwargs
