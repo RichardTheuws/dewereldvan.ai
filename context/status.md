@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.63.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.63.1 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -68,9 +68,9 @@ dus de meeste hoogste-leverage-ingrepen zijn "maak zichtbaar", niet "bouw". Gepr
 - **Blok 2 (compleet)** — `/proef` ✅ (v0.58.0) · publiek profiel = graaf-knoop ✅ (v0.59.0) · `/leden` verbonden
   graaf ✅ (v0.60.0) · `/demo` scan→veld-causaliteit ✅ (v0.61.0). **Uitgesteld**: volledige interactieve
   force-graph op `/leden` (L-effort; eigen blok).
-- **Blok 3** — project ✅ (v0.62.0) · nieuws ✅ (v0.62.1) · roadmap ✅ (v0.63.0: gegronde idee-herkomst, geen
-  migratie). Resterend: agenda (dode concierge-haak fixen + graaf-bewust), ideeën (near-duplicate-hint), auth
-  (agent-aan-de-deur). Losse follow-up: Tailwind dev-CDN → vooraf-gebouwde CSS.
+- **Blok 3** — project ✅ (v0.62.0) · nieuws ✅ (v0.62.1) · roadmap ✅ (v0.63.0) · agenda + contextuele
+  concierge-prompts ✅ (v0.63.1: dode-haak-cluster voor 6 schermen gefixt). Resterend: ideeën (near-duplicate-
+  hint), auth (agent-aan-de-deur). Losse follow-up: Tailwind dev-CDN → vooraf-gebouwde CSS.
 - **Blok 3** — project, nieuws, agenda, ideeën, roadmap, auth.
 - **Niet doen**: geen tweede look; geen LLM voor graaf-relaties (strict uit DB → nul kosten/hallucinatie); geen
   vrij betaald agent-veld op de publieke voordeur; geen nieuwe e-mailkanalen.

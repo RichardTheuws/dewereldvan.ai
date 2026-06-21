@@ -23,6 +23,18 @@
   {% set _ph = "Vraag de wereld… wat staat er gepland?" %}
 {% elif _ctx == "member" and concierge_member_first %}
   {% set _ph = "Vraag de wereld… stel me voor aan " ~ concierge_member_first %}
+{% elif _ctx == "agenda" %}
+  {% set _ph = "Vraag de wereld… welke events passen bij mij?" %}
+{% elif _ctx == "nieuws" %}
+  {% set _ph = "Vraag de wereld… wat speelt er deze week?" %}
+{% elif _ctx == "ideeen" %}
+  {% set _ph = "Vraag de wereld… welk idee zou jij toevoegen?" %}
+{% elif _ctx == "project" %}
+  {% set _ph = "Vraag de wereld… wie maakt dingen zoals dit?" %}
+{% elif _ctx == "profiel" %}
+  {% set _ph = "Vraag de wereld… help me mijn profiel scherper te maken" %}
+{% elif _ctx == "home" %}
+  {% set _ph = "Vraag de wereld… wie zit hier en wat maken ze?" %}
 {% else %}
   {% set _ph = "Vraag de wereld iets…" %}
 {% endif %}

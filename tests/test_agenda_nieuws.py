@@ -139,6 +139,16 @@ def test_submit_event_persists(make_client, seed, SessionTest):
         s.close()
 
 
+def test_agenda_has_contextual_concierge_placeholder(make_client, seed):
+    """Bug-fix: concierge_context='agenda' had geen branch → generieke placeholder.
+    De agenda toont nu z'n eigen, contextuele prompt (geen doorval meer)."""
+    page = make_client(seed["member"]).get("/agenda")
+    assert page.status_code == 200
+    assert "welke events passen bij mij?" in page.text
+    # Niet langer de generieke fallback voor dit scherm.
+    assert "Vraag de wereld iets…" not in page.text
+
+
 def test_agenda_renders_countdown_filter_end_to_end(make_client, seed, SessionTest):
     """Een event mét next_at moet door de echte template-env (relatieve_tijd-filter)
     renderen zonder fout — de countdown verschijnt op de pagina."""

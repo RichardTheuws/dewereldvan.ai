@@ -218,11 +218,12 @@ def test_placeholder_member_uses_first_name(make_client, seed):
     assert "stel me voor aan Sanne" in resp.text
 
 
-def test_placeholder_default_elsewhere(make_client, seed):
-    """Op een pagina zonder specifieke context: het neutrale 'Vraag de wereld iets…'."""
+def test_placeholder_home_is_contextual(make_client, seed):
+    """De voordeur zet concierge_context='home' → een eigen, contextuele prompt
+    (deze viel vóór de fix per ongeluk door naar de neutrale fallback)."""
     client = make_client(None)
     resp = client.get("/")
-    assert "Vraag de wereld iets" in resp.text
+    assert "wie zit hier en wat maken ze?" in resp.text
 
 
 # --------------------------------------------------------------------------- #

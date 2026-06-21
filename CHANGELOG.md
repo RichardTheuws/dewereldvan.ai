@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.63.1] - 2026-06-21
+### Fixed — Blok 3.4: contextuele concierge-prompts (dode-haak-cluster, agenda + 5 anderen)
+- 9 pagina's zetten `concierge_context`, maar alleen 3 (leden/roadmap/member) hadden een branch → agenda, home,
+  nieuws, ideeën, project en profiel vielen door naar de generieke "Vraag de wereld iets…". Alle zes krijgen nu
+  een eigen, simpele en directe prompt (agenda → "welke events passen bij mij?", home → "wie zit hier en wat
+  maken ze?", project → "wie maakt dingen zoals dit?", enz.) — de concierge voelt overal contextbewust.
+- +1 test (agenda) + bestaande placeholder-test herijkt op de nieuwe home-context. **922 tests groen.**
+
 ## [0.63.0] - 2026-06-21
 ### Added — Blok 3.3: roadmap toont gegronde idee-herkomst (levend + transparant)
 - Een gepromoot roadmap-item toont nu **wélk lid-idee het voedt**: "✦ uit een idee van &lt;naam&gt; · N stemmen",
