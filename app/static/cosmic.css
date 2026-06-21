@@ -3479,6 +3479,24 @@
   color: var(--muted);
   font-style: italic;
 }
+/* De gegronde graaf-verbinding ("raakt <tool>") leest als een edge, niet als een
+   gewone bronregel: mono-cyaan label + de chips krijgen een zachte cyaan gloed. */
+.cosmic .news-card__source[data-connection] {
+  font-style: normal;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--cyan);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.cosmic [data-connection] .role-badge {
+  border-color: rgba(63, 210, 255, 0.45);
+  box-shadow: 0 0 12px -4px rgba(63, 210, 255, 0.5);
+}
 
 /* rol-badge — hoe een lid bij het artikel zit */
 .cosmic .role-badge {

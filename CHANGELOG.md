@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.62.1] - 2026-06-21
+### Changed — Blok 3.2: nieuws-graaf-verbinding leest als een edge (audit herijkt)
+- De nieuws-kaart toonde de gegronde tool-match al (detectie-op-weergave; persistentie is bewust YAGNI, zie
+  `post_service`/`_card.html`). De audit-suggestie "persist match + detecteer lid-namen" is daarom **niet**
+  gevolgd: persistentie botst met die erfgoed-keuze, en lid-naam-detectie in vrije tekst riskeert false
+  positives (ruis voor experts — KILL-risico uit de noordster).
+- Wél: de bestaande `[data-connection]`-verbinding ("raakt &lt;tool&gt;") krijgt nu een eigen graaf-treatment
+  (mono-cyaan label + zachte cyaan gloed op de chips) zodat 'm leest als een graaf-edge i.p.v. een gewone
+  bronregel. CSS-only, geen migratie, geen false-positive-risico. **920 tests groen.**
+
 ## [0.62.0] - 2026-06-21
 ### Added — Blok 3.1: project-pagina maakt de (al gebouwde) intelligentie zichtbaar
 - De AI-samenvatting wordt **gelabeld als agent-output + gegrond** ("✦ door de agent samengevat uit de live
