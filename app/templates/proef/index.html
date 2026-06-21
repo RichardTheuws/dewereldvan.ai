@@ -54,7 +54,7 @@
       <section class="mt-10" data-reveal style="--d:480ms">
         {% if turnstile_configured and turnstile_site_key %}
         <form hx-post="/proef" hx-target="#proef-resultaat" hx-swap="innerHTML"
-              hx-disabled-elt="button[type=submit]"
+              hx-disabled-elt="button[type=submit]" hx-indicator="#proef-reading"
               class="card" style="display:flex;flex-direction:column;gap:14px">
           <label class="field-label" for="proef-url">Jouw link</label>
           <input type="url" id="proef-url" name="url"
@@ -67,6 +67,24 @@
             <span class="muted" style="font-size:13px">Eén link, één blik — gratis te proberen.</span>
           </div>
         </form>
+
+        {# "Agent aan het werk"-staat: zichtbaar tijdens de (seconden-lange) call,
+           zodat de bezoeker de agent ZIET lezen i.p.v. een dode spinner. htmx
+           toont 'm via .htmx-request; de host wordt bij submit ingevuld. #}
+        <div id="proef-reading" class="reasoning reasoning--settled mt-8" role="status" aria-live="polite">
+          <div class="reasoning__aura" aria-hidden="true">
+            <span class="reasoning__orbit"></span>
+            <span class="reasoning__orbit reasoning__orbit--2"></span>
+            <span class="reasoning__core"></span>
+          </div>
+          <div class="reasoning__body">
+            <div class="reasoning__label"><span aria-hidden="true">✦</span> de agent leest <span id="proef-reading-host">de pagina</span> …</div>
+            <div class="reasoning__fetch">
+              <div class="fetch-line fetch-line--ok">·· pagina ophalen</div>
+              <div class="fetch-line">·· wie · thema's · bij wie je past bepalen</div>
+            </div>
+          </div>
+        </div>
 
         {# Resultaat-container: de mini-kaart of een nette degradatie-staat landt hier. #}
         <div id="proef-resultaat" class="mt-8" aria-live="polite"></div>
@@ -84,5 +102,18 @@
   </div>
 
   {% include "ai/_cosmic_canvas.html" %}
+
+  {# Vul de host in de "agent leest …"-staat zodat het gegrond aanvoelt. #}
+  <script>
+    document.addEventListener('htmx:beforeRequest', function () {
+      var input = document.getElementById('proef-url');
+      var host = document.getElementById('proef-reading-host');
+      if (!input || !host) return;
+      try {
+        var v = input.value.trim();
+        host.textContent = new URL(v.indexOf('://') === -1 ? 'https://' + v : v).hostname || 'de pagina';
+      } catch (e) { host.textContent = 'de pagina'; }
+    });
+  </script>
 </body>
 </html>

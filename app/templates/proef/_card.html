@@ -1,8 +1,21 @@
 {# De mini-kaart (Concept A) — drie delen + conversie-zin + toegang-CTA.
    Gerenderd uit een verse call OF uit de identieke-prompt-cache. Kosmisch,
-   met materialisatie. ``card`` = visitor_url_card.CardParts (wie/thema/match). #}
+   met materialisatie. ``card`` = visitor_url_card.CardParts (wie/thema/match);
+   ``source_host`` = de gelezen host (bron-attributie, gegrondheid). #}
 <article class="card" data-reveal="materialize">
   <div class="eyebrow">Wat onze agent ziet</div>
+  {% if source_host %}
+  {# Gegrondheid zichtbaar: wát de agent las (anti-hallucinatie-signaal). #}
+  <div class="proef-source">✦ gelezen van {{ source_host }}</div>
+  {% endif %}
+
+  {% if not card.wie and not card.thema and not card.match %}
+  {# Lege-kaart-staat: refusal/te dunne pagina → eerlijk, geen kale kaart. #}
+  <p class="lede mt-4" style="max-width:54ch">
+    We konden er weinig uit halen. Probeer een rijkere pagina — je eigen site of
+    een uitgebreid profiel werkt het best.
+  </p>
+  {% else %}
 
   {% if card.wie %}
   <p class="lede mt-4" style="max-width:60ch">{{ card.wie }}</p>
@@ -25,6 +38,7 @@
     <span class="card-label" style="display:block;margin-bottom:6px">Bij wie je zou passen</span>
     {{ card.match }}
   </p>
+  {% endif %}
   {% endif %}
 
   <div class="mt-8 flex flex-wrap items-center gap-3" style="border-top:1px solid var(--line);padding-top:18px">

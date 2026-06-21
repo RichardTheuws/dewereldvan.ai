@@ -129,6 +129,16 @@ def test_get_with_turnstile_keys_shows_input_and_widget(client, turnstile_on):
     assert 'data-sitekey="1x-site"' in resp.text
 
 
+def test_get_shows_agent_reading_state(client, turnstile_on):
+    """De 'agent leest …'-staat is aanwezig + via hx-indicator gekoppeld, zodat de
+    bezoeker de agent ZIET werken tijdens de call (geen dode spinner)."""
+    resp = client.get("/proef")
+    assert resp.status_code == 200
+    assert 'id="proef-reading"' in resp.text
+    assert 'hx-indicator="#proef-reading"' in resp.text
+    assert "de agent leest" in resp.text
+
+
 # --------------------------------------------------------------------------- #
 # POST /proef — allowed → mini-kaart + één spend-rij                           #
 # --------------------------------------------------------------------------- #
@@ -159,6 +169,34 @@ def test_post_allowed_renders_card_and_books_one_spend_row(
         assert rows[0].cost_eur_micros > 0
     finally:
         s.close()
+
+
+def test_post_card_shows_source_attribution(client, turnstile_on, monkeypatch):
+    """Gegrondheid zichtbaar: de verse kaart toont 'gelezen van <host>' — het
+    anti-hallucinatie-signaal dat de noordster eist."""
+    _mock_card(monkeypatch)
+    token = _csrf(client)
+    resp = client.post(
+        "/proef",
+        data={"url": "https://voorbeeld.nl/over", "cf-turnstile-response": "tok"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    assert "gelezen van voorbeeld.nl" in resp.text
+
+
+def test_post_empty_card_shows_honest_empty_state(client, turnstile_on, monkeypatch):
+    """Refusal/te dunne pagina (lege kaarttekst) → eerlijke lege-staat i.p.v. een
+    kale kaart met alleen een CTA."""
+    _mock_card(monkeypatch, text="")
+    token = _csrf(client)
+    resp = client.post(
+        "/proef",
+        data={"url": "https://leeg.nl", "cf-turnstile-response": "tok"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    assert "weinig uit halen" in resp.text
 
 
 # --------------------------------------------------------------------------- #

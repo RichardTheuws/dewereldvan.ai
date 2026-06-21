@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.58.0] - 2026-06-21
+### Added — Blok 2.1: /proef toont de agent áán het werk + gegrondheid (W4-richting)
+- **Zichtbare "agent leest …"-staat** tijdens de (seconden-lange) call: i.p.v. een dode spinner verschijnt een
+  kosmisch reasoning-paneel ("de agent leest <host> …" + scan-lijnen) via `hx-indicator`; de host wordt bij
+  submit ingevuld. Het geld-kritische call-pad (`visitor_url_card.build_card` áchter `visitor_ai_guard`) is
+  bewust **niet** aangeraakt — geen SSE-herbouw, geen extra spend-risico.
+- **Bron-attributie** op de verse kaart ("✦ gelezen van <host>") — het anti-hallucinatie-/gegrondheids-signaal
+  dat de noordster eist. Cache-hit-kaarten laten 'm weg (host onbekend).
+- **Eerlijke lege-kaart-staat**: een refusal/te dunne pagina (lege kaarttekst) toont nu "we konden er weinig
+  uit halen — probeer een rijkere pagina" i.p.v. een kale kaart met alleen een CTA.
+- +3 tests (lees-staat, bron-attributie, lege-staat). **908 tests groen.**
+
 ## [0.57.1] - 2026-06-21
 ### Fixed — Budget-poort: anon-concierge triggert nooit meer de betaalde agent-stream (server-side)
 - `/concierge/stream` short-circuit voor `member is None`: een anonieme bezoeker krijgt een "word lid"-

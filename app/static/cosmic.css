@@ -471,6 +471,17 @@
   flex-basis: 100%;
 }
 
+/* ---- /proef: "agent leest …"-staat (zichtbaar tijdens de call) + bron ---- */
+#proef-reading { display: none; }
+#proef-reading.htmx-request { display: block; }
+.cosmic .proef-source {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--cyan);
+  margin-top: 8px;
+}
+
 /* ---- typography ---- */
 .cosmic .eyebrow {
   font-family: "JetBrains Mono", monospace;

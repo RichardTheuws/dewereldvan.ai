@@ -198,7 +198,9 @@ async def _run_card(
     if record.threshold_crossed in ("warn", "cap"):
         _ping_admins(db, record.threshold_crossed)
 
-    return _card_fragment(request, result.text, response)
+    return _card_fragment(
+        request, result.text, response, host=urlsplit(ctx.normalized_url).hostname
+    )
 
 
 def _ping_admins(db: Session, threshold: str) -> None:
@@ -252,10 +254,17 @@ def _fragment(
     return rendered
 
 
-def _card_fragment(request: Request, text: str, response: HTMLResponse) -> HTMLResponse:
-    """Render de mini-kaart uit de (gegenereerde of gecachte) kaarttekst."""
+def _card_fragment(
+    request: Request, text: str, response: HTMLResponse, *, host: str | None = None
+) -> HTMLResponse:
+    """Render de mini-kaart uit de (gegenereerde of gecachte) kaarttekst.
+
+    ``host`` (de gelezen bron) wordt op de verse kaart getoond als gegrondheids-
+    signaal; bij een cache-hit ontbreekt 'm en valt de bron-regel weg."""
     parts = visitor_url_card.parse_card(text)
-    return _fragment(request, "proef/_card.html", response, {"card": parts})
+    return _fragment(
+        request, "proef/_card.html", response, {"card": parts, "source_host": host}
+    )
 
 
 def _degraded_fragment(
