@@ -3,6 +3,19 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.49.1] - 2026-06-21
+### Fixed — Cache-busting voor cosmic.css (scroll-reveal toonde niets door stale CDN-cache)
+- **Bug** (live gevangen): Cloudflare cachet `cosmic.css` 4u (`cf-cache-status: HIT`). Na de v0.49.0-deploy
+  serveerde de CDN de **oude** CSS zónder de `.is-in`-reveal-regel, terwijl de (dynamische) HTML al wél
+  `data-reveal-scroll` + `.is-in` gebruikte. Gevolg: in scroll-mode kreeg de body geen `.ready` én pakte
+  `.is-in` niet → **content bleef op `opacity:0`** (onzichtbaar) op de publieke profielpagina.
+- **Cache-bust**: alle 31 `cosmic.css`-links krijgen `?v={{ asset_ver }}` (de mtime van het bestand, als
+  Jinja-global in `main.py`). Een nieuwe deploy serveert automatisch een verse URL — geen CF-purge nodig,
+  en dit voorkomt de hele klasse "stale CSS na deploy"-bugs voortaan.
+- **JS-failsafe** (`ai/_cosmic_canvas.html`): mocht de `.is-in`-CSS ooit alsnog ontbreken, detecteert de
+  director dat een onthuld element op `opacity:0` blijft en valt terug op `body.ready` — content kan dus
+  **nooit** onzichtbaar blijven. Belt-and-suspenders bovenop de cache-bust.
+
 ## [0.49.0] - 2026-06-21
 ### Added — Ervaring: reveals verrassen elke keer opnieuw (geen herhaald trucje)
 - **Waarom** (Richard, harde eis uit het Ervaringsmandaat): er was één uniforme entrance-reveal

@@ -94,6 +94,17 @@ templates.env.filters["safe_url"] = safe_url
 templates.env.filters["relatieve_tijd"] = post_service.relatieve_tijd
 templates.env.filters["nl_datum"] = post_service.nl_datum
 
+# Cache-bust voor statische assets (cosmic.css): de mtime van het bestand als
+# query-param. Verandert alleen als de CSS wijzigt → een nieuwe deploy serveert
+# een verse URL (de oude blijft gecached, maar wordt niet meer gerefereerd).
+# Voorkomt dat Cloudflare een oude cosmic.css blijft serveren ná een deploy —
+# kritisch want scroll-reveal-pagina's tonen niets als de .is-in-CSS ontbreekt.
+try:
+    _ASSET_VER = str(int((STATIC_DIR / "cosmic.css").stat().st_mtime))
+except OSError:
+    _ASSET_VER = "1"
+templates.env.globals["asset_ver"] = _ASSET_VER
+
 
 @contextlib.asynccontextmanager
 async def _lifespan(app: FastAPI):

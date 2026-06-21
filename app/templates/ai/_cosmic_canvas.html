@@ -50,6 +50,13 @@
         }
       }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
       els.forEach(function (el) { io.observe(el); });
+      // Failsafe: mocht de .is-in-reveal-CSS ooit ontbreken (bv. een gecachte
+      // oude cosmic.css), dan blijven is-in-elementen op opacity 0 staan. Detecteer
+      // dat en val terug op body.ready zodat content NOOIT onzichtbaar blijft.
+      setTimeout(function () {
+        var probe = body.querySelector('[data-reveal].is-in');
+        if (probe && getComputedStyle(probe).opacity === '0') body.classList.add('ready');
+      }, 1200);
     }
   }
 
