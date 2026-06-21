@@ -1,0 +1,12 @@
+{# "De Briefing" — de constellatie-strip van deze week (doc 02 §3). Elk item
+   verschijnt als een ster die indrijft (materialize-reveal uit v0.49.0), met de
+   AI-duiding en de tool/lid-verbindingschip. Geen tweede look: hergebruikt de
+   bestaande news-card-klassen + cosmic.css. prefers-reduced-motion-safe (de
+   <noscript>/reduced-motion-regel in cosmic.css toont alles direct). #}
+<div class="news-grid" data-reveal-scroll>
+  {% for post in briefing_this_week %}
+    <div data-reveal="materialize" style="--d:{{ loop.index0 * 80 }}ms">
+      {% include "nieuws/_card.html" %}
+    </div>
+  {% endfor %}
+</div>

@@ -1,5 +1,7 @@
 {# Eén nieuwskaart (Post/nieuws). Rol-badge ("hoe een lid bij het artikel zit") +
-   bron + publicatiedatum. Werkt in de lijst én als swap-target na admin-moderatie. #}
+   bron + publicatiedatum + (bij AI-curatie) de "waarom dit ertoe doet"-duiding,
+   een herkomst-badge en een tool/lid-verbindingschip (detectie-op-weergave, GEEN
+   nieuwe tabel). Werkt in de lijst én als swap-target na admin-moderatie. #}
 {% set role = post.role.value if post.role else "gedeeld" %}
 {% set role_labels = {
   "geschreven": "zelf geschreven",
@@ -7,9 +9,20 @@
   "vermeld": "uitgelicht",
   "gedeeld": "gedeeld",
 } %}
+{% set is_curated = post.source_kind and post.source_kind.value == "ai_curated" %}
+{# Detectie-op-weergave: match de getoonde tool-namen tegen ai_take/titel. Pure
+   weergave-logica — geen persistente link (YAGNI, doc 02 §4). #}
+{% set _hay = ((post.ai_take or "") ~ " " ~ (post.title or "")) | lower %}
+{% set matched_tools = [] %}
+{% for tname in (tool_names or []) %}
+  {% if tname and tname | lower in _hay %}{% set _ = matched_tools.append(tname) %}{% endif %}
+{% endfor %}
 <article id="post-{{ post.id }}" class="news-card news-card--{{ role }}">
   <div class="news-card__head">
     <span class="role-badge role-badge--{{ role }}">{{ role_labels.get(role, role) }}</span>
+    {% if is_curated %}
+    <span class="role-badge role-badge--vermeld" title="Gecureerd door de redactie-AI">gevonden door dewereldvan</span>
+    {% endif %}
     {% if post.published_at %}
     <span class="news-card__date">{{ post.published_at | nl_datum }}</span>
     {% endif %}
@@ -20,7 +33,17 @@
   </h3>
 
   {% if post.source %}<div class="news-card__source">{{ post.source }}</div>{% endif %}
+
+  {% if post.ai_take %}
+  <p class="news-card__text" data-ai-take><strong>Waarom dit ertoe doet:</strong> {{ post.ai_take }}</p>
+  {% endif %}
   {% if post.description %}<p class="news-card__text">{{ post.description }}</p>{% endif %}
+
+  {% if matched_tools %}
+  <div class="news-card__source" data-connection>
+    raakt {% for t in matched_tools %}<span class="role-badge role-badge--gedeeld">{{ t }}</span>{% if not loop.last %} {% endif %}{% endfor %}
+  </div>
+  {% endif %}
 
   <div class="news-card__foot">
     {% if post.added_by %}<span class="news-card__by">gedeeld door {{ post.added_by.name }}</span>{% endif %}

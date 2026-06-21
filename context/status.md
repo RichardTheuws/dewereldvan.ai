@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.52.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.53.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -68,7 +68,9 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
 - [x] **Concept A (Fase 2)** (v0.52.0): `/proef` live áchter `visitor_ai_guard`; admin-meter + Telegram-ping.
 - [x] **Turnstile-keys gezet** (2026-06-21): widget aangemaakt, keys in M4-`.env` → Concept A geactiveerd.
 - [ ] **Turnstile secret roteren** vóór publieke launch (de keys zijn in chat gedeeld — zelfde voorzorg als de bot-token).
-- [ ] **De Briefing** (nieuws) + **Tool-reviews** — operator-side, raken het €50-budget niet. Zie `docs/vision/02`, `03`.
+- [x] **De Briefing** (nieuws, v0.53.0): AI-curatie (`curate_news`, wekelijks/zondag) → mens-in-de-lus admin-
+      shortlist → kosmische briefing-strip met `ai_take`. Operator-side. **Eerste echte run nog observeren** (kwaliteit + kost ijken).
+- [ ] **Tool-reviews** (`docs/vision/03`) — operator-side, raakt €50 niet. Volgende operator-side stroom.
 - [ ] Browser-verificatie auto-crystallisatie-op-`load` (1b; JS, niet in TestClient te dekken).
 - [ ] Bot-token **roteren** via @BotFather vóór publieke launch (token was in chat gedeeld).
 - [ ] Bij launch: apex-ingress teaser→app + wachtlijst-adressen → `member`-tabel.

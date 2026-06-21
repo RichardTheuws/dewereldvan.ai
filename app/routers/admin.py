@@ -20,7 +20,7 @@ from app.db import get_db
 from app.deps import require_admin
 from app.models import Member, MemberStatus
 from app.services import approval as approval_service
-from app.services import visitor_spend
+from app.services import post_service, visitor_spend
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -40,10 +40,17 @@ def queue(
         .where(Member.status == MemberStatus.pending)
         .order_by(Member.created_at.asc())
     ).all()
+    # In-app "klaar"-chip: hoeveel AI-nieuws-kandidaten wachten op goedkeuring
+    # ("De Briefing", doc 02). State-derived — geen e-mail (memory notificaties).
+    news_pending = len(post_service.list_pending_review(db))
     return _render(
         request,
         "admin/queue.html",
-        {"pending": pending, "visitor_ai": _visitor_ai_meter(db)},
+        {
+            "pending": pending,
+            "visitor_ai": _visitor_ai_meter(db),
+            "news_pending": news_pending,
+        },
     )
 
 

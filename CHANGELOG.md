@@ -3,6 +3,25 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.53.0] - 2026-06-21
+### Added — "De Briefing": AI-gecureerd wekelijks nieuws met mens-in-de-lus (MVP)
+- Nieuws wordt geen aggregator-feed maar een **wekelijkse AI-gecureerde briefing** met duiding-per-item +
+  verbanden naar leden/tools (`docs/vision/02`). **Operator-side** (~€0,10–0,45/wk) — raakt het €50-bezoekers-
+  budget NIET; weergave kost €0 (alles vooraf gegenereerd).
+- **`Post` augment** (migratie 0023, 5 nullable kolommen): `review_state` (live|pending_review|rejected,
+  default live → lid-flow ongewijzigd), `source_kind` (member|ai_curated|member_media), `ai_relevance`,
+  `ai_take` (de "waarom dit ertoe doet"-duiding), `briefing_week`. Geen tweede tabel (holistische `Post`-filosofie).
+- **`news_curation_service`** spiegelt `footprint_service`: `web_search`+`web_fetch` op `claude-opus-4-8`,
+  pause_turn-loop, `record_news_item`-tool (geen `messages.parse`), dedup-context (60d), groeps-context
+  (tags + tool-catalogus), conservatieve **relevantie-drempel 70**. **`curate_news`-job** (best-effort,
+  idempotent op url, gegated op `ai_enrich_enabled`), wekelijks in `nightly-jobs.sh` (zondag-gate).
+- **Mens-in-de-lus is hard**: AI-kandidaten starten ALTIJD `pending_review`; `_visible` laat alleen `live`
+  door (pending/rejected nooit publiek/geen unfurl); live worden kan enkel via `approve_news` op de admin-
+  shortlist (`require_admin`, 1-klik goedkeuren/weigeren, htmx + AuditLog). In-app chip op het admin-dashboard.
+- **UI**: "Deze week"-briefing-strip (constellatie-reveal + `ai_take`) bovenaan `/nieuws`, daaronder het
+  archief; `_card.html` augment (herkomst-badge "gevonden door dewereldvan" + tool/lid-verbindingschip via
+  detectie-op-weergave). Geen tweede look. 15 nieuwe tests. **682 tests groen.**
+
 ## [0.52.1] - 2026-06-21
 ### Fixed — htmx-geswapte resultaten bleven onzichtbaar (o.a. de /proef-mini-kaart)
 - **Bug** (Richard: "de proef werkt niet"): de mini-kaart werd correct gegenereerd (call + boeking OK,

@@ -14,7 +14,8 @@ Sortering (de "verbazen"-ervaring):
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -28,6 +29,8 @@ from app.models import (
     NewsRole,
     Post,
     PostKind,
+    PostReviewState,
+    PostSourceKind,
 )
 from app.security import naive_utc, utcnow
 
@@ -36,12 +39,19 @@ __all__ = [
     "check_post_rate_limit",
     "create_event",
     "create_news",
+    "create_curated_news",
     "list_events",
     "list_news",
+    "list_briefing",
+    "list_pending_review",
+    "approve_news",
+    "reject_news",
     "get_visible",
     "set_hidden",
+    "iso_week_anchor",
     "relatieve_tijd",
     "nl_datum",
+    "NewsBriefing",
 ]
 
 _DUTCH_MONTHS = [
@@ -185,7 +195,17 @@ def create_news(
 
 
 def _visible(db: Session, kind: PostKind) -> list[Post]:
-    stmt = select(Post).where(Post.kind == kind, Post.hidden.is_(False))
+    """Publiek zichtbare bijdragen: niet-verborgen ÉN ``review_state == live``.
+
+    De ``live``-poort is de mens-in-de-lus-grens: AI-gecureerde kandidaten
+    (``pending_review``) en geweigerde items (``rejected``) komen hier NOOIT door —
+    niet op /nieuws, niet in de briefing-strip. Events staan default op ``live``,
+    dus deze filter wijzigt het agenda-gedrag niet."""
+    stmt = select(Post).where(
+        Post.kind == kind,
+        Post.hidden.is_(False),
+        Post.review_state == PostReviewState.live,
+    )
     return list(db.scalars(stmt).all())
 
 
@@ -216,13 +236,145 @@ def list_events(db: Session, *, now: datetime | None = None) -> list[Post]:
 
 
 def list_news(db: Session) -> list[Post]:
-    """Zichtbaar nieuws, nieuwste publicatie eerst (``published_at`` of
-    ``created_at`` als terugval)."""
+    """Zichtbaar nieuws (alle weken samen), nieuwste publicatie eerst
+    (``published_at`` of ``created_at`` als terugval)."""
     items = _visible(db, PostKind.nieuws)
     return sorted(
         items,
         key=lambda p: (_neg_dt(p.published_at or p.created_at), -p.id),
     )
+
+
+def iso_week_anchor(value: date | datetime | None = None) -> date:
+    """De maandag van de ISO-week van ``value`` (default: nu) — het ankerpunt voor
+    ``briefing_week``. Items met dit anker horen bij "Deze week"."""
+    if value is None:
+        value = naive_utc(utcnow())
+    d = value.date() if isinstance(value, datetime) else value
+    return d - timedelta(days=d.weekday())
+
+
+@dataclass(frozen=True)
+class NewsBriefing:
+    """Het gesplitste nieuws: de briefing van deze week + het doorlopende archief."""
+
+    briefing_this_week: list[Post]
+    archief: list[Post]
+
+
+def list_briefing(db: Session, *, now: datetime | None = None) -> NewsBriefing:
+    """Splits het zichtbare nieuws in "Deze week" (``briefing_week`` == lopende
+    ISO-week) en het archief (al het overige zichtbare nieuws). Beide nieuwste-
+    eerst gesorteerd (``published_at`` → ``created_at`` als terugval)."""
+    this_week = iso_week_anchor(now or naive_utc(utcnow()))
+    items = list_news(db)  # al gesorteerd + alleen live/zichtbaar
+    briefing = [p for p in items if p.briefing_week == this_week]
+    archief = [p for p in items if p.briefing_week != this_week]
+    return NewsBriefing(briefing_this_week=briefing, archief=archief)
+
+
+# --------------------------------------------------------------------------- #
+# AI-curatie ("De Briefing") — voorstellen + mens-in-de-lus-poort             #
+# --------------------------------------------------------------------------- #
+
+
+def list_pending_review(db: Session) -> list[Post]:
+    """De admin-shortlist: AI-gecureerde nieuws-kandidaten die op goedkeuring
+    wachten (``review_state == pending_review``). Hoogste relevantie eerst, dan
+    nieuwste. Alleen deze staat — ``live``/``rejected`` horen er niet bij."""
+    stmt = select(Post).where(
+        Post.kind == PostKind.nieuws,
+        Post.review_state == PostReviewState.pending_review,
+    )
+    items = list(db.scalars(stmt).all())
+    return sorted(
+        items,
+        key=lambda p: (-(p.ai_relevance or 0), _neg_dt(p.created_at), -p.id),
+    )
+
+
+def create_curated_news(
+    db: Session,
+    *,
+    title: str,
+    url: str,
+    ai_take: str | None = None,
+    ai_relevance: int | None = None,
+    source: str | None = None,
+    added_by: Member | None = None,
+    briefing_week: date | None = None,
+    now: datetime | None = None,
+) -> Post:
+    """Maak één AI-gecureerd nieuws-VOORSTEL (door de wekelijkse curatie-job).
+
+    MENS-IN-DE-LUS-POORT: dit item start ALTIJD ``pending_review`` —
+    nooit ``live``. Het verschijnt pas publiek nadat een admin het goedkeurt.
+
+    Idempotent op ``url``: een herhaalde curatie-run (zelfde artikel) maakt GEEN
+    duplicaat — het bestaande nieuws-item (in welke staat dan ook) wordt
+    teruggegeven. De job flusht/commit zelf."""
+    clean_url = (url or "").strip()[:500]
+    if clean_url:
+        existing = db.scalar(
+            select(Post).where(
+                Post.kind == PostKind.nieuws,
+                Post.url == clean_url,
+            )
+        )
+        if existing is not None:
+            return existing  # dedup: geen dubbele kandidaat
+
+    week = briefing_week or iso_week_anchor(now or naive_utc(utcnow()))
+    post = Post(
+        added_by_id=added_by.id if added_by is not None else None,
+        kind=PostKind.nieuws,
+        title=(title or "").strip()[:200],
+        url=clean_url or None,
+        source=(source or None),
+        role=NewsRole.gedeeld,
+        # De poort: een voorstel, geen publicatie.
+        review_state=PostReviewState.pending_review,
+        source_kind=PostSourceKind.ai_curated,
+        ai_take=(ai_take.strip()[:600] if ai_take else None),
+        ai_relevance=ai_relevance,
+        briefing_week=week,
+    )
+    db.add(post)
+    db.flush()
+    return post
+
+
+def approve_news(db: Session, post: Post, *, actor: Member | None = None) -> Post:
+    """Keur een AI-kandidaat goed → ``live`` (publiek zichtbaar) + AuditLog.
+    Spiegelt ``set_hidden``/``admin_hide``: de transitie is de enige plek waar een
+    voorstel publiek wordt — bewust één expliciete, geauditte stap."""
+    post.review_state = PostReviewState.live
+    db.add(
+        AuditLog(
+            action=AuditAction.news_approved,
+            actor_member_id=actor.id if actor is not None else None,
+            target_member_id=post.added_by_id,
+            detail=f"post#{post.id} (nieuws) approved -> live",
+        )
+    )
+    db.flush()
+    return post
+
+
+def reject_news(db: Session, post: Post, *, actor: Member | None = None) -> Post:
+    """Weiger een AI-kandidaat → ``rejected`` (blijft uit de publieke lijst) +
+    AuditLog. We verwijderen niet (dedup-context + meet de goedkeur-ratio)."""
+    post.review_state = PostReviewState.rejected
+    db.add(
+        AuditLog(
+            action=AuditAction.news_rejected,
+            actor_member_id=actor.id if actor is not None else None,
+            target_member_id=post.added_by_id,
+            detail=f"post#{post.id} (nieuws) rejected",
+        )
+    )
+    db.flush()
+    return post
 
 
 def get_visible(

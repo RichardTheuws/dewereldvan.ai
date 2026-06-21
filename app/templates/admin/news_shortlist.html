@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="nl">
-{# Admin aanmeldingen-queue (F4) — standalone cosmic-document (extendt base.html
-   NIET). Login-gated + noindex. Kaart-lijst i.p.v. tabel. #}
+{# Admin nieuws-shortlist ("De Briefing", doc 02 §2) — standalone cosmic-document.
+   Login-gated + noindex. AI-gecureerde kandidaten (pending_review); goedkeuren
+   (→ live, publiek) of weigeren (→ rejected) met één klik, htmx-swap per kaart.
+   Spiegelt admin/queue.html — geen tweede look. #}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = true %}
-  {% set seo_title = "Aanmeldingen — beheer · dewereldvan.ai" %}
+  {% set seo_title = "Nieuws-shortlist — beheer · dewereldvan.ai" %}
   {% include "_seo_head.html" %}
   {% include "_favicon.html" %}
   <script src="https://cdn.tailwindcss.com"></script>
@@ -25,51 +27,35 @@
     <header class="c-head" data-reveal style="--d:60ms">
       <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
       <div class="links">
-        <a class="link" href="/admin/nieuws">Nieuws-shortlist{% if news_pending %} ({{ news_pending }}){% endif %}</a>
-        <a class="link" href="/admin/feedback">Feedback</a>
-        <a class="link" href="/admin/roadmap">Roadmap</a>
+        <a class="link" href="/admin/queue">Aanmeldingen</a>
+        <a class="link" href="/nieuws">Nieuws</a>
       </div>
     </header>
 
     <main class="flex-1 pb-24">
       <section class="mt-6">
-        <div class="eyebrow" data-reveal style="--d:160ms">Beheer</div>
-        <h1 class="headline mt-5" data-reveal style="--d:260ms">Aanmeldingen.</h1>
+        <div class="eyebrow" data-reveal style="--d:160ms">Beheer · De Briefing</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Nieuws-shortlist.</h1>
         <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
-          Leden die wachten op toegang. Goedkeuren of weigeren met één klik —
-          de lijst werkt direct bij.
+          AI-gecureerde kandidaten voor de wekelijkse briefing. Goedkeuren zet een
+          item live in het nieuws; weigeren laat het uit de lijst. Niets gaat
+          publiek zonder jouw klik.
         </p>
       </section>
-
-      {% if visitor_ai %}
-      <section class="mt-10" data-reveal style="--d:440ms">
-        <div class="card">
-          <div class="card-label">Bezoeker-AI deze week</div>
-          <p class="lede mt-3" style="max-width:48ch">
-            €{{ '%.2f'|format(visitor_ai.spent_eur) }} / €{{ '%.0f'|format(visitor_ai.budget_eur) }}
-            · {{ visitor_ai.calls }} call{{ 's' if visitor_ai.calls != 1 else '' }}
-            · {{ visitor_ai.visitors }} unieke bezoeker{{ 's' if visitor_ai.visitors != 1 else '' }}
-          </p>
-          <div class="mt-4" style="height:6px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden">
-            <div style="height:100%;width:{{ visitor_ai.pct }}%;background:var(--gold,#f6cd86);border-radius:6px"></div>
-          </div>
-          <div class="muted mt-2" style="font-size:12px">{{ visitor_ai.pct }}% van de weekcap · de gate weigert automatisch bij 100%</div>
-        </div>
-      </section>
-      {% endif %}
 
       <section class="mt-10" data-reveal style="--d:480ms">
         {% if pending %}
         <div class="fb-list">
-          {% for member in pending %}
-            {% include "admin/_member_row.html" %}
+          {% for post in pending %}
+            {% include "admin/_news_shortlist_card.html" %}
           {% endfor %}
         </div>
         {% else %}
         <div class="constellation-empty" data-reveal>
           <span class="constellation-empty__spark" aria-hidden="true">✦</span>
           <p class="lede" style="max-width:42ch;margin:0 auto">
-            Geen openstaande aanmeldingen. Zodra iemand zich meldt, verschijnt die hier.
+            Geen openstaande kandidaten. De wekelijkse curatie draait zondagnacht —
+            wat zij vindt, verschijnt hier ter goedkeuring.
           </p>
         </div>
         {% endif %}

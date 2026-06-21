@@ -1,0 +1,39 @@
+{# Eén AI-nieuws-kandidaat in de admin-shortlist (kaart-vorm; swap-doel). Na
+   goedkeuren/weigeren swapt de server deze kaart in place (hx-swap="outerHTML"):
+   de knoppen verdwijnen, ``message`` toont de uitkomst. Spiegelt _member_row.html.
+   Top-level element = <div> (matcht de swap). #}
+{% set pending = post.review_state and post.review_state.value == "pending_review" %}
+<div id="news-cand-{{ post.id }}" class="card"
+     style="display:flex;flex-direction:column;gap:10px;padding:16px 18px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="min-width:0">
+      <p style="margin:0;color:var(--text);font-weight:500">
+        <a class="text-link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">{{ post.title }}</a>
+      </p>
+      {% if post.source %}<p style="margin:3px 0 0;color:var(--muted);font-size:0.9rem">{{ post.source }}</p>{% endif %}
+      <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="chip chip--pending">relevantie {{ post.ai_relevance if post.ai_relevance is not none else "—" }}</span>
+        <span class="chip chip--muted">gevonden door dewereldvan</span>
+        {% if message %}<span class="muted" style="font-size:0.85rem">{{ message }}</span>{% endif %}
+      </div>
+    </div>
+    {% if pending %}
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <button class="btn btn--sm"
+              hx-post="/admin/nieuws/{{ post.id }}/keur-goed"
+              hx-target="#news-cand-{{ post.id }}" hx-swap="outerHTML">
+        Goedkeuren
+      </button>
+      <button class="btn btn--ghost btn--sm"
+              hx-post="/admin/nieuws/{{ post.id }}/weiger"
+              hx-target="#news-cand-{{ post.id }}" hx-swap="outerHTML"
+              hx-confirm="Deze kandidaat weigeren?">
+        Weigeren
+      </button>
+    </div>
+    {% endif %}
+  </div>
+  {% if post.ai_take %}
+  <p class="muted" style="margin:0;font-size:0.92rem"><strong>Waarom dit ertoe doet:</strong> {{ post.ai_take }}</p>
+  {% endif %}
+</div>

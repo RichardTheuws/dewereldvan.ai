@@ -10,6 +10,9 @@ Routes:
 - GET  ``/nieuws``                     — kosmisch nieuws + toevoeg-formulier.
 - POST ``/nieuws``                     — plaats een artikel, swap de lijst.
 - POST ``/admin/posts/{id}/verberg``   — toggle hidden + AuditLog, swap de kaart.
+- GET  ``/admin/nieuws``               — "De Briefing"-shortlist (AI-kandidaten).
+- POST ``/admin/nieuws/{id}/keur-goed``— kandidaat → live + AuditLog (htmx-swap).
+- POST ``/admin/nieuws/{id}/weiger``   — kandidaat → rejected + AuditLog (htmx-swap).
 
 Auth: lid-routes ``require_member`` (login-gated, noindex); moderatie
 ``require_admin``. CSRF via ``hx-headers``.
@@ -19,11 +22,12 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Form, Request, status
 from fastapi.responses import HTMLResponse
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import require_admin, require_member
-from app.models import EventFrequency, Member, NewsRole, Post, PostKind
+from app.models import EventFrequency, Member, NewsRole, Post, PostKind, Tool
 from app.schemas.post import EventForm, NewsForm
 from app.services import post_service
 
@@ -53,12 +57,24 @@ def _agenda_context(db: Session, member: Member) -> dict:
 
 
 def _nieuws_context(db: Session, member: Member) -> dict:
+    briefing = post_service.list_briefing(db)
     return {
+        # ``items`` = het volledige (gesorteerde) archief incl. deze week — voor het
+        # bestaande lijst-fragment + de htmx-swap na plaatsen.
         "items": post_service.list_news(db),
+        "briefing_this_week": briefing.briefing_this_week,
         "member": member,
         "is_admin": _is_admin(member),
         "roles": list(NewsRole),
+        # De getoonde tool-catalogus-namen voor de detectie-op-weergave (geen
+        # nieuwe tabel): de kaart matcht deze tegen ai_take/titel.
+        "tool_names": _tool_names(db),
     }
+
+
+def _tool_names(db: Session) -> list[str]:
+    """De canonieke tool-namen (voor de verbindingschip-detectie-op-weergave)."""
+    return [t for t in db.scalars(select(Tool.name)).all() if t]
 
 
 def _card_context(db: Session, post: Post, member: Member) -> dict:
@@ -238,6 +254,68 @@ def admin_hide(
         "agenda/_card.html" if post.kind == PostKind.event else "nieuws/_card.html"
     )
     return _render(request, template, _card_context(db, post, admin))
+
+
+# --------------------------------------------------------------------------- #
+# Admin — "De Briefing"-shortlist (AI-kandidaten, mens-in-de-lus)             #
+# --------------------------------------------------------------------------- #
+
+
+@router.get("/admin/nieuws", response_class=HTMLResponse)
+def admin_news_shortlist(
+    request: Request,
+    admin: Member = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """De shortlist met AI-gecureerde nieuws-kandidaten (``pending_review``).
+    Goedkeuren/weigeren met één klik; de lijst werkt direct bij (htmx-swap)."""
+    return _render(
+        request,
+        "admin/news_shortlist.html",
+        {"pending": post_service.list_pending_review(db), "tool_names": _tool_names(db)},
+    )
+
+
+def _shortlist_card(request: Request, post: Post, message: str) -> HTMLResponse:
+    return _render(
+        request,
+        "admin/_news_shortlist_card.html",
+        {"post": post, "message": message, "tool_names": []},
+    )
+
+
+@router.post("/admin/nieuws/{post_id}/keur-goed", response_class=HTMLResponse)
+def admin_news_approve(
+    request: Request,
+    post_id: int,
+    admin: Member = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Keur een AI-kandidaat goed → ``live`` (publiek) + AuditLog; swap de rij."""
+    post = db.get(Post, post_id)
+    if post is None:
+        return HTMLResponse("", status_code=status.HTTP_404_NOT_FOUND)
+    post_service.approve_news(db, post, actor=admin)
+    db.commit()
+    db.refresh(post)
+    return _shortlist_card(request, post, "Goedgekeurd — staat nu in de briefing.")
+
+
+@router.post("/admin/nieuws/{post_id}/weiger", response_class=HTMLResponse)
+def admin_news_reject(
+    request: Request,
+    post_id: int,
+    admin: Member = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Weiger een AI-kandidaat → ``rejected`` (blijft uit de lijst) + AuditLog."""
+    post = db.get(Post, post_id)
+    if post is None:
+        return HTMLResponse("", status_code=status.HTTP_404_NOT_FOUND)
+    post_service.reject_news(db, post, actor=admin)
+    db.commit()
+    db.refresh(post)
+    return _shortlist_card(request, post, "Geweigerd.")
 
 
 def _first_error(exc: Exception, fallback: str) -> str:

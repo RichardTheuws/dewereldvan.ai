@@ -18,14 +18,21 @@ toevoeger zijn account wist. Admin/seed mag ``NULL`` (geen toevoeger).
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, func
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, EventFrequency, NewsRole, PostKind
+from app.models.base import (
+    Base,
+    EventFrequency,
+    NewsRole,
+    PostKind,
+    PostReviewState,
+    PostSourceKind,
+)
 
 if TYPE_CHECKING:
     from app.models.member import Member
@@ -73,5 +80,26 @@ class Post(Base):
         SQLEnum(NewsRole, name="news_role", native_enum=False), nullable=True
     )
     published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    # --- "De Briefing" (doc 02 §4) — AUGMENT, vijf nullable kolommen ----------
+    # Lid-bijdragen blijven ``live``/``member`` (huidige flow ongewijzigd); de
+    # wekelijkse AI-curatie-job zet kandidaten op ``pending_review``/``ai_curated``
+    # — NOOIT live. Een admin keurt de shortlist met één klik goed.
+    review_state: Mapped[PostReviewState] = mapped_column(
+        SQLEnum(PostReviewState, name="post_review_state", native_enum=False),
+        nullable=False,
+        default=PostReviewState.live,
+        server_default=PostReviewState.live.value,
+        index=True,
+    )
+    source_kind: Mapped[PostSourceKind] = mapped_column(
+        SQLEnum(PostSourceKind, name="post_source_kind", native_enum=False),
+        nullable=False,
+        default=PostSourceKind.member,
+        server_default=PostSourceKind.member.value,
+    )
+    ai_relevance: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ai_take: Mapped[str | None] = mapped_column(Text, nullable=True)
+    briefing_week: Mapped[date | None] = mapped_column(Date, nullable=True, index=True)
 
     added_by: Mapped[Member | None] = relationship()

@@ -38,6 +38,13 @@
         {% include "nieuws/_form.html" %}
       </section>
 
+      {% if briefing_this_week %}
+      <section class="mt-12" data-reveal style="--d:520ms">
+        <div class="section-title mb-5">Deze week</div>
+        {% include "nieuws/_briefing.html" %}
+      </section>
+      {% endif %}
+
       <section class="mt-12" data-reveal style="--d:560ms">
         <div class="section-title mb-5">Verschenen</div>
         <div id="nieuws-list">

@@ -69,6 +69,11 @@ class AuditAction(str, enum.Enum):
     # Agenda/nieuws-moderatie (Post). Een lid plaatst direct zichtbaar; admin kan
     # verbergen. VARCHAR-enum → additieve waarde, geen migratie nodig.
     post_hidden = "post_hidden"
+    # "De Briefing" (doc 02): de mens-in-de-lus-poort op AI-gecureerde nieuws-
+    # kandidaten — admin keurt een ``pending_review``-voorstel goed (→ live) of
+    # weigert (→ rejected). VARCHAR-enum → additieve waarden, geen migratie nodig.
+    news_approved = "news_approved"
+    news_rejected = "news_rejected"
 
 
 class ProfileEmphasis(str, enum.Enum):
@@ -129,6 +134,31 @@ class EventFrequency(str, enum.Enum):
     tweewekelijks = "tweewekelijks"
     maandelijks = "maandelijks"
     doorlopend = "doorlopend"
+
+
+class PostReviewState(str, enum.Enum):
+    """Redactie-staat van een ``Post`` ("De Briefing", doc 02 §4). Lid-bijdragen
+    zijn ``live`` (huidig gedrag, ongewijzigd); AI-gecureerde kandidaten starten
+    ``pending_review`` en worden NOOIT silent-published — een admin keurt ze met
+    één klik goed (→ ``live``) of weigert (→ ``rejected``). Langste waarde
+    'pending_review' = 14 → de DDL-kolom is ``String(length=14)`` (zie 0023)."""
+
+    live = "live"
+    pending_review = "pending_review"
+    rejected = "rejected"
+
+
+class PostSourceKind(str, enum.Enum):
+    """Herkomst van een ``Post`` (doc 02 §4) — voor de "gevonden door dewereldvan"-
+    badge en metrics. ``member`` = lid plaatste 't (default, huidig gedrag);
+    ``ai_curated`` = de wekelijkse curatie-job stelde 't voor; ``member_media``
+    = de Discovery-media-pass koppelde een lid (Next-fase, nu niet gevuld).
+    Langste waarde 'member_media' = 12 → de DDL-kolom is ``String(length=12)``
+    (zie 0023)."""
+
+    member = "member"
+    ai_curated = "ai_curated"
+    member_media = "member_media"
 
 
 class NewsRole(str, enum.Enum):
