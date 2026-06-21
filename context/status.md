@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.66.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.66.1 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -72,8 +72,9 @@ dus de meeste hoogste-leverage-ingrepen zijn "maak zichtbaar", niet "bouw". Gepr
   contextuele concierge-prompts ✅ (v0.63.1) · ideeën near-duplicate-hint ✅ (v0.64.0) · auth agent-aan-de-deur
   ✅ (v0.65.0: gescripte demo op invite-landing, nul AI-kosten).
 - **Hele audit-plan af** (Blok 0→3) + **Tailwind-CDN→util.css** ✅ (v0.66.0: FOUC weg op alle 32 publieke
-  cosmic-pagina's, statische util.css, geen build-pipeline, UAT-regressie-guard). **Resterend**: (1) volledige
-  interactieve `/leden`-force-graph (L-effort); (2) hygiëne: dode `base.html` + `_flash.html` slopen. Niet blokkerend.
+  cosmic-pagina's, statische util.css, geen build-pipeline, UAT-regressie-guard) + **dode code opgeruimd** ✅
+  (v0.66.1: base.html + _flash.html + app.css weg). **Enige resterende eigen blok**: volledige interactieve
+  `/leden`-force-graph (L-effort, loont pas bij dichtere community). Niet blokkerend.
 - **Blok 3** — project, nieuws, agenda, ideeën, roadmap, auth.
 - **Niet doen**: geen tweede look; geen LLM voor graaf-relaties (strict uit DB → nul kosten/hallucinatie); geen
   vrij betaald agent-veld op de publieke voordeur; geen nieuwe e-mailkanalen.

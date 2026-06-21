@@ -1707,11 +1707,11 @@
   margin: 0 0 16px;
 }
 
-/* Paneel-knoppen thema-onafhankelijk (net als de rest van het paneel): het
-   paneel wordt globaal via base.html geinjecteerd, ook op lichte pagina's waar
-   geen .cosmic-voorouder bestaat. Zonder deze regels vallen de submit- (.btn) en
-   sluit-knop (.btn--ghost) terug op kale browser-defaults — de goud-gradient pill
-   en de ghost-variant hieronder spiegelen .cosmic .btn / .btn--ghost. */
+/* Paneel-knoppen thema-onafhankelijk (net als de rest van het paneel): de
+   feedback-affordance kan buiten een .cosmic-voorouder gerenderd worden, dus deze
+   regels staan bewust ongescoped. Zonder hen vallen de submit- (.btn) en sluit-knop
+   (.btn--ghost) terug op kale browser-defaults — de goud-gradient pill en de
+   ghost-variant hieronder spiegelen .cosmic .btn / .btn--ghost. */
 .feedback-panel .btn {
   position: relative;
   display: inline-flex;

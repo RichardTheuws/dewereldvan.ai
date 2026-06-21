@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.66.1] - 2026-06-21
+### Removed — Dode code opgeruimd (Tier 3 hygiëne)
+- `app/templates/base.html` (het oude lichte thema — niemand extend't 'm, de "tweede-look-val" uit de audit),
+  `app/templates/_flash.html` (alleen door base.html ge-include'd) en `app/static/app.css` (alleen door base.html
+  gelinkt) verwijderd. Vooraf geverifieerd: geen enkele `{% extends %}`, include of render-call verwijst er
+  functioneel naar (alleen comments/docstrings die "extendt base.html NIET" zeggen). Eén nu-misleidende
+  cosmic.css-comment (verwees naar base.html-injectie) bijgewerkt. **930 tests groen, niets gebroken.**
+
 ## [0.66.0] - 2026-06-21
 ### Changed — Runtime Tailwind-CDN weg op alle publieke pagina's → statische util.css (FOUC weg)
 - De render-blocking dev-CDN (`cdn.tailwindcss.com`) is op **alle 32 geserveerde cosmic-pagina's** vervangen door
