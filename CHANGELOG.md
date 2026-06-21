@@ -3,6 +3,15 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.63.0] - 2026-06-21
+### Added — Blok 3.3: roadmap toont gegronde idee-herkomst (levend + transparant)
+- Een gepromoot roadmap-item toont nu **wélk lid-idee het voedt**: "✦ uit een idee van &lt;naam&gt; · N stemmen",
+  klikbaar naar het idee (`/ideeen#idea-{id}`) — i.p.v. het generieke "uit de ideeenbus". Maakt zichtbaar dat
+  de roadmap door de leden gevoed wordt (de transparantie-/levend-mandaat).
+- `roadmap_service.list_grouped` eager-load't nu het gekoppelde idee + voorsteller + stemmen (`selectinload`/
+  `joinedload`) → geen N+1. Bestaande `linked_idea`-relatie hergebruikt; **geen migratie, geen AI**. Verborgen
+  ideeën tonen geen herkomst-link (valt terug op de neutrale tekst). +1 test. **921 tests groen.**
+
 ## [0.62.1] - 2026-06-21
 ### Changed — Blok 3.2: nieuws-graaf-verbinding leest als een edge (audit herijkt)
 - De nieuws-kaart toonde de gegronde tool-match al (detectie-op-weergave; persistentie is bewust YAGNI, zie

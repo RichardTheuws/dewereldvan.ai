@@ -8,7 +8,15 @@
   {% if item.description %}
   <p class="roadmap-item__desc">{{ item.description }}</p>
   {% endif %}
-  {% if item.linked_idea_id %}
+  {% if item.linked_idea and not item.linked_idea.hidden %}
+  {# Gegronde herkomst: dit staat op de roadmap omdat een lid het voorstelde. #}
+  {% set _idea = item.linked_idea %}
+  {% set _votes = _idea.votes | length %}
+  <a class="roadmap-item__origin" href="/ideeen#idea-{{ _idea.id }}">
+    ✦ uit een idee{% if _idea.member %} van {{ _idea.member.name }}{% endif %}
+    {%- if _votes %} · {{ _votes }} stem{{ 'men' if _votes != 1 else '' }}{% endif %} →
+  </a>
+  {% elif item.linked_idea_id %}
   <div class="roadmap-item__origin">✦ uit de ideeenbus</div>
   {% endif %}
 </article>

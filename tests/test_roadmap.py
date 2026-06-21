@@ -97,6 +97,33 @@ def test_roadmap_member_ok(make_client, seed):
     assert client.get("/roadmap").status_code == 200
 
 
+def test_roadmap_item_shows_grounded_idea_origin(make_client, seed, SessionTest):
+    """Een gepromoot item toont de gegronde herkomst: welk lid-idee het voedt +
+    het aantal stemmen, klikbaar naar het idee (levend/transparant, geen migratie)."""
+    from app.models import Idea, IdeaVote, RoadmapItem, RoadmapStatus
+
+    with SessionTest() as s:
+        idea = Idea(member_id=seed["member"], title="Een goed idee", body="Doe X.")
+        s.add(idea)
+        s.flush()
+        iid = idea.id
+        s.add(IdeaVote(idea_id=iid, member_id=seed["admin"]))
+        s.add(
+            RoadmapItem(
+                title="Gepromoot item", phase="Nu", position=0,
+                status=RoadmapStatus.overwegen, linked_idea_id=iid,
+            )
+        )
+        s.commit()
+
+    resp = make_client(seed["member"]).get("/roadmap")
+    assert resp.status_code == 200
+    body = resp.text
+    assert "uit een idee van Lid" in body
+    assert "1 stem" in body
+    assert f"/ideeen#idea-{iid}" in body
+
+
 def test_roadmap_groups_by_phase_in_position_order(make_client, seed, SessionTest):
     from app.models import RoadmapItem, RoadmapStatus
 

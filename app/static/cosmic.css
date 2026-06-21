@@ -1954,11 +1954,19 @@
   color: var(--muted);
 }
 .cosmic .roadmap-item__origin {
+  display: inline-block;
   margin-top: 9px;
   font-family: "JetBrains Mono", monospace;
   font-size: 10px;
   letter-spacing: 0.04em;
   color: var(--gold);
+  text-decoration: none;
+  transition: color 0.2s, transform 0.2s;
+}
+a.roadmap-item__origin:hover,
+a.roadmap-item__origin:focus-visible {
+  color: var(--text);
+  transform: translateX(2px);
 }
 
 /* admin board */

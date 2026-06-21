@@ -9,9 +9,9 @@ kreeg, komt eerst) zodat de kosmische weergave deterministisch is.
 from __future__ import annotations
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 
-from app.models import RoadmapItem, RoadmapStatus
+from app.models import Idea, RoadmapItem, RoadmapStatus
 
 __all__ = [
     "create",
@@ -58,9 +58,15 @@ def list_grouped(db: Session) -> list[tuple[str, list[RoadmapItem]]]:
     """
     items = list(
         db.scalars(
-            select(RoadmapItem).order_by(
-                RoadmapItem.position.asc(), RoadmapItem.id.asc()
+            select(RoadmapItem)
+            .options(
+                # Toon de gegronde herkomst (welk lid-idee voedt dit + stemmen)
+                # zonder N+1: laad het gekoppelde idee + z'n voorsteller + stemmen.
+                selectinload(RoadmapItem.linked_idea).options(
+                    joinedload(Idea.member), selectinload(Idea.votes)
+                )
             )
+            .order_by(RoadmapItem.position.asc(), RoadmapItem.id.asc())
         ).all()
     )
     order: list[str] = []
