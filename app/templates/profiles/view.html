@@ -33,7 +33,9 @@
      JS is unavailable. #}
   <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
 </head>
-<body class="cosmic{% if preview %} preview-on{% endif %}">
+{# data-reveal-scroll: onthul secties terwijl je scrollt (read-only showcase, geen
+   htmx-swaps hier) — zie de reveal-director in ai/_cosmic_canvas.html. #}
+<body class="cosmic{% if preview %} preview-on{% endif %}" data-reveal-scroll>
   {% include "profiles/_cosmic_bg.html" %}
   {# In preview-modus omkadert de eigen 'bekijk-als-bezoeker'-chrome de pagina;
      de generieke platform-preview-band laten we dan weg (geen dubbele balk). #}
@@ -63,7 +65,8 @@
       </section>
 
       {# ---- Identity (foto-hero + emphasis) ---- #}
-      <section class="profile-identity mt-8" data-reveal style="--d:240ms">
+      {# materialize: de hero vervaagt + schaalt in alsof de AI 'm net opbouwt. #}
+      <section class="profile-identity mt-8" data-reveal="materialize" style="--d:240ms">
         <div class="profile-identity__photo">
           {% set _src = photo.url | safe_url if photo.url else '' %}
           <div class="photo-ring photo-ring--hero" data-kind="{{ photo.kind }}">
@@ -114,8 +117,9 @@
         <div class="grid">
           {% for item in profile.offerings %}
             {% if item.slug %}
-            {# Eigen rijke projectpagina (linkwaarde) — klik gaat naar /projecten/{slug}. #}
-            <a class="card" href="/projecten/{{ item.slug }}">
+            {# Eigen rijke projectpagina (linkwaarde) — klik gaat naar /projecten/{slug}.
+               drift: kaarten komen wisselend van links/rechts i.p.v. als één blok. #}
+            <a class="card" href="/projecten/{{ item.slug }}" data-reveal="drift">
               {% set _img = item.image_url | safe_url %}
               {% if _img %}<img class="thumb" src="{{ _img }}" alt="" loading="lazy">{% endif %}
               <div class="card-label">{{ item.title }}</div>

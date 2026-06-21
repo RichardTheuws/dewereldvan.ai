@@ -102,6 +102,22 @@ async def _lifespan(app: FastAPI):
     app-import niet aan de mcp-dep hangt als die ontbreekt."""
     from app.mcp_server import mcp
 
+    # Zombie-vangnet: een herstart midden in een discovery-job laat de run op
+    # ``running`` staan zonder levende thread (een zombie). Veeg die verweesde
+    # runs vóór we verkeer accepteren — de DB is bij app-start al gemigreerd
+    # (Dockerfile-CMD ``alembic upgrade head``). Best-effort: mag de app nooit
+    # ophouden of crashen.
+    try:
+        from app.db import SessionLocal
+        from app.services import discovery_job_service
+
+        with SessionLocal() as db:
+            discovery_job_service.sweep_orphaned_runs(db)
+    except Exception:  # noqa: BLE001
+        logging.getLogger(__name__).warning(
+            "Discovery zombie-sweep bij opstart overgeslagen", exc_info=True
+        )
+
     # Telegram-webhook idempotent registreren als de bot-creds er zijn (anders
     # no-op). Best-effort: een mislukte registratie mag de app nooit ophouden.
     try:

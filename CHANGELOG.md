@@ -3,6 +3,38 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.49.0] - 2026-06-21
+### Added — Ervaring: reveals verrassen elke keer opnieuw (geen herhaald trucje)
+- **Waarom** (Richard, harde eis uit het Ervaringsmandaat): er was één uniforme entrance-reveal
+  (22px omhoog + blur, identiek op élk scherm) en álles onthulde bij page-load — scrollen onthulde
+  niets. Dat voelt als één herhaald trucje. De ervaring moet bezoekers **steeds opnieuw** verrassen.
+- **Scroll-reveal** (`ai/_cosmic_canvas.html`): een reveal-director met `IntersectionObserver` onthult
+  elementen pas als ze in beeld scrollen — de pagina blijft leven terwijl je leest. Opt-in per pagina
+  via `data-reveal-scroll` op `<body>` (alleen read-only showcase; htmx-swap-pagina's houden het oude
+  `body.ready`-pad, geen regressie). Zonder IO-support of bij reduced-motion → val terug op `body.ready`.
+- **Semantische reveal-varianten** (`cosmic.css`, opt-in via `data-reveal="<naam>"`, hergebruikt de
+  identiteit): `materialize` (hero/AI-inhoud vervaagt + schaalt in alsof de AI 'm net opbouwt) en
+  `drift` (kaarten komen wisselend van links/rechts i.p.v. als één blok). Toegepast op de publieke
+  profielpagina (`profiles/view.html`): identity = `materialize`, projectkaarten = `drift`.
+- **Per-bezoek variatie** zodat een herbezoek nooit exact hetzelfde voelt: de director kiest per load
+  één van 3 reveal-"moods" (subtiele easing-variatie) en de constellatie krijgt per load een andere
+  mood (goud-dichtheid, drift-snelheid, link-bereik, lijn-warmte). Browser-`Math.random`, binnen één
+  look. **Volledig reduced-motion-safe** (gedekt door het bestaande `[data-reveal]`-vangnet).
+- Uitrol naar leden-grid / projecten / community volgt als fast-follow (v1 bewijst het op het profiel).
+
+### Added — Zombie-vangnet voor discovery-runs (startup-sweep)
+- **Probleem** (openstaande taak in `status.md`): een container-restart midden in een discovery-job liet
+  de `discovery_run` op `running` staan zonder levende thread — een zombie die eeuwig "running" bleef.
+  Dwong een handmatige check af vóór elke deploy.
+- **`discovery_job_service.sweep_orphaned_runs(db)`**: markeert bij app-start elke `running`-run als
+  `failed` (`error="onderbroken door herstart"` + `finished_at`). Idempotent; alleen `running` is
+  verweesbaar (geen `queued`/`pending` in dit model — `start()` maakt de rij meteen `running`).
+- **Ingehaakt in `_lifespan`** (`app/main.py`) vóór verkeer wordt geaccepteerd; best-effort try/except,
+  zelfde patroon als de Telegram-registratie. DB is bij app-start al gemigreerd (Dockerfile-CMD).
+- 4 nieuwe tests (`running`→`failed`, `done` blijft, schone staat → 0, idempotent).
+
+- **637 → 641 tests groen.**
+
 ## [0.48.0] - 2026-06-21
 ### Added — "Bekijk als bezoeker": publieke preview vóór publicatie
 - **Waarom** (Richard): je moet je eigen publieke profiel heel makkelijk kunnen bekijken zoals

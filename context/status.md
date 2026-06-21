@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.48.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.49.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -40,6 +40,10 @@
   optioneel **Telegram-push** (rich: vette titel + actieknop). Instellingen op `/profiel/notificaties`
   (ook als concierge-surface). Modellen `member_channel` + `notification_pref`.
 - **MCP-server**: `/mcp` (Bearer-token per lid) — "praat met dewereldvan vanuit je eigen AI-tool".
+- **Ervaring/motion** (v0.49.0): reveals zijn niet langer één uniform trucje. Scroll-reveal
+  (`IntersectionObserver`, opt-in `data-reveal-scroll`), semantische varianten (`materialize`/`drift`)
+  en per-bezoek variatie (reveal-mood + constellatie-mood). Bewezen op `profiles/view.html`; uitrol
+  naar leden-grid/projecten/community is fast-follow. Volledig reduced-motion-safe.
 
 ## Huidige focus
 Net afgerond: notificatie-pivot (e-mail eruit, Telegram + avatar + rich content) en de
@@ -50,8 +54,10 @@ source-of-truth-opschoning (dit document). De engine + integraties staan; de nad
 - [x] **Telegram end-to-end gevalideerd in prod** (2026-06-20): koppelen → discovery-job (12 findings, ~3,5 min)
       → push met knop. Koppelen is nu opt-in (voorkeur auto op telegram, v0.45.0).
 - [ ] **Discovery-precisie meten**: hoeveel van de 12 findings laat een lid staan vs. afwijzen? (drempel ≥90 ijken).
-- [ ] **Zombie-run-vangnet**: een container-restart midden in een job laat `discovery_run` op `running` staan
-      (geen levende thread markeert 'm). Startup-sweep die verweesde `running`-runs → `failed` zet.
+- [ ] **Motion-uitrol** (na v0.49.0): scroll-reveal + varianten doortrekken naar leden-grid, projecten en
+      community (agenda/nieuws/ideeën/roadmap). Let op htmx-swap-pagina's: alleen read-only secties `data-reveal-scroll` geven.
+- [x] **Zombie-run-vangnet** (v0.49.0): `sweep_orphaned_runs` veegt bij app-start (`_lifespan`) elke verweesde
+      `running`-discovery-run → `failed`. Idempotent, best-effort. Geen handmatige pre-deploy-check meer nodig.
 - [ ] Browser-verificatie auto-crystallisatie-op-`load` (1b; JS, niet in TestClient te dekken).
 - [ ] Bot-token **roteren** via @BotFather vóór publieke launch (token was in chat gedeeld).
 - [ ] Bij launch: apex-ingress teaser→app + wachtlijst-adressen → `member`-tabel.

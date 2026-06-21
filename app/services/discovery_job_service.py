@@ -46,6 +46,7 @@ __all__ = [
     "mark_seen",
     "unseen_result_count",
     "findings_of",
+    "sweep_orphaned_runs",
 ]
 
 STATUS_RUNNING = "running"
@@ -274,6 +275,40 @@ def run_job(
     finally:
         with _inflight_lock:
             _inflight.discard(member_id)
+
+
+# --------------------------------------------------------------------------- #
+# Startup-vangnet voor zombie-runs                                            #
+# --------------------------------------------------------------------------- #
+
+
+def sweep_orphaned_runs(db: Session) -> int:
+    """Markeer verweesde ``running``-runs als ``failed`` (startup-vangnet).
+
+    Een container-restart midden in een job laat de ``DiscoveryRun`` op
+    ``running`` staan zonder levende thread die 'm afmaakt — een "zombie" die
+    eeuwig running blijft. Bij app-start (na de migraties van de Dockerfile-CMD)
+    draait deze sweep: elke ``running``-rij hoort bij een thread die de restart
+    niet overleefde (``_inflight`` + de threads zijn procesgebonden en dus weg),
+    dus we zetten 'm op ``failed`` met een duidelijke reden. Idempotent: een
+    tweede sweep vindt niets meer (0). Retourneert het aantal opgeruimde runs.
+
+    Alleen ``running`` wordt geveegd: dit model kent geen ``queued``/``pending``
+    — ``start()`` maakt de rij meteen ``running`` aan, dus dat is de enige
+    verweesbare status. ``done``/``empty``/``failed`` zijn eindstatussen.
+    """
+    orphans = db.scalars(
+        select(DiscoveryRun).where(DiscoveryRun.status == STATUS_RUNNING)
+    ).all()
+    for run in orphans:
+        run.status = STATUS_FAILED
+        run.error = "onderbroken door herstart"
+        run.finished_at = naive_utc(utcnow())
+    db.commit()
+    count = len(orphans)
+    if count:
+        logger.info("Discovery-sweep: %d verweesde run(s) als failed gemarkeerd", count)
+    return count
 
 
 def _mark_failed(member_id: int, session_factory: sessionmaker) -> None:

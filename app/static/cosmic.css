@@ -675,19 +675,74 @@
   color: var(--muted);
 }
 
-/* entrance choreography */
+/* entrance choreography — basis "rise" (default, backwards compatible) */
 .cosmic [data-reveal] {
   opacity: 0;
   transform: translateY(22px);
   filter: blur(8px);
 }
-.cosmic.ready [data-reveal] {
+/* Onthuld bij page-load (.ready op de body, alles via --d-stagger) ÓF per element
+   wanneer het in beeld scrollt (.is-in, gezet door de reveal-director in
+   _cosmic_canvas.html op pagina's met `data-reveal-scroll`). Scroll-reveal houdt
+   de pagina levend: content verschijnt terwijl je leest, niet alles in één klap. */
+.cosmic.ready [data-reveal],
+.cosmic [data-reveal].is-in {
   opacity: 1;
   transform: none;
   filter: blur(0);
   transition: opacity 1s cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 1s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1s ease;
   transition-delay: var(--d, 0ms);
+}
+/* Scroll-pad: cap de stagger zodat content diep in de pagina niet seconden hangt
+   voor het verschijnt (de --d's zijn voor een load-choreografie bedoeld). */
+.cosmic [data-reveal].is-in {
+  transition-delay: min(var(--d, 0ms), 200ms);
+}
+
+/* --- Reveal-varianten (opt-in via data-reveal="<naam>") — zodat niet elk element
+   met hetzelfde gebaar binnenkomt. Eén identiteit, ander accent per betekenis.
+   Allemaal gedekt door het reduced-motion-vangnet (zelfde [data-reveal]-selector,
+   regel ~1095). --- */
+
+/* "materialize": vervaagt + schaalt in alsof de AI het net opbouwt. Voor
+   AI-gebouwde / hero-inhoud (profiel-identity, samenvattingen). */
+.cosmic [data-reveal="materialize"] {
+  transform: translateY(10px) scale(0.985);
+  filter: blur(12px) brightness(1.25);
+}
+.cosmic.ready [data-reveal="materialize"],
+.cosmic [data-reveal="materialize"].is-in {
+  transform: none;
+  filter: blur(0) brightness(1);
+}
+
+/* "drift": komt zijdelings binnen i.p.v. van onder; wissel links/rechts per
+   positie (even/oneven) zodat een grid niet als één blok opstijgt. */
+.cosmic [data-reveal="drift"] {
+  transform: translateX(-26px);
+  filter: blur(8px);
+}
+.cosmic [data-reveal="drift"]:nth-child(even) {
+  transform: translateX(26px);
+}
+.cosmic.ready [data-reveal="drift"],
+.cosmic [data-reveal="drift"].is-in {
+  transform: none;
+}
+
+/* --- Per-bezoek reveal-"moods" (één gekozen per page-load door de director) —
+   subtiele variatie in de easing-curve zodat een herbezoek nooit exact hetzelfde
+   gebaar herhaalt (mood-b zet een lichte overshoot, mood-c een strakkere settle).
+   Alleen de timing-function — raakt de transform/filter van de varianten niet, dus
+   geen clash met materialize/drift. Reduced-motion dooft alle transitions. */
+.cosmic.reveal-mood-b.ready [data-reveal],
+.cosmic.reveal-mood-b [data-reveal].is-in {
+  transition-timing-function: cubic-bezier(0.18, 0.9, 0.22, 1.12);
+}
+.cosmic.reveal-mood-c.ready [data-reveal],
+.cosmic.reveal-mood-c [data-reveal].is-in {
+  transition-timing-function: cubic-bezier(0.34, 0.8, 0.2, 1);
 }
 
 /* =========================================================================
