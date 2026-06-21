@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.58.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.59.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -65,9 +65,9 @@ dus de meeste hoogste-leverage-ingrepen zijn "maak zichtbaar", niet "bouw". Gepr
   niet-lid-route → €50/wk-cap beschermd. 905 tests groen.
 - **Resterende follow-up**: Tailwind dev-CDN → vooraf-gebouwde CSS op publieke pagina's (FOUC-risico mobiel,
   pre-existing, eigen blokje).
-- **Blok 2** — `/proef` ✅ (v0.58.0: zichtbare "agent leest …"-staat + bron-attributie + lege-staat; geld-pad
-  ongemoeid). Resterend: `/demo` (scan→veld-causaliteit), publiek profiel (graaf-knoop via strict
-  DB-`graph_service`), `/leden` (echte verbonden graaf).
+- **Blok 2** — `/proef` ✅ (v0.58.0) · publiek profiel = graaf-knoop ✅ (v0.59.0: `graph_service.related_members`,
+  "Verbonden in de wereld", strict DB/nul AI). Resterend: `/leden` (echte verbonden graaf — hergebruikt
+  `graph_service`), `/demo`-polish (scan→veld-causaliteit) als laatste.
 - **Blok 3** — project, nieuws, agenda, ideeën, roadmap, auth.
 - **Niet doen**: geen tweede look; geen LLM voor graaf-relaties (strict uit DB → nul kosten/hallucinatie); geen
   vrij betaald agent-veld op de publieke voordeur; geen nieuwe e-mailkanalen.

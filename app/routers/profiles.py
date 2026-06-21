@@ -24,6 +24,7 @@ from app.schemas.profile import NeedForm, OfferingForm, ProfileForm, VisibilityF
 from app.services import (
     account_deletion,
     emphasis_service,
+    graph_service,
     offering_slug,
     photo_service,
     profile_service,
@@ -405,6 +406,9 @@ def view_profile(
             "profile": profile,
             "noindex": noindex,
             "is_owner": viewer is not None and viewer.id == profile.member_id,
+            # Gegronde graaf-buren (strict uit DB, nul AI): het profiel is een
+            # knoop in de levende kaart, niet een plat CV. Herbruikt op /leden.
+            "related": graph_service.related_members(db, profile),
             "photo": photo_service.photo_or_initials(profile),
             "emphasis_cls": emphasis_service.emphasis_class(profile),
             "canonical": seo_service.canonical_url(f"/leden/{profile.slug}"),

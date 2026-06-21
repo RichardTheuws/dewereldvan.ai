@@ -166,6 +166,25 @@
       {% endif %}
       {% endmacro %}
 
+      {% macro section_related() %}
+      {% if related %}
+      {# Gegronde graaf-buren: elke kaart een echt lid + de concrete grond van de
+         verbinding (gedeelde tag/tool). Geen verzinsel, strict uit de DB. #}
+      <section class="mt-14" data-reveal style="--d:540ms">
+        <div class="section-title mb-4">Verbonden in de wereld</div>
+        <div class="related-makers">
+          {% for r in related %}
+          <a class="related-maker" href="/leden/{{ r.profile.slug }}">
+            <span class="related-maker__name">{{ r.profile.display_name }}</span>
+            {% if r.profile.headline %}<span class="related-maker__headline">{{ r.profile.headline }}</span>{% endif %}
+            <span class="related-maker__bond">✦ {{ r.shared_label }}</span>
+          </a>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+      {% endmacro %}
+
       {# Emphasis stuurt de volgorde: projects → projecten naar voren; person/
          balanced → bio eerst. Alle blokken blijven aanwezig (geen content-verlies). #}
       {% if ecls == "emphasis-projects" %}
@@ -174,12 +193,14 @@
         {{ section_roles() }}
         {{ section_tools() }}
         {{ section_seeking() }}
+        {{ section_related() }}
       {% else %}
         {{ section_bio() }}
         {{ section_roles() }}
         {{ section_projects() }}
         {{ section_tools() }}
         {{ section_seeking() }}
+        {{ section_related() }}
       {% endif %}
 
     </main>

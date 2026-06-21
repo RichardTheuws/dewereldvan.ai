@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.59.0] - 2026-06-21
+### Added — Blok 2.2: publiek profiel wordt een graaf-knoop ("Verbonden in de wereld")
+- **`graph_service.related_members`** (nieuw): tot 4 publieke makers die ≥1 tag of tool met een profiel delen,
+  **strict uit de DB** (geen LLM, geen externe call → nul hallucinatie, nul kosten). Tools wegen zwaarder dan
+  tags; in-memory over de publieke-profielen-poort (besloten/geschorst lekt nooit, geen N+1). Eén bron die
+  **`/leden`** (Blok 2.4) straks hergebruikt — geen tweede implementatie.
+- **Publiek profiel** (`profiles/view.html` + `view_profile`-handler): een "Verbonden in de wereld"-sectie met
+  per buur een kaart (naam + headline + de **concrete gedeelde grond**, bv. "deelt tool: cursor" / "beiden in
+  voice-agents") die naar `/leden/{slug}` linkt. Zet het meest-geïndexeerde scherm om van plat CV → knoop in de
+  levende kaart, met interne linkwaarde voor SEO. Verschijnt alleen bij echte buren (anders weg, geen lege sectie).
+- +6 tests (service-unit: paren/rangschikking/cap/privacy-uitsluiting + route). **913 tests groen.**
+
 ## [0.58.0] - 2026-06-21
 ### Added — Blok 2.1: /proef toont de agent áán het werk + gegrondheid (W4-richting)
 - **Zichtbare "agent leest …"-staat** tijdens de (seconden-lange) call: i.p.v. een dode spinner verschijnt een

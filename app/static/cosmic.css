@@ -482,6 +482,52 @@
   margin-top: 8px;
 }
 
+/* ---- Publiek profiel: "Verbonden in de wereld" (graaf-buren) ---- */
+.cosmic .related-makers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.cosmic .related-maker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.25s, transform 0.2s, box-shadow 0.4s;
+}
+.cosmic .related-maker:hover,
+.cosmic .related-maker:focus-visible {
+  outline: none;
+  border-color: rgba(63, 210, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px -22px rgba(63, 210, 255, 0.6);
+}
+.cosmic .related-maker__name {
+  font-family: "Fraunces", serif;
+  font-size: 1.1rem;
+  line-height: 1.15;
+}
+.cosmic .related-maker__headline {
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cosmic .related-maker__bond {
+  margin-top: 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: var(--cyan);
+}
+
 /* ---- typography ---- */
 .cosmic .eyebrow {
   font-family: "JetBrains Mono", monospace;
