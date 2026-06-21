@@ -187,6 +187,19 @@ def test_landing_valid_token_renders_form(make_client, seed):
     assert f'action="/uitnodiging/{seed["token"]}"' in resp.text
 
 
+def test_landing_shows_agent_at_the_door_demo(make_client, seed):
+    """Agent-aan-de-deur: de gescripte demo staat vóór het formulier (nul AI-kosten),
+    zodat de genodigde ziet wat 'ie zo bouwt — geen kaal formulier meer."""
+    resp = make_client(None).get(f"/uitnodiging/{seed['token']}")
+    assert resp.status_code == 200
+    body = resp.text
+    assert "data-demo" in body
+    assert "fictief profiel" in body
+    assert "/static/demo-play.js" in body
+    # Het formulier blijft (directe toegang).
+    assert f'action="/uitnodiging/{seed["token"]}"' in body
+
+
 def test_landing_invalid_token_shows_expired(make_client, seed):
     client = make_client(None)
     resp = client.get("/uitnodiging/nonsense-token")

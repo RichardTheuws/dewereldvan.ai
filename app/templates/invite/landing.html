@@ -40,8 +40,14 @@
           minuten je profiel.
         </p>
 
+        {# Agent-aan-de-deur: laat vóór het formulier zien wat je zo bouwt
+           (gescript, nul AI-kosten — de echte AI-bouw gebeurt ná inloggen). #}
+        <div class="mt-8" data-reveal style="--d:440ms">
+          {% include "_home_demo.html" %}
+        </div>
+
         {% if error %}
-        <div class="notice notice--error mt-6" role="alert" data-reveal style="--d:440ms">
+        <div class="notice notice--error mt-6" role="alert" data-reveal style="--d:480ms">
           {{ error }}
         </div>
         {% endif %}

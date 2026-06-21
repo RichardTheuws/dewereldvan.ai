@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.64.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.65.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -68,9 +68,12 @@ dus de meeste hoogste-leverage-ingrepen zijn "maak zichtbaar", niet "bouw". Gepr
 - **Blok 2 (compleet)** — `/proef` ✅ (v0.58.0) · publiek profiel = graaf-knoop ✅ (v0.59.0) · `/leden` verbonden
   graaf ✅ (v0.60.0) · `/demo` scan→veld-causaliteit ✅ (v0.61.0). **Uitgesteld**: volledige interactieve
   force-graph op `/leden` (L-effort; eigen blok).
-- **Blok 3** — project ✅ (v0.62.0) · nieuws ✅ (v0.62.1) · roadmap ✅ (v0.63.0) · agenda + contextuele
-  concierge-prompts ✅ (v0.63.1) · ideeën near-duplicate-hint ✅ (v0.64.0: `find_similar`, live htmx-hint).
-  Resterend: auth (agent-aan-de-deur). Losse follow-up: Tailwind dev-CDN → vooraf-gebouwde CSS.
+- **Blok 3 (compleet)** — project ✅ (v0.62.0) · nieuws ✅ (v0.62.1) · roadmap ✅ (v0.63.0) · agenda + 6
+  contextuele concierge-prompts ✅ (v0.63.1) · ideeën near-duplicate-hint ✅ (v0.64.0) · auth agent-aan-de-deur
+  ✅ (v0.65.0: gescripte demo op invite-landing, nul AI-kosten).
+- **Hele audit-plan af** (Blok 0→3). **Resterende eigen blokken**: (1) volledige interactieve `/leden`-force-graph
+  (L-effort, vergt netwerk-dichtheid + a11y/SEO/mobiel); (2) Tailwind dev-CDN → vooraf-gebouwde CSS (FOUC,
+  project-breed). Beide bewust uitgesteld, niet blokkerend.
 - **Blok 3** — project, nieuws, agenda, ideeën, roadmap, auth.
 - **Niet doen**: geen tweede look; geen LLM voor graaf-relaties (strict uit DB → nul kosten/hallucinatie); geen
   vrij betaald agent-veld op de publieke voordeur; geen nieuwe e-mailkanalen.

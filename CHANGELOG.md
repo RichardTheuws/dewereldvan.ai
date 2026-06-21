@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.65.0] - 2026-06-21
+### Added — Blok 3.6: agent-aan-de-deur op de invite-landing (Blok 3 compleet)
+- De groep-invite-landing toont vóór het naam+e-mail-formulier nu de **gescripte agent-demo** (`_home_demo.html`
+  + `demo-play.js`): de genodigde ziet meteen wat 'ie zo bouwt — geen kaal formulier meer. **Gescript = nul
+  AI-kosten** (de echte AI-profielbouw gebeurt pas ná inloggen, leden-gecapt); het formulier zelf blijft exact
+  ongemoeid (directe toegang, csrf-volgorde). +1 test. **930 tests groen.**
+- Hiermee is **Blok 3** afgerond (project, nieuws, roadmap, agenda/concierge-contexts, ideeën, auth) en daarmee
+  het volledige geprioriteerde ervaring-plan uit de audit (Blok 0 UAT → 1 homepage-kopstuk → 2 publieke pad →
+  3 overige schermen). **Resterend buiten het plan**: volledige interactieve `/leden`-force-graph (L-effort) en
+  de Tailwind dev-CDN → vooraf-gebouwde-CSS-migratie (FOUC, project-breed) — beide eigen blokken.
+
 ## [0.64.0] - 2026-06-21
 ### Added — Blok 3.5: ideeënbus krijgt een live 'lijkt-op'-hint (anti-duplicaat/anti-ruis)
 - Tijdens het typen van een idee-titel toont een **live hint** (htmx, 400ms debounce) tot 3 bestaande ideeën die
