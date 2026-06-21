@@ -201,3 +201,55 @@ def test_leden_empty_state_renders(client, page_engine):
     # Geen profielen geseed → lege constellatie rendert zonder fout.
     resp = client.get("/leden")
     assert resp.status_code == 200
+
+
+def _seed_connected(page_engine):
+    """Twee publieke makers die één tag + één tool delen (graaf-buren)."""
+    from app.models import Tool
+    from sqlalchemy.orm import Session
+
+    with Session(page_engine) as s:
+        tag = Tag(name="Agents", slug="agents")
+        tool = Tool(name="Cursor", slug="cursor")
+        s.add_all([tag, tool])
+        s.flush()
+        for nm, slug in (("Een Maker", "een-maker"), ("Twee Maker", "twee-maker")):
+            m = Member(email=f"{slug}@x.nl", name=nm, status=MemberStatus.approved)
+            s.add(m)
+            s.flush()
+            p = Profile(
+                member_id=m.id, slug=slug, display_name=nm,
+                visibility=Visibility.public,
+            )
+            p.tags.append(tag)
+            p.tools.append(tool)
+            s.add(p)
+        s.commit()
+
+
+def test_tool_filter_empty_shows_filtered_message_not_no_members(client, page_engine):
+    """Bug-fix: een tool-only filter zonder resultaat toont 'Niets gevonden'
+    (gefilterd-leeg), niet 'Nog geen profielen' (helemaal-leeg)."""
+    _seed(page_engine)  # publieke profielen bestaan, maar zonder tools
+    resp = client.get("/leden?tool=onbestaand")
+    assert resp.status_code == 200
+    assert "Niets gevonden" in resp.text
+    assert "Nog geen profielen" not in resp.text
+
+
+def test_leden_shows_connection_signal(client, page_engine):
+    """De ledengids is een verbonden graaf: een kaart toont z'n graaf-graad."""
+    _seed_connected(page_engine)
+    resp = client.get("/leden")
+    assert resp.status_code == 200
+    assert "verbonden met 1 maker" in resp.text
+
+
+def test_leden_filter_autocomplete_from_vocabulary(client, page_engine):
+    """Slimme filter: datalists met de echte tag/tool-vocabulaire op de volle pagina."""
+    _seed_connected(page_engine)
+    resp = client.get("/leden")
+    assert 'list="vocab-tags"' in resp.text
+    assert 'list="vocab-tools"' in resp.text
+    assert "Agents" in resp.text
+    assert "Cursor" in resp.text

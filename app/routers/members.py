@@ -19,6 +19,7 @@ from app.config import settings
 from app.db import get_db
 from app.services import (
     emphasis_service,
+    graph_service,
     members_service,
     photo_service,
     seo_service,
@@ -64,6 +65,9 @@ def members_index(
     )
     ctx = _grid_context(profiles)
     ctx.update({"tag": tag, "maakt": maakt, "zoekt": zoekt, "tool": tool})
+    # Graaf-graad per kaart: maakt van losse kaarten zichtbaar verbonden knopen
+    # (gegrond op gedeelde tags/tools, in-memory, nul AI). Geldt voor beide takken.
+    ctx["connection_counts"] = graph_service.connection_counts(profiles)
 
     if request.headers.get("HX-Request"):
         return _render(request, "members/_grid.html", ctx)
@@ -71,4 +75,9 @@ def members_index(
     ctx["canonical"] = seo_service.canonical_url("/leden")
     # Absolute basis voor og:image (publieke unfurl-kaart).
     ctx["base_url"] = settings.base_url.rstrip("/")
+    # Slimme filter-autocomplete uit de echte vocabulaire (alleen op de volle
+    # pagina; htmx-grid-fragmenten herrenderen de filterbalk niet).
+    vocab = members_service.filter_vocabulary(db)
+    ctx["tag_vocab"] = vocab["tags"]
+    ctx["tool_vocab"] = vocab["tools"]
     return _render(request, "members/index.html", ctx)

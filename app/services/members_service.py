@@ -30,7 +30,19 @@ from app.models import (
     profile_tool,
 )
 
-__all__ = ["list_public_profiles"]
+__all__ = ["list_public_profiles", "filter_vocabulary"]
+
+
+def filter_vocabulary(db: Session) -> dict[str, list[str]]:
+    """Distinct tag- en toolnamen van publieke profielen (filter-autocomplete).
+
+    Herbruikt de publieke-poort (``list_public_profiles`` eager-load't tags/tools),
+    dus alleen wat een bezoeker daadwerkelijk kan filteren komt in de suggesties —
+    geen lege/besloten termen. Eén query, in-memory ontdubbeld + gesorteerd."""
+    profiles = list_public_profiles(db)
+    tags = sorted({t.name for p in profiles for t in p.tags}, key=str.lower)
+    tools = sorted({t.name for p in profiles for t in p.tools}, key=str.lower)
+    return {"tags": tags, "tools": tools}
 
 
 def _public_base():

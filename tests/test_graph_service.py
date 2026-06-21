@@ -147,6 +147,23 @@ def test_related_members_excludes_private_and_self(SessionTest):
         assert "Verborgen" not in names
 
 
+def test_connection_counts_counts_shared_neighbours(SessionTest):
+    from app.services import graph_service
+
+    with SessionTest() as s:
+        tags = {"x": Tag(slug="x", name="x")}
+        s.add(tags["x"])
+        s.flush()
+        a = _profile(s, "A", tags=["x"], tag_objs=tags)
+        b = _profile(s, "B", tags=["x"], tag_objs=tags)
+        c = _profile(s, "C")  # geen tags/tools → graad 0
+        s.commit()
+        counts = graph_service.connection_counts([a, b, c])
+        assert counts[a.id] == 1
+        assert counts[b.id] == 1
+        assert counts[c.id] == 0
+
+
 # --------------------------------------------------------------------------- #
 # Route — het publieke profiel toont de graaf-buren                            #
 # --------------------------------------------------------------------------- #

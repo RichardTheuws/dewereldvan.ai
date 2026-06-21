@@ -3,6 +3,19 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.60.0] - 2026-06-21
+### Added — Blok 2.3: /leden wordt een verbonden graaf + slimme filter
+- **Verbindings-signaal per kaart** (`graph_service.connection_counts`, nieuw): elke maker toont z'n graaf-graad
+  ("✦ verbonden met N makers", gegrond op gedeelde tags/tools, in-memory, nul AI) → de ledengids leest als een
+  verbonden graaf i.p.v. losse kaarten, en blijft crawlbaar/responsive (tekst, geen fragiele canvas-graaf).
+- **Slimme filter-autocomplete**: de Tag- en Tool-velden krijgen native `<datalist>`-suggesties uit de échte
+  vocabulaire (`members_service.filter_vocabulary`) — alleen wat een bezoeker daadwerkelijk kan filteren.
+- **Bug-fix**: een tool-only filter zonder resultaat toonde "Nog geen profielen" (helemaal-leeg) i.p.v. "Niets
+  gevonden" (gefilterd-leeg) — `tool` ontbrak in de `_filtered`-check van `_grid.html`.
+- +5 tests (graad-unit + bug-fix + signaal + autocomplete). **917 tests groen.**
+- **Bewust uitgesteld**: een volledige interactieve force-graph met getekende edges (L-effort; vergt netwerk-
+  dichtheid + a11y/SEO/mobiel-zorg). Het verbindings-signaal levert de graaf-lezing zonder die fragiliteit.
+
 ## [0.59.0] - 2026-06-21
 ### Added — Blok 2.2: publiek profiel wordt een graaf-knoop ("Verbonden in de wereld")
 - **`graph_service.related_members`** (nieuw): tot 4 publieke makers die ≥1 tag of tool met een profiel delen,

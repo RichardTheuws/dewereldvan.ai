@@ -528,6 +528,15 @@
   color: var(--cyan);
 }
 
+/* ---- Ledengids: graaf-graad per kaart (verbonden knoop, geen losse kaart) ---- */
+.cosmic .member-star__bond {
+  margin-top: 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: var(--cyan);
+}
+
 /* ---- typography ---- */
 .cosmic .eyebrow {
   font-family: "JetBrains Mono", monospace;

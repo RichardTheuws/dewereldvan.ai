@@ -9,7 +9,7 @@
   {% endfor %}
 </div>
 {% else %}
-{% set _filtered = (tag or maakt or zoekt) %}
+{% set _filtered = (tag or maakt or zoekt or tool) %}
 <div class="constellation-empty" data-reveal>
   <span class="constellation-empty__spark" aria-hidden="true">✦</span>
   {% if _filtered %}

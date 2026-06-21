@@ -46,6 +46,25 @@ def _label(shared_tools: set[str], shared_tags: set[str]) -> str:
     return f"{n} gedeelde thema's · {sample}" if n > 1 else f"beiden in {sample}"
 
 
+def connection_counts(profiles) -> dict[int, int]:
+    """Per profiel: met hoeveel ANDERE profielen in de set het ≥1 tag/tool deelt.
+
+    De graaf-graad, pure in-memory over een al-geladen lijst (geen query, nul AI).
+    Maakt van de ledengids zichtbaar verbonden knopen i.p.v. losse kaarten."""
+    idents = {
+        p.id: _idents(getattr(p, "tags", None)) | _idents(getattr(p, "tools", None))
+        for p in profiles
+    }
+    counts = {p.id: 0 for p in profiles}
+    items = list(profiles)
+    for i in range(len(items)):
+        for j in range(i + 1, len(items)):
+            if idents[items[i].id] & idents[items[j].id]:
+                counts[items[i].id] += 1
+                counts[items[j].id] += 1
+    return counts
+
+
 def related_members(
     db: Session, profile: Profile, *, limit: int = 4
 ) -> list[RelatedMaker]:

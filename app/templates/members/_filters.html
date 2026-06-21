@@ -12,7 +12,13 @@
   <div class="member-filters__field">
     <label class="field-label" for="f-tag">Tag</label>
     <input id="f-tag" name="tag" type="search" value="{{ tag or '' }}"
-           placeholder="bijv. zorg, beleid, agents" autocomplete="off">
+           placeholder="bijv. zorg, beleid, agents" autocomplete="off"
+           {% if tag_vocab %}list="vocab-tags"{% endif %}>
+    {% if tag_vocab %}
+    <datalist id="vocab-tags">
+      {% for name in tag_vocab %}<option value="{{ name }}"></option>{% endfor %}
+    </datalist>
+    {% endif %}
   </div>
   <div class="member-filters__field">
     <label class="field-label" for="f-maakt">Wat ik maak</label>
@@ -27,6 +33,12 @@
   <div class="member-filters__field">
     <label class="field-label" for="f-tool">Tool</label>
     <input id="f-tool" name="tool" type="search" value="{{ tool or '' }}"
-           placeholder="bijv. Claude Code, Cursor, n8n" autocomplete="off">
+           placeholder="bijv. Claude Code, Cursor, n8n" autocomplete="off"
+           {% if tool_vocab %}list="vocab-tools"{% endif %}>
+    {% if tool_vocab %}
+    <datalist id="vocab-tools">
+      {% for name in tool_vocab %}<option value="{{ name }}"></option>{% endfor %}
+    </datalist>
+    {% endif %}
   </div>
 </form>

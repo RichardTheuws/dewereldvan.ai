@@ -61,6 +61,12 @@
       {% endfor %}
     </div>
     {% endif %}
+
+    {# Graaf-graad: dit lid is geen losse kaart maar een verbonden knoop. #}
+    {% set _conn = (connection_counts or {}).get(profile.id, 0) %}
+    {% if _conn %}
+    <div class="member-star__bond">✦ verbonden met {{ _conn }} maker{{ 's' if _conn != 1 else '' }}</div>
+    {% endif %}
   </div>
 
   <span class="member-star__pull" aria-hidden="true">Bekijk →</span>
