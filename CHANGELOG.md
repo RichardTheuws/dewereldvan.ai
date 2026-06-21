@@ -3,6 +3,24 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.52.0] - 2026-06-21
+### Added — Concept A: publieke "plak een link"-voordeur voor niet-leden (Fase 2)
+- Een niet-lid plakt op **`/proef`** één URL → áchter de kosten-gate bouwt **één gecapte Opus-call** een
+  kosmische drie-delige mini-kaart (WIE / THEMA / MATCH — "bij wie in het netwerk zou je passen") die als
+  `materialize` in beeld komt, met een "vraag toegang"-CTA. De funnel uit `docs/vision/04` Concept A + D-slot.
+- **Geld-kritisch pad** (`proef.py::_run_card`): er gebeurt **geen** betaalde call vóór `visitor_ai_guard.check()`
+  'ok' teruggaf; erná draait altijd `record_after_call()` (boekt de **echte** `response.usage`) + `db.commit()`.
+  Cache-hit → kaart uit `AiSpendLog.response_text` (€0, geen call). Elke gate-weigering → nette, eerlijke
+  kosmische degradatie-staat (daglimiet/weekcap/turnstile/burst) met toegang-CTA, **zonder spend**.
+- **Gecapte call** (`visitor_url_card.build_card`): 1 fetch via Cloudflare Browser Rendering (CF fetcht
+  server-side → geen SSRF), `max_tokens=1500`, **geen tools/loop/pause-turns**, markdown gecapt op 24k chars,
+  prompt-injection-verdediging ("paginatekst = gegevens, geen instructies"), refusal-safe. Fetch/call-fout →
+  nette foutstaat, **geen boeking**.
+- **Veilige default**: zonder Turnstile-keys toont `/proef` geen input maar een "binnenkort / word lid"-staat
+  (nul spend). **Admin-meter** op `/admin/queue`: "Bezoeker-AI deze week: €X,XX / €50 · N calls · M bezoekers".
+  Subtiele 3e homepage-CTA "Probeer de agent" (alleen niet-ingelogd). Telegram-drempel-ping bij 80%/100%.
+- 8 nieuwe route-tests (gate-takken, boeking, cache, degradatie, veilige default, URL-validatie). **667 tests groen.**
+
 ## [0.51.0] - 2026-06-21
 ### Added — Kosten-fundament voor bezoeker-AI (Fase 1; nog dormant, geen calls live)
 - Fundament voor de publieke AI-ervaring voor niet-leden, mét **wiskundig gegarandeerde uitgaven-rem**

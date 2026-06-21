@@ -110,6 +110,32 @@ def week_spend_eur(db: Session, now: datetime | None = None) -> float:
     return micros / _MICROS_PER_EUR
 
 
+def week_calls_count(db: Session, now: datetime | None = None) -> int:
+    """Aantal geboekte calls (rijen) over de lopende ISO-week — voor de meter."""
+    now = now or utcnow()
+    return (
+        db.scalar(
+            select(func.count())
+            .select_from(AiSpendLog)
+            .where(AiSpendLog.created_at >= _iso_week_start(now))
+        )
+        or 0
+    )
+
+
+def week_unique_visitors(db: Session, now: datetime | None = None) -> int:
+    """Aantal unieke bezoekers (visitor_id) over de lopende ISO-week — meter."""
+    now = now or utcnow()
+    return (
+        db.scalar(
+            select(func.count(func.distinct(AiSpendLog.visitor_id))).where(
+                AiSpendLog.created_at >= _iso_week_start(now)
+            )
+        )
+        or 0
+    )
+
+
 def calls_today_for_visitor(
     db: Session, visitor_id: str, now: datetime | None = None
 ) -> int:

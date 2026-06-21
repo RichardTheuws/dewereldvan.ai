@@ -1,0 +1,11 @@
+{# Nette degradatie-staat (doc §2.2) — een limiet/gate raakte, geen call/spend.
+   Eerlijk en eenvoudig, met de toegang-CTA als funnel-moment. ``message`` =
+   de reden-specifieke zin; ``reason`` = de machine-leesbare gate-reden. #}
+<div class="card" data-reveal="materialize" data-reason="{{ reason }}">
+  <div class="eyebrow">De gratis proef</div>
+  <p class="lede mt-4" style="max-width:52ch">{{ message }}</p>
+  <div class="mt-6 flex flex-wrap items-center gap-3">
+    <a class="btn" href="/register">Word lid</a>
+    <span class="muted" style="font-size:13px">Leden gebruiken de agent onbeperkt.</span>
+  </div>
+</div>

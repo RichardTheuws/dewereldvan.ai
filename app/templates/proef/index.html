@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Publieke voordeur (Concept A) — "plak een link, zie wat onze agent ziet".
+   Standalone cosmic-document (extendt base.html NIET): bezit zelf
+   <body class="cosmic">, includet de achtergrond + het levende sterrenveld.
+   Voor NIET-leden; áchter de kosten-gate. Microcopy: eenvoudig en direct. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = false %}
+  {% set seo_title = "Probeer de agent — dewereldvan.ai" %}
+  {% set seo_desc = "Plak een link en zie wat onze agent ziet: wie je bent, wat eruit springt, en bij wie in het netwerk je zou passen." %}
+  {% set og_type = "website" %}
+  {% set jsonld = none %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  {% if turnstile_configured and turnstile_site_key %}
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  {% endif %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+      <div class="links">
+        <a class="link" href="/leden">De makers</a>
+        <a class="link" href="/register">Word lid</a>
+      </div>
+    </header>
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">Probeer de agent</div>
+        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">
+          Plak een link — zie wat onze agent ziet.
+        </h1>
+        <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
+          Geef een link naar je site, project of profiel. De agent leest 'm en
+          laat zien wie je bent, wat eruit springt, en bij wie in het netwerk je
+          zou passen.
+        </p>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:480ms">
+        {% if turnstile_configured and turnstile_site_key %}
+        <form hx-post="/proef" hx-target="#proef-resultaat" hx-swap="innerHTML"
+              hx-disabled-elt="button[type=submit]"
+              class="card" style="display:flex;flex-direction:column;gap:14px">
+          <label class="field-label" for="proef-url">Jouw link</label>
+          <input type="url" id="proef-url" name="url"
+                 placeholder="https://jouwsite.nl"
+                 autocomplete="url" spellcheck="false" inputmode="url" required>
+          {# Cloudflare Turnstile-widget; het token gaat als cf-turnstile-response mee. #}
+          <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}"></div>
+          <div class="flex items-center gap-3">
+            <button type="submit" class="btn">Lees de link</button>
+            <span class="muted" style="font-size:13px">Eén link, één blik — gratis te proberen.</span>
+          </div>
+        </form>
+
+        {# Resultaat-container: de mini-kaart of een nette degradatie-staat landt hier. #}
+        <div id="proef-resultaat" class="mt-8" aria-live="polite"></div>
+        {% else %}
+        {# Veilige default: zonder Turnstile-keys geen input — nul spend. #}
+        {% include "proef/_unavailable.html" %}
+        {% endif %}
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:880ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

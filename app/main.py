@@ -44,6 +44,7 @@ from app.routers import (
     onboarding,
     photo,
     posts,
+    proef,
     profiles,
     projects,
     roadmap,
@@ -218,6 +219,9 @@ def create_app() -> FastAPI:
     app.include_router(onboarding.router)
     # Concierge-laag (Fase 1): intent-oppervlak + gegronde SSE-stroom.
     app.include_router(concierge.router)
+    # Publieke voordeur (Concept A): bezoeker plakt een URL → mini-kaart, áchter
+    # de kosten-gate (visitor_ai_guard). Publiek, geen auth-dep.
+    app.include_router(proef.router)
     # Groep-invite-link (PRD-verificatie-links §0): één deelbare WhatsApp-link →
     # direct profiel bouwen (pre-approved) + admin-generatie.
     app.include_router(invite.router)

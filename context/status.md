@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.51.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.52.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -51,10 +51,11 @@
 levende kaart van het scherpste AI-netwerk waar een agent vóór het lid de graaf doorwerkt; nieuws/tools zijn
 ondergeschikt aan de graaf. Goedgekeurd: **kosten-fundament → Concept A** (bezoeker bouwt live een mini-kaart
 uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde €50/week-cap**.
-- **Fase 1 (fundament) staat live** (v0.51.0, dormant): `AiSpendLog` + `visitor_ai_guard` + metering +
-  Turnstile-service + `client_ip`. Geen calls tot Turnstile-keys gezet zijn (veilige default = uit).
-- **Volgende**: Fase 2 = Concept A (route + ingedikte AI-call + kosmische UI + degradatie-staten + admin-meter
-  + Telegram-drempel-ping), gebouwd áchter de gate (dormant tot keys).
+- **Fase 1 (fundament)** live (v0.51.0): `AiSpendLog` + `visitor_ai_guard` (harde €50/wk-cap) + metering +
+  Turnstile-service + `client_ip`.
+- **Fase 2 = Concept A** live (v0.52.0): `/proef` — niet-lid plakt URL → gecapte Opus-call → kosmische
+  mini-kaart (WIE/THEMA/MATCH) → toegang-CTA. Admin-meter op `/admin/queue`. **Geactiveerd** met Turnstile-keys
+  in de M4-`.env` (2026-06-21) → het pad is nu live binnen de €50/wk-cap.
 
 ## Open taken
 - [x] **Telegram end-to-end gevalideerd in prod** (2026-06-20): koppelen → discovery-job (12 findings, ~3,5 min)
@@ -64,10 +65,9 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
       nieuws, ideeën, roadmap; director her-observeert geswapte htmx-fragmenten (geen onzichtbare content).
 - [x] **Zombie-run-vangnet** (v0.49.0): `sweep_orphaned_runs` veegt bij app-start (`_lifespan`) elke verweesde
       `running`-discovery-run → `failed`. Idempotent, best-effort. Geen handmatige pre-deploy-check meer nodig.
-- [ ] **Concept A (Fase 2)**: niet-lid plakt URL → live mini-kaart (ingedikte `ai_profile`-variant, 1 fetch,
-      gecapt) → CTA "vraag toegang". Achter `visitor_ai_guard`; admin-meter + Telegram-ping. Zie `docs/vision/04`.
-- [ ] **Turnstile-keys (jij, in Cloudflare)**: maak een Turnstile-widget aan → `TURNSTILE_SITE_KEY` +
-      `TURNSTILE_SECRET_KEY` in de M4-`.env`. Zonder deze blijft het niet-lid-AI-pad uit (nul spend).
+- [x] **Concept A (Fase 2)** (v0.52.0): `/proef` live áchter `visitor_ai_guard`; admin-meter + Telegram-ping.
+- [x] **Turnstile-keys gezet** (2026-06-21): widget aangemaakt, keys in M4-`.env` → Concept A geactiveerd.
+- [ ] **Turnstile secret roteren** vóór publieke launch (de keys zijn in chat gedeeld — zelfde voorzorg als de bot-token).
 - [ ] **De Briefing** (nieuws) + **Tool-reviews** — operator-side, raken het €50-budget niet. Zie `docs/vision/02`, `03`.
 - [ ] Browser-verificatie auto-crystallisatie-op-`load` (1b; JS, niet in TestClient te dekken).
 - [ ] Bot-token **roteren** via @BotFather vóór publieke launch (token was in chat gedeeld).

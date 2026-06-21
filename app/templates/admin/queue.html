@@ -40,6 +40,23 @@
         </p>
       </section>
 
+      {% if visitor_ai %}
+      <section class="mt-10" data-reveal style="--d:440ms">
+        <div class="card">
+          <div class="card-label">Bezoeker-AI deze week</div>
+          <p class="lede mt-3" style="max-width:48ch">
+            €{{ '%.2f'|format(visitor_ai.spent_eur) }} / €{{ '%.0f'|format(visitor_ai.budget_eur) }}
+            · {{ visitor_ai.calls }} call{{ 's' if visitor_ai.calls != 1 else '' }}
+            · {{ visitor_ai.visitors }} unieke bezoeker{{ 's' if visitor_ai.visitors != 1 else '' }}
+          </p>
+          <div class="mt-4" style="height:6px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden">
+            <div style="height:100%;width:{{ visitor_ai.pct }}%;background:var(--gold,#f6cd86);border-radius:6px"></div>
+          </div>
+          <div class="muted mt-2" style="font-size:12px">{{ visitor_ai.pct }}% van de weekcap · de gate weigert automatisch bij 100%</div>
+        </div>
+      </section>
+      {% endif %}
+
       <section class="mt-10" data-reveal style="--d:480ms">
         {% if pending %}
         <div class="fb-list">

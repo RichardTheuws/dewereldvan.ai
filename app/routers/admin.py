@@ -15,10 +15,12 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.db import get_db
 from app.deps import require_admin
 from app.models import Member, MemberStatus
 from app.services import approval as approval_service
+from app.services import visitor_spend
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -38,7 +40,26 @@ def queue(
         .where(Member.status == MemberStatus.pending)
         .order_by(Member.created_at.asc())
     ).all()
-    return _render(request, "admin/queue.html", {"pending": pending})
+    return _render(
+        request,
+        "admin/queue.html",
+        {"pending": pending, "visitor_ai": _visitor_ai_meter(db)},
+    )
+
+
+def _visitor_ai_meter(db: Session) -> dict:
+    """Bezoeker-AI-meter (doc §2.4): één query-set op ``ai_spend_log`` voor de
+    lopende week — uitgegeven euro's / cap, aantal calls, unieke bezoekers."""
+    budget = settings.visitor_ai_budget_eur_per_week
+    spent = visitor_spend.week_spend_eur(db)
+    pct = round(100 * spent / budget) if budget > 0 else 0
+    return {
+        "spent_eur": spent,
+        "budget_eur": budget,
+        "pct": min(pct, 100),
+        "calls": visitor_spend.week_calls_count(db),
+        "visitors": visitor_spend.week_unique_visitors(db),
+    }
 
 
 def _row(request: Request, member: Member, message: str) -> HTMLResponse:
