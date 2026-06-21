@@ -483,7 +483,10 @@ def test_card_render_uses_separate_session(make_client, SessionTest, monkeypatch
     ])
     monkeypatch.setattr(anthropic, "Anthropic", lambda *a, **k: fake)
 
-    client = make_client(None)
+    # Een LID stelt de vraag (de betaalde agent-stream is leden-only sinds de
+    # anon-budget-poort; deze test gaat over card-grounding + sessie-isolatie).
+    viewer = _seed_member(SessionTest, name="Vrager", email="vrager@x.nl")
+    client = make_client(viewer)
     token = _csrf(client)
     # Parkeer een vraag (POST /bericht) en consumeer de stream.
     client.post(
@@ -499,6 +502,36 @@ def test_card_render_uses_separate_session(make_client, SessionTest, monkeypatch
     assert "Kaartlid" in body
     # ...en is gerenderd via een aparte SessionLocal (niet de request-db).
     assert opened, "card-rendering opende GEEN eigen sessie (deelt de request-db!)"
+
+
+def test_anon_stream_is_budget_gated(make_client, SessionTest, monkeypatch):
+    """Budget-poort: een anonieme bezoeker triggert NOOIT de betaalde agent-stream.
+
+    De stream short-circuit met een 'word lid'-uitnodiging; ``stream_concierge``
+    (de betaalde call) wordt niet aangeroepen. Dit is de server-side garantie naast
+    de UI-blokkade — ook directe/curl-aanroepen blijven gratis. Beschermt de
+    €50/wk-cap tegen de enige eerder-ongecapte niet-lid-route."""
+    import anthropic
+    from app.services import concierge_service
+
+    def _boom(*a, **k):
+        raise AssertionError("stream_concierge mag NIET draaien voor een anon")
+
+    monkeypatch.setattr(concierge_service, "stream_concierge", _boom)
+    monkeypatch.setattr(anthropic, "Anthropic", lambda *a, **k: _boom())
+
+    client = make_client(None)  # anoniem
+    token = _csrf(client)
+    client.post(
+        "/concierge/bericht",
+        data={"message": "wie bouwt agents?"},
+        headers={"X-CSRF-Token": token},
+    )
+    resp = client.get("/concierge/stream")
+    assert resp.status_code == 200
+    body = resp.text
+    assert "Word lid" in body
+    assert "event: card" not in body  # geen gegronde kaart = geen agent-run
 
 
 def test_founder_session_key_canonical_in_auto_open(make_client, SessionTest):

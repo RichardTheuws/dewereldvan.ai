@@ -3,6 +3,15 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.57.1] - 2026-06-21
+### Fixed — Budget-poort: anon-concierge triggert nooit meer de betaalde agent-stream (server-side)
+- `/concierge/stream` short-circuit voor `member is None`: een anonieme bezoeker krijgt een "word lid"-
+  uitnodiging i.p.v. een betaalde `stream_concierge`-call. Sluit de enige eerder-ongecapte betaalde
+  niet-lid-route (de UI blokkeerde 'm al sinds v0.57.0; dit dekt ook directe/curl-aanroepen). Anon = ontdekken
+  (gratis instant-matches + het gecapte `/proef`), lid = de agent — exact de noordster-grens. Beschermt de
+  €50/wk-cap. De card-grounding/sessie-isolatie-test draait nu als lid; nieuwe test bewijst dat de betaalde
+  call voor anon niet draait. **905 tests groen.**
+
 ## [0.57.0] - 2026-06-21
 ### Added — Homepage-kopstuk (Blok 1, Concept B-hybride): de voordeur BEWIJST de belofte i.p.v. te beweren
 - **W2 — embedded agent-demo** (`_home_demo.html` + gedeelde `static/demo-play.js`): de agent bouwt vóór je

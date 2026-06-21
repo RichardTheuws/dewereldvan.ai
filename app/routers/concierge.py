@@ -450,6 +450,19 @@ async def stream(
             surface_ch.close()
 
     async def _gen():
+        # Budget-poort (server-side garantie): een anonieme bezoeker krijgt NOOIT
+        # de betaalde agent-stream. Anon = ontdekken (gratis instant-matches in de
+        # UI + /proef, dát pad is gecapt via visitor_ai_guard); de conversatie-agent
+        # is voor leden. Dit sluit de enige ongecapte betaalde niet-lid-route — de
+        # UI blokkeert 'm al, dit dekt ook directe/curl-aanroepen. Noordster-grens.
+        if member is None:
+            yield _sse_event(
+                "delta",
+                "Word lid om de agent je vraag te laten uitzoeken. "
+                "Je kunt nu al makers vinden via het zoekveld hierboven.",
+            )
+            yield _sse_event("done", "")
+            return
         if not settings.ai_enrich_enabled:
             yield _sse_event("done", "")
             return

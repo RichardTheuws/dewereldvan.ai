@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.57.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.57.1 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -59,8 +59,12 @@ dus de meeste hoogste-leverage-ingrepen zijn "maak zichtbaar", niet "bouw". Gepr
   `_home_demo.html` + `static/demo-play.js`, ook door `/demo` gebruikt), echte makers-constellatie met gegronde
   tag/tool-lijnen (W1, `compute_graph_links`), proef-chips via veilige `data-concierge-prefill`-haak (anon =
   gratis instant-matches; betaalde stream UI-geblokkeerd voor anon), prominente `/proef`-CTA. Adversarieel
-  geverifieerd; 904 tests groen. **Follow-ups (geëscaleerd)**: server-side budget-cap op anon-concierge +
-  Tailwind-CDN→prebuilt-CSS (beide pre-existing, FOUC/kosten).
+  geverifieerd; 904 tests groen.
+- **Anon-budget-poort (klaar, v0.57.1)** — `/concierge/stream` is leden-only voor de betaalde agent; anon krijgt
+  gratis ontdek-laag + "word lid" (server-side garantie naast de UI-blokkade). Sluit de enige ongecapte betaalde
+  niet-lid-route → €50/wk-cap beschermd. 905 tests groen.
+- **Resterende follow-up**: Tailwind dev-CDN → vooraf-gebouwde CSS op publieke pagina's (FOUC-risico mobiel,
+  pre-existing, eigen blokje).
 - **Blok 2** — `/proef` (live-tail zichtbaar), `/demo` (scan→veld-causaliteit), publiek profiel (graaf-knoop via
   strict DB-`graph_service`), `/leden` (echte verbonden graaf).
 - **Blok 3** — project, nieuws, agenda, ideeën, roadmap, auth.
