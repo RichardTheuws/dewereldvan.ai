@@ -85,6 +85,20 @@
     </div>
     {% endif %}
 
+    {# Ambient ruststaat: de canvas landt NIET leeg. De echte levende graaf +
+       één gegrond signaal, zodat het lid in een ademende wereld komt. Verdwijnt
+       zodra een gesprek begint (canvas-script onderaan). Gegrond, nul AI. #}
+    {% if preview_stars and preview_stars | length >= 3 %}
+    <section id="canvas-ambient" class="canvas-ambient mt-12" data-reveal style="--d:560ms">
+      <div class="canvas-ambient__head">
+        <span class="eyebrow eyebrow--plain">De wereld nu</span>
+        <span class="canvas-ambient__count">{{ member_count }} maker{{ 's' if member_count != 1 else '' }} · klik een ster, of vraag de agent</span>
+      </div>
+      <div class="mt-6">{% include "_constellation.html" %}</div>
+      <a class="link home-constellation__all mt-6" href="/leden">Bekijk alle makers →</a>
+    </section>
+    {% endif %}
+
     {# De levende stroom (SSE) onder één EventSource — host bezeten door de canvas. #}
     <div id="concierge-materialisatie" class="canvas-stream mt-10" hx-ext="sse">
       <div id="concierge-flow" class="concierge-flow" role="status" aria-live="polite"></div>
@@ -123,6 +137,15 @@
         var input = form.querySelector('input[name=message]');
         if (input) input.value = ask.getAttribute('data-canvas-ask');
         form.requestSubmit();
+      });
+
+      // Zodra een gesprek begint, wijkt de ambient ruststaat (de levende graaf)
+      // zodat het antwoord centraal komt. Stille no-op als 'ie er niet is.
+      document.addEventListener('htmx:afterRequest', function (e) {
+        if (e.target && e.target.id === 'canvas-form') {
+          var amb = document.getElementById('canvas-ambient');
+          if (amb) amb.style.display = 'none';
+        }
       });
 
       // Ververs de suggestie-chips ná elk afgerond antwoord (done-event), zodat ze

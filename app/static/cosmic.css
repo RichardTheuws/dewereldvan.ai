@@ -3036,6 +3036,22 @@ a.roadmap-item__origin:focus-visible {
 .canvas-form .concierge-form__input { font-size: 17px; }
 .canvas-stream { margin-top: 28px; }
 
+/* Ambient ruststaat van de canvas: de levende graaf + één gegrond signaal, zodat
+   een lid niet in een leeg veld landt maar in een ademende wereld. */
+.cosmic .canvas-ambient__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cosmic .canvas-ambient__count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
 /* Een surface-fragment is een NEUTRALE wrapper (geen eigen kaart-chrome dat het
    grid/board dubbel omlijst) en spant de volle breedte van de resultaten-grid,
    zodat een heel ledengrid/roadmap-board niet in één kolom wordt geperst. */

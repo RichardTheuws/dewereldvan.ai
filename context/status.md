@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.67.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.68.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -75,8 +75,13 @@ dus de meeste hoogste-leverage-ingrepen zijn "maak zichtbaar", niet "bouw". Gepr
   (v0.66.1) + **Browser-UAT (Laag 3) compleet + gedraaid + visueel geverifieerd** ✅ (v0.67.0: `tests/e2e/`,
   Playwright/Chromium tegen echte app, geseede SQLite, AI uit; 6 journeys + harde JS-error-vangst; nacht-CI-job;
   `pip install -r requirements-e2e.txt && playwright install chromium && pytest -m e2e tests/e2e/`).
-- **Enige resterende eigen blok**: volledige interactieve `/leden`-force-graph (L-effort, loont pas bij dichtere
-  community). Niet blokkerend. **Werkregel**: nooit "af" zonder eigen (browser-)verificatie — zie memory.
+- **Lid-canvas ambient graaf** ✅ (v0.68.0): de canvas landt niet meer leeg — de echte levende constellatie ("De
+  wereld nu") óók voor leden, gegrond/nul-AI, browser-geverifieerd als ingelogd lid. **Inzicht**: een lid ziet
+  de canvas (dual-shell), niet de publieke kopstuk-voordeur — dat moet apart verrassen.
+- **Volgende (lid-canvas verras-slices)**: gegronde "sinds je weg was"-signalen (nieuwe makers deze week,
+  openstaande matches/intro's via `match_service`/`connections`) in de ambient ruststaat.
+- **Resterend eigen blok**: volledige interactieve `/leden`-force-graph (L-effort). **Werkregel**: nooit "af"
+  zonder eigen browser-verificatie — zie memory `feedback-verify-before-done`.
 - **Blok 3** — project, nieuws, agenda, ideeën, roadmap, auth.
 - **Niet doen**: geen tweede look; geen LLM voor graaf-relaties (strict uit DB → nul kosten/hallucinatie); geen
   vrij betaald agent-veld op de publieke voordeur; geen nieuwe e-mailkanalen.

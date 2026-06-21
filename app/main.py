@@ -276,10 +276,21 @@ def _register_core_routes(app: FastAPI) -> None:
             # rustige "zal ik je profiel opbouwen?"-aanbod in de canvas.
             profile = member.profile
             needs_profile = profile is None or (profile.completeness or 0) < 100
+            # Ambient ruststaat: de canvas mag NIET leeg landen. Geef de echte
+            # levende graaf mee (zelfde poort-call als de voordeur) zodat het lid
+            # in een ademende wereld landt i.p.v. een leeg veld — gegrond, nul AI.
+            public_profiles = members_service.list_public_profiles(db)
+            preview_stars = public_profiles[:8]
             return templates.TemplateResponse(
                 request,
                 "concierge/_canvas.html",
-                {"member": member, "needs_profile": needs_profile},
+                {
+                    "member": member,
+                    "needs_profile": needs_profile,
+                    "member_count": len(public_profiles),
+                    "preview_stars": preview_stars,
+                    "star_links": compute_graph_links(preview_stars),
+                },
             )
         # De voordeur toont één echt signaal (aantal publieke makers) + een
         # constellatie-preview. Eén poort-call (zelfde eager-load als /leden),

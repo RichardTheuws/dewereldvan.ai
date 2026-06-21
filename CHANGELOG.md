@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.68.0] - 2026-06-21
+### Changed — De lid-canvas landt niet meer leeg: ambient levende graaf (de regressie die Richard zag)
+- Een ingelogd lid kreeg op `/` de agent-canvas met enkel een begroeting + leeg veld + 2 chips — "mooi maar
+  leeg", verraste niemand (Richards observatie + "we moeten iedereen verrassen, zelfs mij"). De canvas toont nu
+  in ruststaat de **echte levende makers-constellatie** ("De wereld nu · N makers") — dezelfde W1-graaf die de
+  publieke voordeur al had, nu óók voor leden. Gegrond (echte leden + tag/tool-lijnen), **nul AI-kosten**.
+  Verdwijnt zodra een gesprek begint (het antwoord krijgt focus).
+- Constellatie geëxtraheerd naar herbruikbaar partial **`_constellation.html`** (voordeur + canvas delen 'm,
+  geen duplicatie). Canvas-handler geeft `preview_stars`/`star_links`/`member_count` mee (zelfde poort-call).
+- **Zelf in de browser geverifieerd, nu óók als ingelogd lid** (e2e `test_member_lands_in_canvas_agent_shell` +
+  element-screenshot): de constellatie rendert echt in de canvas. 7 browser-tests groen, 930 unit groen.
+- **Eerlijk**: dit is slice 1 (de levende graaf). Volgt: gegronde "sinds je weg was"-signalen (nieuwe makers,
+  openstaande matches/intro's via `match_service`/`connections`) zodat de canvas nóg meer verrast.
+
 ## [0.67.0] - 2026-06-21
 ### Added — Browser-UAT (Laag 3) compleet + uitgevoerd: de échte ervaring in Chromium
 - `tests/e2e/` (Playwright, `@pytest.mark.e2e`): start de **echte app** als uvicorn-subprocess tegen een geseede

@@ -122,3 +122,40 @@ def test_proef_renders_without_js_errors(live_server, page: Page):
     page.goto(live_server + "/proef", wait_until="networkidle")
     expect(page.locator("body.cosmic")).to_be_visible()
     _assert_no_js_errors(errors, "/proef")
+
+
+def _member_session_cookie(member_id: int) -> str:
+    """Signeer een sessie-cookie zoals Starlette's SessionMiddleware (zelfde
+    _SECRET als de conftest), zodat de browser als ingelogd lid laadt."""
+    import base64
+    import json
+
+    import itsdangerous
+    from tests.e2e.conftest import _SECRET
+
+    raw = base64.b64encode(json.dumps({"member_id": member_id}).encode())
+    return itsdangerous.TimestampSigner(_SECRET).sign(raw).decode()
+
+
+def test_member_lands_in_canvas_agent_shell(live_server, page: Page):
+    """Wat een INGELOGD lid op / ziet: de agent-canvas (dual-shell), niet de
+    publieke kopstuk-voordeur. Verifieert dat 'ie rendert + de suggestie-chips
+    laden + geen JS-fouten — exact het scherm dat Richard dagelijks ziet."""
+    errors = _collect_errors(page)
+    page.context.add_cookies([{
+        "name": "session", "value": _member_session_cookie(1),
+        "domain": "127.0.0.1", "path": "/",
+    }])
+    page.goto(live_server + "/", wait_until="networkidle")
+    expect(page.locator("#canvas-form")).to_be_visible()
+    expect(page.locator(".canvas-intro .headline")).to_contain_text("Welkom")
+    # De contextuele suggestie-chips laden (hx-get /concierge/chips on load).
+    page.wait_for_selector("#canvas-suggesties a, #canvas-suggesties button", timeout=6000)
+    # Ambient ruststaat: de levende graaf landt óók voor het lid (niet leeg).
+    ambient = page.locator("#canvas-ambient")
+    expect(ambient).to_be_visible()
+    assert page.locator("#canvas-ambient .home-star").count() >= 3
+    ambient.scroll_into_view_if_needed()
+    ambient.screenshot(path="tests/e2e/_canvas_ambient.png")
+    page.screenshot(path="tests/e2e/_member_canvas.png", full_page=True)
+    _assert_no_js_errors(errors, "/ (member canvas)")

@@ -1,0 +1,32 @@
+{# Herbruikbare levende makers-constellatie: echte leden als sterren + gegronde
+   verbindingslijnen (gedeelde tags/tools, uit graph_service/compute_graph_links).
+   Verwacht: ``preview_stars`` (lijst Profile, idealiter >=3) + ``star_links``
+   (index-paren). Caller guard't op aantal + levert de eigen lege-staat. Gedeeld
+   door de publieke voordeur (index.html) én de lid-canvas. #}
+{% set coords = [[18,30],[44,15],[72,22],[87,46],[63,64],[37,75],[13,57],[52,43]] %}
+<div class="home-constellation" data-reveal>
+  <svg class="home-constellation__links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    {% for a, b in (star_links or []) %}
+    {% if a < (coords | length) and b < (coords | length) %}
+    <line x1="{{ coords[a][0] }}" y1="{{ coords[a][1] }}" x2="{{ coords[b][0] }}" y2="{{ coords[b][1] }}" vector-effect="non-scaling-stroke"></line>
+    {% endif %}
+    {% endfor %}
+  </svg>
+  <div class="home-constellation__stars">
+    {% for p in preview_stars %}
+    {% set c = coords[loop.index0] %}
+    {% set _src = (p.photo_url | safe_url) if p.photo_url else '' %}
+    <a class="home-star{% if loop.index0 < 3 %} home-star--gold{% endif %}"
+       href="/leden/{{ p.slug }}" style="left:{{ c[0] }}%;top:{{ c[1] }}%"
+       aria-label="{{ p.display_name }}{% if p.headline %} — {{ p.headline }}{% endif %}">
+      <span class="home-star__dot{% if not _src %} home-star__dot--initials{% endif %}">
+        {% if _src %}<img src="{{ _src }}" alt="" loading="lazy">{% else %}{{ (p.display_name or '?')[:1] | upper }}{% endif %}
+      </span>
+      <span class="home-star__name">{{ p.display_name }}</span>
+      {% if p.headline or p.makes_summary %}
+      <span class="home-star__card" aria-hidden="true">{{ p.headline or p.makes_summary }}</span>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+</div>
