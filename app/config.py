@@ -77,6 +77,28 @@ class Settings(BaseSettings):
     # geldt voor zowel ingelogde als anonieme inzending).
     max_feedback_body_chars: int = 4000
 
+    # --- Bezoeker-AI-kostengovernance (Fase 1, doc 04 §4.2) ---
+    # Cloudflare Turnstile (mens-bewijs per betaalde niet-lid-call). Zonder
+    # secret-key is het hele niet-lid-AI-pad UIT (veilige default: geen sleutels
+    # = geen onbedoelde spend); spiegelt hoe Telegram zonder token gegate is.
+    turnstile_site_key: str | None = None  # TURNSTILE_SITE_KEY (publiek, in de widget)
+    turnstile_secret_key: str | None = None  # TURNSTILE_SECRET_KEY (server-side verify)
+    # Per-bezoeker daglimiet (rij-tel 24u op visitor_id).
+    visitor_ai_calls_per_day: int = 3
+    # Per-IP daglimiet (grover vangnet voor cookie-wissers).
+    visitor_ai_calls_per_ip_per_day: int = 20
+    # Globale weekcap — de wiskundige garantie: som(cost) lopende ISO-week
+    # + voorschat > budget → geen call.
+    visitor_ai_budget_eur_per_week: float = 50.0
+    # Anti-burst: minimaal aantal seconden tussen twee calls van één bezoeker.
+    visitor_ai_min_seconds_between_calls: int = 30
+    # TTL van de identieke-prompt-cache (identieke prompt binnen TTL → €0, geen call).
+    visitor_ai_prompt_cache_ttl_hours: int = 24
+    # Modelprijs (Opus 4.8, doc §3) voor de kostberekening uit token-usage.
+    # In euro per miljoen tokens; bevroren per rij in cost_eur_micros.
+    ai_price_input_eur_per_mtok: float = 4.65
+    ai_price_output_eur_per_mtok: float = 23.25
+
     @property
     def admin_email_set(self) -> set[str]:
         return {e.strip().lower() for e in self.admin_emails.split(",") if e.strip()}

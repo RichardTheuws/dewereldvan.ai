@@ -3,6 +3,27 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.51.0] - 2026-06-21
+### Added — Kosten-fundament voor bezoeker-AI (Fase 1; nog dormant, geen calls live)
+- Fundament voor de publieke AI-ervaring voor niet-leden, mét **wiskundig gegarandeerde uitgaven-rem**
+  (€50/week). Volgt `docs/vision/04-bezoeker-ervaring-en-budget.md` §4. **Nog geen route/UI** — dit is
+  alleen de meet- + gate-laag; zonder Turnstile-keys is het hele pad sowieso uit (veilige default).
+- **`AiSpendLog`** (append-only kasboek) + migratie `0022`: één rij per betaalde niet-lid-call met de
+  **echte** token-usage uit `response.usage`, kost bevroren in `cost_eur_micros` (integer → geen drift),
+  `cache_hit`, en `response_text` (zodat een identieke-prompt-cache-hit later kan hér-serveren). Léden-acties
+  schrijven hier **niet** → de €50-telling omvat per definitie alleen "gewone bezoekers".
+- **`visitor_ai_guard.check()`** — de harde **pre-call gate** (9-staps, doc §4.3): Turnstile → anti-burst →
+  identieke-prompt-cache → per-bezoeker daglimiet → per-IP daglimiet → **globale weekcap met conservatieve
+  voorschat**. De weekcap is een gate vóór de call, geen alert achteraf → kosten-uitloop is uitgesloten.
+  `record_after_call()` boekt de echte usage + signaleert een 80%/100%-drempelkruising (idempotent per week)
+  voor een Telegram-ping.
+- **`visitor_spend`** (metering: week-som over ISO-week, glijdende dag/IP-tellingen, cache-lookup, kost uit
+  config-prijzen), **`turnstile_service`** (server-side siteverify; geen keys = pad uit), **`client_ip()`**
+  (`CF-Connecting-IP`, faal-veilig — achter de Tunnel is `request.client.host` blind), en de **`dwv_vid`**
+  signed-cookie visitor-id. Alle limieten zijn env-config (zonder deploy bij te stellen).
+- 19 nieuwe tests (kostberekening, week-isolatie, daglimieten, weekcap, cache, Turnstile-default, anti-burst,
+  drempelkruising, léden tellen niet mee). **659 tests groen.**
+
 ## [0.50.0] - 2026-06-21
 ### Changed — Motion-systeem volledig uitgerold over de showcase (synergie, één identiteit)
 - Scroll-reveal + semantische varianten + per-bezoek-variatie (v0.49.0, bewezen op het profiel) nu op

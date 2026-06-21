@@ -6,6 +6,31 @@ Elke beslissing bevat: **Context** (waarom kiezen), **Beslissing** (wat), **Alte
 
 ---
 
+## [2026-06-21] Bezoeker-AI-ervaring met harde €50/week kosten-cap
+
+**Context**: De showcase moet niet-leden de kracht van AI laten *ervaren*, niet erover laten lezen.
+Richard staat een klein marketingbudget toe (€50/week aan AI-calls voor gewone bezoekers, excl.
+leden-acties) maar heeft **geen buffer voor kosten-uitloop** (solo, mantelzorg). 4 visie-subteams
+(`docs/vision/01-04`) leverden de richting; subteam 4 ontwierp de governance.
+
+**Beslissing**: Bouw **Concept A** (niet-lid plakt URL → live mini-kaart "wie ben je + bij wie pas je
+in het netwerk" → CTA toegang) als publieke voordeur. Begrensd door een **harde globale weekcap als
+pre-call gate**: vóór élke betaalde call wordt de week-spend + conservatieve voorschat gesommeerd; over
+€50 = geen call. Plus per-bezoeker daglimiet, Turnstile, per-IP-vangnet, identieke-prompt-cache. Spend
+per call geboekt op **echte** `response.usage` in `ai_spend_log` (léden tellen niet mee). Veilige default:
+zonder Turnstile-keys staat het hele pad uit (nul spend). Fasering: fundament → Concept A → C → B.
+
+**Alternatieven**:
+- Alleen rate-limit zonder euro-cap: afgewezen — limiteert frequentie, niet euro's; één dure uitschieter leegt de pot.
+- Pure IP-metering: afgewezen — achter de Cloudflare-Tunnel is `request.client.host` één upstream-IP (blind); cookie+Turnstile+weekcap is de werkende combinatie.
+- Concierge-chat of Discovery als gratis voordeur: afgewezen — duurder/variabeler per call (€0,12–€1+) en zwakkere funnel.
+
+**Gevolgen**: Kosten-uitloop is wiskundig uitgesloten (cap is een plafond vóór de call, niet een alert).
+Nieuw `AiSpendLog`-model + `visitor_ai_guard`. Nieuws (`docs/vision/02`) en tool-reviews (`03`) blijven
+operator-side (raken het €50-budget niet). Vereist eenmalig Turnstile-keys van Richard in Cloudflare.
+
+---
+
 ## [2026-06-17] Visie: alle vier richtingen, datamodel holistisch
 
 **Context**: MVP = profielen, maar "moet veel meer worden". Datamodel-keuze nu bepaalt of

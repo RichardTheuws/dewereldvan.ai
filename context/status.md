@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.50.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.51.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -47,9 +47,14 @@
   her-geobserveerd). Statische assets cache-gebust (`?v={{ asset_ver }}`). Volledig reduced-motion-safe.
 
 ## Huidige focus
-Net afgerond: notificatie-pivot (e-mail eruit, Telegram + avatar + rich content) en de
-source-of-truth-opschoning (dit document). De engine + integraties staan; de nadruk verschuift naar
-**ervaring polijsten + de keten live valideren** (Discovery-precisie meten, Telegram end-to-end testen).
+**Strategische richting bepaald** (2026-06-21, 4 visie-subteams → `docs/vision/`): De Wereld van AI = een
+levende kaart van het scherpste AI-netwerk waar een agent vóór het lid de graaf doorwerkt; nieuws/tools zijn
+ondergeschikt aan de graaf. Goedgekeurd: **kosten-fundament → Concept A** (bezoeker bouwt live een mini-kaart
+uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde €50/week-cap**.
+- **Fase 1 (fundament) staat live** (v0.51.0, dormant): `AiSpendLog` + `visitor_ai_guard` + metering +
+  Turnstile-service + `client_ip`. Geen calls tot Turnstile-keys gezet zijn (veilige default = uit).
+- **Volgende**: Fase 2 = Concept A (route + ingedikte AI-call + kosmische UI + degradatie-staten + admin-meter
+  + Telegram-drempel-ping), gebouwd áchter de gate (dormant tot keys).
 
 ## Open taken
 - [x] **Telegram end-to-end gevalideerd in prod** (2026-06-20): koppelen → discovery-job (12 findings, ~3,5 min)
@@ -59,6 +64,11 @@ source-of-truth-opschoning (dit document). De engine + integraties staan; de nad
       nieuws, ideeën, roadmap; director her-observeert geswapte htmx-fragmenten (geen onzichtbare content).
 - [x] **Zombie-run-vangnet** (v0.49.0): `sweep_orphaned_runs` veegt bij app-start (`_lifespan`) elke verweesde
       `running`-discovery-run → `failed`. Idempotent, best-effort. Geen handmatige pre-deploy-check meer nodig.
+- [ ] **Concept A (Fase 2)**: niet-lid plakt URL → live mini-kaart (ingedikte `ai_profile`-variant, 1 fetch,
+      gecapt) → CTA "vraag toegang". Achter `visitor_ai_guard`; admin-meter + Telegram-ping. Zie `docs/vision/04`.
+- [ ] **Turnstile-keys (jij, in Cloudflare)**: maak een Turnstile-widget aan → `TURNSTILE_SITE_KEY` +
+      `TURNSTILE_SECRET_KEY` in de M4-`.env`. Zonder deze blijft het niet-lid-AI-pad uit (nul spend).
+- [ ] **De Briefing** (nieuws) + **Tool-reviews** — operator-side, raken het €50-budget niet. Zie `docs/vision/02`, `03`.
 - [ ] Browser-verificatie auto-crystallisatie-op-`load` (1b; JS, niet in TestClient te dekken).
 - [ ] Bot-token **roteren** via @BotFather vóór publieke launch (token was in chat gedeeld).
 - [ ] Bij launch: apex-ingress teaser→app + wachtlijst-adressen → `member`-tabel.

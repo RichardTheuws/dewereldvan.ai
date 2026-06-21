@@ -14,8 +14,14 @@ import secrets
 import unicodedata
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
+
+from itsdangerous import BadSignature, URLSafeSerializer
 
 from app.config import settings
+
+if TYPE_CHECKING:
+    from fastapi import Request, Response
 
 # Number of random bytes behind a raw token (→ ~43-char URL-safe string).
 _TOKEN_BYTES = 32
@@ -96,3 +102,75 @@ def unique_slug(base: str, exists: Callable[[str], bool]) -> str:
     while exists(f"{root}-{n}"):
         n += 1
     return f"{root}-{n}"
+
+
+# --- Echte client-IP achter de Cloudflare Tunnel ------------------------------
+def client_ip(request: Request) -> str:
+    """Geef de echte client-IP, niet de (ene) upstream-Tunnel-IP.
+
+    Achter de Cloudflare Tunnel is ``request.client.host`` altijd het ene
+    upstream-IP → waardeloos voor per-IP-limieten. Cloudflare zet ``CF-Connecting-IP``
+    op de echte bezoeker-IP, en de Tunnel is de enige weg naar binnen, dus de
+    bezoeker kan die header niet spoofen (doc §2.1).
+
+    Faal-veilig (doc §risico 3): ontbreekt de header, val terug op
+    ``request.client.host``; ontbreekt ook dat → ``"unknown"`` (behandeld als
+    één emmer; de weekcap blijft de garantie). Nooit crashen op een ontbrekende
+    header.
+    """
+    header = request.headers.get("CF-Connecting-IP")
+    if header and header.strip():
+        return header.strip()
+    if request.client and request.client.host:
+        return request.client.host
+    return "unknown"
+
+
+# --- visitor_id: server-gezette, signed cookie (telunit voor de daglimiet) ----
+# Naam van de signed cookie die de bezoeker over requests heen identificeert.
+VISITOR_COOKIE = "dwv_vid"
+# Aparte salt zodat een visitor-cookie nooit met de sessie-cookie te verwarren is.
+_VISITOR_SALT = "dwv-visitor-id"
+# 180 dagen — de cookie hoeft alleen lang genoeg te leven om de daglimiet-emmer
+# stabiel te houden; geen gevoelige data (alleen een opaque id).
+_VISITOR_MAX_AGE = 60 * 60 * 24 * 180
+
+
+def _visitor_serializer() -> URLSafeSerializer:
+    """Signer met dezelfde ``secret_key``-mechaniek als de sessie-cookie."""
+    return URLSafeSerializer(settings.secret_key, salt=_VISITOR_SALT)
+
+
+def _read_visitor_id(request: Request) -> str | None:
+    """Lees + verifieer de signed visitor-cookie; None bij afwezig/ongeldig."""
+    raw = request.cookies.get(VISITOR_COOKIE)
+    if not raw:
+        return None
+    try:
+        value = _visitor_serializer().loads(raw)
+    except BadSignature:
+        return None
+    return value if isinstance(value, str) and value else None
+
+
+def get_or_set_visitor_id(request: Request, response: Response) -> str:
+    """Geef de bezoeker-id uit de signed cookie, of mint+zet een verse.
+
+    De id is een opaque, willekeurige token (geen PII). Bij een geldige cookie
+    hergebruiken we 'm (stabiele daglimiet-emmer); ontbreekt of klopt de
+    handtekening niet, dan minten we een nieuwe en zetten 'm als signed,
+    HttpOnly, SameSite=Lax cookie op het meegegeven ``response``.
+    """
+    existing = _read_visitor_id(request)
+    if existing is not None:
+        return existing
+    visitor_id = secrets.token_urlsafe(16)
+    response.set_cookie(
+        VISITOR_COOKIE,
+        _visitor_serializer().dumps(visitor_id),
+        max_age=_VISITOR_MAX_AGE,
+        httponly=True,
+        samesite="lax",
+        secure=True,
+    )
+    return visitor_id
