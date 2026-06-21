@@ -199,7 +199,7 @@ def _dedup_context(db: Session) -> list[str]:
 def _group_context(db: Session) -> tuple[list[str], list[str]]:
     """De actieve tags + de tool-catalogus (namen) zodat de AI verbanden naar de
     groep kan leggen. Geanonimiseerd — geen persoonsdata, alleen de canon."""
-    tags = [t.name for t in db.scalars(select(Tag.name).order_by(Tag.name)).all() if t]
+    tags = [t for t in db.scalars(select(Tag.name).order_by(Tag.name)).all() if t]
     tools = [t for t in db.scalars(select(Tool.name).order_by(Tool.name)).all() if t]
     return tags, tools
 

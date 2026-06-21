@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.53.1] - 2026-06-21
+### Fixed — `curate_news` crashte op echte tags (geobserveerde eerste run)
+- `news_curation_service._group_context` las `t.name` op een `select(Tag.name)` (dat al strings oplevert) →
+  `AttributeError` zodra er échte tags in de DB stonden. De unit-tests misten het (lege test-DB). Gefixt naar
+  `t` (zoals de tools-regel ernaast al deed) + regressie-test met echte tag/tool-rijen. Gevonden door de
+  eerste geobserveerde prod-run vóór de wekelijkse cadans aan ging — precies waarvoor die run bedoeld is.
+
 ## [0.53.0] - 2026-06-21
 ### Added — "De Briefing": AI-gecureerd wekelijks nieuws met mens-in-de-lus (MVP)
 - Nieuws wordt geen aggregator-feed maar een **wekelijkse AI-gecureerde briefing** met duiding-per-item +

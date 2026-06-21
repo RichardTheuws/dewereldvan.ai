@@ -26,6 +26,8 @@ from app.models import (
     MemberStatus,
     PostReviewState,
     PostSourceKind,
+    Tag,
+    Tool,
 )
 from app.security import naive_utc, utcnow
 from app.services import news_curation_service, post_service
@@ -424,3 +426,22 @@ def test_admin_reject_via_htmx(make_client, seed, SessionTest):
     refreshed = s2.get(post_service.Post, cand_id)
     assert refreshed.review_state == PostReviewState.rejected
     s2.close()
+
+
+def test_group_context_returns_names_with_real_rows(db):
+    """Regressie: _group_context las ``t.name`` op een ``select(Tag.name)`` (al
+    strings) → crashte zodra er échte tags/tools waren (lege test-DB miste 't).
+    Met rijen mag het niet crashen en moet het de namen platweg teruggeven."""
+    db.add_all(
+        [
+            Tag(name="agents", slug="agents"),
+            Tag(name="evals", slug="evals"),
+            Tool(name="Claude Code", slug="claude-code"),
+        ]
+    )
+    db.flush()
+    tags, tools = news_curation_service._group_context(db)
+    assert "agents" in tags and "evals" in tags
+    assert "Claude Code" in tools
+    # En de seed-prompt bouwt zonder fout (het pad dat in prod faalde).
+    assert news_curation_service._seed_prompt(db)
