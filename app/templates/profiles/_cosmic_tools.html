@@ -1,23 +1,55 @@
 {# Tool-stack: logo (of letter-tile fallback) + naam, link naar de tool met
-   rel=noopener. Verwacht `tools` (iterable met .name/.url/.logo_url). De
-   logo-bron is `tool.logo_url` met inline letter-tile-fallback (spiegelt
-   `_member_star`/de tags). #}
+   rel=noopener. Verwacht `tools` (iterable met .name/.url/.logo_url +
+   .tool_review). De logo-bron is `tool.logo_url` met inline letter-tile-fallback
+   (spiegelt `_member_star`/de tags).
+
+   AUGMENT (doc 03 §5.3): heeft een tool een `tool_review`, dan tonen we een
+   subtiel goud micro-stipje op de pill en — via een native <details>-disclosure
+   (geen JS, geen nieuwe look) — het kosmische AI-dossier (`_tool_review.html`)
+   eronder. Geen review → exact de bestaande pill (regressie-vrij). #}
 <div class="tool-stack">
   {% for tool in tools %}
   {% set _logo_url = tool.logo_url | safe_url if tool.logo_url else '' %}
   {% set _href = tool.url | safe_url if tool.url else '' %}
-  {% if _href %}
+  {% set _has_review = tool.tool_review is defined and tool.tool_review %}
+  {% if _has_review %}
+  <details class="tool-review-item" style="position:relative">
+    <summary class="tool-pill" style="cursor:pointer;list-style:none"
+             title="{{ tool.name }} — bekijk AI-review">
+      {% if _logo_url %}
+      <img class="tool-pill__logo" src="{{ _logo_url }}" alt="" loading="lazy" width="22" height="22">
+      {% else %}
+      <span class="tool-pill__tile" aria-hidden="true">{{ tool.name[:1] | upper }}</span>
+      {% endif %}
+      <span class="tool-pill__name">{{ tool.name }}</span>
+      {# Subtiel goud micro-stipje: er is een AI-review. #}
+      <span aria-hidden="true" title="AI-review beschikbaar"
+            style="width:6px;height:6px;border-radius:50%;background:var(--gold);
+                   box-shadow:0 0 6px var(--gold);flex:0 0 auto"></span>
+    </summary>
+    <div style="margin-top:10px;max-width:42rem">
+      {% include "profiles/_tool_review.html" %}
+    </div>
+  </details>
+  {% elif _href %}
   <a class="tool-pill" href="{{ _href }}" target="_blank" rel="noopener noreferrer"
      title="{{ tool.name }}">
-  {% else %}
-  <span class="tool-pill" title="{{ tool.name }}">
-  {% endif %}
     {% if _logo_url %}
     <img class="tool-pill__logo" src="{{ _logo_url }}" alt="" loading="lazy" width="22" height="22">
     {% else %}
     <span class="tool-pill__tile" aria-hidden="true">{{ tool.name[:1] | upper }}</span>
     {% endif %}
     <span class="tool-pill__name">{{ tool.name }}</span>
-  {% if _href %}</a>{% else %}</span>{% endif %}
+  </a>
+  {% else %}
+  <span class="tool-pill" title="{{ tool.name }}">
+    {% if _logo_url %}
+    <img class="tool-pill__logo" src="{{ _logo_url }}" alt="" loading="lazy" width="22" height="22">
+    {% else %}
+    <span class="tool-pill__tile" aria-hidden="true">{{ tool.name[:1] | upper }}</span>
+    {% endif %}
+    <span class="tool-pill__name">{{ tool.name }}</span>
+  </span>
+  {% endif %}
   {% endfor %}
 </div>

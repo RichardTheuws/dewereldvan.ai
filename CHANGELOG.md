@@ -3,6 +3,25 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.54.0] - 2026-06-21
+### Added — AI-tool-reviews: de catalogus die zichzelf bijhoudt (Fase A+B)
+- Claude reviewt automatisch de tools die leden gebruiken (`docs/vision/03`), getoond als **AI-dossier — geen
+  sterren**. AUGMENT op het `project_enrich_service`-recept; operator-side (~€0,08/review, ~€4/kwartaal),
+  raakt het €50-bezoekersbudget niet.
+- **`Tool` augment** (migratie 0024): `tool_review` (JSON), `tool_reviewed_at`, `tool_review_status`
+  (`ok`|`failed`|`no_source`). **`tool_review_service`** spiegelt `project_enrich`: `review`/`review_one`
+  (eigen sessie, best-effort, nooit raisen) / `refresh_all` (idempotent) / `trigger_async` /
+  `trigger_for_profile_tools` (warme trigger bij tool-koppelen).
+- **Scope**: alleen tools met **≥1 lid-gebruiker** + valide `url` (geen url → `no_source`); re-review na 90d.
+- **Eén gegronde call** (geen web_search/loop): `browser_render_service.markdown` (gecapt 12k) → Opus 4.8 met
+  `record_review`-tool (geen `messages.parse`), strikte grounding + anti-marketing-prompt, `limitations`
+  **verplicht niet-leeg**, `null` bij onbekend. **SSRF-guard** (`logo_service._safe_url`) vóór élke fetch.
+  Refusal/parse-fail → `status='failed'` en de **oude review blijft staan** (nooit met leeg overschrijven).
+- **UI**: kosmisch dossier (`_tool_review.html`) met AI-herkomst (`AI-REVIEW · host · datum`), labelblokken
+  (Goed voor / Voor wie / Sterk / **Let op** / Prijsmodel / NL-BE), netwerk-strip "gebruikt door N leden",
+  confidence-toon, AI-disclosure in gewone taal; goud micro-stipje + `<details>`-dossier op de tool-pill.
+  Nachtjob `review_tools` (wekelijks/idempotent). 8 nieuwe tests. **691 tests groen.**
+
 ## [0.53.1] - 2026-06-21
 ### Fixed — `curate_news` crashte op echte tags (geobserveerde eerste run)
 - `news_curation_service._group_context` las `t.name` op een `select(Tag.name)` (dat al strings oplevert) →

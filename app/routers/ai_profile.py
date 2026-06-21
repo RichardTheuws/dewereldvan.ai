@@ -66,6 +66,7 @@ from app.services import (
     profile_link_service,
     profile_service,
     project_enrich_service,
+    tool_review_service,
     tool_service,
 )
 from app.services import ai_profile as ai_service
@@ -662,6 +663,10 @@ def patch_field(
     _patch_text_field(db, profile, naam, value)
     db.commit()
     db.refresh(profile)
+    # Warme trigger (doc 03 §1): koppelt het lid een tool zonder review, start de
+    # AI-review async (geen UX-vertraging; no-op zonder Cloudflare → vangnet = nachtjob).
+    if naam == "tools":
+        tool_review_service.trigger_for_profile_tools(profile)
     # Na een bewuste edit verdwijnt de "afgeleid"-marker voor dit veld.
     return _slot_response(request, profile, naam, uncertain=False)
 

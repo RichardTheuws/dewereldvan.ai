@@ -7,7 +7,8 @@
 #   2. distill_memories  — werkt het sessie-overstijgend concierge-geheugen bij (F2).
 #   3. enrich_projects   — screenshot-hero + AI-samenvatting op de projectpagina's.
 #   4. enrich_tool_logos — best-effort favicon/og:image-logo per tool-URL.
-#   5. curate_news       — WEKELIJKS (zondag): stelt de nieuws-briefing voor als
+#   5. review_tools      — AI-dossier per ≥1-gebruiker-tool (re-review na 90 dagen).
+#   6. curate_news       — WEKELIJKS (zondag): stelt de nieuws-briefing voor als
 #                          pending_review (mens-in-de-lus; nooit silent-publish).
 #
 # Bewust GEEN `set -e`: faalt job 1, dan moet job 2 alsnog draaien. Elke job is
@@ -37,6 +38,10 @@ echo "--- $(ts) enrich_projects ---"
 echo "--- $(ts) enrich_tool_logos ---"
 "$DOCKER" compose exec -T web python -m app.jobs.enrich_tool_logos || \
   echo "WAARSCHUWING: enrich_tool_logos eindigde met een fout"
+
+echo "--- $(ts) review_tools ---"
+"$DOCKER" compose exec -T web python -m app.jobs.review_tools || \
+  echo "WAARSCHUWING: review_tools eindigde met een fout"
 
 # Wekelijkse gate: nieuws-curatie draait ALLEEN op zondag (date +%u == 7).
 # "Schaarste = signaal" — dagelijks zou te veel admin-poort-werk en lauwe items

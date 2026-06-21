@@ -1,0 +1,99 @@
+{# Het AI-dossier (doc 03 §4.1) — GEEN sterren/cijfer. Een kosmische kaart met de
+   gestructureerde review: one-liner als lead + labelblokken (Goed voor / Voor wie /
+   Sterk / Let op / Prijsmodel / NL-BE), netwerk-strip, confidence-toon en zichtbare
+   AI-herkomst. Hergebruikt bestaande klassen (card / eyebrow / card-label / chip);
+   géén nieuwe look, géén cosmic.css-wijziging.
+
+   Verwacht: `tool` (.name/.url/.tool_review/.tool_review_status/.tool_reviewed_at)
+   en optioneel `tool_users` (#leden dat de tool gebruikt). Lege/fail-staten:
+   - no_source  -> "Nog geen review — de website ontbreekt."
+   - failed/geen -> stil (laatste goede review of niets).
+#}
+{% set _rev = tool.tool_review %}
+{% set _host = (tool.url | safe_url | replace('https://','') | replace('http://','')).split('/')[0] if tool.url else '' %}
+
+{% if not _rev %}
+  {% if tool.tool_review_status == 'no_source' %}
+  <div class="card" data-reveal="materialize">
+    <div class="eyebrow eyebrow--plain" style="margin-bottom:10px">AI-REVIEW</div>
+    <p class="card-desc">Nog geen review — de website ontbreekt.</p>
+  </div>
+  {% endif %}
+  {# failed/geen review -> stil: render niets. #}
+{% else %}
+<article class="card" data-reveal="materialize" style="text-align:left;cursor:default">
+  {# Herkomst meteen zichtbaar: AI-REVIEW · host · datum. #}
+  <div class="eyebrow" style="margin-bottom:14px;flex-wrap:wrap">
+    AI-REVIEW{% if _host %} · {{ _host }}{% endif %}{% if tool.tool_reviewed_at %} · {{ tool.tool_reviewed_at | nl_datum }}{% endif %}
+  </div>
+
+  {# one_liner als lead. #}
+  <p class="card-label" style="font-size:1.05rem;margin-bottom:14px">{{ _rev.one_liner }}</p>
+
+  {% if _rev.confidence == 'low' %}
+  <p class="card-desc" style="margin-bottom:14px;opacity:.85">
+    <span class="chip">beperkt onderbouwd</span>
+    Deze review is gemaakt op weinig bron-informatie — help 'm aan te vullen.
+  </p>
+  {% endif %}
+
+  <div class="space-y-3">
+    {% if _rev.good_for %}
+    <div>
+      <div class="card-label">Goed voor</div>
+      <ul class="card-desc" style="margin-top:4px;padding-left:1.1em;list-style:disc">
+        {% for g in _rev.good_for %}<li>{{ g }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if _rev.for_whom %}
+    <div>
+      <div class="card-label">Voor wie</div>
+      <p class="card-desc" style="margin-top:4px">{{ _rev.for_whom }}</p>
+    </div>
+    {% endif %}
+
+    {% if _rev.strengths %}
+    <div>
+      <div class="card-label">Sterk</div>
+      <ul class="card-desc" style="margin-top:4px;padding-left:1.1em;list-style:disc">
+        {% for s in _rev.strengths %}<li>{{ s }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {# Let op (limitations) — bewust evenveel gewicht als Sterk: eerlijkheid is de feature. #}
+    <div>
+      <div class="card-label">Let op</div>
+      <ul class="card-desc" style="margin-top:4px;padding-left:1.1em;list-style:disc">
+        {% for l in _rev.limitations %}<li>{{ l }}</li>{% endfor %}
+      </ul>
+    </div>
+
+    {% if _rev.pricing_model %}
+    <div>
+      <div class="card-label">Prijsmodel</div>
+      <p class="card-desc" style="margin-top:4px">{{ _rev.pricing_model }}</p>
+    </div>
+    {% endif %}
+
+    {% if _rev.nlbe_relevance %}
+    <div>
+      <div class="card-label">NL/BE</div>
+      <p class="card-desc" style="margin-top:4px">{{ _rev.nlbe_relevance }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  {# Netwerk-strip: dít is wat geen externe review-site kan tonen. #}
+  {% if tool_users %}
+  <p class="card-url" style="margin-top:14px">Gebruikt door {{ tool_users }} {{ 'lid' if tool_users == 1 else 'leden' }} in dit netwerk</p>
+  {% endif %}
+
+  {# AI-herkomst-disclosure — gewone, heldere taal (STYLEGUIDE §3). #}
+  <p class="card-desc" style="margin-top:14px;opacity:.7;font-size:.82rem">
+    Gemaakt door Claude op basis van de tool-website. Klopt iets niet? Vul aan.
+  </p>
+</article>
+{% endif %}
