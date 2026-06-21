@@ -28,6 +28,7 @@ from app.services import (
     photo_service,
     profile_service,
     seo_service,
+    tool_review_note_service,
 )
 from app.services import visibility as visibility_service
 
@@ -40,6 +41,28 @@ def _render(request: Request, name: str, ctx: dict | None = None, **kw) -> HTMLR
 
 def _tags_string(profile: Profile) -> str:
     return ", ".join(tag.name for tag in profile.tags)
+
+
+def _tool_notes_context(db: Session, profile: Profile, viewer: Member | None) -> dict:
+    """Mens-naast-AI-context (doc 03 §4.3) voor de tool-dossiers van een profiel.
+
+    Bouwt een map ``tool_notes`` (tool_id -> zichtbare aanvullingen) voor elke tool
+    van het profiel, plus ``can_note`` (ingelogd lid mag aanvullen) en ``is_admin``
+    (verberg-knop + "ververs nu"). Geen viewer → geen formulier/notes (publieke
+    pagina blijft schoon). De notes overschrijven de AI-review NOOIT; ze worden er
+    apart naast getoond door ``_tool_review_notes.html``.
+    """
+    if viewer is None:
+        return {"tool_notes": {}, "can_note": False, "is_admin": False}
+    tool_notes = {
+        tool.id: tool_review_note_service.list_notes(db, tool)
+        for tool in profile.tools
+    }
+    return {
+        "tool_notes": tool_notes,
+        "can_note": True,
+        "is_admin": viewer.role.value == "admin",
+    }
 
 
 def _edit_context(request: Request, profile: Profile, **extra) -> dict:
@@ -385,6 +408,8 @@ def view_profile(
             "photo": photo_service.photo_or_initials(profile),
             "emphasis_cls": emphasis_service.emphasis_class(profile),
             "canonical": seo_service.canonical_url(f"/leden/{profile.slug}"),
+            # Mens-naast-AI-correctiepad voor de tool-dossiers (doc 03 §4.3).
+            **_tool_notes_context(db, profile, viewer),
             # JSON-LD + OG-beeld alleen voor publiek-indexeerbare profielen.
             "jsonld": None if noindex else seo_service.jsonld_person(profile),
             "og_image": (

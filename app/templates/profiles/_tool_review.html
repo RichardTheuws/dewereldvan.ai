@@ -95,5 +95,18 @@
   <p class="card-desc" style="margin-top:14px;opacity:.7;font-size:.82rem">
     Gemaakt door Claude op basis van de tool-website. Klopt iets niet? Vul aan.
   </p>
+
+  {# Admin "ververs nu" — BEWUST admin-only (kostenbeheersing, doc 03 §4.3). #}
+  {% if is_admin %}
+  <button class="btn btn--ghost btn--sm" style="margin-top:10px"
+          hx-post="/tools/{{ tool.id }}/herzie"
+          hx-swap="outerHTML">Ververs nu</button>
+  {% endif %}
+
+  {# Mens NAAST de AI: aanvullingen + correctie-formulier (doc 03 §4.3). Apart
+     getoond, NOOIT over de AI-review heen. Alleen ingelogde leden vullen aan.
+     `notes` komt uit de per-tool map `tool_notes` (tool_id -> lijst) als die er is. #}
+  {% set notes = (tool_notes[tool.id] if tool_notes is defined and tool_notes else None) %}
+  {% include "profiles/_tool_review_notes.html" %}
 </article>
 {% endif %}

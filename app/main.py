@@ -49,6 +49,7 @@ from app.routers import (
     projects,
     roadmap,
     seo,
+    tools,
 )
 from app.services import members_service, post_service, seo_service
 
@@ -205,6 +206,7 @@ def create_app() -> FastAPI:
     # Ledenpagina-feature (L1-L4): stubs nu, bodies door SERVICES/ROUTES+UI.
     app.include_router(members.router)
     app.include_router(projects.router)
+    app.include_router(tools.router)
     app.include_router(photo.router)
     app.include_router(seo.router)
     # Ervaring-laag (E1-E4): feedback, ideeenbus, roadmap, onboarding. Stubs nu;

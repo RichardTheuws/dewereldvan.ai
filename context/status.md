@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.54.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.55.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -69,9 +69,9 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
 - [x] **Turnstile-keys gezet** (2026-06-21): widget aangemaakt, keys in M4-`.env` → Concept A geactiveerd.
 - [x] **De Briefing** (nieuws, v0.53.0–0.53.1): AI-curatie (`curate_news`, wekelijks/zondag) → mens-in-de-lus
       admin-shortlist → kosmische briefing-strip. Eerste prod-run geobserveerd (3 rake kandidaten, 1 bug gevangen+gefixt); kandidaten goedgekeurd.
-- [x] **Tool-reviews** (`docs/vision/03`, v0.54.0): Fase A+B — `tool_review_service` (AI-dossier, geen sterren,
-      ≥1-gebruiker-drempel, SSRF-guard, oude-review-behoud bij fout) + nachtjob + kosmisch dossier op de tool-pill.
-      Fase C (lid-correctie-notes) + D (netwerk-grounding) = fast-follow.
+- [x] **Tool-reviews** (`docs/vision/03`): Fase A+B (v0.54.0, AI-dossier geen sterren, ≥1-gebruiker-drempel,
+      SSRF-guard, oude-review-behoud) + Fase C (v0.55.0, mens-naast-AI-correctie-notes, admin-verberg + admin-only
+      "ververs nu"). Live geverifieerd: 3 echte dossiers (Claude Code/Cursor/Obsidian). Fase D (netwerk-grounding-filter) = fast-follow.
 - [ ] Browser-verificatie auto-crystallisatie-op-`load` (1b; JS, niet in TestClient te dekken).
 - [ ] Bij launch: apex-ingress teaser→app + wachtlijst-adressen → `member`-tabel.
 

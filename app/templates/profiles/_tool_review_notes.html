@@ -1,0 +1,40 @@
+{# Aanvullingen uit het netwerk (doc 03 §4.3) — mens NAAST de AI, nooit eroverheen.
+   Zichtbaar onder het AI-blok: per aanvulling "Aangevuld door <lid> · <datum>" +
+   body. Admin ziet per aanvulling een verberg-knopje. Daaronder het correctie-
+   formulier (alleen voor ingelogde leden). Hergebruikt bestaande kosmische klassen
+   (card-label / card-desc / chip / btn); GEEN nieuwe look, geen cosmic.css-wijziging.
+
+   Verwacht: `tool`, `notes` (zichtbare ToolReviewNote's, nieuwste eerst),
+   `can_note` (bool), `is_admin` (bool), optioneel `error`. Dit is het swap-target
+   (id="tool-notes-{{ tool.id }}") voor de correctie-post en de admin-verberg-post.
+#}
+<div id="tool-notes-{{ tool.id }}" class="tool-notes" style="margin-top:14px">
+  {% if notes %}
+  <div class="card-label" style="margin-bottom:6px">Aanvullingen uit het netwerk</div>
+  <div class="space-y-3">
+    {% for note in notes %}
+    <div class="card-desc" style="border-left:2px solid var(--line);padding-left:10px">
+      <div style="font-size:.82rem;opacity:.8">
+        <strong>Aangevuld door {{ note.member.name if note.member else 'een lid' }}</strong>
+        {% if note.created_at %} · {{ note.created_at | nl_datum }}{% endif %}
+        {% if note.field %} · <span class="chip">{{ note.field }}</span>{% endif %}
+      </div>
+      <p style="margin-top:4px">{{ note.body }}</p>
+      {% if is_admin %}
+      <button class="btn btn--ghost btn--sm" style="margin-top:4px"
+              hx-post="/admin/tool-notes/{{ note.id }}/verberg"
+              hx-target="#tool-notes-{{ tool.id }}"
+              hx-swap="outerHTML">Verberg</button>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if can_note %}
+    {% if error %}
+    <p class="card-desc" style="margin-top:8px;color:var(--gold)">{{ error }}</p>
+    {% endif %}
+    {% include "profiles/_tool_review_note_form.html" %}
+  {% endif %}
+</div>

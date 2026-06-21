@@ -1,0 +1,30 @@
+{# Correctie-/aanvulformulier (doc 03 §4.3) — mens NAAST de AI. Post naar
+   /tools/{id}/correctie; bij succes komt de verse notes-lijst terug en swapt
+   #tool-notes-{{ tool.id }}. Microcopy eenvoudig + direct (STYLEGUIDE §3).
+   Optioneel een veld-select (welk onderdeel). Alleen ingelogde leden zien dit
+   (de includerende template zet `can_note`). Hergebruikt bestaande klassen. #}
+<form class="tool-note-form" style="margin-top:10px"
+      hx-post="/tools/{{ tool.id }}/correctie"
+      hx-target="#tool-notes-{{ tool.id }}"
+      hx-swap="outerHTML"
+      hx-on::after-request="if(event.detail.successful){this.reset();}">
+  <label class="field-label" for="tool-note-body-{{ tool.id }}">
+    Klopt iets niet, of weet je meer? Vul aan.
+  </label>
+  <textarea id="tool-note-body-{{ tool.id }}" name="body" rows="2" maxlength="4000"
+            required placeholder="Jouw aanvulling of correctie"></textarea>
+  <div class="tool-note-form__foot" style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+    <label class="field-label" for="tool-note-field-{{ tool.id }}" style="margin:0">Onderdeel</label>
+    <select id="tool-note-field-{{ tool.id }}" name="field">
+      <option value="">Algemeen</option>
+      <option value="one_liner">Wat de tool is</option>
+      <option value="good_for">Goed voor</option>
+      <option value="for_whom">Voor wie</option>
+      <option value="strengths">Sterk</option>
+      <option value="limitations">Let op</option>
+      <option value="pricing_model">Prijsmodel</option>
+      <option value="nlbe_relevance">NL/BE</option>
+    </select>
+    <button class="btn" type="submit" style="margin-left:auto">Aanvullen ✦</button>
+  </div>
+</form>

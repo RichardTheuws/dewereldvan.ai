@@ -50,6 +50,7 @@ from app.models.profile_link import ProfileLink
 from app.models.roadmap_item import RoadmapItem
 from app.models.tag import Tag, profile_tag
 from app.models.tool import Tool, profile_tool
+from app.models.tool_review_note import ToolReviewNote
 
 __all__ = [
     "Base",
@@ -77,6 +78,7 @@ __all__ = [
     "profile_tag",
     "Tool",
     "profile_tool",
+    "ToolReviewNote",
     "Offering",
     "OfferingSlugHistory",
     "Need",

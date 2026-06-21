@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.55.0] - 2026-06-21
+### Added — Tool-reviews Fase C: mens-naast-AI-correctie (de experts maken de review beter)
+- Een lid kan een AI-tool-review **aanvullen/corrigeren**; de aanvulling staat **náást** het AI-blok
+  ("Aanvullingen uit het netwerk · Aangevuld door <lid>"), **nooit** stil over de AI heen — herkomst +
+  attributie blijven zichtbaar (`docs/vision/03` §4.3). Zet het grootste geloofwaardigheidsrisico
+  (experts die fouten zien) om in de sterkste feature.
+- **`ToolReviewNote`** (migratie 0025): `tool_id`, `member_id` (SET NULL), `field` (welk onderdeel, nullable),
+  `body`, `hidden`, `created_at`. Aparte tabel — raakt `tool.tool_review` nooit aan.
+- **`tool_review_note_service`**: `add_note` (rate-limited per lid, `rate_limit_tool_note_per_hour=8`,
+  body-cap), `list_notes` (alleen zichtbaar), `hide_note` (admin + AuditLog `tool_note_hidden`).
+- **Routes** (`tools.py`): `POST /tools/{id}/correctie` (`require_member`), `POST /admin/tool-notes/{id}/verberg`
+  (`require_admin`), `POST /tools/{id}/herzie` ("ververs nu", **bewust admin-only** voor AI-kostenbeheersing —
+  leden beïnvloeden gratis via correcties + de nachtjob doet de cadans).
+- **UI**: aanvullingen + correctie-formulier onder het dossier (`_tool_review_notes.html` /
+  `_tool_review_note_form.html`), alleen voor ingelogde leden; admin krijgt verberg- + ververs-knoppen.
+  Hergebruikt feedback/ideeën-styling, geen tweede look. 11 nieuwe tests. **703 tests groen.**
+
 ## [0.54.1] - 2026-06-21
 ### Fixed — tool-review-call gaf 400 (thinking + geforceerde tool_choice)
 - Opus 4.8 weigert `thinking` zodra `tool_choice` tool-gebruik forceert ("Thinking may not be enabled when

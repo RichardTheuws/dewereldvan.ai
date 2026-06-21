@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     # anonieme schrijf (storage-DoS) zonder het anonieme pad te schrappen.
     rate_limit_feedback_anon_per_hour: int = 6  # per IP
     rate_limit_idea_per_hour: int = 6  # per lid
+    # Tool-review-correctie/aanvulling (doc 03 §4.3, mens-naast-AI) — per lid,
+    # glijdend uur-venster (spiegelt rate_limit_idea_per_hour). Iets ruimer: een
+    # expert vult soms meerdere velden van één tool tegelijk aan.
+    rate_limit_tool_note_per_hour: int = 8  # per lid
     # Agenda/nieuws plaatsen (Post) — per lid, glijdend uur-venster, over events
     # en nieuws samen. Iets ruimer dan ideeën: een lid voegt soms een reeks
     # meetups/artikelen tegelijk toe.
