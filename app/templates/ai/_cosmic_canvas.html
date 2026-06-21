@@ -51,14 +51,19 @@
       }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
       els.forEach(function (el) { io.observe(el); });
       // htmx-bewust: nieuw ingeswapte [data-reveal]-fragmenten zijn niet bij load
-      // geobserveerd → zonder dit blijven ze op opacity 0 (onzichtbaar). Observeer
-      // ze alsnog zodat ze net zo netjes onthullen (meteen als ze in beeld staan).
-      body.addEventListener('htmx:afterSwap', function (e) {
-        var node = e.target; if (!node || !node.querySelectorAll) return;
-        if (node.matches && node.matches('[data-reveal]') && !node.classList.contains('is-in')) io.observe(node);
+      // geobserveerd → zonder dit blijven ze op opacity 0 (onzichtbaar). Een swap is
+      // het resultaat van een BEWUSTE actie (de gebruiker wacht erop) → onthul direct
+      // i.p.v. via de scroll-observer (anders blijft een resultaat dat net onder de
+      // vouw of in de rootMargin-dode-zone landt onzichtbaar tot je scrolt). De
+      // materialize-transitie speelt nog steeds bij het zetten van .is-in.
+      function revealSwapped(node) {
+        if (!node || !node.classList) return;
+        if (node.matches && node.matches('[data-reveal]')) node.classList.add('is-in');
+        if (!node.querySelectorAll) return;
         var fresh = node.querySelectorAll('[data-reveal]:not(.is-in)');
-        for (var n = 0; n < fresh.length; n++) io.observe(fresh[n]);
-      });
+        for (var n = 0; n < fresh.length; n++) fresh[n].classList.add('is-in');
+      }
+      body.addEventListener('htmx:afterSwap', function (e) { revealSwapped(e.target); });
       // Failsafe: mocht de .is-in-reveal-CSS ooit ontbreken (bv. een gecachte
       // oude cosmic.css), dan blijven is-in-elementen op opacity 0 staan. Detecteer
       // dat en val terug op body.ready zodat content NOOIT onzichtbaar blijft.

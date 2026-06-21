@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.52.1] - 2026-06-21
+### Fixed — htmx-geswapte resultaten bleven onzichtbaar (o.a. de /proef-mini-kaart)
+- **Bug** (Richard: "de proef werkt niet"): de mini-kaart werd correct gegenereerd (call + boeking OK,
+  goede inhoud) maar **verscheen niet**. De kaart draagt `data-reveal="materialize"` (start `opacity:0`)
+  en werd via htmx in `#proef-resultaat` geswapt; de reveal-director onthulde geswapte content via de
+  scroll-`IntersectionObserver` met `rootMargin: -8%` — een resultaat dat net onder de vouw / in die
+  dode zone landt werd nooit "in beeld" gezien → bleef onzichtbaar tot je scrolde.
+- **Fix** (`ai/_cosmic_canvas.html`): een htmx-swap is een **bewuste actie** (de gebruiker wacht op het
+  resultaat) → de `htmx:afterSwap`-handler zet nu **direct** `.is-in` op nieuwe `[data-reveal]`-fragmenten
+  i.p.v. ze aan de scroll-observer te geven. De materialize-transitie speelt nog steeds; content kan niet
+  meer onzichtbaar blijven. Geldt voor élke htmx-swap (ook leden-filter, voten, toevoegen).
+
 ## [0.52.0] - 2026-06-21
 ### Added — Concept A: publieke "plak een link"-voordeur voor niet-leden (Fase 2)
 - Een niet-lid plakt op **`/proef`** één URL → áchter de kosten-gate bouwt **één gecapte Opus-call** een
