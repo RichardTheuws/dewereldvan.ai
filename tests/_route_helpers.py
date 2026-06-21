@@ -79,3 +79,30 @@ def app_paths(app) -> set[str]:
 
     _walk(app.routes)
     return out
+
+
+def app_get_routes(app) -> set[str]:
+    """Alle GET-route-paden (templates met ``{param}``) van een FastAPI-app.
+
+    De basis van de zelf-groeiende UAT-dekkingswacht: een nieuwe GET-route
+    verschijnt hier automatisch, zodat ``test_uat_coverage`` 'm afdwingt te
+    classificeren. Sluit de StaticFiles-mount uit (geen ``.methods``) en de
+    HEAD/OPTIONS-spiegels."""
+    out: set[str] = set()
+
+    def _walk(routes):
+        for r in routes:
+            methods = getattr(r, "methods", None) or set()
+            p = getattr(r, "path", None)
+            if p and "GET" in methods:
+                out.add(p)
+            orig = getattr(r, "original_router", None)
+            if orig is not None:
+                _walk(orig.routes)
+            else:
+                sub = getattr(r, "routes", None)
+                if sub:
+                    _walk(sub)
+
+    _walk(app.routes)
+    return out

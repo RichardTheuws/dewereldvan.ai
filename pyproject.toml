@@ -6,8 +6,13 @@ requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+# De snelle suite (elke commit) sluit de browser-UAT (Laag 3) uit; die draait
+# nachtelijk/on-demand via `pytest -m e2e`.
+addopts = "-q -m 'not e2e'"
 asyncio_mode = "auto"
+markers = [
+    "e2e: browser-journey-UAT (Laag 3) — vereist een live instance + Playwright; uit de snelle suite.",
+]
 
 [tool.ruff]
 target-version = "py312"

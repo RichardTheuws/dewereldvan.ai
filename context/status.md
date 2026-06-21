@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-21 · **Versie**: 0.55.0 · **Branch**: `main`
+**Laatste update**: 2026-06-21 · **Versie**: 0.56.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -47,6 +47,23 @@
   her-geobserveerd). Statische assets cache-gebust (`?v={{ asset_ver }}`). Volledig reduced-motion-safe.
 
 ## Huidige focus
+**Sitewide ervaring-audit + UAT-fundament** (2026-06-21, v0.56.0). Een read-only audit-workflow toetste 12
+schermen tegen de noordster (W1–W5) + STYLEGUIDE: **9/10 FAIL, alleen de besloten canvas PASS** — patroon is
+overal "mooi maar niet slim" (kosmische schil grotendeels conform, maar het W-mechanisme + getoonde
+intelligentie/gegrondheid ontbreekt). Veel intelligentie is **al gebouwd maar wordt niet getoond/weggegooid**,
+dus de meeste hoogste-leverage-ingrepen zijn "maak zichtbaar", niet "bouw". Geprioriteerd bouwplan:
+- **Blok 0 (klaar, v0.56.0)** — Slimme, zelf-groeiende **UAT**: Laag 1 (route-dekkingswacht, geen-5xx +
+  auth-poorten + volledigheids-gate) + Laag 2 (ervaring-invarianten: cosmic-identiteit + fonts + noindex-poort).
+  Laag 3 (browser-journeys, `e2e`-marker) voorbereid; bouwen ná het homepage-kopstuk.
+- **Blok 1 (volgende)** — **Homepage-kopstuk** = Concept B-hybride: gedeelde `_home_demo.html` (de agent bouwt
+  een profiel vóór je ogen, W2), echte mini-constellatie van leden (W1), proef-chips via bestaande
+  `[data-concierge-fill]`-haak. Bewijst de belofte in 20s op mobiel, nul AI-kosten.
+- **Blok 2** — `/proef` (live-tail zichtbaar), `/demo` (scan→veld-causaliteit), publiek profiel (graaf-knoop via
+  strict DB-`graph_service`), `/leden` (echte verbonden graaf).
+- **Blok 3** — project, nieuws, agenda, ideeën, roadmap, auth.
+- **Niet doen**: geen tweede look; geen LLM voor graaf-relaties (strict uit DB → nul kosten/hallucinatie); geen
+  vrij betaald agent-veld op de publieke voordeur; geen nieuwe e-mailkanalen.
+
 **Strategische richting bepaald** (2026-06-21, 4 visie-subteams → `docs/vision/`): De Wereld van AI = een
 levende kaart van het scherpste AI-netwerk waar een agent vóór het lid de graaf doorwerkt; nieuws/tools zijn
 ondergeschikt aan de graaf. Goedgekeurd: **kosten-fundament → Concept A** (bezoeker bouwt live een mini-kaart

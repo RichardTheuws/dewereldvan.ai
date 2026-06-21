@@ -3,6 +3,24 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.56.0] - 2026-06-21
+### Added — Slimme, zelf-groeiende UAT (Laag 1 + 2): "weet altijd zeker dat álles werkt, ook terwijl we doorbouwen"
+- **Laag 1 — route-dekkingswacht** (`tests/test_uat_coverage.py`): enumereert via `app_get_routes` élke
+  GET-route live en dwingt af: (a) **geen 5xx in geen enkele identiteit** (anon/lid/admin) — een 500 is hier
+  een echte bug; (b) de **auth-poorten kloppen** (publiek→200, besloten→303 /login, admin→403 voor een gewoon
+  lid); (c) een **volledigheids-gate** — élke route moet in precies één classificatie-bucket staan, dus een
+  nieuwe pagina kan niet ongetest/ongeclassificeerd shippen (de zelf-groei).
+- **Laag 2 — ervaring-invarianten** (`tests/test_uat_experience.py`): consolideert de verspreide per-pagina
+  styleguide-asserties tot één afgedwongen contract op élke kosmische pagina — `class="cosmic"` + de drie
+  verplichte fonts (Fraunces/JetBrains Mono/Spline Sans) + cache-gebust `cosmic.css` + géén sier-fonts; plus de
+  vindbaarheidspoort (publiek-indexeerbaar = NIET noindex; besloten/auth = noindex). Een nieuwe publieke
+  cosmic-pagina wordt automatisch in het contract afgedwongen.
+- **Laag 3 — browser-journey-UAT** voorbereid: `e2e`-pytest-marker geregistreerd; de snelle suite (elke commit)
+  sluit 'm uit (`addopts = -m 'not e2e'`), zodat de echte JS/htmx/SSE/canvas-journeys (W1-constellatie,
+  `/demo`-materialisatie, magic-link-login, concierge-surface, `/proef`) nachtelijk/on-demand draaien met
+  gestubde AI (nul kosten). Implementatie volgt ná het homepage-kopstuk (test de nieuwe ervaring direct).
+- Helper `app_get_routes` toegevoegd aan `tests/_route_helpers.py`. **+188 UAT-checks; 891 tests groen.**
+
 ## [0.55.0] - 2026-06-21
 ### Added — Tool-reviews Fase C: mens-naast-AI-correctie (de experts maken de review beter)
 - Een lid kan een AI-tool-review **aanvullen/corrigeren**; de aanvulling staat **náást** het AI-blok
