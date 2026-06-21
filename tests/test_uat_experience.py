@@ -157,6 +157,14 @@ def test_public_cosmic_pages_honor_identity(make_client, path):
     assert re.search(r"/static/cosmic\.css\?v=", body), (
         f"{path} linkt cosmic.css niet cache-gebust (?v=...)."
     )
+    # Regressie-guard: geen runtime Tailwind-CDN op de mobiele first-touch (FOUC);
+    # de utilities komen uit de statische /static/util.css (geen build-pipeline).
+    assert "cdn.tailwindcss.com" not in body, (
+        f"{path} laadt de Tailwind dev-CDN — gebruik /static/util.css (FOUC-risico)."
+    )
+    assert re.search(r"/static/util\.css\?v=", body), (
+        f"{path} linkt de statische util.css niet (de CDN-vervanger)."
+    )
     _assert_no_forbidden_fonts(body, path)
 
 

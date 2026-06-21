@@ -16,7 +16,7 @@
   {% set noindex = true %}
   {% set seo_title = "De wereld van AI" %}
   {% include "_seo_head.html" %}
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
   {# htmx + htmx-ext-sse SYNCHROON in de head: een lid opent direct in de stroom,
      dus we leunen NIET op de lazy unpkg-bootstrap van _concierge.html. We zetten
      de boot-flag zodat die bootstrap (en een dubbele sse-load) niet meer afgaat. #}

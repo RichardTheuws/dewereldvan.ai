@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.66.0] - 2026-06-21
+### Changed — Runtime Tailwind-CDN weg op alle publieke pagina's → statische util.css (FOUC weg)
+- De render-blocking dev-CDN (`cdn.tailwindcss.com`) is op **alle 32 geserveerde cosmic-pagina's** vervangen door
+  een handgeschreven statische **`app/static/util.css`** (cache-gebust) — geen FOUC/layout-shift meer op de
+  mobiele WhatsApp-first-touch, en **géén build-pipeline** (CLAUDE.md: lage op-last). util.css bevat exact de
+  utilities die de templates gebruiken (Tailwind-schaal), geverifieerd compleet: elke gebruikte utility-token op
+  een geserveerde pagina heeft een regel (de "missende" licht-kleur-tokens zaten enkel in de dode `_flash.html`).
+- **Regressie-guard** in de UAT (Laag 2): elke publieke cosmic-pagina mag de CDN NIET meer laden en moet util.css
+  linken — nieuwe pagina's erven dit automatisch. **930 tests groen.**
+- `base.html` + `_flash.html` blijven ongemoeid (dood: niemand extend't base.html) — losse hygiëne-opruiming later.
+
 ## [0.65.0] - 2026-06-21
 ### Added — Blok 3.6: agent-aan-de-deur op de invite-landing (Blok 3 compleet)
 - De groep-invite-landing toont vóór het naam+e-mail-formulier nu de **gescripte agent-demo** (`_home_demo.html`
