@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.61.0] - 2026-06-21
+### Added — Blok 2.4: /demo toont de scan→veld-causaliteit (Blok 2 compleet)
+- Per materialiserend veld verschijnt nu synchroon een **reasoning-regel** ("homepage gelezen → naam + headline",
+  "projecten gevonden: 2", "vraag/aanbod afgeleid", …) in het scan-paneel, zodat de bezoeker ZIET dat elk veld
+  uit de scan kwam — geen blinde timer meer (W2-aanscherping). Gedreven door `data-demo-reason` op de stappen +
+  een `[data-demo-reasons]`-uitvoer; de gedeelde `demo-play.js` emit ze synchroon met de materialisatie.
+- **Reduced-motion** behoudt de causaliteit: alles direct zichtbaar mét de reason-regels (mechanisme blijft
+  leesbaar, geen statische before/after). De homepage-mini-demo deelt het script maar heeft geen reasons → no-op.
+- +1 test. **918 tests groen.** Hiermee is **Blok 2 (publieke pad)** afgerond: `/proef`, publiek profiel,
+  `/leden`, `/demo`.
+
 ## [0.60.0] - 2026-06-21
 ### Added — Blok 2.3: /leden wordt een verbonden graaf + slimme filter
 - **Verbindings-signaal per kaart** (`graph_service.connection_counts`, nieuw): elke maker toont z'n graaf-graad

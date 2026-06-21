@@ -25,7 +25,21 @@
     var typeEl = root.querySelector("[data-demo-type]");
     var playBtn = root.querySelector("[data-demo-play]");
     var hint = root.querySelector("[data-demo-hint]");
+    var reasonsOut = root.querySelector("[data-demo-reasons]");
     var played = false;
+
+    // Causaliteit zichtbaar maken: als een stap een data-demo-reason draagt,
+    // verschijnt die regel synchroon met het veld ("homepage gelezen → naam"),
+    // zodat je ZIET dat dit veld uit de scan kwam (anti-"blinde timer").
+    function emitReason(el) {
+      if (!reasonsOut || !el.getAttribute) return;
+      var reason = el.getAttribute("data-demo-reason");
+      if (!reason) return;
+      var line = document.createElement("div");
+      line.className = "fetch-line fetch-line--ok";
+      line.textContent = "·· " + reason;
+      reasonsOut.appendChild(line);
+    }
 
     function showNow(el) { el.style.opacity = "1"; }
 
@@ -59,7 +73,7 @@
       if (reasoning) setTimeout(function () { materialize(reasoning); }, t);
       t += 1100;
       steps.forEach(function (el) {
-        setTimeout(function () { materialize(el); }, t);
+        setTimeout(function () { materialize(el); emitReason(el); }, t);
         t += 750;
       });
     }
@@ -72,7 +86,9 @@
       if (reduce) {
         if (typeEl) typeEl.textContent = typeEl.getAttribute("data-demo-type");
         if (reasoning) showNow(reasoning);
-        steps.forEach(showNow);
+        // Reduced-motion: toon alles direct MAAR behoud de causaliteit (de
+        // reason-regels) zodat het mechanisme ook hier leesbaar blijft.
+        steps.forEach(function (el) { showNow(el); emitReason(el); });
         return;
       }
       if (typeEl) {

@@ -210,6 +210,15 @@ def test_demo_uses_shared_script(client):
     assert "querySelectorAll('.demo-step')" not in body
 
 
+def test_demo_shows_scan_to_field_causality(client):
+    """W2-aanscherping: per veld een reasoning-regel ('homepage gelezen → naam'),
+    zodat de bezoeker de scan→veld-causaliteit ziet i.p.v. een blinde timer."""
+    body = client.get("/demo").text
+    assert "data-demo-reasons" in body  # de uitvoer-container
+    assert 'data-demo-reason=' in body  # ten minste één gekoppelde stap
+    assert "homepage gelezen" in body
+
+
 # --------------------------------------------------------------------------- #
 # compute_graph_links — unit (strict in-memory, nul AI, nul query)            #
 # --------------------------------------------------------------------------- #
