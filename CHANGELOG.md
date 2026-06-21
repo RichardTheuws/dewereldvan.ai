@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.50.0] - 2026-06-21
+### Changed — Motion-systeem volledig uitgerold over de showcase (synergie, één identiteit)
+- Scroll-reveal + semantische varianten + per-bezoek-variatie (v0.49.0, bewezen op het profiel) nu op
+  **alle showcase-/community-pagina's**: homepage, ledengids, projectpagina, agenda, nieuws, ideeënbus, roadmap.
+  Elke pagina leeft nu terwijl je scrollt i.p.v. alles-in-één-klap; elke hero-titel **materializet** als
+  signatuur; card-grids (homepage-"speelveld", leden-constellatie, profiel-projecten) komen met **drift**
+  (wisselend links/rechts). Per load andere reveal-mood + constellatie-mood → herbezoek voelt nooit identiek.
+- **Director htmx-bewust** (`ai/_cosmic_canvas.html`): geswapte `[data-reveal]`-fragmenten (filters, voten,
+  toevoegen) worden her-geobserveerd zodat ze net zo netjes onthullen — geen onzichtbare geswapte content.
+  Dit maakte het veilig om scroll-mode óók op de htmx-community-pagina's aan te zetten.
+- Volledig reduced-motion-safe; geen tweede look (hergebruikt `cosmic.css`-vocabulaire). 641 tests groen.
+
 ## [0.49.1] - 2026-06-21
 ### Fixed — Cache-busting voor cosmic.css (scroll-reveal toonde niets door stale CDN-cache)
 - **Bug** (live gevangen): Cloudflare cachet `cosmic.css` 4u (`cf-cache-status: HIT`). Na de v0.49.0-deploy

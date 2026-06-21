@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
   <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
 </head>
-<body class="cosmic">
+<body class="cosmic" data-reveal-scroll>
   {% include "profiles/_cosmic_bg.html" %}
   {% include "_preview_banner.html" %}
 
@@ -41,7 +41,7 @@
         {% if _hero %}<img src="{{ _hero }}" alt="Screenshot van {{ offering.title }}" loading="lazy">{% endif %}
       </section>
 
-      <section class="mt-8" data-reveal style="--d:240ms">
+      <section class="mt-8" data-reveal="materialize" style="--d:240ms">
         <div class="eyebrow eyebrow--plain">Project</div>
         <h1 class="headline mt-3">{{ offering.title }}</h1>
         <div class="mt-4 display-name">

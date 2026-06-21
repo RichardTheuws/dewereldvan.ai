@@ -9,7 +9,7 @@
 {% set _first_project = profile.offerings[0] if profile.offerings else None %}
 {% set _proj_img = (_first_project.image_url | safe_url) if _first_project else '' %}
 <a class="member-star {{ ecls }}" href="/leden/{{ profile.slug }}"
-   data-reveal style="--d:{{ loop.index0 * 60 if loop is defined else 0 }}ms">
+   data-reveal="drift" style="--d:{{ loop.index0 * 60 if loop is defined else 0 }}ms">
 
   {# Beeld-laag: bij `projects`-emphasis toont het kaart-beeld het project,
      anders de profielfoto/cover; initialen als laatste fallback. #}

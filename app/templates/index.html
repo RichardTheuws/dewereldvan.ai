@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl">
 {# De voordeur (/) — kosmische, levende constellatie-home. Standalone
-   cosmic-document (extendt base.html NIET): bezit zelf <body class="cosmic">,
+   cosmic-document (extendt base.html NIET): bezit zelf <body class="cosmic" data-reveal-scroll>,
    includet de achtergrond-partials en het levende #stars-canvas als hero-veld.
    Werkt voor anonieme bezoekers (uitnodigend) én ingelogde leden (de voordeur
    naar het speelveld). Indexeerbaar. #}
@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
   <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
 </head>
-<body class="cosmic">
+<body class="cosmic" data-reveal-scroll>
   {% include "profiles/_cosmic_bg.html" %}
   {% include "_preview_banner.html" %}
 
@@ -38,7 +38,7 @@
         <div class="eyebrow" data-reveal style="--d:160ms">
           {% if logged_in %}WELKOM TERUG{% else %}DE WERELD VAN{% endif %}{% if member_count and member_count > 0 %} · {{ member_count }} MAKER{{ 'S' if member_count != 1 else '' }}{% endif %}
         </div>
-        <h1 class="headline mt-5" data-reveal style="--d:260ms">
+        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">
           {% if logged_in %}Welkom in de wereld.{% else %}De wereld van de scherpste AI-makers.{% endif %}
         </h1>
         <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
@@ -60,7 +60,7 @@
         <div class="grid mt-6">
           {# 1. De makers — echte deur (publiek). Toont een constellatie-preview
              van echte leden bij ≥3 publieke makers; anders pure tekstkaart. #}
-          <a class="card" href="/leden" data-reveal style="--d:620ms">
+          <a class="card" href="/leden" data-reveal="drift" style="--d:620ms">
             <div class="card-label">De makers</div>
             <div class="card-desc">Ontdek wie er in NL &amp; BE serieus met AI bouwt.</div>
             {% if preview_stars and preview_stars | length >= 3 %}
@@ -77,14 +77,14 @@
 
           {# 2. Ideeën — voor leden; anon wijst eerlijk gelabeld naar de route
              (die zelf naar /login redirect). #}
-          <a class="card" href="/ideeen" data-reveal style="--d:680ms">
+          <a class="card" href="/ideeen" data-reveal="drift" style="--d:680ms">
             <div class="card-label">Ideeën</div>
             <div class="card-desc">Stel voor wat dit platform moet worden — en stem mee.</div>
             {% if not logged_in %}<div class="home-gate__note">voor leden</div>{% endif %}
           </a>
 
           {# 3. Roadmap — idem. #}
-          <a class="card" href="/roadmap" data-reveal style="--d:740ms">
+          <a class="card" href="/roadmap" data-reveal="drift" style="--d:740ms">
             <div class="card-label">Roadmap</div>
             <div class="card-desc">Zie waar we mee bezig zijn en wat eraan komt.</div>
             {% if not logged_in %}<div class="home-gate__note">voor leden</div>{% endif %}
@@ -92,7 +92,7 @@
 
           {# 4. Jouw profiel — alleen ingelogd. #}
           {% if logged_in %}
-          <a class="card" href="/profiel/ai/bouwen" data-reveal style="--d:800ms">
+          <a class="card" href="/profiel/ai/bouwen" data-reveal="drift" style="--d:800ms">
             <div class="card-label">Jouw profiel</div>
             <div class="card-desc">Bouw of verfijn je profiel — wie je bent en waar je naar zoekt.</div>
           </a>
