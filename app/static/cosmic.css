@@ -528,6 +528,22 @@
   color: var(--cyan);
 }
 
+/* ---- Project-pagina: AI-samenvatting-label + werkende "Bekijk →" in .card ---- */
+.cosmic .project-ai-note {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--cyan);
+  margin-top: 2px;
+}
+/* member-star__pull is voor .member-star (hover-trigger); in een .card miste die
+   trigger → permanent onzichtbaar. Geef 'm hier z'n eigen hover/focus-reveal. */
+.cosmic .card:hover .member-star__pull,
+.cosmic .card:focus-within .member-star__pull {
+  opacity: 1;
+  transform: none;
+}
+
 /* ---- Ledengids: graaf-graad per kaart (verbonden knoop, geen losse kaart) ---- */
 .cosmic .member-star__bond {
   margin-top: 6px;

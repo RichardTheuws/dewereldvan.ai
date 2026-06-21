@@ -69,9 +69,13 @@ def make_client(route_engine, SessionTest):
 
 
 def _seed_project(
-    SessionTest, *, visibility: Visibility, owner_status: MemberStatus, title="Het Project"
+    SessionTest, *, visibility: Visibility, owner_status: MemberStatus,
+    title="Het Project", url=None, summary=None, screenshot_url=None,
 ) -> str:
-    """Maak owner+profiel+offering met slug; retourneer de project-slug."""
+    """Maak owner+profiel+offering met slug; retourneer de project-slug.
+
+    ``url``/``summary``/``screenshot_url`` zijn optioneel zodat tests de
+    enrich-staten (gevuld vs. nog-aan-het-werk) kunnen kiezen."""
     s = SessionTest()
     try:
         owner = Member(
@@ -89,7 +93,10 @@ def _seed_project(
         )
         s.add(profile)
         s.flush()
-        off = Offering(profile_id=profile.id, title=title, position=0)
+        off = Offering(
+            profile_id=profile.id, title=title, position=0,
+            url=url, summary=summary, screenshot_url=screenshot_url,
+        )
         s.add(off)
         s.flush()
         slug = offering_slug.ensure_slug(s, off)
@@ -111,6 +118,34 @@ def test_public_approved_project_visible(make_client, SessionTest):
     assert "Het Project" in resp.text
     # Publiek → indexeerbaar → geen noindex-meta.
     assert 'name="robots" content="noindex"' not in resp.text
+
+
+def test_summary_is_labelled_as_agent_output(make_client, SessionTest):
+    """De AI-samenvatting wordt zichtbaar als agent-output + gegrond gelabeld."""
+    slug = _seed_project(
+        SessionTest, visibility=Visibility.public, owner_status=MemberStatus.approved,
+        summary="Een scherpe samenvatting van het project.",
+    )
+    resp = make_client(None).get(f"/projecten/{slug}")
+    assert resp.status_code == 200
+    assert "project-ai-note" in resp.text
+    assert "samengevat uit de live site" in resp.text
+
+
+def test_pending_enrich_shows_agent_at_work_state(make_client, SessionTest, monkeypatch):
+    """Project met url maar nog geen samenvatting → eerlijke 'agent bekijkt dit
+    project'-staat i.p.v. een lege doos. De enrich-trigger wordt gemockt (geen
+    netwerk/achtergrondjob in de test)."""
+    from app.services import project_enrich_service
+
+    monkeypatch.setattr(project_enrich_service, "trigger_async", lambda *a, **k: None)
+    slug = _seed_project(
+        SessionTest, visibility=Visibility.public, owner_status=MemberStatus.approved,
+        url="https://voorbeeld.nl",
+    )
+    resp = make_client(None).get(f"/projecten/{slug}")
+    assert resp.status_code == 200
+    assert "de agent bekijkt dit project" in resp.text
 
 
 def test_members_only_owner_project_anon_redirects_to_login(make_client, SessionTest):

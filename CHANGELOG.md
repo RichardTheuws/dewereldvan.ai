@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.62.0] - 2026-06-21
+### Added — Blok 3.1: project-pagina maakt de (al gebouwde) intelligentie zichtbaar
+- De AI-samenvatting wordt **gelabeld als agent-output + gegrond** ("✦ door de agent samengevat uit de live
+  site") met materialize-reveal — de al-gebouwde enrich-intelligentie wordt nu zichtbaar i.p.v. anoniem.
+- **Eerlijke "agent bekijkt dit project"-staat** wanneer enrich nog loopt (url aanwezig, nog geen samenvatting):
+  een kosmisch reasoning-paneel i.p.v. een lege doos. Screenshot-hero krijgt `data-reveal="materialize"`.
+- **Bug-fix**: de gouden "Bekijk →"-affordance op de maker-kaart was `.member-star__pull` zónder hover-trigger
+  in een `.card` → permanent onzichtbaar; krijgt nu z'n eigen `.card:hover/:focus-within`-reveal.
+- Geen backend-wijziging (de enrich-pipeline blijft zoals 'ie was). +2 tests. **920 tests groen.**
+
 ## [0.61.0] - 2026-06-21
 ### Added — Blok 2.4: /demo toont de scan→veld-causaliteit (Blok 2 compleet)
 - Per materialiserend veld verschijnt nu synchroon een **reasoning-regel** ("homepage gelezen → naam + headline",

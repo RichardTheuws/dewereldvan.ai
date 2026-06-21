@@ -36,7 +36,7 @@
     <main class="flex-1 pb-20">
 
       {# ---- Project-hero: screenshot van de live site (val terug op image_url) ---- #}
-      <section class="cover mt-2" data-reveal style="--d:140ms">
+      <section class="cover mt-2" data-reveal="materialize" style="--d:140ms">
         {% set _hero = (offering.screenshot_url or offering.image_url) | safe_url %}
         {% if _hero %}<img src="{{ _hero }}" alt="Screenshot van {{ offering.title }}" loading="lazy">{% endif %}
       </section>
@@ -50,11 +50,28 @@
         </div>
       </section>
 
-      {# ---- Inhoudelijke samenvatting (gegrond, uit de pagina-inhoud) ---- #}
+      {# ---- Inhoudelijke samenvatting (gegrond, door de agent uit de live site) ---- #}
       {% if offering.summary %}
+      <section class="mt-10" data-reveal="materialize" style="--d:300ms">
+        <div class="section-title mb-1">Samenvatting</div>
+        <div class="project-ai-note">✦ door de agent samengevat uit de live site</div>
+        <p class="lede mt-3" style="max-width:58ch;white-space:pre-line">{{ offering.summary }}</p>
+      </section>
+      {% elif offering.url %}
+      {# Enrich loopt async (screenshot + samenvatting komen er aan): eerlijke
+         "agent aan het werk"-staat i.p.v. een lege doos. #}
       <section class="mt-10" data-reveal style="--d:300ms">
-        <div class="section-title mb-3">Samenvatting</div>
-        <p class="lede" style="max-width:58ch;white-space:pre-line">{{ offering.summary }}</p>
+        <div class="reasoning reasoning--settled">
+          <div class="reasoning__aura" aria-hidden="true">
+            <span class="reasoning__orbit"></span>
+            <span class="reasoning__orbit reasoning__orbit--2"></span>
+            <span class="reasoning__core"></span>
+          </div>
+          <div class="reasoning__body">
+            <div class="reasoning__label"><span aria-hidden="true">✦</span> de agent bekijkt dit project</div>
+            <div class="reasoning__fetch"><div class="fetch-line">·· samenvatting + screenshot komen er zo aan — kom straks terug</div></div>
+          </div>
+        </div>
       </section>
       {% endif %}
 
