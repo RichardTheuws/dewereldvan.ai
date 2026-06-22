@@ -138,6 +138,10 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
   in de M4-`.env` (2026-06-21) → het pad is nu live binnen de €50/wk-cap.
 
 ## Open taken
+- [ ] **VOLGENDE SESSIE — execution-ready plan**: agenda categorieën + RSVP (aanwezig/organiserend/spreker) +
+      AI-curatie. Volledig uitgewerkt (modellen, routes, te hergebruiken patronen) in
+      `.claude/plans/agenda-categorieen-rsvp-curatie.md` → direct bouwen, geen verkenning nodig. Bron-seed voor
+      de auto-curatie (increment 3) nog bij Richard te bevestigen.
 - [x] **Telegram end-to-end gevalideerd in prod** (2026-06-20): koppelen → discovery-job (12 findings, ~3,5 min)
       → push met knop. Koppelen is nu opt-in (voorkeur auto op telegram, v0.45.0).
 - [ ] **Discovery-precisie meten**: hoeveel van de 12 findings laat een lid staan vs. afwijzen? (drempel ≥90 ijken).
