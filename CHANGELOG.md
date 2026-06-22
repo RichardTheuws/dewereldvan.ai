@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.79.1] - 2026-06-22
+### Changed — 🚀 Launch: de apex `dewereldvan.ai` serveert nu het platform (teaser eruit)
+- **Apex-cut-over**: `dewereldvan.ai` + `www` wijzen niet langer naar de teaser-wachtlijst maar naar de
+  volledige app. Mechaniek (Cloudflare API): de `dewereldvan-app`-tunnel kreeg apex+www als public-hostname
+  (→ `web:8000`) vóór de DNS-flip (geen 404-venster), daarna de apex+www-CNAME's omgezet naar de app-tunnel.
+- **Canonical naar de apex**: `BASE_URL`/`MCP_BASE_URL` op M4 → `https://dewereldvan.ai(/mcp/)`. `app.dewereldvan.ai`
+  blijft óók de app serveren → bestaande magic-links en MCP-tokens breken niet.
+- **Wachtlijst gemigreerd** (teaser-SQLite → `member`): 6 geldige adressen verzoend — 4 waren al approved lid,
+  2 net-nieuw als `pending` (met `triage_note` "wachtlijst-import", `pending_expires_at=None` → blijven in de
+  queue). Zo wordt het welkom heten via de bestaande approval→welkomstmail de menselijk-gecontroleerde
+  launch-uitnodiging (geen massamail). De `.vom`-typo overgeslagen (correctie van dezelfde persoon bestond al).
+- **Teaser buiten dienst**: stack gestopt (volume `waitlist-data` bewaard als backup, niet verwijderd).
+- Geen code-wijziging (infra + data); browser-geverifieerd dat de apex het kosmische platform toont.
+
 ## [0.79.0] - 2026-06-22
 ### Added — Pivot Fase C (increment 4): galerij-werk-item — de pivot is compleet
 - Designers, illustratoren en kunstenaars krijgen een native vorm: plak een portfolio-/galerij-link en de

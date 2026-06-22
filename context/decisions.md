@@ -6,6 +6,35 @@ Elke beslissing bevat: **Context** (waarom kiezen), **Beslissing** (wat), **Alte
 
 ---
 
+## [2026-06-22] Launch: apex `dewereldvan.ai` serveert het platform + wachtlijst-omzetting
+
+**Context**: de pivot (A→D + showcase inc. 1-4 + discovery-op-discipline) is compleet; het platform is
+productiewaardig. De apex stond nog op de transitionele teaser-wachtlijst. Richard gaf expliciet groen
+licht voor de launch én de omzetting.
+
+**Beslissing**:
+1. **Apex-cut-over via de bestaande app-tunnel** (geen nieuwe stack): de `dewereldvan-app`-tunnel kreeg
+   apex+www als public-hostname (CF-API) vóór de DNS-flip → geen 404-venster; daarna apex+www-CNAME's naar
+   de app-tunnel. `app.dewereldvan.ai` blijft óók serveren.
+2. **Canonical = de apex**: `BASE_URL`/`MCP_BASE_URL` → `https://dewereldvan.ai`. Bewust beide hostnames live
+   houden zodat bestaande magic-links en MCP-tokens (op `app.…`) niet breken.
+3. **Wachtlijst → `member` als `pending`** (niet auto-approved, niet als losse tabel): de net-nieuwe
+   adressen komen in de review-queue; welkom heten triggert de bestaande approval→welkomstmail = de
+   menselijk-gecontroleerde launch-uitnodiging. Eén-voor-één, geen massamail.
+
+**Alternatieven**:
+- App-stack apex zelf laten serveren / nieuwe tunnel: afgewezen — onnodig; de app-tunnel kan meerdere hostnames.
+- `BASE_URL` op `app.…` houden: afgewezen — de bare domain hoort het product te zijn (canonical/SEO).
+- Wachtlijst auto-approven: afgewezen — presumptuous (ze bouwden geen profiel/gaven geen accountconsent).
+- Mass launch-mail naar de wachtlijst: afgewezen — botst met de notificatie-filosofie ("geen e-mail behalve
+  magic-link") en is externe outreach; de approval-flow regelt het per persoon.
+- Wachtlijst in een aparte tabel bewaren: afgewezen — de queue-reuse is eleganter en verliest niets.
+
+**Gevolgen**: `dewereldvan.ai` is live met het volledige platform; teaser buiten dienst (volume bewaard).
+Open follow-up: hero-copy zegt nog "besloten" (pivot = open) → fixen; optioneel www→apex 301.
+
+---
+
 ## [2026-06-22] Pivot: open multidisciplinair maker-platform met showcase (poort filtert spam, niet mensen)
 
 **Context**: dewereldvan.ai ontstond uit één WhatsApp-groep, maar moet iedereen verwelkomen die er
