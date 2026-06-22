@@ -24,7 +24,7 @@ from sqlalchemy import select
 
 from app.config import settings
 from app.db import SessionLocal
-from app.models import Member, MemberRole, MemberStatus, Post, PostKind
+from app.models import Post, PostKind
 from app.security import naive_utc, utcnow
 from app.services import news_curation_service, notification_service, post_service
 
@@ -44,30 +44,27 @@ def _existing_news_id(db, url: str) -> int | None:
 
 
 def _notify_admins(db, count: int) -> None:
-    """Best-effort push naar de admins dat er een shortlist klaarstaat. De in-app
-    pull-chip dekt het ``in_app``-kanaal al; deze push raakt alleen admins met een
-    verifieerd push-kanaal (Telegram). Faalt nooit hard."""
+    """Best-effort push naar de admins dat er een shortlist klaarstaat — via
+    **Telegram** (admin-communicatie loopt niet via e-mail). De in-app pull-chip
+    dekt de admin-pagina sowieso; deze push raakt admins met een gekoppelde
+    Telegram. Faalt nooit hard."""
     if count <= 0:
         return
-    admins = db.scalars(
-        select(Member).where(
-            Member.role == MemberRole.admin, Member.status == MemberStatus.approved
-        )
-    ).all()
     meervoud = count != 1
     body = (
         f"{count} gecureerde {'items' if meervoud else 'item'} "
         f"wacht{'en' if meervoud else ''} op je goedkeuring."
     )
-    notif = notification_service.Notification(
-        kind="news_shortlist",
-        title="Nieuws-kandidaten klaar",
-        body=body,
-        url="/admin/nieuws",
-        action_label="Beoordeel",
+    notification_service.notify_admins(
+        db,
+        notification_service.Notification(
+            kind="news_shortlist",
+            title="Nieuws-kandidaten klaar",
+            body=body,
+            url="/admin/nieuws",
+            action_label="Beoordeel",
+        ),
     )
-    for admin in admins:
-        notification_service.notify(db, admin, notif)
 
 
 def main() -> int:

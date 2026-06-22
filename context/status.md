@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.72.0 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.73.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -41,7 +41,9 @@
   wat al liep — geen "verse" knop of reeds-gebruikt aanbod (principe: de interface begrijpt wat gebruikt is).
 - **Notificaties**: **geen e-mail** (behalve magic-link) → lid-gekozen kanaal. In-app pull-chips +
   optioneel **Telegram-push** (rich: vette titel + actieknop). Instellingen op `/profiel/notificaties`
-  (ook als concierge-surface). Modellen `member_channel` + `notification_pref`.
+  (ook als concierge-surface). Modellen `member_channel` + `notification_pref`. **Admin-communicatie loopt
+  via Telegram** (v0.73.0, `notify_admins` — directe push naar admin-Telegram, niet e-mail): nieuwe-aanmelding
+  + nieuws-shortlist. Vereist dat Richard z'n Telegram koppelt.
 - **MCP-server**: `/mcp` (Bearer-token per lid) — "praat met dewereldvan vanuit je eigen AI-tool".
 - **Ervaring/motion** (v0.49–0.50): reveals zijn niet langer één uniform trucje. Scroll-reveal
   (`IntersectionObserver`, opt-in `data-reveal-scroll`), semantische varianten (`materialize`/`drift`)

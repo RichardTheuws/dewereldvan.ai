@@ -36,6 +36,7 @@ __all__ = [
     "CHANNEL_IN_APP",
     "CHANNEL_TELEGRAM",
     "notify",
+    "notify_admins",
     "preferred_channel",
     "set_preference",
     "telegram_status",
@@ -202,3 +203,34 @@ def notify(db: Session, member: Member, notif: Notification) -> None:
         )
     except Exception:  # noqa: BLE001 — een seintje mag de aanroeper nooit breken
         logger.warning("notify faalde voor member %s (%s)", member.id, notif.kind, exc_info=True)
+
+
+def notify_admins(db: Session, notif: Notification) -> None:
+    """Push een admin-seintje naar de Telegram van élke admin (best-effort).
+
+    Admin-communicatie loopt via **Telegram**, niet e-mail (operator-voorkeur):
+    een directe push naar het geverifieerde Telegram-kanaal van elke admin,
+    ongeacht hun persoonlijke voorkeurskanaal. Een admin zonder gekoppelde
+    Telegram krijgt geen push — de queue blijft sowieso de bron van waarheid.
+    Faalt nooit hard (mag de aanroeper, bv. registratie, nooit breken).
+    """
+    admin_emails = settings.admin_email_set
+    if not admin_emails:
+        return
+    admins = db.scalars(
+        select(Member).where(Member.email.in_(admin_emails))
+    ).all()
+    url = _absolute(notif.url)
+    for admin in admins:
+        try:
+            ch = _verified_telegram(db, admin)
+            if ch is None or not ch.address:
+                continue
+            telegram_service.send_message(
+                ch.address,
+                _html_text(notif),
+                button_text=notif.action_label if url else None,
+                button_url=url,
+            )
+        except Exception:  # noqa: BLE001 — admin-seintje mag de flow nooit breken
+            logger.warning("admin-notify faalde voor member %s", admin.id, exc_info=True)

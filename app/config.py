@@ -18,10 +18,11 @@ class Settings(BaseSettings):
     cloudflare_account_id: str | None = None
     cloudflare_api_token: str | None = None  # needs "Email Sending: Edit" permission
     email_from: str = "dewereldvan.ai <noreply@dewereldvan.ai>"
-    # Een gemonitord contactadres voor de neutrale herstel-route ("klopt er iets
-    # niet? mail ons") — zodat een vals geblokkeerd mens een uitweg heeft zonder
-    # ooit "niet geschikt" te horen. Leeg = de regel wordt niet getoond (geen kapotte
-    # link); valt anders terug op het eerste admin-adres. Zet CONTACT_EMAIL op M4.
+    # Een los, gemonitord contactadres voor de neutrale herstel-route ("klopt er
+    # iets niet? mail ons") — zodat een vals geblokkeerd mens een uitweg heeft zonder
+    # ooit "niet geschikt" te horen. NIET het persoonlijke admin-adres (operator
+    # communiceert via Telegram). Leeg = de regel wordt niet getoond. Zet CONTACT_EMAIL
+    # op M4 als je een gemonitord support-adres hebt.
     contact_email: str = ""
     magic_link_ttl_min: int = 15
     pending_expiry_days: int = 14
@@ -117,12 +118,11 @@ class Settings(BaseSettings):
 
     @property
     def support_contact(self) -> str:
-        """Het adres voor de herstel-route: expliciet ``contact_email``, anders het
-        eerste admin-adres, anders leeg (regel wordt dan niet getoond)."""
-        if self.contact_email.strip():
-            return self.contact_email.strip()
-        admins = [e.strip() for e in self.admin_emails.split(",") if e.strip()]
-        return admins[0] if admins else ""
+        """Het adres voor de neutrale herstel-route. ALLEEN een expliciet gezet
+        ``contact_email`` — valt NOOIT terug op het persoonlijke admin-adres (de
+        operator communiceert via Telegram, niet via z'n eigen mail). Leeg = de
+        herstel-regel wordt niet getoond (geen mail-adres gelekt)."""
+        return self.contact_email.strip()
 
     @property
     def allowed_image_type_set(self) -> set[str]:

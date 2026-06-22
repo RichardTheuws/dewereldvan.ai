@@ -3,6 +3,22 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.73.0] - 2026-06-22
+### Changed — Admin-communicatie via Telegram i.p.v. e-mail (operator-voorkeur)
+- Richard wil admin-features + -communicatie via z'n **Telegram-connectie**, niet z'n mail. Nieuwe
+  `notification_service.notify_admins(db, notif)`: pusht een admin-seintje **direct** naar de geverifieerde
+  Telegram van elke admin (op `admin_email_set`), ongeacht ieders persoonlijke voorkeurskanaal. Faalt nooit hard.
+- **Nieuwe-aanmelding-notificatie** (`auth._notify_admins_new_registration`) gaat nu via Telegram i.p.v. een
+  admin-e-mail (alleen bij een `review`-verdict; auto-welkom leden hoeven geen blik). De `EmailSender`-dependency
+  is uit `register_submit` verwijderd (niet meer nodig). De queue blijft sowieso de bron van waarheid.
+- **Nieuws-shortlist-notificatie** (`curate_news._notify_admins`) idem naar `notify_admins` (directe Telegram,
+  niet meer afhankelijk van het persoonlijke voorkeurskanaal).
+- **Recovery-route lekt je mail niet**: `support_contact` valt **niet** meer terug op het admin-adres — de
+  "klopt er iets niet? mail ons"-regel verschijnt alleen als een los `CONTACT_EMAIL` is gezet (anders verborgen).
+- **Vereist**: Richard moet z'n Telegram koppelen (`/profiel/notificaties`, @dewereldvanaibot) om de pushes te
+  ontvangen; zonder koppeling no-op (queue blijft de bron). 2 nieuwe tests (admin-push alleen naar admin-Telegram;
+  stil zonder koppeling). 948 groen.
+
 ## [0.72.0] - 2026-06-22
 ### Added — Pivot Fase B: AI-spam-triage + auto-welkom (de poort wordt slim) + open preview
 - **De preview is open**: de banner zegt nu "Open preview — iedereen die met AI bouwt, leert of er beleid over

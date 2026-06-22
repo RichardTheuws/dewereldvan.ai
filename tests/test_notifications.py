@@ -164,6 +164,52 @@ def test_notify_telegram_pushes_rich(db, make_member, make_profile, monkeypatch)
     assert kw["button_url"].endswith("/profiel/ai/ontdek/resultaat")
 
 
+def test_notify_admins_pushes_only_to_admin_telegram(db, make_member, monkeypatch):
+    """Admin-seintjes gaan via Telegram naar de admins (op admin_email_set), niet
+    naar gewone leden — ongeacht ieders persoonlijke voorkeurskanaal."""
+    sent: list = []
+    monkeypatch.setattr(telegram_service, "configured", lambda: True)
+    monkeypatch.setattr(telegram_service, "link_url", lambda tok: f"https://t.me/b?start={tok}")
+    monkeypatch.setattr(
+        telegram_service, "send_message",
+        lambda cid, txt, **kw: sent.append((cid, kw)),
+    )
+    # admin@dewereldvan.ai zit in conftest ADMIN_EMAILS.
+    admin = make_member(email="admin@dewereldvan.ai")
+    notification_service.begin_telegram_link(db, admin)
+    a_ch = db.query(MemberChannel).filter_by(member_id=admin.id).one()
+    notification_service.link_telegram_from_start(db, a_ch.link_token, "999")
+    # Gewoon lid met Telegram — mag GEEN admin-push krijgen.
+    other = make_member(email="lid@example.com")
+    notification_service.begin_telegram_link(db, other)
+    o_ch = db.query(MemberChannel).filter_by(member_id=other.id).one()
+    notification_service.link_telegram_from_start(db, o_ch.link_token, "111")
+
+    notification_service.notify_admins(
+        db, notification_service.Notification(
+            "admin_new_registration", "Nieuwe aanmelding wacht op je",
+            "Iemand wacht", url="/admin/queue", action_label="Naar de queue",
+        )
+    )
+    assert len(sent) == 1
+    cid, kw = sent[0]
+    assert cid == "999"  # alleen de admin
+    assert kw["button_url"].endswith("/admin/queue")
+
+
+def test_notify_admins_silent_without_linked_telegram(db, make_member, monkeypatch):
+    """Een admin zonder gekoppelde Telegram → geen push, geen crash (queue blijft de bron)."""
+    sent: list = []
+    monkeypatch.setattr(
+        telegram_service, "send_message", lambda cid, txt, **kw: sent.append(cid)
+    )
+    make_member(email="admin@dewereldvan.ai")  # geen Telegram gekoppeld
+    notification_service.notify_admins(
+        db, notification_service.Notification("admin_x", "Titel", "Body")
+    )
+    assert sent == []
+
+
 def test_notify_escapes_html_in_body(db, make_member, make_profile, monkeypatch):
     """User-content (intro-tekst/naam) wordt ge-escaped — geen markup-injectie."""
     sent: list = []

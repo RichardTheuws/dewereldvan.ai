@@ -31,6 +31,7 @@ from app.models import Member, MemberRole, MemberStatus
 from app.schemas.auth import MagicLinkRequest, RegisterForm
 from app.services import approval as approval_service
 from app.services import magic_link as magic_link_service
+from app.services import notification_service
 from app.services import onboarding_service
 from app.services import registration as registration_service
 from app.services import triage_service
@@ -40,36 +41,25 @@ router = APIRouter(tags=["auth"])
 logger = logging.getLogger("dewereldvan.auth")
 
 
-def _notify_admins_new_registration(
-    sender: EmailSender, member: Member
-) -> None:
-    """Notify the configured admins that a new member awaits approval.
+def _notify_admins_new_registration(db: Session, member: Member) -> None:
+    """Sein de admins dat een aanmelding op een mens-blik wacht — via **Telegram**.
 
-    Best-effort: a failed notification is logged (never silent) but does not
-    break the registrant's flow — they did nothing wrong. The admin can always
-    see the pending member in the queue regardless of e-mail delivery.
+    Admin-communicatie loopt via Telegram, niet e-mail (operator-voorkeur). Best-
+    effort: faalt nooit hard, en de queue is sowieso de bron van waarheid (een admin
+    zonder gekoppelde Telegram ziet het wachtende lid daar). Alleen relevant bij een
+    ``review``-verdict; auto-welkom leden hoeven geen blik.
     """
-    admins = settings.admin_email_set
-    if not admins:
-        return
     queue_url = f"{settings.base_url.rstrip('/')}/admin/queue"
-    message = EmailMessage(
-        to=", ".join(sorted(admins)),
-        subject="Nieuwe aanmelding op dewereldvan.ai",
-        text_body=(
-            f"Er is een nieuwe aanmelding die op goedkeuring wacht:\n\n"
-            f"Naam: {member.name}\n"
-            f"E-mail: {member.email}\n\n"
-            f"Beoordeel de aanvraag in de queue:\n{queue_url}\n"
-        ),
-        html_body=email_templates.render_admin_notify(
-            member.name, member.email, queue_url
+    notification_service.notify_admins(
+        db,
+        notification_service.Notification(
+            kind="admin_new_registration",
+            title="Nieuwe aanmelding wacht op je",
+            body=f"{member.name} ({member.email}) — even kijken of dit een echt mens is.",
+            url=queue_url,
+            action_label="Naar de queue",
         ),
     )
-    try:
-        sender.send(message)
-    except EmailSendError as exc:
-        logger.warning("Admin-notificatie versturen mislukt: %s", exc)
 
 
 def _templates(request: Request):
@@ -105,7 +95,6 @@ def register_submit(
     name: str = Form(""),
     email: str = Form(""),
     db: Session = Depends(get_db),
-    sender: EmailSender = Depends(email_sender),
 ) -> HTMLResponse:
     try:
         data = RegisterForm(name=name, email=email)
@@ -157,9 +146,10 @@ def register_submit(
             except approval_service.IllegalTransition:
                 pass  # niet pending (race) → laat staan, geen auto-welkom
     db.commit()
-    # Alleen admins porren als een mens nog moet kijken (niet bij auto-welkom).
+    # Alleen admins porren (via Telegram) als een mens nog moet kijken (niet bij
+    # auto-welkom). Na de commit zodat het lid echt bestaat als de push uitgaat.
     if result.created and not auto_welcomed:
-        _notify_admins_new_registration(sender, result.member)
+        _notify_admins_new_registration(db, result.member)
     return _render(
         request,
         "auth/register_done.html",
