@@ -208,6 +208,38 @@ def test_profile_tool_cascade_on_profile_delete_on_postgres(pg):
     assert tool_still == 1  # gedeelde master blijft bestaan
 
 
+def test_list_public_profiles_distinct_with_json_list_on_postgres(pg):
+    """Regressie (v0.80.0): de ledengids doet ``SELECT DISTINCT`` over hele Profile-
+    rijen. Een gewone Postgres ``json``-kolom heeft geen equality-operator → die
+    query crashte met een profiel dat ``open_to`` had. Met ``jsonb`` (migr. 0031)
+    moet het werken. SQLite ving dit niet (json==jsonb daar)."""
+    from sqlalchemy.orm import sessionmaker
+
+    from app.models import Member, MemberStatus, Profile, Visibility
+    from app.services import members_service
+
+    engine, _ = pg
+    Session = sessionmaker(bind=engine, future=True)
+    with Session() as s:
+        m = Member(email="pg-open@example.com", name="PG Open",
+                   status=MemberStatus.approved)
+        s.add(m)
+        s.flush()
+        s.add(Profile(
+            member_id=m.id, slug="pg-open", display_name="PG Open",
+            visibility=Visibility.public, completeness=0,
+            open_to=["interviews", "samenwerkingen"],
+        ))
+        s.commit()
+        # Zou vóór 0031 crashen op "could not identify an equality operator for type json".
+        rows = members_service.list_public_profiles(s)
+        assert any(p.slug == "pg-open" for p in rows)
+        assert rows[0].open_to is not None  # jsonb leest terug als list
+        # En de open_to-filter zelf werkt ook op Postgres.
+        filtered = members_service.list_public_profiles(s, open_to="interviews")
+        assert [p.slug for p in filtered] == ["pg-open"]
+
+
 def test_downgrade_base_and_back(pg):
     """De keten is volledig reversibel op Postgres (downgrade base → upgrade head)."""
     engine, cfg = pg

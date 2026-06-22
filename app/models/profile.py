@@ -5,11 +5,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, ProfileEmphasis, TimestampMixin, Visibility
+from app.models.types import JSON_LIST
 
 if TYPE_CHECKING:
     from app.models.member import Member
@@ -71,7 +72,7 @@ class Profile(Base, TimestampMixin):
     # slugs uit ``openness_service.OPENNESS``: klantwerk/trainingen/spreken/interviews/
     # samenwerkingen). Signaleert beschikbaarheid (los van offerings "wat ik maak" en
     # needs "wat ik zoek"); voedt de publieke beacons + de /leden-discovery-filter.
-    open_to: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    open_to: Mapped[list[str] | None] = mapped_column(JSON_LIST, nullable=True)
 
     member: Mapped[Member] = relationship(back_populates="profile")
     offerings: Mapped[list[Offering]] = relationship(

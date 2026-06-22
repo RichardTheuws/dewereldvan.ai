@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.80.1] - 2026-06-22
+### Fixed — Ledengids 500 op Postgres: json-kolommen → jsonb (DISTINCT-operator)
+- De `/leden`-query doet `SELECT DISTINCT` over hele Profile-rijen. Een gewone Postgres `json`-kolom heeft
+  géén equality-operator → met de nieuwe `profile.open_to` (v0.80.0) crashte elke ledengids/-profielpagina
+  met *"could not identify an equality operator for type json"* (Internal Server Error; in de browser gevangen).
+- Fix: `open_to` én `offering.gallery_urls` zijn nu **jsonb** op Postgres (`app/models/types.py` `JSON_LIST` =
+  `JSON().with_variant(JSONB, "postgresql")`; migratie 0031 ALTERt beide, no-op op SQLite). jsonb hééft equality.
+- **Postgres-pariteit-test toegevoegd** die exact dit vangt (DISTINCT + open_to-filter op echte Postgres) —
+  SQLite zag het niet (json==jsonb daar). `./scripts/test-postgres.sh` groen.
+
 ## [0.80.0] - 2026-06-22
 ### Added — "Waar ik voor opensta": engagement-beacons op elk profiel
 - Elk profiel kan nu aangeven waar je voor benaderbaar bent: **klantwerk · trainingen · spreken ·

@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING
 
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, OfferingKind, TimestampMixin
+from app.models.types import JSON_LIST
 
 if TYPE_CHECKING:
     from app.models.profile import Profile
@@ -60,7 +61,7 @@ class Offering(Base, TimestampMixin):
     # geplakte portfolio-/galerij-link (project_enrich_service.extract_gallery_images).
     # Gehotlinkt (nul-opslag, consistent met de oEmbed-/unfurl-aanpak); de browser van
     # de bezoeker haalt de beelden, niet onze server → geen SSRF, geen storage-op-last.
-    gallery_urls: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    gallery_urls: Mapped[list[str] | None] = mapped_column(JSON_LIST, nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # ordering
 
     profile: Mapped[Profile] = relationship(back_populates="offerings")
