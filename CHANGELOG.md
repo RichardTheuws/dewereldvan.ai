@@ -3,6 +3,22 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.83.0] - 2026-06-22
+### Added — Agenda-categorieën (meetup/conferentie/coding/workshop/talk/hackathon/overig)
+- Elk agenda-event heeft nu een **soort**: een korte, herkenbare set (geen vrije tags). Voedt een
+  **categorie-badge** op de event-kaart (naast de kleur-gecodeerde frequentie-badge) én **filterchips** op
+  `/agenda` — exact hetzelfde chip-patroon als de discipline-filter op `/leden` (deelbare, indexeerbare
+  `?category=`-URL; htmx swapt alleen de lijst).
+- **De AI vult 'm bij de draft**: `post_draft_service` extraheert de categorie in dezelfde, gegronde Haiku-
+  tool-call (geen extra call). Onbekende/ontbrekende waarde → veilige default `meetup`.
+- **Model**: nieuwe `EventCategory`-enum + nullable `Post.category` (VARCHAR + CHECK, dialect-neutraal).
+  Additieve migratie `0032_event_category` (bestaande events houden geen soort → tonen geen badge).
+- **Server-filter**: `post_service.list_events(category=…)` filtert op soort; een onbekende/lege waarde negeert
+  de filter (alle events). `category_options()` voedt de chips + de form-select.
+- **Tests**: draft mapt de categorie + valt terug bij een ongeldige waarde; submit-default = `meetup`; service-
+  filter + chip-deeplink end-to-end. Volledige suite groen. Visueel geverifieerd in de browser (chiprij,
+  badges, actieve chip-staat, deeplink-filter, event-zonder-soort toont geen badge).
+
 ## [0.82.0] - 2026-06-22
 ### Changed — Bijdragen via één slimme input (link/tekst/voice → de agent maakt de draft)
 - De **ingewikkelde formulieren** op agenda én nieuws zijn weg als startpunt. Nu geef je **één ding** — een

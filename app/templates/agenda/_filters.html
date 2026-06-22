@@ -1,0 +1,24 @@
+{# Categorie-filterchips voor de agenda. Radio's → GET /agenda met ?category=…;
+   htmx swapt alléén #agenda-list. ``hx-push-url`` houdt de gefilterde URL deelbaar
+   + indexeerbaar. ``:checked`` stuurt de actieve staat (de chiprij her-rendert niet
+   bij een htmx-lijst-swap). Spiegelt het discipline-chip-patroon op /leden. #}
+{% if category_options %}
+<form class="member-filters agenda-filters"
+      hx-get="/agenda"
+      hx-target="#agenda-list"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+      hx-trigger="change from:input"
+      role="search" aria-label="Agenda filteren op soort">
+  <div class="member-filters__disciplines" role="group" aria-label="Filter op soort event">
+    <label class="disc-chip">
+      <input type="radio" name="category" value=""{% if not category %} checked{% endif %}> Alle
+    </label>
+    {% for slug, label in category_options %}
+    <label class="disc-chip">
+      <input type="radio" name="category" value="{{ slug }}"{% if category == slug %} checked{% endif %}> {{ label }}
+    </label>
+    {% endfor %}
+  </div>
+</form>
+{% endif %}

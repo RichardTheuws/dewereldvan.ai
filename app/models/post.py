@@ -27,6 +27,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import (
     Base,
+    EventCategory,
     EventFrequency,
     NewsRole,
     PostKind,
@@ -69,6 +70,13 @@ class Post(Base):
     frequency: Mapped[EventFrequency | None] = mapped_column(
         SQLEnum(EventFrequency, name="event_frequency", native_enum=False),
         nullable=True,
+    )
+    # Categorie-soort (meetup/conferentie/…) — voedt de badge + filterchips.
+    # Nullable (oude rijen hebben 'm niet); nieuwe events krijgen default ``meetup``.
+    category: Mapped[EventCategory | None] = mapped_column(
+        SQLEnum(EventCategory, name="event_category", native_enum=False),
+        nullable=True,
+        index=True,
     )
     next_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     cadence_note: Mapped[str | None] = mapped_column(String(120), nullable=True)

@@ -24,6 +24,7 @@ from app.config import settings
 from app.models import (
     AuditAction,
     AuditLog,
+    EventCategory,
     EventFrequency,
     Member,
     NewsRole,
@@ -41,6 +42,7 @@ __all__ = [
     "create_news",
     "create_curated_news",
     "list_events",
+    "category_options",
     "list_news",
     "list_briefing",
     "list_pending_review",
@@ -138,6 +140,7 @@ def create_event(
     member: Member,
     title: str,
     frequency: EventFrequency,
+    category: EventCategory = EventCategory.meetup,
     description: str | None = None,
     url: str | None = None,
     location: str | None = None,
@@ -153,6 +156,7 @@ def create_event(
         description=(description or None),
         url=(url or None),
         frequency=frequency,
+        category=category,
         next_at=next_at,
         cadence_note=(cadence_note or None),
         location=(location or None),
@@ -228,11 +232,28 @@ def _neg_dt(value: datetime) -> float:
     return -value.timestamp()
 
 
-def list_events(db: Session, *, now: datetime | None = None) -> list[Post]:
-    """Zichtbare events, aankomend-eerst (zie ``_event_sort_key``)."""
+def list_events(
+    db: Session,
+    *,
+    category: str | None = None,
+    now: datetime | None = None,
+) -> list[Post]:
+    """Zichtbare events, aankomend-eerst (zie ``_event_sort_key``). Optioneel
+    gefilterd op ``category`` — een onbekende/lege waarde negeert de filter
+    (alle events)."""
     now = naive_utc(now or utcnow())
     events = _visible(db, PostKind.event)
+    cat = (category or "").strip()
+    if cat in {c.value for c in EventCategory}:
+        events = [p for p in events if p.category is not None and p.category.value == cat]
     return sorted(events, key=lambda p: _event_sort_key(p, now))
+
+
+def category_options() -> list[tuple[str, str]]:
+    """(slug, label) voor de categorie-filterchips + de event-form-select op
+    /agenda. Label = de waarde met hoofdletter (de enum-waarden zijn al leesbaar
+    Nederlands/Engels-courant)."""
+    return [(c.value, c.value.capitalize()) for c in EventCategory]
 
 
 def list_news(db: Session) -> list[Post]:

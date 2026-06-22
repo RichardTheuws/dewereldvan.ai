@@ -18,7 +18,7 @@ import logging
 import re
 
 from app.config import settings
-from app.models import EventFrequency, NewsRole
+from app.models import EventCategory, EventFrequency, NewsRole
 from app.services import browser_render_service
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,7 @@ _MD_CHARS = 6000  # cap op de opgehaalde pagina-inhoud naar het model
 _MAX_TOKENS = 400
 
 _FREQ = {f.value for f in EventFrequency}
+_CATEGORY = {c.value for c in EventCategory}
 _ROLE = {r.value for r in NewsRole}
 
 
@@ -112,6 +113,11 @@ _EVENT_TOOL = {
                 "enum": sorted(_FREQ),
                 "description": "Cadans: eenmalig, wekelijks, tweewekelijks, maandelijks of doorlopend.",
             },
+            "category": {
+                "type": "string",
+                "enum": sorted(_CATEGORY),
+                "description": "Soort event: meetup, conferentie, coding, workshop, talk, hackathon of overig. Kies de best passende; bij twijfel 'meetup'.",
+            },
             "date_iso": {"type": "string", "description": "Eerstvolgende datum (+tijd) in ISO 8601, óf leeg. Verzin NOOIT een datum."},
             "location": {"type": "string", "description": "Plaats / 'Online' / venue, óf leeg."},
             "cadence_note": {"type": "string", "description": "Cadans in mensentaal (bv. 'elke woensdag 18:00'), óf leeg."},
@@ -142,9 +148,11 @@ def draft_event(raw: str, *, client=None) -> dict:
     url = _extract_url(raw)
     fields = _ai_draft(_grounded_content(raw, url), _EVENT_TOOL, _EVENT_SYSTEM, client=client)
     freq = str(fields.get("frequency") or "").strip()
+    cat = str(fields.get("category") or "").strip()
     return {
         "title": _clean(fields.get("title"), 200) or _first_line(raw),
         "frequency": freq if freq in _FREQ else "eenmalig",
+        "category": cat if cat in _CATEGORY else "meetup",
         "next_at": _to_datetime_local(fields.get("date_iso")),
         "location": _clean(fields.get("location"), 160),
         "cadence_note": _clean(fields.get("cadence_note"), 120),

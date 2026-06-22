@@ -156,7 +156,7 @@ def test_concept_requires_login(make_client, path):
 # Agenda — plaatsen + validatie                                               #
 # --------------------------------------------------------------------------- #
 def test_submit_event_persists(make_client, seed, SessionTest):
-    from app.models import EventFrequency, Post, PostKind
+    from app.models import EventCategory, EventFrequency, Post, PostKind
 
     client = make_client(seed["member"])
     token = csrf_token(client, "/agenda")
@@ -165,6 +165,7 @@ def test_submit_event_persists(make_client, seed, SessionTest):
         data={
             "title": "Aimelo meetup",
             "frequency": "wekelijks",
+            "category": "coding",
             "location": "Almelo",
             "cadence_note": "elke woensdag",
             "url": "https://aimelo.nl",
@@ -180,9 +181,77 @@ def test_submit_event_persists(make_client, seed, SessionTest):
         assert len(rows) == 1
         assert rows[0].kind == PostKind.event
         assert rows[0].frequency == EventFrequency.wekelijks
+        assert rows[0].category == EventCategory.coding
         assert rows[0].added_by_id == seed["member"]
     finally:
         s.close()
+
+
+def test_submit_event_defaults_to_meetup_category(make_client, seed, SessionTest):
+    """Geen categorie meegestuurd → veilige default ``meetup`` (de form-default)."""
+    from app.models import EventCategory, Post
+
+    client = make_client(seed["member"])
+    token = csrf_token(client, "/agenda")
+    resp = client.post(
+        "/agenda",
+        data={"title": "Zonder soort", "frequency": "eenmalig"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    s = SessionTest()
+    try:
+        assert s.query(Post).one().category == EventCategory.meetup
+    finally:
+        s.close()
+
+
+def test_list_events_filters_by_category(SessionTest, seed):
+    """Service-filter: alleen events van de gevraagde categorie; een onbekende/
+    lege waarde negeert de filter (alle events)."""
+    from app.models import EventCategory, EventFrequency, Post, PostKind
+    from app.services import post_service
+
+    s = SessionTest()
+    s.add_all([
+        Post(kind=PostKind.event, title="Code-avond", frequency=EventFrequency.wekelijks,
+             category=EventCategory.coding, added_by_id=seed["member"]),
+        Post(kind=PostKind.event, title="Grote conf", frequency=EventFrequency.eenmalig,
+             category=EventCategory.conferentie, added_by_id=seed["member"]),
+        Post(kind=PostKind.event, title="Oud event zonder soort",
+             frequency=EventFrequency.eenmalig, category=None, added_by_id=seed["member"]),
+    ])
+    s.commit()
+    try:
+        coding = post_service.list_events(s, category="coding")
+        assert [p.title for p in coding] == ["Code-avond"]
+        # Onbekende waarde → genegeerd (alle drie events).
+        assert len(post_service.list_events(s, category="zomaar")) == 3
+        # Lege/geen waarde → alle events.
+        assert len(post_service.list_events(s)) == 3
+    finally:
+        s.close()
+
+
+def test_agenda_filter_chip_end_to_end(make_client, seed, SessionTest):
+    """GET /agenda?category=… (htmx-fragment) toont alleen de matchende events."""
+    from app.models import EventCategory, EventFrequency, Post, PostKind
+
+    s = SessionTest()
+    s.add_all([
+        Post(kind=PostKind.event, title="Workshop prompting", frequency=EventFrequency.eenmalig,
+             category=EventCategory.workshop, added_by_id=seed["member"]),
+        Post(kind=PostKind.event, title="Meetup Almelo", frequency=EventFrequency.wekelijks,
+             category=EventCategory.meetup, added_by_id=seed["member"]),
+    ])
+    s.commit()
+    s.close()
+
+    client = make_client(seed["member"])
+    resp = client.get("/agenda?category=workshop", headers={"HX-Request": "true"})
+    assert resp.status_code == 200
+    assert "Workshop prompting" in resp.text
+    assert "Meetup Almelo" not in resp.text
 
 
 def test_agenda_has_contextual_concierge_placeholder(make_client, seed):

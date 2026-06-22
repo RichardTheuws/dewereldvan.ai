@@ -2,10 +2,14 @@
    terugkerend = cyaan/levend, eenmalig = goud); de eerstvolgende datum + relatieve
    tijd staan groot. Werkt in de lijst én als swap-target na admin-moderatie. #}
 {% set freq = post.frequency.value if post.frequency else "eenmalig" %}
+{% set cat = post.category.value if post.category else "" %}
 <article id="post-{{ post.id }}" class="event-card event-card--{{ freq }}">
   <div class="event-card__head">
-    <span class="freq-badge freq-badge--{{ freq }}">
-      <span aria-hidden="true">✦</span> {{ freq }}
+    <span class="event-card__badges">
+      <span class="freq-badge freq-badge--{{ freq }}">
+        <span aria-hidden="true">✦</span> {{ freq }}
+      </span>
+      {% if cat %}<span class="cat-badge cat-badge--{{ cat }}">{{ cat }}</span>{% endif %}
     </span>
     {% if post.next_at %}
     <span class="event-card__when">

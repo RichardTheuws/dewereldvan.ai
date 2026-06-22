@@ -3827,6 +3827,31 @@ a.roadmap-item__origin:focus-visible {
   50% { box-shadow: 0 0 16px -2px rgba(63, 210, 255, 0.45); }
 }
 
+/* categorie-badge — neutraal/glas naast de kleur-gecodeerde frequentie-badge */
+.cosmic .event-card__badges {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cosmic .cat-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+  white-space: nowrap;
+}
+
+/* agenda-categoriefilter — zelfde chiprij als /leden, wat lucht eronder */
+.cosmic .agenda-filters { margin-bottom: 18px; }
+
 /* ---- nieuws-specifiek ---- */
 .cosmic .news-card__date {
   font-family: "JetBrains Mono", monospace;

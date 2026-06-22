@@ -157,6 +157,21 @@ class EventFrequency(str, enum.Enum):
     doorlopend = "doorlopend"
 
 
+class EventCategory(str, enum.Enum):
+    """Soort agenda-event — voedt de categorie-badge én de filterchips op /agenda.
+    Bewust een korte, herkenbare set (geen vrije tags). De AI vult 'm bij de draft
+    uit de echte pagina-inhoud (geen extra call). Default ``meetup``. Langste waarde
+    'conferentie' = 11 → de SQLEnum (native_enum=False) maakt er VARCHAR(11) van."""
+
+    meetup = "meetup"
+    conferentie = "conferentie"
+    coding = "coding"
+    workshop = "workshop"
+    talk = "talk"
+    hackathon = "hackathon"
+    overig = "overig"
+
+
 class PostReviewState(str, enum.Enum):
     """Redactie-staat van een ``Post`` ("De Briefing", doc 02 §4). Lid-bijdragen
     zijn ``live`` (huidig gedrag, ongewijzigd); AI-gecureerde kandidaten starten

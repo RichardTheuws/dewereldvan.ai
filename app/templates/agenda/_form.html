@@ -25,6 +25,15 @@
     </div>
   </div>
 
+  <div class="mt-4">
+    <label class="field-label" for="event-category">Soort</label>
+    <select id="event-category" name="category" aria-label="Soort event">
+      {% for slug, label in category_options %}
+      <option value="{{ slug }}" {% if (f.category or 'meetup') == slug %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
   <div class="event-form__grid mt-4">
     <div>
       <label class="field-label" for="event-next">Eerstvolgende datum + tijd <span class="muted">(optioneel)</span></label>

@@ -16,7 +16,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.models.base import EventFrequency, NewsRole
+from app.models.base import EventCategory, EventFrequency, NewsRole
 
 
 def _clean(value: str | None) -> str | None:
@@ -42,6 +42,7 @@ class EventForm(BaseModel):
 
     title: str = Field(min_length=1, max_length=200)
     frequency: EventFrequency
+    category: EventCategory = EventCategory.meetup
     description: str | None = Field(default=None, max_length=4000)
     url: str | None = Field(default=None)
     location: str | None = Field(default=None, max_length=160)

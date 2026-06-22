@@ -20,7 +20,7 @@ Auth: lid-routes ``require_member`` (login-gated, noindex); moderatie
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Form, Request, status
+from fastapi import APIRouter, Depends, Form, Query, Request, status
 from fastapi.responses import HTMLResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -47,12 +47,17 @@ def _is_admin(member: Member) -> bool:
 # --------------------------------------------------------------------------- #
 
 
-def _agenda_context(db: Session, member: Member | None) -> dict:
+def _agenda_context(
+    db: Session, member: Member | None, *, category: str = ""
+) -> dict:
     return {
-        "events": post_service.list_events(db),
+        "events": post_service.list_events(db, category=category),
         "member": member,
         "is_admin": member is not None and _is_admin(member),
         "frequencies": list(EventFrequency),
+        # Categorie-filterchips + form-select (slug, label).
+        "category_options": post_service.category_options(),
+        "category": category,
     }
 
 
@@ -89,12 +94,13 @@ def _card_context(db: Session, post: Post, member: Member) -> dict:
 @router.get("/agenda", response_class=HTMLResponse)
 def agenda_index(
     request: Request,
+    category: str = Query("", alias="category"),
     member: Member | None = Depends(current_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
     """De kosmische agenda: publiek leesbaar (ook anon). Toevoegen blijft login-gated
-    (POST). Volledige pagina, of het lijst-fragment bij htmx."""
-    ctx = _agenda_context(db, member)
+    (POST). Volledige pagina, of het lijst-fragment bij htmx (categorie-filter)."""
+    ctx = _agenda_context(db, member, category=category)
     if request.headers.get("HX-Request"):
         return _render(request, "agenda/_list.html", ctx)
     return _render(request, "agenda/index.html", ctx)
@@ -105,6 +111,7 @@ def agenda_submit(
     request: Request,
     title: str = Form(""),
     frequency: str = Form("eenmalig"),
+    category: str = Form("meetup"),
     next_at: str = Form(""),
     location: str = Form(""),
     cadence_note: str = Form(""),
@@ -118,6 +125,7 @@ def agenda_submit(
         data = EventForm(
             title=title,
             frequency=frequency,
+            category=category,
             next_at=next_at or None,
             location=location,
             cadence_note=cadence_note,
@@ -128,9 +136,9 @@ def agenda_submit(
         ctx = _agenda_context(db, member)
         ctx["error"] = _first_error(exc, "Controleer het event: een titel en een geldige frequentie zijn nodig.")
         ctx["form"] = {
-            "title": title, "frequency": frequency, "next_at": next_at,
-            "location": location, "cadence_note": cadence_note, "url": url,
-            "description": description,
+            "title": title, "frequency": frequency, "category": category,
+            "next_at": next_at, "location": location, "cadence_note": cadence_note,
+            "url": url, "description": description,
         }
         return _render(request, "agenda/_list.html", ctx, status_code=400)
 
@@ -149,6 +157,7 @@ def agenda_submit(
         member=member,
         title=data.title,
         frequency=data.frequency,
+        category=data.category,
         description=data.description,
         url=data.url,
         location=data.location,

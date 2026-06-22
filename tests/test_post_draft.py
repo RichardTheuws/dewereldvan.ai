@@ -57,6 +57,7 @@ def test_draft_event_failsafe_ai_off(monkeypatch):
     out = pd.draft_event("Aimelo meetup in Almelo, elke woensdag")
     assert out["title"] == "Aimelo meetup in Almelo, elke woensdag"
     assert out["frequency"] == "eenmalig"  # veilige default
+    assert out["category"] == "meetup"  # veilige default
     assert out["next_at"] == ""  # geen datum verzonnen
     assert out["url"] == ""
 
@@ -78,6 +79,7 @@ def test_draft_event_maps_ai_fields(monkeypatch):
     client = FakeClient(name="record_event_draft", data={
         "title": "Aimelo — AI-community Almelo",
         "frequency": "wekelijks",
+        "category": "coding",
         "date_iso": "2026-07-15T19:00",
         "location": "Almelo",
         "cadence_note": "elke woensdag",
@@ -86,9 +88,17 @@ def test_draft_event_maps_ai_fields(monkeypatch):
     out = pd.draft_event("https://aimelo.nl", client=client)
     assert out["title"] == "Aimelo — AI-community Almelo"
     assert out["frequency"] == "wekelijks"
+    assert out["category"] == "coding"
     assert out["next_at"] == "2026-07-15T19:00"
     assert out["location"] == "Almelo"
     assert out["url"] == "https://aimelo.nl"
+
+
+def test_draft_event_invalid_category_falls_back(monkeypatch):
+    monkeypatch.setattr(settings, "ai_enrich_enabled", True)
+    monkeypatch.setattr(browser_render_service, "markdown", lambda u: None)
+    client = FakeClient(name="record_event_draft", data={"title": "X", "category": "zomaar"})
+    assert pd.draft_event("iets", client=client)["category"] == "meetup"
 
 
 def test_draft_event_never_invents_date(monkeypatch):
