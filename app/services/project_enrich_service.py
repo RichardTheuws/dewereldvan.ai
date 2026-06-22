@@ -16,13 +16,14 @@ from __future__ import annotations
 
 import logging
 import threading
+from datetime import datetime
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db import SessionLocal
-from app.models import Offering
+from app.models import Offering, OfferingKind
 from app.services import browser_render_service, photo_service
 
 logger = logging.getLogger(__name__)
@@ -62,15 +63,17 @@ def _text_from(msg: object) -> str:
     return "".join(parts).strip()
 
 
-def summarize(url: str, *, client=None) -> str | None:
+def summarize(url: str, *, markdown: str | None = None, client=None) -> str | None:
     """Gegronde NL-samenvatting van de pagina op ``url`` (of None).
 
-    Haalt de markdown via Cloudflare op en laat Claude die samenvatten — een
-    gewone call, geen server-tools. Gated op ``ai_enrich_enabled``.
+    Haalt de markdown via Cloudflare op (of gebruikt de meegegeven ``markdown`` —
+    zodat ``enrich_offering`` de pagina maar één keer hoeft op te halen) en laat
+    Claude die samenvatten. Een gewone call, geen server-tools. Gated op
+    ``ai_enrich_enabled``.
     """
     if not settings.ai_enrich_enabled or not url:
         return None
-    md = browser_render_service.markdown(url)
+    md = markdown if markdown is not None else browser_render_service.markdown(url)
     if not md:
         return None
     try:
@@ -86,6 +89,96 @@ def summarize(url: str, *, client=None) -> str | None:
         return None
     text = _text_from(msg)[:MAX_SUMMARY_CHARS].strip()
     return text or None
+
+
+# --------------------------------------------------------------------------- #
+# Workshop/sessie-detectie (pivot Fase C inc. 2) — datum + locatie uit de link #
+# --------------------------------------------------------------------------- #
+
+_EVENT_TOOL = {
+    "name": "record_event",
+    "description": (
+        "Leg vast of deze pagina een workshop, sessie, training, talk of event "
+        "aankondigt of documenteert (iets met een datum dat een maker geeft/gaf)."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "is_event": {
+                "type": "boolean",
+                "description": "True alleen bij een duidelijk event met een datum.",
+            },
+            "date_iso": {
+                "type": "string",
+                "description": "Datum (evt. tijd) in ISO 8601, bv. 2026-07-15 of 2026-07-15T19:00. Leeg indien onbekend.",
+            },
+            "location": {
+                "type": "string",
+                "description": "'Online', een plaats of een venue. Leeg indien onbekend.",
+            },
+        },
+        "required": ["is_event"],
+    },
+}
+_EVENT_SYSTEM = (
+    "Bepaal of de gegeven pagina-tekst een workshop, sessie, training, talk of event "
+    "aankondigt of documenteert. Gebruik UITSLUITEND wat in de tekst staat — verzin "
+    "geen datum of locatie. Roep record_event exact één keer aan."
+)
+
+
+def _tool_input(msg: object, name: str) -> dict | None:
+    """Lees de ``input`` van het ``tool_use``-blok met ``name`` uit een antwoord."""
+    for block in getattr(msg, "content", None) or []:
+        b_type = getattr(block, "type", None)
+        b_name = getattr(block, "name", None)
+        if b_type == "tool_use" and b_name == name:
+            data = getattr(block, "input", None)
+            return data if isinstance(data, dict) else None
+    return None
+
+
+def _parse_iso(value: str | None) -> datetime | None:
+    """Parse een ISO-datum/tijd → naïeve datetime (of None bij onbekend/ongeldig)."""
+    if not value:
+        return None
+    raw = value.strip().replace("Z", "")
+    try:
+        return datetime.fromisoformat(raw)
+    except ValueError:
+        # Val terug op enkel de datum (eerste 10 tekens: YYYY-MM-DD).
+        try:
+            return datetime.fromisoformat(raw[:10])
+        except ValueError:
+            return None
+
+
+def extract_event(markdown: str | None, *, client=None) -> tuple[datetime | None, str | None] | None:
+    """Is dit een workshop/event? → ``(event_at, location)``; anders ``None``.
+
+    Een goedkope, gegronde Haiku-tool-call op de al-opgehaalde pagina-markdown.
+    Fail-safe: geen markdown / geen event / élke fout → ``None`` (blijft 'project').
+    """
+    if not settings.ai_enrich_enabled or not markdown:
+        return None
+    try:
+        client = client or _client()
+        msg = client.messages.create(
+            model=settings.triage_model,
+            max_tokens=200,
+            system=_EVENT_SYSTEM,
+            tools=[_EVENT_TOOL],
+            tool_choice={"type": "tool", "name": "record_event"},
+            messages=[{"role": "user", "content": markdown[:_MARKDOWN_CHARS]}],
+        )
+    except Exception:  # noqa: BLE001 — best-effort; mag verrijking nooit breken
+        logger.exception("Event-extractie faalde")
+        return None
+    data = _tool_input(msg, "record_event")
+    if not data or not data.get("is_event"):
+        return None
+    location = (data.get("location") or "").strip()[:200] or None
+    return _parse_iso(data.get("date_iso")), location
 
 
 def enrich_offering(db: Session, offering: Offering, *, client=None) -> bool:
@@ -111,11 +204,30 @@ def enrich_offering(db: Session, offering: Offering, *, client=None) -> bool:
                 offering.screenshot_url = new_url
                 changed = True
 
+    # --- Pagina-tekst één keer ophalen voor samenvatting + workshop-detectie ---
+    # De workshop-detectie loopt mee op de EERSTE verrijking (terwijl de samenvatting
+    # gemaakt wordt) → geen extra pagina-fetch op latere passes (idempotent).
+    md: str | None = None
+    need_summary = not offering.summary
+    need_event = offering.kind == OfferingKind.project and need_summary
+    if settings.ai_enrich_enabled and (need_summary or need_event):
+        md = browser_render_service.markdown(url)
+
     # --- Gegronde samenvatting — alleen als die mist ---
-    if not offering.summary:
-        summary = summarize(url, client=client)
+    if need_summary and md:
+        summary = summarize(url, markdown=md, client=client)
         if summary:
             offering.summary = summary
+            changed = True
+
+    # --- Workshop/sessie-detectie (alleen voor 'project'-items) ---
+    # Plakt een trainer een event-/workshop-link, dan herkent de agent dat en haalt
+    # datum + locatie eruit → kind=workshop (render = workshop-kaart i.p.v. project).
+    if need_event and md:
+        ev = extract_event(md, client=client)
+        if ev is not None:
+            offering.kind = OfferingKind.workshop
+            offering.event_at, offering.location = ev
             changed = True
 
     return changed

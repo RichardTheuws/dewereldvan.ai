@@ -453,7 +453,23 @@
   border: 0;
   border-radius: 14px;
 }
-/* Kind-badge op een projectkaart (video/audio-showreel). */
+/* Workshop/sessie-meta (datum + locatie) op de projectdetailpagina. */
+.cosmic .workshop-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+.cosmic .workshop-meta__item {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 205, 134, 0.4);
+  background: rgba(246, 205, 134, 0.08);
+}
+/* Kind-badge op een projectkaart (video/audio-showreel/workshop). */
 .cosmic .card-kind {
   display: inline-block;
   margin-bottom: 8px;

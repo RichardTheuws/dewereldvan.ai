@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer, String, Text
+from datetime import datetime
+
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -50,6 +52,10 @@ class Offering(Base, TimestampMixin):
     # De gesanitiseerde oEmbed-iframe (alleen voor video/audio). Alleen van een
     # provider-allowlist (YouTube/Vimeo/SoundCloud/Spotify); leeg → link-fallback.
     embed_html: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Workshop/sessie (kind='workshop'): wanneer + waar. Door de agent geëxtraheerd
+    # uit een geplakte event-link (extract_event); beide optioneel.
+    event_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    location: Mapped[str | None] = mapped_column(String(200), nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # ordering
 
     profile: Mapped[Profile] = relationship(back_populates="offerings")

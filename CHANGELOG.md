@@ -3,6 +3,22 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.75.0] - 2026-06-22
+### Added — Pivot Fase C (increment 2): workshop/sessie-werk-item — datum + locatie uit een link
+- Trainers krijgen een native vorm: plak een workshop-/event-link bij een werk-item en de agent herkent dat
+  het een event is en haalt **datum + locatie** eruit (geen kaal formulier — verbaas-door-intelligentie).
+- **`extract_event`** (`project_enrich_service`): een goedkope, gegronde **Haiku-tool-call** (`record_event`)
+  op de al-opgehaalde pagina-markdown → `(event_at, location)` als het een event is, anders `None`. Gebruikt
+  UITSLUITEND wat op de pagina staat (geen verzonnen datum/locatie). Loopt mee op de eerste verrijking (geen
+  extra pagina-fetch), alleen voor `project`-items; fail-safe → blijft project.
+- **`Offering`**: `event_at` (DateTime) + `location` (String) — migratie 0028 (additief, nullable). `kind` wordt
+  `workshop` zodra een event herkend is.
+- **Render**: de projectdetailpagina toont een workshop-meta-blok (🗓 datum · 📍 locatie, kosmische pills),
+  kind-bewuste eyebrow "Workshop" + CTA "Naar de workshop →"; de profielkaart een 🗓-badge met datum.
+- **Tests**: 9 nieuwe (`_parse_iso`-varianten; `extract_event` event/niet-event/gated/geen-markdown; `enrich_offering`
+  promoot een event-link naar workshop, laat een gewoon project met rust). 974 groen.
+- **Volgende increments** (zelfde model): gallery, writing; **Fase D** (discipline-facet + discovery).
+
 ## [0.74.1] - 2026-06-22
 ### Fixed — Schone console op de embed-speler
 - De video-iframe had zowel `allow="fullscreen"` als het oudere `allowfullscreen` → browser-warning
