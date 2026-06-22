@@ -124,7 +124,8 @@
               {% if _img %}<img class="thumb" src="{{ _img }}" alt="" loading="lazy">{% endif %}
               {% if item.kind.value == 'video' %}<span class="card-kind"><span aria-hidden="true">▶</span> Video</span>
               {% elif item.kind.value == 'audio' %}<span class="card-kind"><span aria-hidden="true">♪</span> Audio</span>
-              {% elif item.kind.value == 'workshop' %}<span class="card-kind"><span aria-hidden="true">🗓</span> Workshop{% if item.event_at %} · {{ item.event_at | nl_datum }}{% endif %}</span>{% endif %}
+              {% elif item.kind.value == 'workshop' %}<span class="card-kind"><span aria-hidden="true">🗓</span> Workshop{% if item.event_at %} · {{ item.event_at | nl_datum }}{% endif %}</span>
+              {% elif item.kind.value == 'writing' %}<span class="card-kind"><span aria-hidden="true">✍</span> Publicatie</span>{% endif %}
               <div class="card-label">{{ item.title }}</div>
               {% if item.description %}<div class="card-desc">{{ item.description }}</div>{% endif %}
               <div class="card-url">dewereldvan.ai/projecten/{{ item.slug }}</div>

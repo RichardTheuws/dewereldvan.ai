@@ -3,6 +3,19 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.76.0] - 2026-06-22
+### Added — Pivot Fase C (increment 3): publicatie/artikel-werk-item + gegeneraliseerde classifier
+- Onderzoekers en beleidsmakers krijgen een native vorm: plak een artikel-/publicatie-/paper-link en de agent
+  herkent dat het een **publicatie** is → `kind=writing` (render: eyebrow "Publicatie", ✍-badge, "Lees het
+  artikel →"-CTA, "Over deze publicatie").
+- De workshop-detectie van inc.2 is **gegeneraliseerd** tot één Haiku-tool-call (`record_classification`,
+  `classify_work_item`): één call classificeert de pagina als `event` → workshop (datum/locatie), `article` →
+  writing, of `other` → blijft project. Geen extra AI-call t.o.v. inc.2; bij twijfel 'other' (fail-safe).
+- Geen datamodel-wijziging (`writing` zat al in de `kind`-enum sinds inc.1). Render-only + service-refactor.
+- **Tests**: classifier (event→workshop, article→writing, other→project, gated/geen-markdown) + enrich-promotie
+  naar workshop én writing + gewoon-project blijft project. 976 groen.
+- **Resterend**: gallery (designers, multi-image — eigen increment) + **Fase D** (discipline-facet + discovery).
+
 ## [0.75.1] - 2026-06-22
 ### Fixed — Geen lege cover-box + kind-bewuste sectiekop op de projectpagina
 - Een werk-item zonder beeld én zonder embed (bv. een workshop in afwachting van de screenshot) toonde een

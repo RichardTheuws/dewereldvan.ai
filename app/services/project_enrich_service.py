@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 import threading
+from dataclasses import dataclass
 from datetime import datetime
 
 from sqlalchemy import or_, select
@@ -92,39 +93,55 @@ def summarize(url: str, *, markdown: str | None = None, client=None) -> str | No
 
 
 # --------------------------------------------------------------------------- #
-# Workshop/sessie-detectie (pivot Fase C inc. 2) — datum + locatie uit de link #
+# Werk-item-classificatie (pivot Fase C inc. 2+3) — workshop / publicatie uit  #
+# de link. Eén goedkope Haiku-tool-call dekt alle auto-detecteerbare soorten.  #
 # --------------------------------------------------------------------------- #
 
-_EVENT_TOOL = {
-    "name": "record_event",
+
+@dataclass(frozen=True)
+class WorkClassification:
+    kind: OfferingKind  # workshop | writing | project
+    event_at: datetime | None = None
+    location: str | None = None
+
+
+_CLASSIFY_TOOL = {
+    "name": "record_classification",
     "description": (
-        "Leg vast of deze pagina een workshop, sessie, training, talk of event "
-        "aankondigt of documenteert (iets met een datum dat een maker geeft/gaf)."
+        "Classificeer wat voor werk-item deze pagina is, op basis van de inhoud."
     ),
     "input_schema": {
         "type": "object",
         "properties": {
-            "is_event": {
-                "type": "boolean",
-                "description": "True alleen bij een duidelijk event met een datum.",
+            "category": {
+                "type": "string",
+                "enum": ["event", "article", "other"],
+                "description": (
+                    "'event' = een workshop/sessie/training/talk met een datum. "
+                    "'article' = een gepubliceerd artikel, blogpost, paper of essay. "
+                    "'other' = iets anders (bv. een product/project/tool/portfolio)."
+                ),
             },
             "date_iso": {
                 "type": "string",
-                "description": "Datum (evt. tijd) in ISO 8601, bv. 2026-07-15 of 2026-07-15T19:00. Leeg indien onbekend.",
+                "description": "Alleen bij 'event': datum (evt. tijd) in ISO 8601 (bv. 2026-07-15 of 2026-07-15T19:00). Leeg indien onbekend.",
             },
             "location": {
                 "type": "string",
-                "description": "'Online', een plaats of een venue. Leeg indien onbekend.",
+                "description": "Alleen bij 'event': 'Online', een plaats of venue. Leeg indien onbekend.",
             },
         },
-        "required": ["is_event"],
+        "required": ["category"],
     },
 }
-_EVENT_SYSTEM = (
-    "Bepaal of de gegeven pagina-tekst een workshop, sessie, training, talk of event "
-    "aankondigt of documenteert. Gebruik UITSLUITEND wat in de tekst staat — verzin "
-    "geen datum of locatie. Roep record_event exact één keer aan."
+_CLASSIFY_SYSTEM = (
+    "Classificeer de gegeven pagina-tekst als 'event' (workshop/sessie/training/talk "
+    "met datum), 'article' (gepubliceerd artikel/blogpost/paper/essay) of 'other'. "
+    "Gebruik UITSLUITEND wat in de tekst staat — verzin geen datum of locatie. Bij "
+    "twijfel kies 'other'. Roep record_classification exact één keer aan."
 )
+
+_CATEGORY_KIND = {"event": OfferingKind.workshop, "article": OfferingKind.writing}
 
 
 def _tool_input(msg: object, name: str) -> dict | None:
@@ -153,11 +170,12 @@ def _parse_iso(value: str | None) -> datetime | None:
             return None
 
 
-def extract_event(markdown: str | None, *, client=None) -> tuple[datetime | None, str | None] | None:
-    """Is dit een workshop/event? → ``(event_at, location)``; anders ``None``.
+def classify_work_item(markdown: str | None, *, client=None) -> WorkClassification | None:
+    """Classificeer een werk-item uit de pagina-markdown → workshop / writing.
 
-    Een goedkope, gegronde Haiku-tool-call op de al-opgehaalde pagina-markdown.
-    Fail-safe: geen markdown / geen event / élke fout → ``None`` (blijft 'project').
+    Eén goedkope, gegronde Haiku-tool-call. Geeft ``None`` als het 'gewoon' een
+    project is (blijft dan project). Fail-safe: geen markdown / 'other' / élke fout
+    → ``None``. Alleen bij 'event' worden ``event_at``/``location`` gevuld.
     """
     if not settings.ai_enrich_enabled or not markdown:
         return None
@@ -166,19 +184,24 @@ def extract_event(markdown: str | None, *, client=None) -> tuple[datetime | None
         msg = client.messages.create(
             model=settings.triage_model,
             max_tokens=200,
-            system=_EVENT_SYSTEM,
-            tools=[_EVENT_TOOL],
-            tool_choice={"type": "tool", "name": "record_event"},
+            system=_CLASSIFY_SYSTEM,
+            tools=[_CLASSIFY_TOOL],
+            tool_choice={"type": "tool", "name": "record_classification"},
             messages=[{"role": "user", "content": markdown[:_MARKDOWN_CHARS]}],
         )
     except Exception:  # noqa: BLE001 — best-effort; mag verrijking nooit breken
-        logger.exception("Event-extractie faalde")
+        logger.exception("Werk-item-classificatie faalde")
         return None
-    data = _tool_input(msg, "record_event")
-    if not data or not data.get("is_event"):
+    data = _tool_input(msg, "record_classification")
+    if not data:
         return None
-    location = (data.get("location") or "").strip()[:200] or None
-    return _parse_iso(data.get("date_iso")), location
+    kind = _CATEGORY_KIND.get(data.get("category"))
+    if kind is None:  # 'other' of onbekend → blijft project
+        return None
+    if kind is OfferingKind.workshop:
+        location = (data.get("location") or "").strip()[:200] or None
+        return WorkClassification(kind, _parse_iso(data.get("date_iso")), location)
+    return WorkClassification(kind)
 
 
 def enrich_offering(db: Session, offering: Offering, *, client=None) -> bool:
@@ -209,8 +232,8 @@ def enrich_offering(db: Session, offering: Offering, *, client=None) -> bool:
     # gemaakt wordt) → geen extra pagina-fetch op latere passes (idempotent).
     md: str | None = None
     need_summary = not offering.summary
-    need_event = offering.kind == OfferingKind.project and need_summary
-    if settings.ai_enrich_enabled and (need_summary or need_event):
+    need_classify = offering.kind == OfferingKind.project and need_summary
+    if settings.ai_enrich_enabled and (need_summary or need_classify):
         md = browser_render_service.markdown(url)
 
     # --- Gegronde samenvatting — alleen als die mist ---
@@ -220,14 +243,16 @@ def enrich_offering(db: Session, offering: Offering, *, client=None) -> bool:
             offering.summary = summary
             changed = True
 
-    # --- Workshop/sessie-detectie (alleen voor 'project'-items) ---
-    # Plakt een trainer een event-/workshop-link, dan herkent de agent dat en haalt
-    # datum + locatie eruit → kind=workshop (render = workshop-kaart i.p.v. project).
-    if need_event and md:
-        ev = extract_event(md, client=client)
-        if ev is not None:
-            offering.kind = OfferingKind.workshop
-            offering.event_at, offering.location = ev
+    # --- Werk-item-classificatie (alleen voor 'project'-items) ---
+    # Plakt een trainer een workshop-link of een onderzoeker een publicatie, dan
+    # herkent de agent dat → kind=workshop (datum/locatie) of writing (render past
+    # zich aan). 'Gewoon' een project → blijft project.
+    if need_classify and md:
+        cls = classify_work_item(md, client=client)
+        if cls is not None:
+            offering.kind = cls.kind
+            offering.event_at = cls.event_at
+            offering.location = cls.location
             changed = True
 
     return changed

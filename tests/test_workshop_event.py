@@ -1,8 +1,9 @@
-"""Workshop/sessie-detectie (pivot Fase C inc. 2) — datum + locatie uit een event-link.
+"""Werk-item-classificatie (pivot Fase C inc. 2+3) — workshop + publicatie uit een link.
 
-Geen netwerk: Cloudflare-markdown gemonkeypatcht, de Claude-call is een in-memory
-fake die een ``record_event``-tool_use teruggeeft als de call ``tools`` meestuurt
-(zo bedient één fake zowel de samenvatting als de event-extractie).
+Eén Haiku-tool-call (``record_classification``) bepaalt: 'event' → workshop (datum +
+locatie), 'article' → writing, 'other' → blijft project. Geen netwerk: Cloudflare-
+markdown gemonkeypatcht, de Claude-call is een in-memory fake die een tool_use
+teruggeeft als de call ``tools`` meestuurt (zo bedient één fake samenvatting + classificatie).
 """
 
 from __future__ import annotations
@@ -39,19 +40,19 @@ class _Msg:
 
 
 class _FakeCreate:
-    def __init__(self, event: dict, summary: str) -> None:
-        self.event = event
+    def __init__(self, classification: dict, summary: str) -> None:
+        self.classification = classification
         self.summary = summary
 
     def create(self, **kwargs):
         if "tools" in kwargs:
-            return _Msg([_ToolUseBlock("record_event", self.event)])
+            return _Msg([_ToolUseBlock("record_classification", self.classification)])
         return _Msg([_TextBlock(self.summary)])
 
 
 class FakeClient:
-    def __init__(self, *, event: dict, summary: str = "Een workshop over RAG.") -> None:
-        self.messages = _FakeCreate(event, summary)
+    def __init__(self, *, classification: dict, summary: str = "Een werk-item.") -> None:
+        self.messages = _FakeCreate(classification, summary)
 
 
 # --------------------------------------------------------------------------- #
@@ -72,75 +73,87 @@ def test_parse_iso_garbage_is_none():
 
 
 # --------------------------------------------------------------------------- #
-# extract_event                                                               #
+# classify_work_item                                                          #
 # --------------------------------------------------------------------------- #
-def test_extract_event_returns_date_and_location(monkeypatch):
+def test_classify_event_returns_workshop(monkeypatch):
     monkeypatch.setattr(settings, "ai_enrich_enabled", True)
-    client = FakeClient(event={"is_event": True, "date_iso": "2026-07-15", "location": "Online"})
-    out = pe.extract_event("# Workshop RAG\n15 juli, online", client=client)
+    client = FakeClient(classification={"category": "event", "date_iso": "2026-07-15", "location": "Online"})
+    out = pe.classify_work_item("# Workshop RAG\n15 juli, online", client=client)
     assert out is not None
-    event_at, location = out
-    assert event_at == datetime(2026, 7, 15)
-    assert location == "Online"
+    assert out.kind is OfferingKind.workshop
+    assert out.event_at == datetime(2026, 7, 15)
+    assert out.location == "Online"
 
 
-def test_extract_event_not_an_event_returns_none(monkeypatch):
+def test_classify_article_returns_writing(monkeypatch):
     monkeypatch.setattr(settings, "ai_enrich_enabled", True)
-    client = FakeClient(event={"is_event": False})
-    assert pe.extract_event("# Gewoon een project", client=client) is None
+    client = FakeClient(classification={"category": "article"})
+    out = pe.classify_work_item("# Mijn essay over AI-beleid", client=client)
+    assert out is not None
+    assert out.kind is OfferingKind.writing
+    assert out.event_at is None and out.location is None
 
 
-def test_extract_event_gated_off(monkeypatch):
+def test_classify_other_returns_none(monkeypatch):
+    monkeypatch.setattr(settings, "ai_enrich_enabled", True)
+    client = FakeClient(classification={"category": "other"})
+    assert pe.classify_work_item("# Een SaaS-product", client=client) is None
+
+
+def test_classify_gated_off(monkeypatch):
     monkeypatch.setattr(settings, "ai_enrich_enabled", False)
-    client = FakeClient(event={"is_event": True, "date_iso": "2026-07-15"})
-    assert pe.extract_event("# Workshop", client=client) is None
+    client = FakeClient(classification={"category": "event", "date_iso": "2026-07-15"})
+    assert pe.classify_work_item("# Workshop", client=client) is None
 
 
-def test_extract_event_no_markdown_returns_none(monkeypatch):
+def test_classify_no_markdown_returns_none(monkeypatch):
     monkeypatch.setattr(settings, "ai_enrich_enabled", True)
-    assert pe.extract_event(None, client=FakeClient(event={"is_event": True})) is None
+    assert pe.classify_work_item(None, client=FakeClient(classification={"category": "event"})) is None
 
 
 # --------------------------------------------------------------------------- #
-# enrich_offering — een event-link wordt een workshop                          #
+# enrich_offering — een link wordt workshop / writing / blijft project         #
 # --------------------------------------------------------------------------- #
-def test_enrich_offering_promotes_to_workshop(db, make_member, make_profile, monkeypatch):
+def _offering(db, make_member, make_profile, *, email, title):
+    member = make_member(email=email, name="Maker")
+    profile = make_profile(member, display_name="Maker")
+    off = profile_service.add_offering(db, profile, title=title, description=None)
+    off.url = "https://maker.nl/x"
+    db.flush()
+    return off
+
+
+def _mock_render(monkeypatch, markdown: str) -> None:
     monkeypatch.setattr(settings, "ai_enrich_enabled", True)
     monkeypatch.setattr(browser_render_service, "configured", lambda: True)
     monkeypatch.setattr(browser_render_service, "screenshot", lambda u: None)
-    monkeypatch.setattr(
-        browser_render_service, "markdown",
-        lambda u: "# Workshop: bouw een RAG-agent\nDi 15 juli 2026, online. Meld je aan.",
-    )
-    member = make_member(email="trainer@x.nl", name="Trainer")
-    profile = make_profile(member, display_name="Trainer")
-    off = profile_service.add_offering(db, profile, title="RAG-workshop", description=None)
-    off.url = "https://trainer.nl/workshop-rag"
-    db.flush()
+    monkeypatch.setattr(browser_render_service, "markdown", lambda u: markdown)
 
-    client = FakeClient(event={"is_event": True, "date_iso": "2026-07-15", "location": "Online"})
-    changed = pe.enrich_offering(db, off, client=client)
 
-    assert changed is True
+def test_enrich_promotes_to_workshop(db, make_member, make_profile, monkeypatch):
+    _mock_render(monkeypatch, "# Workshop: RAG-agent\nDi 15 juli 2026, online.")
+    off = _offering(db, make_member, make_profile, email="t@x.nl", title="RAG-workshop")
+    client = FakeClient(classification={"category": "event", "date_iso": "2026-07-15", "location": "Online"})
+    assert pe.enrich_offering(db, off, client=client) is True
     assert off.kind is OfferingKind.workshop
     assert off.event_at == datetime(2026, 7, 15)
     assert off.location == "Online"
 
 
-def test_enrich_offering_plain_project_stays_project(db, make_member, make_profile, monkeypatch):
-    monkeypatch.setattr(settings, "ai_enrich_enabled", True)
-    monkeypatch.setattr(browser_render_service, "configured", lambda: True)
-    monkeypatch.setattr(browser_render_service, "screenshot", lambda u: None)
-    monkeypatch.setattr(browser_render_service, "markdown", lambda u: "# Een SaaS-product")
-    member = make_member(email="maker@x.nl", name="Maker")
-    profile = make_profile(member, display_name="Maker")
-    off = profile_service.add_offering(db, profile, title="SaaS", description=None)
-    off.url = "https://maker.nl/product"
-    db.flush()
+def test_enrich_promotes_to_writing(db, make_member, make_profile, monkeypatch):
+    _mock_render(monkeypatch, "# Essay: de toekomst van AI-beleid\nEen gepubliceerd artikel.")
+    off = _offering(db, make_member, make_profile, email="o@x.nl", title="AI-beleid-essay")
+    client = FakeClient(classification={"category": "article"}, summary="Een essay over AI-beleid.")
+    assert pe.enrich_offering(db, off, client=client) is True
+    assert off.kind is OfferingKind.writing
+    assert off.event_at is None
 
-    client = FakeClient(event={"is_event": False}, summary="Een SaaS-product voor X.")
+
+def test_enrich_plain_project_stays_project(db, make_member, make_profile, monkeypatch):
+    _mock_render(monkeypatch, "# Een SaaS-product")
+    off = _offering(db, make_member, make_profile, email="m@x.nl", title="SaaS")
+    client = FakeClient(classification={"category": "other"}, summary="Een SaaS-product voor X.")
     pe.enrich_offering(db, off, client=client)
-
     assert off.kind is OfferingKind.project
     assert off.event_at is None
     assert off.summary == "Een SaaS-product voor X."
