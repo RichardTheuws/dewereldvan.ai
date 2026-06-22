@@ -49,11 +49,11 @@ def _send_approval_email(member: Member) -> None:
         get_email_sender().send(
             EmailMessage(
                 to=member.email,
-                subject="Welkom bij dewereldvan.ai — je aanmelding is goedgekeurd",
+                subject="Je bent erbij — welkom bij dewereldvan.ai",
                 text_body=(
                     f"Hoi {member.name},\n\n"
-                    "Je aanmelding is goedgekeurd. Je kunt nu inloggen en je plek "
-                    "in de wereld opbouwen.\n\n"
+                    "Je bent erbij — een netwerk van AI-makers uit alle disciplines. "
+                    "Log in en bouw je plek in de wereld op.\n\n"
                     f"Inloggen: {login_url}\n"
                 ),
                 html_body=email_templates.render_approval(member.name, login_url),

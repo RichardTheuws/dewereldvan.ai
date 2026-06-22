@@ -170,8 +170,8 @@ def render_approval(name: str, login_url: str) -> str:
     fallback = _inline_shell(
         heading=f"Welkom, {escape(name)}!",
         body_html=(
-            "<p style='margin:0 0 12px 0;'>Je aanmelding is goedgekeurd. Je kunt "
-            "nu inloggen en je plek in de wereld opbouwen.</p>"
+            "<p style='margin:0 0 12px 0;'>Je bent erbij — een netwerk van AI-makers "
+            "uit alle disciplines. Log in en bouw je plek in de wereld op.</p>"
         ),
         cta=_inline_button("Inloggen", login_url),
     )

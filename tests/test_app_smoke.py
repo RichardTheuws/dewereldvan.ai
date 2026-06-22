@@ -63,6 +63,11 @@ def test_healthz_ok(client):
 def test_register_page_renders(client):
     resp = client.get("/register")
     assert resp.status_code == 200
+    # Pivot Fase A: open + multidisciplinair + poort = anti-spam (geen prestige-lat,
+    # geen "beheerder beoordeelt je"). De woorden mogen niemand schofferen.
+    body = resp.text
+    assert "discipline" in body
+    assert "geen bot bent" in body
 
 
 def test_protected_profile_edit_redirects_anonymous_to_login(client):

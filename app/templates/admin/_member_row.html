@@ -13,7 +13,11 @@
         {% elif member.status.value == 'approved' %}chip--ok
         {% elif member.status.value == 'suspended' %}chip--muted
         {% else %}chip--warn{% endif %}">
-        {{ member.status.value }}
+        {% if member.status.value == 'pending' %}nieuw
+        {% elif member.status.value == 'approved' %}welkom
+        {% elif member.status.value == 'suspended' %}geschorst
+        {% elif member.status.value == 'rejected' %}spam
+        {% else %}{{ member.status.value }}{% endif %}
       </span>
       {% if message %}<span class="muted" style="font-size:0.85rem">{{ message }}</span>{% endif %}
     </div>
@@ -23,13 +27,13 @@
       <button class="btn btn--sm"
               hx-post="/admin/members/{{ member.id }}/approve"
               hx-target="#member-{{ member.id }}" hx-swap="outerHTML">
-        Goedkeuren
+        Welkom heten
       </button>
       <button class="btn btn--ghost btn--sm"
               hx-post="/admin/members/{{ member.id }}/reject"
               hx-target="#member-{{ member.id }}" hx-swap="outerHTML"
-              hx-confirm="Deze aanmelding weigeren?">
-        Weigeren
+              hx-confirm="Markeren als spam? Deze persoon krijgt geen toegang.">
+        Markeer als spam
       </button>
     {% elif member.status.value == 'approved' %}
       <button class="btn btn--ghost btn--sm"

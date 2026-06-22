@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     cloudflare_account_id: str | None = None
     cloudflare_api_token: str | None = None  # needs "Email Sending: Edit" permission
     email_from: str = "dewereldvan.ai <noreply@dewereldvan.ai>"
+    # Een gemonitord contactadres voor de neutrale herstel-route ("klopt er iets
+    # niet? mail ons") — zodat een vals geblokkeerd mens een uitweg heeft zonder
+    # ooit "niet geschikt" te horen. Leeg = de regel wordt niet getoond (geen kapotte
+    # link); valt anders terug op het eerste admin-adres. Zet CONTACT_EMAIL op M4.
+    contact_email: str = ""
     magic_link_ttl_min: int = 15
     pending_expiry_days: int = 14
     admin_emails: str = ""  # comma-separated; bootstrap admin role on approval/login
@@ -106,6 +111,15 @@ class Settings(BaseSettings):
     @property
     def admin_email_set(self) -> set[str]:
         return {e.strip().lower() for e in self.admin_emails.split(",") if e.strip()}
+
+    @property
+    def support_contact(self) -> str:
+        """Het adres voor de herstel-route: expliciet ``contact_email``, anders het
+        eerste admin-adres, anders leeg (regel wordt dan niet getoond)."""
+        if self.contact_email.strip():
+            return self.contact_email.strip()
+        admins = [e.strip() for e in self.admin_emails.split(",") if e.strip()]
+        return admins[0] if admins else ""
 
     @property
     def allowed_image_type_set(self) -> set[str]:

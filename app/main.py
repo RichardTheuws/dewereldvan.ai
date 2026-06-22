@@ -135,6 +135,8 @@ try:
 except OSError:
     _ASSET_VER = "1"
 templates.env.globals["asset_ver"] = _ASSET_VER
+# Contactadres voor de neutrale herstel-route (leeg = regel niet tonen).
+templates.env.globals["contact_email"] = settings.support_contact
 
 
 @contextlib.asynccontextmanager

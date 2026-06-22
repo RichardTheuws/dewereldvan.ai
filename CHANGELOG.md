@@ -3,6 +3,26 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.71.0] - 2026-06-22
+### Added — Pivot Fase A: toegang herframen — de poort verwelkomt, oordeelt niet
+- Eerste bouwfase van de open-showcase-pivot (`docs/PRD-open-showcase.md`): pure framing + genadige
+  toestanden, **geen AI, geen datamodel-wijziging**. Lost direct de kernzorg op — niemand wordt als "niet
+  geschikt" gekwalificeerd.
+- **Registratie** (`/register`): open + multidisciplinair geframed ("voor iedereen die met AI bouwt, leert of
+  er beleid over maakt — uit elke discipline"); de poort wordt uitgelegd als **anti-spam** ("we checken alleen
+  even dat je geen bot bent"), niet als beoordeling.
+- **Aanmelding-ontvangen** (`/register` → done): "Je bent aangemeld · we kijken alleen even mee dat je geen bot
+  bent" i.p.v. "een beheerder beoordeelt je aanvraag". Welkomst-mail (`approval.html` + service-tekst) inclusief
+  voor alle disciplines; subject "Je bent erbij — welkom".
+- **Admin-queue**: heringericht als **spam-zeef, niet oordeel** — knoppen "Welkom heten" / "Markeer als spam"
+  (was "Goedkeuren"/"Weigeren"), statuslabels nieuw/welkom/geschorst/spam, lede "de meeste mensen horen er gewoon
+  bij; dit is alleen de spam-zeef".
+- **Genadige herstel-route**: nieuwe `contact_email`-config (`support_contact` valt terug op het eerste
+  admin-adres) → een neutrale "klopt er iets niet? mail ons"-regel op de aanmeld- en login-verstuurd-pagina’s,
+  alleen getoond als een adres bekend is (geen kapotte link). Zet `CONTACT_EMAIL` op M4 om te overschrijven.
+- **Tests**: register-framing (anti-spam + discipline), admin-queue-labels (welkom/spam, geen "weiger"),
+  approval-mail-subject (welkom i.p.v. goedgekeurd). 938 groen.
+
 ## [0.70.2] - 2026-06-22
 ### Docs — Pivot vastgelegd: open multidisciplinair maker-platform met showcase (PRD APPROVAL PENDING)
 - Strategische pivot van Richard: van besloten WhatsApp-groep → **open voor iedereen met AI-affiniteit, alle

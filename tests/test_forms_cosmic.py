@@ -142,7 +142,11 @@ def test_admin_queue_is_cosmic_and_lists_pending(make_client, seed):
     assert 'class="cosmic"' in body
     assert "text-slate-900" not in body
     assert "Aanmeldingen" in body
-    # Het wachtende lid + zijn goedkeur/weiger-acties staan erin.
+    # Het wachtende lid + zijn acties staan erin.
     assert "Wachtend" in body
     assert "/approve" in body
     assert "/reject" in body
+    # Pivot Fase A: de queue heet welkom / markeert spam — geen "weiger"-oordeel.
+    assert "Welkom heten" in body
+    assert "Markeer als spam" in body
+    assert "Weigeren" not in body

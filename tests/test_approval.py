@@ -70,7 +70,8 @@ def test_approve_sends_login_email(db, make_member, monkeypatch):
     assert len(fake.sent) == 1
     msg = fake.sent[0]
     assert msg.to == "welkom@example.com"
-    assert "goedgekeurd" in msg.subject.lower()
+    # Pure verwelkoming (pivot Fase A) — geen "beoordeeld/goedgekeurd"-framing.
+    assert "welkom" in msg.subject.lower() or "erbij" in msg.subject.lower()
     assert "/login" in msg.text_body
     assert msg.html_body and "/login" in msg.html_body
 

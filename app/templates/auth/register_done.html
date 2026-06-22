@@ -28,15 +28,21 @@
     <main class="flex-1 pb-24 flex items-center justify-center" style="min-height:50vh">
       <section class="text-center" style="max-width:50ch">
         <div class="eyebrow" data-reveal style="--d:160ms;justify-content:center">Aanmelden</div>
-        <h1 class="headline mt-5" data-reveal style="--d:260ms">Bedankt voor je aanmelding</h1>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Je bent aangemeld</h1>
         <p class="lede mt-5" data-reveal style="--d:380ms">
-          We hebben je aanvraag voor <span class="muted">{{ email }}</span> ontvangen.
-          Een beheerder bekijkt je aanmelding. Zodra je bent goedgekeurd, kun je
-          inloggen via een e-maillink. Je hoeft niets te doen — we laten het je weten.
+          We hebben je aanmelding voor <span class="muted">{{ email }}</span> binnen.
+          We kijken alleen even mee dat je geen bot bent — meestal snel — en dan
+          krijg je een e-maillink om in te loggen. Je hoeft niets te doen.
         </p>
         <p class="mt-8" data-reveal style="--d:480ms">
           <a class="btn btn--ghost btn--sm" href="/">Terug naar start →</a>
         </p>
+        {% if contact_email %}
+        <p class="muted mt-6" style="font-size:0.85rem" data-reveal style="--d:560ms">
+          Klopt er iets niet, of duurt het lang? Mail ons op
+          <a class="link" href="mailto:{{ contact_email }}">{{ contact_email }}</a>.
+        </p>
+        {% endif %}
       </section>
     </main>
 

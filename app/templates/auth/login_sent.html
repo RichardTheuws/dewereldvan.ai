@@ -38,6 +38,12 @@
         <p class="mt-8" data-reveal style="--d:480ms">
           <a class="btn btn--ghost btn--sm" href="/login">Nieuwe link aanvragen</a>
         </p>
+        {% if contact_email %}
+        <p class="muted mt-6" style="font-size:0.85rem" data-reveal>
+          Komt er geen link en denk je dat er iets misging? Mail ons op
+          <a class="link" href="mailto:{{ contact_email }}">{{ contact_email }}</a>.
+        </p>
+        {% endif %}
       </section>
     </main>
 
