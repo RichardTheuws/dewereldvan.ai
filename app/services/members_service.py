@@ -24,6 +24,7 @@ from app.models import (
     MemberStatus,
     Need,
     Offering,
+    OfferingKind,
     Profile,
     Tag,
     Tool,
@@ -33,7 +34,39 @@ from app.models import (
 )
 from app.security import naive_utc, utcnow
 
-__all__ = ["list_public_profiles", "filter_vocabulary", "select_living_stars"]
+__all__ = [
+    "list_public_profiles",
+    "filter_vocabulary",
+    "select_living_stars",
+    "discipline_options",
+    "derive_disciplines",
+]
+
+# Discipline (pivot Fase D) = de set werk-soorten die een maker TOONT — afgeleid uit
+# de ``kind`` van z'n werk-items (geen apart datamodel). Zo classificeert de showcase
+# de maker uit z'n eigen werk: een video → Video-AI, een workshop → Trainer, enz.
+# (slug, label, offering-kind). Volgorde = de chip-volgorde op /leden.
+DISCIPLINES: list[tuple[str, str, OfferingKind]] = [
+    ("bouwer", "Bouwers", OfferingKind.project),
+    ("video", "Video-AI", OfferingKind.video),
+    ("audio", "Audio-AI", OfferingKind.audio),
+    ("trainer", "Trainers", OfferingKind.workshop),
+    ("publicaties", "Publicaties", OfferingKind.writing),
+]
+_DISCIPLINE_KIND: dict[str, OfferingKind] = {s: k for s, _l, k in DISCIPLINES}
+_DISCIPLINE_LABEL: dict[OfferingKind, str] = {k: _l for _s, _l, k in DISCIPLINES}
+
+
+def discipline_options() -> list[tuple[str, str]]:
+    """(slug, label) voor de filter-chips op /leden."""
+    return [(s, label) for s, label, _k in DISCIPLINES]
+
+
+def derive_disciplines(profile: Profile) -> list[str]:
+    """De discipline-labels die uit de werk-items van dit profiel blijken (in vaste
+    volgorde; puur in-memory op de al-geladen ``offerings`` → geen query)."""
+    kinds = {o.kind for o in profile.offerings}
+    return [label for _s, label, k in DISCIPLINES if k in kinds]
 
 # "Pas verschenen" in de constellatie: een maker waarvan de eigenaar (Member) korter
 # dan dit aantal dagen geleden is aangemaakt. Zelfde created_at-bron als de
@@ -107,6 +140,7 @@ def list_public_profiles(
     maakt: str | None = None,
     zoekt: str | None = None,
     tool: str | None = None,
+    discipline: str | None = None,
 ) -> list[Profile]:
     """Publieke, goedgekeurde profielen voor de constellatie, optioneel gefilterd.
 
@@ -163,6 +197,16 @@ def list_public_profiles(
             )
         )
         stmt = stmt.where(tool_match.exists())
+
+    # Discipline (Fase D): mapt op de ``kind`` van de werk-items — een profiel matcht
+    # als het ≥1 werk-item van dat soort toont (EXISTS, geen join → geen distinct-kruis).
+    discipline_q = (discipline or "").strip().lower()
+    if discipline_q in _DISCIPLINE_KIND:
+        disc_match = select(Offering.id).where(
+            Offering.profile_id == Profile.id,
+            Offering.kind == _DISCIPLINE_KIND[discipline_q],
+        )
+        stmt = stmt.where(disc_match.exists())
 
     stmt = (
         stmt.distinct()

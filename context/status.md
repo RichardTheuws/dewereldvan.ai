@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.76.0 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.77.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -67,7 +67,9 @@ KILL-fallback naar review bij AI-uit/fout (migr. 0026 `member.triage_note`). **F
 link (oEmbed, provider-allowlist, SSRF/XSS-veilig, fail-safe → link). **Inc.2 LIVE** (v0.75.0): workshop —
 één Haiku-tool-call (`classify_work_item`) classificeert
 een link als event→workshop (datum/locatie, migr. 0028), article→writing (v0.76.0), of other→project; render
-past zich aan per kind. Volgende: gallery (multi-image) + **Fase D** (discipline-facet). NB admin-comms via
+past zich aan per kind. **Fase D LIVE** (v0.77.0): discipline-filter op /leden (Bouwers/Video-AI/Audio-AI/
+Trainers/Publicaties) afgeleid uit `offering.kind` (geen apart datamodel) + per-kaart discipline-tags. Volgende:
+gallery (multi-image) + discovery-op-discipline. NB admin-comms via
 Telegram (v0.73.0, `notify_admins`).
 
 ### Eerdere focus (afgerond)

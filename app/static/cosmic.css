@@ -469,6 +469,57 @@
   border: 1px solid rgba(246, 205, 134, 0.4);
   background: rgba(246, 205, 134, 0.08);
 }
+/* Discipline-filter-chips op /leden (Fase D): de maker-soort, afgeleid uit de
+   werk-items. Radio's visueel als pills; de actieve (checked/is-active) gloeit. */
+.cosmic .member-filters__disciplines {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.cosmic .disc-chip {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  user-select: none;
+}
+.cosmic .disc-chip input { position: absolute; opacity: 0; width: 0; height: 0; }
+.cosmic .disc-chip:hover { color: var(--text); border-color: rgba(63, 210, 255, 0.45); }
+.cosmic .disc-chip.is-active,
+.cosmic .disc-chip:has(input:checked) {
+  color: #04040e;
+  background: var(--cyan, #3fd2ff);
+  border-color: var(--cyan, #3fd2ff);
+}
+.cosmic .disc-chip:focus-within { outline: 2px solid rgba(63, 210, 255, 0.5); outline-offset: 2px; }
+/* Discipline-tags op een ledenkaart (afgeleid uit de werk-items). */
+.cosmic .member-star__disciplines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+.cosmic .disc-tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(63, 210, 255, 0.12);
+  border: 1px solid rgba(63, 210, 255, 0.35);
+  color: var(--cyan, #3fd2ff);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 /* Kind-badge op een projectkaart (video/audio-showreel/workshop). */
 .cosmic .card-kind {
   display: inline-block;

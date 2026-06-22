@@ -36,6 +36,14 @@
     <div class="member-star__headline">{{ profile.headline }}</div>
     {% endif %}
 
+    {# Discipline-chips: de maker-soort(en), afgeleid uit de werk-items (Fase D). #}
+    {% set _disciplines = disciplines_for(profile) if disciplines_for else [] %}
+    {% if _disciplines %}
+    <div class="member-star__disciplines">
+      {% for label in _disciplines %}<span class="disc-tag">{{ label }}</span>{% endfor %}
+    </div>
+    {% endif %}
+
     {% if ecls == "emphasis-projects" and _first_project %}
     <div class="member-star__meta">{{ _first_project.title }}</div>
     {% endif %}

@@ -107,6 +107,56 @@ def test_blank_filters_are_ignored(db, make_member, make_profile):
 
 
 # --------------------------------------------------------------------------- #
+# Discipline-filter (Fase D) — mapt op de kind van de werk-items              #
+# --------------------------------------------------------------------------- #
+def test_discipline_filter_matches_offering_kind(db, make_member, make_profile, make_offering):
+    from app.models import OfferingKind
+
+    vid_m = make_member(email="vid@example.com", name="Video Maker")
+    vid_p = make_profile(vid_m, visibility=Visibility.public)
+    vo = make_offering(vid_p, title="Mijn showreel")
+    vo.kind = OfferingKind.video
+
+    bld_m = make_member(email="bld@example.com", name="Bouwer")
+    bld_p = make_profile(bld_m, visibility=Visibility.public)
+    make_offering(bld_p, title="Mijn SaaS")  # default kind=project
+    db.flush()
+
+    vids = members_service.list_public_profiles(db, discipline="video")
+    assert [p.id for p in vids] == [vid_p.id]
+
+    bouwers = members_service.list_public_profiles(db, discipline="bouwer")
+    assert [p.id for p in bouwers] == [bld_p.id]
+
+    # Onbekende/lege discipline → genegeerd (beide profielen).
+    assert len(members_service.list_public_profiles(db, discipline="zzz")) == 2
+    assert len(members_service.list_public_profiles(db, discipline="")) == 2
+
+
+def test_derive_disciplines_from_offering_kinds(db, make_member, make_profile, make_offering):
+    from app.models import OfferingKind
+
+    m = make_member(email="multi@example.com", name="Multi")
+    p = make_profile(m, visibility=Visibility.public)
+    o1 = make_offering(p, title="Workshop")
+    o1.kind = OfferingKind.workshop
+    o2 = make_offering(p, title="Showreel")
+    o2.kind = OfferingKind.video
+    db.flush()
+
+    labels = members_service.derive_disciplines(p)
+    # Vaste volgorde (DISCIPLINES): Video-AI vóór Trainers.
+    assert labels == ["Video-AI", "Trainers"]
+
+
+def test_discipline_options_shape():
+    opts = members_service.discipline_options()
+    slugs = [s for s, _l in opts]
+    assert "video" in slugs and "trainer" in slugs and "publicaties" in slugs
+    assert all(isinstance(label, str) for _s, label in opts)
+
+
+# --------------------------------------------------------------------------- #
 # select_living_stars — tijd-bewuste constellatie (slice 2)                   #
 # --------------------------------------------------------------------------- #
 def test_select_living_stars_new_first_with_ids_and_count(db, make_member, make_profile):

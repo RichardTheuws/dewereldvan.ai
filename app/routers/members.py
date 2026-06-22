@@ -42,6 +42,7 @@ def _grid_context(profiles) -> dict:
         "profiles": profiles,
         "emphasis_class": emphasis_service.emphasis_class,
         "photo_for": photo_service.photo_or_initials,
+        "disciplines_for": members_service.derive_disciplines,
     }
 
 
@@ -52,6 +53,7 @@ def members_index(
     maakt: str = Query("", alias="maakt"),
     zoekt: str = Query("", alias="zoekt"),
     tool: str = Query("", alias="tool"),
+    discipline: str = Query("", alias="discipline"),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
     """De kosmische constellatie van publieke leden + server-side filter/zoek.
@@ -61,10 +63,12 @@ def members_index(
     indexeerbare pagina (zodat een gedeelde gefilterde URL ook stand-alone werkt).
     """
     profiles = members_service.list_public_profiles(
-        db, tag=tag, maakt=maakt, zoekt=zoekt, tool=tool
+        db, tag=tag, maakt=maakt, zoekt=zoekt, tool=tool, discipline=discipline
     )
     ctx = _grid_context(profiles)
-    ctx.update({"tag": tag, "maakt": maakt, "zoekt": zoekt, "tool": tool})
+    ctx.update(
+        {"tag": tag, "maakt": maakt, "zoekt": zoekt, "tool": tool, "discipline": discipline}
+    )
     # Graaf-graad per kaart: maakt van losse kaarten zichtbaar verbonden knopen
     # (gegrond op gedeelde tags/tools, in-memory, nul AI). Geldt voor beide takken.
     ctx["connection_counts"] = graph_service.connection_counts(profiles)
@@ -80,4 +84,5 @@ def members_index(
     vocab = members_service.filter_vocabulary(db)
     ctx["tag_vocab"] = vocab["tags"]
     ctx["tool_vocab"] = vocab["tools"]
+    ctx["discipline_options"] = members_service.discipline_options()
     return _render(request, "members/index.html", ctx)

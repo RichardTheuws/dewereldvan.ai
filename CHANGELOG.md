@@ -3,6 +3,19 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.77.0] - 2026-06-22
+### Added — Pivot Fase D: discipline-filter op de ledengids (de multidisciplinaire showcase wordt doorzoekbaar)
+- De gids is nu te filteren op **discipline** (Bouwers · Video-AI · Audio-AI · Trainers · Publicaties) — een
+  chiprij boven de constellatie. Zo vind je gericht "wie maakt video?", "welke trainers zijn er?", enz.
+- **Geen apart datamodel**: een discipline ís de set werk-soorten die een maker toont — afgeleid uit de `kind`
+  van z'n werk-items (`members_service`: `DISCIPLINES`-mapping → EXISTS-filter op `offering.kind`). De showcase
+  classificeert de maker dus uit z'n eigen werk; nul migratie.
+- De discipline-chips combineren met de bestaande tekstfilters (tag/maakt/zoekt/tool) in dezelfde htmx-submit
+  (radio-chips, `:checked`-gestuurd, deep-linkbaar via `?discipline=`). Elke ledenkaart toont z'n discipline-tags.
+- **Tests**: discipline-filter mapt op kind (video/bouwer), onbekend/leeg genegeerd; `derive_disciplines` in vaste
+  volgorde; `discipline_options`-vorm. 979 groen.
+- **Resterend van de pivot**: gallery (designers, multi-image) + discovery-verrijking op discipline (fast-follow).
+
 ## [0.76.0] - 2026-06-22
 ### Added — Pivot Fase C (increment 3): publicatie/artikel-werk-item + gegeneraliseerde classifier
 - Onderzoekers en beleidsmakers krijgen een native vorm: plak een artikel-/publicatie-/paper-link en de agent

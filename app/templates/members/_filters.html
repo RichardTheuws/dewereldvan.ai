@@ -7,8 +7,23 @@
       hx-target="#grid"
       hx-swap="innerHTML"
       hx-push-url="true"
-      hx-trigger="input changed delay:250ms from:input, search delay:50ms from:input"
+      hx-trigger="input changed delay:250ms from:input, search delay:50ms from:input, change from:input"
       role="search" aria-label="Leden filteren">
+  {# Discipline-chips (Fase D): de maker-soort, afgeleid uit de werk-items. Radio's →
+     combineren met de tekstfilters in dezelfde form-submit. ``:checked`` stuurt de
+     actieve staat (de filterbalk her-rendert niet bij een htmx-grid-swap). #}
+  {% if discipline_options %}
+  <div class="member-filters__disciplines" role="group" aria-label="Filter op discipline">
+    <label class="disc-chip{% if not discipline %} is-active{% endif %}">
+      <input type="radio" name="discipline" value=""{% if not discipline %} checked{% endif %}> Alle
+    </label>
+    {% for slug, label in discipline_options %}
+    <label class="disc-chip{% if discipline == slug %} is-active{% endif %}">
+      <input type="radio" name="discipline" value="{{ slug }}"{% if discipline == slug %} checked{% endif %}> {{ label }}
+    </label>
+    {% endfor %}
+  </div>
+  {% endif %}
   <div class="member-filters__field">
     <label class="field-label" for="f-tag">Tag</label>
     <input id="f-tag" name="tag" type="search" value="{{ tag or '' }}"
