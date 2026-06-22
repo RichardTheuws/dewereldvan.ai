@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.77.1 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.78.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -68,9 +68,12 @@ link (oEmbed, provider-allowlist, SSRF/XSS-veilig, fail-safe → link). **Inc.2 
 één Haiku-tool-call (`classify_work_item`) classificeert
 een link als event→workshop (datum/locatie, migr. 0028), article→writing (v0.76.0), of other→project; render
 past zich aan per kind. **Fase D LIVE** (v0.77.0): discipline-filter op /leden (Bouwers/Video-AI/Audio-AI/
-Trainers/Publicaties) afgeleid uit `offering.kind` (geen apart datamodel) + per-kaart discipline-tags. Volgende:
-gallery (multi-image) + discovery-op-discipline. NB admin-comms via
-Telegram (v0.73.0, `notify_admins`).
+Trainers/Publicaties) afgeleid uit `offering.kind` (geen apart datamodel) + per-kaart discipline-tags.
+**Discovery-op-discipline LIVE** (v0.78.0): de match-engine is werk-soort-bewust — een `Need` die expliciet
+om een workshop/video/audio/publicatie vraagt haalt werk-items van dát soort naar voren (zero-AI
+`infer_desired_kinds` → `DISCIPLINE_BOOST` in de kandidaat-ranking; werk-soort meegegeven aan het LLM-oordeel).
+Zo voedt de Fase-D-data nu matchmaking, niet alleen de gids-filter. **Resterend van de pivot**: alleen nog
+gallery (designers, multi-image). NB admin-comms via Telegram (v0.73.0, `notify_admins`).
 
 ### Eerdere focus (afgerond)
 **Sitewide ervaring-audit + UAT-fundament** (2026-06-21, v0.56.0). Een read-only audit-workflow toetste 12

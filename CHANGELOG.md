@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.78.0] - 2026-06-22
+### Added — Pivot fast-follow: discovery-op-discipline in de matchmaking
+- De match-engine is nu **werk-soort-bewust**: vraagt iemands `Need` expliciet om een workshop, video,
+  audio of publicatie ("ik zoek een workshop over RAG", "wie maakt video?"), dan komen werk-items van
+  dát soort naar voren — óók als de woorden net niet overlappen. Zo gaat de net-geshipte discipline-data
+  (Fase D) écht matchmaking voeden i.p.v. alleen de gids filteren.
+- **Zero-AI, gegrond**: `members_service.infer_desired_kinds()` leidt de gewenste werk-soort(en) uit de
+  vraag-tekst af (trefwoord/prefix-match op losse tokens; alleen hoog-signaal-soorten — `project` is de
+  default, dus niet afgeleid). De kandidaat-ranking in `match_service` krijgt een `DISCIPLINE_BOOST`
+  bovenop de bestaande tag- + woord-overlap-score, zodat passende werk-soorten in de kandidaatset belanden.
+- Het **werk-soort** wordt nu ook meegegeven aan het LLM-oordeel (`[video-showreel]`/`[workshop/sessie]`
+  …) en de matchmaker-instructie weegt het mee: een workshop past beter op een workshop-vraag dan een
+  los project. Grounding ongewijzigd (alleen offering-ids uit de kandidaatset komen door).
+- Geen datamodel-wijziging, geen migratie, geen extra AI-call, geen nieuwe op-last.
+- **Tests**: `infer_desired_kinds` (NL/EN, meervoud, meerdere soorten, geen-match, project-uitsluiting) +
+  een workshop-vraag die een workshop-werk-item in de kandidaten haalt ondanks nul woord-overlap. 981 groen.
+
 ## [0.77.1] - 2026-06-22
 ### Fixed — Discipline-chips: zuivere actief-staat + enkelvoud op de kaart
 - De actieve filter-chip wordt nu puur door `:has(input:checked)` gestuurd (de `.is-active`-class werd stale na

@@ -40,6 +40,7 @@ __all__ = [
     "select_living_stars",
     "discipline_options",
     "derive_disciplines",
+    "infer_desired_kinds",
 ]
 
 # Discipline (pivot Fase D) = de set werk-soorten die een maker TOONT — afgeleid uit
@@ -55,6 +56,46 @@ DISCIPLINES: list[tuple[str, str, str, OfferingKind]] = [
     ("publicaties", "Publicaties", "Publicatie", OfferingKind.writing),
 ]
 _DISCIPLINE_KIND: dict[str, OfferingKind] = {s: k for s, _fl, _cl, k in DISCIPLINES}
+
+# Trefwoorden waaruit een VRAAG ("wat ik zoek") een gewenste werk-soort prijsgeeft:
+# "ik zoek een workshop over RAG" → workshop, "wie maakt video?" → video. Zero-AI; dit
+# voedt de match-kandidaten (discovery-op-discipline), los van de gids-filter (die op de
+# getoonde ``kind`` filtert). Alleen hoog-signaal-soorten: ``project`` is de default (zou
+# alles matchen) en ``gallery``/``link`` zijn nog niet in gebruik. Alle trefwoorden ≥5
+# tekens → prefix-match op een token is veilig (vangt meervoud: video→videos,
+# publicatie→publicaties, onderzoek→onderzoeken) zonder korte-woord-valspositieven.
+_DESIRED_KIND_KEYWORDS: dict[OfferingKind, tuple[str, ...]] = {
+    OfferingKind.workshop: (
+        "workshop", "training", "cursus", "masterclass", "webinar", "opleiding",
+        "bootcamp", "course",
+    ),
+    OfferingKind.video: ("video", "showreel", "animatie", "youtube"),
+    OfferingKind.audio: ("audio", "podcast", "muziek", "soundtrack"),
+    OfferingKind.writing: (
+        "artikel", "publicatie", "paper", "onderzoek", "whitepaper", "essay",
+        "rapport", "research",
+    ),
+}
+
+
+def infer_desired_kinds(*parts: str | None) -> set[OfferingKind]:
+    """Welke werk-soort(en) een VRAAG-tekst expliciet vraagt (zero-AI, trefwoord-match).
+
+    Tokeniseert de tekst (lowercased, alnum-woorden) en matcht een werk-soort als een
+    token met één van z'n trefwoorden begint. Geeft de matchende ``OfferingKind``-set
+    terug (leeg = geen expliciete werk-soort gevraagd → geen discipline-voorrang).
+    """
+    tokens = {
+        "".join(c for c in raw if c.isalnum())
+        for part in parts
+        for raw in (part or "").lower().replace("/", " ").replace(",", " ").split()
+    }
+    tokens.discard("")
+    desired: set[OfferingKind] = set()
+    for kind, keywords in _DESIRED_KIND_KEYWORDS.items():
+        if any(tok.startswith(kw) for tok in tokens for kw in keywords):
+            desired.add(kind)
+    return desired
 
 
 def discipline_options() -> list[tuple[str, str]]:

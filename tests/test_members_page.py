@@ -156,6 +156,30 @@ def test_discipline_options_shape():
     assert all(isinstance(label, str) for _s, label in opts)
 
 
+def test_infer_desired_kinds_detects_work_type_from_need_text():
+    from app.models import OfferingKind
+
+    # Expliciete werk-soort in de vraag → die kind (ook meervoud via prefix-match).
+    assert members_service.infer_desired_kinds("Ik zoek een workshop over RAG") == {
+        OfferingKind.workshop
+    }
+    assert OfferingKind.video in members_service.infer_desired_kinds("wie maakt video's?")
+    assert OfferingKind.writing in members_service.infer_desired_kinds(
+        None, "een paper of publicatie over agenten"
+    )
+    # Meerdere soorten tegelijk gevraagd.
+    assert members_service.infer_desired_kinds("podcast én video") == {
+        OfferingKind.audio,
+        OfferingKind.video,
+    }
+    # Geen expliciete werk-soort → lege set (geen discipline-voorrang).
+    assert members_service.infer_desired_kinds("hulp met mijn startup") == set()
+    # ``project`` is de default-soort en wordt nooit afgeleid (zou alles matchen).
+    assert OfferingKind.project not in members_service.infer_desired_kinds(
+        "ik zoek een project"
+    )
+
+
 # --------------------------------------------------------------------------- #
 # select_living_stars — tijd-bewuste constellatie (slice 2)                   #
 # --------------------------------------------------------------------------- #

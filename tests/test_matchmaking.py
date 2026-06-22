@@ -108,6 +108,31 @@ def test_candidates_rank_by_overlap_and_exclude_self(SessionTest, seed):
     s.close()
 
 
+def test_candidates_boost_offering_by_desired_discipline(SessionTest):
+    """Discovery-op-discipline: een vraag om een 'workshop' haalt een workshop-
+    werk-item naar voren, óók als de woorden nauwelijks overlappen."""
+    from app.models import Need, OfferingKind, Profile
+    from app.services import match_service
+
+    s = SessionTest()
+    a = _member(s, "seek@x.nl", "Seeker")
+    b = _member(s, "train@x.nl", "Trainer")
+    pa = _profile(s, a, "seeker")
+    pb = _profile(s, b, "trainer")
+    need = _need(s, pa, "Ik zoek een workshop over agenten", "")
+    ws = _offering(s, pb, "Sessie: bouw je eigen assistent", "Een hands-on dag.")
+    ws.kind = OfferingKind.workshop
+    s.commit()
+
+    seeker = s.get(Profile, pa.id)
+    others = match_service._approved_profiles(s)
+    cands = match_service.candidate_offerings_for_need(need, seeker, others)
+    # Zonder discipline-boost zou de woord-overlap (workshop↔sessie, geen) nul zijn →
+    # de workshop valt nu tóch binnen de kandidaten dankzij de kind-match.
+    assert "Sessie: bouw je eigen assistent" in [o.title for o, _ in cands]
+    s.close()
+
+
 # --------------------------------------------------------------------------- #
 # LLM-judge gated                                                             #
 # --------------------------------------------------------------------------- #
