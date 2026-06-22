@@ -11,6 +11,7 @@ from app.models import (
     MemberRole,
     MemberStatus,
 )
+from app.services import approval as approval_service
 from app.services.approval import (
     IllegalTransition,
     approve_member,
@@ -18,6 +19,8 @@ from app.services.approval import (
     suspend_member,
 )
 from sqlalchemy import func, select
+
+from tests.conftest import FakeEmailSender
 
 NOW = datetime(2026, 6, 17, 12, 0, 0, tzinfo=UTC)
 
@@ -53,6 +56,36 @@ def test_approve_grants_admin_role_if_email_in_admin_set(db, make_member):
     member = make_member(email="admin@dewereldvan.ai", status=MemberStatus.pending)
     approve_member(db, member, now=NOW)
     assert member.role is MemberRole.admin
+
+
+def test_approve_sends_login_email(db, make_member, monkeypatch):
+    """Goedkeuren stuurt zélf de welkomst-/login-mail (geen handmatig porren)."""
+    fake = FakeEmailSender()
+    monkeypatch.setattr(approval_service, "get_email_sender", lambda: fake)
+    member = make_member(email="welkom@example.com", status=MemberStatus.pending,
+                         name="Nieuw Lid")
+
+    approve_member(db, member, now=NOW)
+
+    assert len(fake.sent) == 1
+    msg = fake.sent[0]
+    assert msg.to == "welkom@example.com"
+    assert "goedgekeurd" in msg.subject.lower()
+    assert "/login" in msg.text_body
+    assert msg.html_body and "/login" in msg.html_body
+
+
+def test_approve_survives_email_failure(db, make_member, monkeypatch):
+    """Een hapering in de mail-laag mag de goedkeuring NOOIT breken."""
+    monkeypatch.setattr(
+        approval_service, "get_email_sender", lambda: FakeEmailSender(fail=True)
+    )
+    member = make_member(email="faalt@example.com", status=MemberStatus.pending)
+
+    # Geen exception: de status-transitie + audit blijven overeind.
+    approve_member(db, member, now=NOW)
+    assert member.status is MemberStatus.approved
+    assert _audit_count(db, AuditAction.member_approved) == 1
 
 
 def test_reject_pending_audits(db, make_member):

@@ -11,11 +11,15 @@ member). Illegal transitions raise ``IllegalTransition`` and write nothing.
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.email import EmailMessage, get_email_sender
+from app.email import templates as email_templates
+from app.email.base import EmailSendError
 from app.models import (
     AuditAction,
     AuditLog,
@@ -25,9 +29,40 @@ from app.models import (
 )
 from app.security import naive_utc, utcnow
 
+logger = logging.getLogger(__name__)
+
 
 class IllegalTransition(RuntimeError):
     """Raised when a status transition is not allowed from the current state."""
+
+
+def _send_approval_email(member: Member) -> None:
+    """Stuur de welkomst-/login-mail naar een zojuist goedgekeurd lid.
+
+    Best-effort en fail-safe: een hapering in de mail-laag mag de goedkeuring
+    NOOIT breken (de status-transitie is al geflusht). Bij falen loggen we en
+    keren stil terug — de admin kan altijd opnieuw porren / het lid kan zelf
+    via ``/login`` een verse magic-link aanvragen.
+    """
+    login_url = f"{settings.base_url.rstrip('/')}/login"
+    try:
+        get_email_sender().send(
+            EmailMessage(
+                to=member.email,
+                subject="Welkom bij dewereldvan.ai — je aanmelding is goedgekeurd",
+                text_body=(
+                    f"Hoi {member.name},\n\n"
+                    "Je aanmelding is goedgekeurd. Je kunt nu inloggen en je plek "
+                    "in de wereld opbouwen.\n\n"
+                    f"Inloggen: {login_url}\n"
+                ),
+                html_body=email_templates.render_approval(member.name, login_url),
+            )
+        )
+    except EmailSendError:
+        logger.warning("Goedkeurings-mail faalde voor lid %s", member.id)
+    except Exception:  # noqa: BLE001 — mail mag de approval nooit breken
+        logger.exception("Onverwachte fout bij goedkeurings-mail voor lid %s", member.id)
 
 
 def _audit(
@@ -74,6 +109,7 @@ def approve_member(
         detail="pending->approved",
     )
     db.flush()
+    _send_approval_email(member)
     return member
 
 

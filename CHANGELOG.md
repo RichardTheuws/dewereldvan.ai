@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.69.0] - 2026-06-22
+### Added — Goedgekeurde leden krijgen automatisch hun login-mail (geen handmatig porren meer)
+- Tot nu toe stuurde "goedkeuren" in `/admin/queue` géén mail; Richard moest een goedgekeurd lid handmatig
+  in de WhatsApp-groep porren om in te loggen. Nu stuurt `approve_member` (`app/services/approval.py`) zélf de
+  welkomst-/login-mail (onderwerp "…je aanmelding is goedgekeurd", knop → `BASE_URL/login`), hergebruikt de
+  bestaande kosmische `templates/emails/approval.html` (`render_approval`).
+- **In de service, niet de route**: zo krijgt élk goedkeur-pad de mail automatisch mee (nu de admin-route, later
+  een bulk-/auto-approve). Verzending via `get_email_sender()` — werkt met de Cloudflare-backend op M4 én de
+  console-outbox in dev.
+- **Fail-safe**: de mail-verzending zit in een try/except (`EmailSendError` + brede vangst) en mag de goedkeuring
+  NOOIT breken — de status-transitie is al geflusht; bij een hapering loggen we en keren stil terug (lid kan altijd
+  zelf via `/login` een verse magic-link halen).
+- **Tests**: `test_approve_sends_login_email` (mail vertrekt met login-link) + `test_approve_survives_email_failure`
+  (failure breekt de approval niet). Outbox-verificatie gedaan: de mail landt met `/login`-link in de console-outbox.
+
 ## [0.68.0] - 2026-06-21
 ### Changed — De lid-canvas landt niet meer leeg: ambient levende graaf (de regressie die Richard zag)
 - Een ingelogd lid kreeg op `/` de agent-canvas met enkel een begroeting + leeg veld + 2 chips — "mooi maar
