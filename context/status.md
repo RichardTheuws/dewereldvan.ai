@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.81.0 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.82.0 · **Branch**: `main`
 
 ## Waar het draait
 - **🚀 LIVE (volledige app)**: **https://dewereldvan.ai** (apex, canonical) + `www` + `app.dewereldvan.ai` —
@@ -34,7 +34,11 @@
   voor een bezoeker actionable zijn (klik → concierge-prefill met intro, nul AI-kosten); editor toont een
   gegronde suggestie uit de werk-items; `/leden` heeft een "Open voor"-discovery-filter.
 - **Community**: agenda + nieuws (`Post`), ideeënbus, roadmap. **Agenda + nieuws zijn publiek leesbaar voor
-  anon** (v0.81.0, indexeerbaar; toevoegen blijft login-gated → "Word lid"-nudge).
+  anon** (v0.81.0, indexeerbaar; toevoegen blijft login-gated → "Word lid"-nudge). **Bijdragen via één slimme
+  input** (v0.82.0): link/tekst/voice → `post_draft_service` (Haiku, gegrond uit de link, fail-safe) maakt een
+  concept → bestaande form als "controleer & plaats". De complexe forms zijn geen startpunt meer.
+- **Volgt (agenda)**: categorieën + RSVP (aanwezig/organiserend/spreker) + AI-curatie die de agenda zelf vult
+  met échte NL/BE-events (auto-goedkeuren wat zeker is, twijfel → queue).
 - **Matchmaking**: `MatchSuggestion` + intro-flow (`Connection`) + push-chips.
 - **Discovery** (footprint-engine): zoekt een lid online op → entity-resolution → classificeer →
   crystalliseer. Draait als **achtergrond-job** (`DiscoveryRun`), live-tail over SSE, terugkeer-view,

@@ -37,7 +37,12 @@
 
       <section class="mt-10" data-reveal style="--d:460ms">
         {% if member %}
-        {% include "agenda/_form.html" %}
+        {% set smart_id = "agenda-smart" %}
+        {% set smart_action = "/agenda/concept" %}
+        {% set smart_draft = "agenda-draft" %}
+        {% set smart_lead = "Ken jij een AI-meetup? Plak een link, of vertel het kort — de agent maakt 'm." %}
+        {% set smart_placeholder = "bijv. https://aimelo.nl — of: 'Aimelo, elke woensdag 18u in Almelo'" %}
+        {% include "posts/_smart_add.html" %}
         {% else %}
         {# Anon: lezen mag, toevoegen vraagt lidmaatschap (lichte, open uitnodiging). #}
         <div class="card" style="padding:18px 22px">

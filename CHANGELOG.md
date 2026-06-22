@@ -3,6 +3,28 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.82.0] - 2026-06-22
+### Changed — Bijdragen via één slimme input (link/tekst/voice → de agent maakt de draft)
+- De **ingewikkelde formulieren** op agenda én nieuws zijn weg als startpunt. Nu geef je **één ding** — een
+  **link, wat tekst, of voice** — en de agent maakt er een concept van; jij controleert en plaatst. Dat is de
+  stijl van het platform (verbazen door intelligentie, geen invulvelden).
+- **Gegrond, nooit verzonnen**: `post_draft_service.draft_event`/`draft_news` doet één Haiku-tool-call; zit er
+  een URL in, dan halen we eerst de échte pagina-inhoud op (Cloudflare markdown) en extraheren we UITSLUITEND
+  wat daarin staat — geen gehallucineerde datum/locatie. Onbekende velden blijven leeg.
+- **Fail-safe**: AI uit of een fout → een minimale draft (URL + titel uit de tekst) zodat het altijd werkt.
+- De bestaande, werkende form blijft als **"concept — controleer & plaats"-stap** (pre-filled door de agent) →
+  geen nieuw persist-pad, validatie ongemoeid. Na plaatsen wist de concept-zone + smart-input zichzelf.
+- **Voice** = progressive enhancement (Web Speech API): de 🎤-knop verschijnt alleen waar de browser het kan,
+  en dicteert in het veld. Nul serverkosten.
+- **Tests**: draft-service (URL-extractie, fail-safe, AI-mapping, nooit-een-datum-verzinnen, ongeldige
+  enum→default) + concept-routes (pre-filled form, login-gated). 1010 groen. Server-flow end-to-end
+  geverifieerd met een ingelogde sessie (login→verify→smart-input→concept).
+
+### Volgt nog (zelfde richting, eigen increment)
+- Event-**categorieën** (meetup/conferentie/coding-sessie/…) + **RSVP** (aanwezig/organiserend/ik spreek hier).
+- **AI-curatie** die de agenda zelf vult met échte NL/BE-events en auto-goedkeurt wat ze zeker weet (twijfel →
+  admin-queue), in lijn met de gekozen bron-strategie.
+
 ## [0.81.0] - 2026-06-22
 ### Changed — Agenda & nieuws publiek leesbaar voor anonieme bezoekers
 - Een anonieme bezoeker kan nu **`/agenda` en `/nieuws` direct lezen** (geen login-redirect meer) — passend

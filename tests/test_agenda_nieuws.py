@@ -117,11 +117,39 @@ def test_anonymous_cannot_post(make_client, path):
 
 
 @pytest.mark.parametrize("path", ["/agenda", "/nieuws"])
-def test_approved_member_sees_page(make_client, seed, path):
+def test_approved_member_sees_smart_input(make_client, seed, path):
+    """Ingelogd lid ziet de slimme één-input (geen kale form als startpunt)."""
     client = make_client(seed["member"])
     resp = client.get(path)
     assert resp.status_code == 200
-    assert 'name="title"' in resp.text  # ingelogd lid ziet het toevoeg-formulier
+    assert "Laat de agent het invullen" in resp.text  # de smart-input
+    assert 'name="input"' in resp.text
+
+
+@pytest.mark.parametrize("path,name", [("/agenda/concept", "title"), ("/nieuws/concept", "title")])
+def test_concept_returns_prefilled_form(make_client, seed, path, name):
+    """De concept-route maakt (AI uit → fail-safe) een pre-filled concept-form: de
+    titel uit de vrije tekst staat erin, klaar om te controleren en te plaatsen."""
+    client = make_client(seed["member"])
+    base = path.rsplit("/", 1)[0]
+    token = csrf_token(client, base)
+    resp = client.post(path, data={"input": "AImelo meetup in Almelo"},
+                        headers={"X-CSRF-Token": token})
+    assert resp.status_code == 200
+    assert "Concept" in resp.text  # de controleer-&-plaats-kop
+    assert "AImelo meetup in Almelo" in resp.text  # titel uit de vrije input
+    assert f'name="{name}"' in resp.text
+
+
+@pytest.mark.parametrize("path", ["/agenda/concept", "/nieuws/concept"])
+def test_concept_requires_login(make_client, path):
+    client = make_client(None)
+    base = path.rsplit("/", 1)[0]
+    token = csrf_token(client, base)
+    resp = client.post(path, data={"input": "x"}, headers={"X-CSRF-Token": token},
+                       follow_redirects=False)
+    assert resp.status_code in (302, 303)
+    assert resp.headers["location"].endswith("/login")
 
 
 # --------------------------------------------------------------------------- #

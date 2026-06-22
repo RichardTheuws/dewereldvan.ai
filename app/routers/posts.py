@@ -29,7 +29,7 @@ from app.db import get_db
 from app.deps import current_member, require_admin, require_member
 from app.models import EventFrequency, Member, NewsRole, Post, PostKind, Tool
 from app.schemas.post import EventForm, NewsForm
-from app.services import post_service
+from app.services import post_draft_service, post_service
 
 router = APIRouter(tags=["posts"])
 
@@ -159,6 +159,22 @@ def agenda_submit(
     return _render(request, "agenda/_list.html", _agenda_context(db, member))
 
 
+@router.post("/agenda/concept", response_class=HTMLResponse)
+def agenda_concept(
+    request: Request,
+    input: str = Form(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Smart input → de agent maakt een event-concept (gegrond uit link/tekst) en
+    geeft het bestaande form pre-filled terug als 'controleer & plaats'-stap."""
+    draft = post_draft_service.draft_event(input)
+    ctx = _agenda_context(db, member)
+    ctx["form"] = draft
+    ctx["is_concept"] = True
+    return _render(request, "agenda/_form.html", ctx)
+
+
 # --------------------------------------------------------------------------- #
 # Nieuws                                                                       #
 # --------------------------------------------------------------------------- #
@@ -231,6 +247,22 @@ def nieuws_submit(
     )
     db.commit()
     return _render(request, "nieuws/_list.html", _nieuws_context(db, member))
+
+
+@router.post("/nieuws/concept", response_class=HTMLResponse)
+def nieuws_concept(
+    request: Request,
+    input: str = Form(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Smart input → de agent maakt een nieuws-concept (gegrond uit link/tekst) en
+    geeft het bestaande form pre-filled terug als 'controleer & plaats'-stap."""
+    draft = post_draft_service.draft_news(input)
+    ctx = _nieuws_context(db, member)
+    ctx["form"] = draft
+    ctx["is_concept"] = True
+    return _render(request, "nieuws/_form.html", ctx)
 
 
 # --------------------------------------------------------------------------- #

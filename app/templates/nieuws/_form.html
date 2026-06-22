@@ -5,8 +5,8 @@
       hx-post="/nieuws"
       hx-target="#nieuws-list"
       hx-swap="innerHTML"
-      hx-on::after-request="if(event.detail.successful){this.reset();this.querySelector('input[name=title]').focus();}">
-  <div class="event-form__lead">✦ Iets verschenen — van of over jou? Deel het.</div>
+      hx-on::after-request="if(event.detail.successful){var d=document.getElementById('nieuws-draft');if(d)d.innerHTML='';var s=document.querySelector('#nieuws-smart textarea');if(s)s.value='';}">
+  <div class="event-form__lead">{% if is_concept %}✦ Concept — de agent vulde dit in. Klopt het? Pas aan en plaats.{% else %}✦ Iets verschenen — van of over jou? Deel het.{% endif %}</div>
 
   <div class="event-form__title">
     <label class="field-label" for="news-title">Kop van het artikel</label>

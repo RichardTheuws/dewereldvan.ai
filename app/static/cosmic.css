@@ -512,6 +512,43 @@
   margin-right: 2px;
 }
 
+/* ---- Slimme bijdrage-input (agenda/nieuws): één veld → agent maakt de draft ---- */
+.cosmic .smart-add__lead {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+.cosmic .smart-add__field {
+  width: 100%;
+  resize: vertical;
+  min-height: 56px;
+}
+.cosmic .smart-add__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.cosmic .smart-add__foot .btn[type="submit"] { margin-left: auto; }
+.cosmic .smart-add__voice.is-listening {
+  color: #04040e;
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgba(246, 205, 134, 0.5);
+}
+.cosmic .smart-add__busy {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+/* htmx-indicator: standaard verborgen, zichtbaar tijdens het verzoek. */
+.cosmic .htmx-indicator { opacity: 0; transition: opacity 0.2s; }
+.cosmic .htmx-request .htmx-indicator,
+.cosmic .htmx-request.htmx-indicator { opacity: 1; }
+
 /* ---- "Waar ik voor opensta" — editor-chips (checkbox, multi-select) ---- */
 .cosmic .open-chips { display: flex; flex-wrap: wrap; gap: 9px; }
 .cosmic .open-chip {

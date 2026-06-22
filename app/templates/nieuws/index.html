@@ -36,7 +36,12 @@
 
       <section class="mt-10" data-reveal style="--d:460ms">
         {% if member %}
-        {% include "nieuws/_form.html" %}
+        {% set smart_id = "nieuws-smart" %}
+        {% set smart_action = "/nieuws/concept" %}
+        {% set smart_draft = "nieuws-draft" %}
+        {% set smart_lead = "Iets verschenen — van of over jou? Plak de link of vertel het kort — de agent maakt 'm." %}
+        {% set smart_placeholder = "bijv. https://nrc.nl/… — of: 'geïnterviewd door Emerce over AI-agents'" %}
+        {% include "posts/_smart_add.html" %}
         {% else %}
         {# Anon: lezen mag, plaatsen vraagt lidmaatschap (lichte, open uitnodiging). #}
         <div class="card" style="padding:18px 22px">

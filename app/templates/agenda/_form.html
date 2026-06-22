@@ -5,8 +5,8 @@
       hx-post="/agenda"
       hx-target="#agenda-list"
       hx-swap="innerHTML"
-      hx-on::after-request="if(event.detail.successful){this.reset();this.querySelector('input[name=title]').focus();}">
-  <div class="event-form__lead">✦ Ken jij een AI-meetup? Zet 'm in de agenda.</div>
+      hx-on::after-request="if(event.detail.successful){var d=document.getElementById('agenda-draft');if(d)d.innerHTML='';var s=document.querySelector('#agenda-smart textarea');if(s)s.value='';}">
+  <div class="event-form__lead">{% if is_concept %}✦ Concept — de agent vulde dit in. Klopt het? Pas aan en plaats.{% else %}✦ Ken jij een AI-meetup? Zet 'm in de agenda.{% endif %}</div>
 
   <div class="event-form__grid">
     <div class="event-form__title">
