@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.74.0] - 2026-06-22
+### Added — Pivot Fase C (increment 1): multidisciplinaire showcase — video/audio-showreel uit een link
+- Het profiel toont werk nu in z'n eigen vorm. Eerste increment: **video- en audio-showreels** via oEmbed —
+  een lid plakt een YouTube/Vimeo/SoundCloud/Spotify-link bij een werk-item en het wordt een ingesloten speler.
+- **`Offering` gegeneraliseerd** (geen herbouw): `kind` (enum, default `project`; + video/audio/workshop/gallery/
+  writing/link) + `embed_html`. Additieve migratie 0027 (`server_default='project'` → bestaande rijen ongemoeid).
+- **`embed_service`**: detecteert de provider uit de host, haalt de oEmbed op en bouwt de `<iframe>` **zelf** uit
+  een gevalideerde, https + allowlisted embed-src. **Geen SSRF** (we bevragen alleen onze bekende oEmbed-endpoints,
+  nooit de lid-host), **geen XSS** (provider-HTML wordt niet vertrouwd; iframe sandboxed, lazy, geen autoplay).
+  Fail-safe: geen match/fout/ongeldige src → link-fallback. Gratis → niet aan AI-gating gekoppeld.
+- **Integratie**: `update_offering` resolvet de embed synchroon bij een URL-wijziging → `kind`=video/audio +
+  `embed_html`, en slaat de screenshot-enrich over (een speler i.p.v. een screenshot). Rendering: de project-
+  detailhero toont de speler (kind-bewuste eyebrow Video/Audio), de profielkaart een ▶/♪-badge.
+- **Tests**: 17 nieuwe (`detect_kind`-matrix; `resolve` bouwt sandboxed iframe; weigert niet-allowlisted/non-https
+  src; fail-safe op fout/ontbrekende iframe; `update_offering` zet kind+embed / valt terug op project). 965 groen.
+- **Volgende increments** (zelfde model): workshop (datum + aanmeld/terugkijk), gallery, writing; discipline-facet (Fase D).
+
 ## [0.73.0] - 2026-06-22
 ### Changed — Admin-communicatie via Telegram i.p.v. e-mail (operator-voorkeur)
 - Richard wil admin-features + -communicatie via z'n **Telegram-connectie**, niet z'n mail. Nieuwe

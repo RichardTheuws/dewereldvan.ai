@@ -428,6 +428,45 @@
   .cosmic .home-star--new .home-star__dot { animation: none; }
 }
 .cosmic .canvas-ambient__new { color: #f6cd86; }
+
+/* Showcase-embeds (pivot Fase C): ingesloten video/audio-speler. De iframe is
+   server-side gebouwd uit een provider-allowlist (embed_service) en sandboxed. */
+.cosmic .embed-frame--video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #04040e;
+}
+.cosmic .embed-frame--video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.cosmic .embed-frame--audio {
+  width: 100%;
+  height: 166px;
+  border: 0;
+  border-radius: 14px;
+}
+/* Kind-badge op een projectkaart (video/audio-showreel). */
+.cosmic .card-kind {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(63, 210, 255, 0.12);
+  border: 1px solid rgba(63, 210, 255, 0.4);
+  color: var(--cyan, #3fd2ff);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 .cosmic .home-star__name {
   font-family: "JetBrains Mono", monospace;
   font-size: 11px;

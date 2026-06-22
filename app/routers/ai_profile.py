@@ -53,6 +53,7 @@ from app.models import (
     Member,
     Need,
     Offering,
+    OfferingKind,
     Profile,
     ProfileLink,
     ProfileLinkKind,
@@ -789,8 +790,13 @@ def patch_offering(
         raise HTTPException(status_code=404)
     db.commit()
     # Een gewijzigde link nullt de verrijking (zie update_offering) → her-genereer
-    # 'm direct in de achtergrond; een ontbrekende verrijking vult zo ook aan.
-    if item.url and (item.screenshot_url is None or item.summary is None):
+    # 'm direct in de achtergrond; een ontbrekende verrijking vult zo ook aan. Alleen
+    # voor 'project'-items: een video/audio-embed heeft een speler, geen screenshot.
+    if (
+        item.kind == OfferingKind.project
+        and item.url
+        and (item.screenshot_url is None or item.summary is None)
+    ):
         project_enrich_service.trigger_async(item.id)
     db.refresh(profile)
     db.refresh(item)

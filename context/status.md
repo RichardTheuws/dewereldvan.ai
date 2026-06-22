@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.73.0 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.74.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -62,8 +62,10 @@ in `decisions.md`. Fasering A (toegang herframen) → B (spam-triage + auto-welk
 (discipline-facet). **Fase A+B LIVE**: A (v0.71.0) herframede registratie/queue/mail (poort = anti-spam,
 niet oordeel). B (v0.72.0): de open preview-banner + **spam-triage** (`triage_service`, Haiku) bij
 registratie → **auto-welkom** voor echte makers, alleen twijfel in de queue (mét reden); nooit auto-weren;
-KILL-fallback naar review bij AI-uit/fout (migr. 0026 `member.triage_note`). Volgende: **Fase C** (showcase:
-`Offering.kind` + oEmbed-embeds, video/audio eerst).
+KILL-fallback naar review bij AI-uit/fout (migr. 0026 `member.triage_note`). **Fase C increment 1 LIVE**
+(v0.74.0): `Offering.kind` + `embed_html` (migr. 0027); `embed_service` maakt video/audio-showreels uit een
+link (oEmbed, provider-allowlist, SSRF/XSS-veilig, fail-safe → link). Volgende: workshop/gallery/writing +
+**Fase D** (discipline-facet). NB admin-comms via Telegram (v0.73.0, `notify_admins`).
 
 ### Eerdere focus (afgerond)
 **Sitewide ervaring-audit + UAT-fundament** (2026-06-21, v0.56.0). Een read-only audit-workflow toetste 12

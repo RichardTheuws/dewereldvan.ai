@@ -122,6 +122,8 @@
             <a class="card" href="/projecten/{{ item.slug }}" data-reveal="drift">
               {% set _img = item.image_url | safe_url %}
               {% if _img %}<img class="thumb" src="{{ _img }}" alt="" loading="lazy">{% endif %}
+              {% if item.kind.value == 'video' %}<span class="card-kind"><span aria-hidden="true">▶</span> Video</span>
+              {% elif item.kind.value == 'audio' %}<span class="card-kind"><span aria-hidden="true">♪</span> Audio</span>{% endif %}
               <div class="card-label">{{ item.title }}</div>
               {% if item.description %}<div class="card-desc">{{ item.description }}</div>{% endif %}
               <div class="card-url">dewereldvan.ai/projecten/{{ item.slug }}</div>

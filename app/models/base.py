@@ -97,6 +97,24 @@ class ProfileLinkKind(str, enum.Enum):
     other = "other"
 
 
+class OfferingKind(str, enum.Enum):
+    """Soort werk-item (pivot Fase C — de multidisciplinaire showcase).
+
+    ``project`` is de default (web-pagina → screenshot-hero + samenvatting, bestaand
+    gedrag). De media-soorten renderen een ingesloten speler i.p.v. een screenshot.
+    Fase C increment 1 detecteert ``video``/``audio`` automatisch uit de link (oEmbed);
+    de overige soorten staan klaar voor volgende increments.
+    """
+
+    project = "project"  # web-pagina/repo (screenshot-hero + AI-samenvatting)
+    video = "video"  # ingesloten video-showreel (YouTube/Vimeo)
+    audio = "audio"  # ingesloten audio-showreel (SoundCloud/Spotify)
+    workshop = "workshop"  # workshop/sessie (datum + aanmeld-/terugkijk-link)
+    gallery = "gallery"  # beeld-galerij
+    writing = "writing"  # publicatie/artikel
+    link = "link"  # nette unfurl-link-kaart
+
+
 class IdeaStatus(str, enum.Enum):
     """Status van een ideeenbus-idee (E2). Langste waarde 'afgewezen' = 9 →
     de DDL-kolom is ``String(length=9)`` (zie 0005_ervaring)."""

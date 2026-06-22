@@ -20,13 +20,14 @@ from sqlalchemy.orm import Session
 from app.models import (
     Need,
     Offering,
+    OfferingKind,
     Profile,
     ProfileLink,
     ProfileLinkKind,
     Tag,
 )
 from app.security import slugify, unique_slug
-from app.services import offering_slug
+from app.services import embed_service, offering_slug
 
 if TYPE_CHECKING:  # pragma: no cover — typing only, avoids a runtime import cycle
     from app.services.ai_profile import DraftProfile
@@ -259,6 +260,17 @@ def update_offering(
                 photo_service.delete_photo(offering.screenshot_url)
             offering.screenshot_url = None
             offering.summary = None
+            offering.embed_html = None
+            # Showcase (Fase C): is de nieuwe link een video/audio-provider, dan
+            # maken we er een ingesloten showreel-speler van (oEmbed, gratis + fail-
+            # safe). Lukt het → kind=video/audio + screenshot blijft leeg (een speler
+            # i.p.v. een screenshot). Geen embed → kind terug naar project (de
+            # screenshot-enrich pakt 'm dan op zoals voorheen).
+            resolved = embed_service.resolve(new_url) if new_url else None
+            if resolved is not None:
+                offering.kind, offering.embed_html = resolved
+            else:
+                offering.kind = OfferingKind.project
         offering.url = new_url
     if image_url is not None:
         offering.image_url = _safe_url(image_url)

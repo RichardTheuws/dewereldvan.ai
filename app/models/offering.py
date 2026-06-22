@@ -5,9 +5,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Integer, String, Text
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, OfferingKind, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.profile import Profile
@@ -38,6 +39,17 @@ class Offering(Base, TimestampMixin):
     # van de door het lid getypte description.
     screenshot_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Multidisciplinaire showcase (pivot Fase C): het soort werk-item. ``project``
+    # (default) = web-pagina → screenshot-hero. ``video``/``audio`` renderen een
+    # ingesloten oEmbed-speler i.p.v. een screenshot (auto-gedetecteerd uit de link).
+    kind: Mapped[OfferingKind] = mapped_column(
+        SQLEnum(OfferingKind, name="offering_kind", native_enum=False),
+        default=OfferingKind.project,
+        nullable=False,
+    )
+    # De gesanitiseerde oEmbed-iframe (alleen voor video/audio). Alleen van een
+    # provider-allowlist (YouTube/Vimeo/SoundCloud/Spotify); leeg → link-fallback.
+    embed_html: Mapped[str | None] = mapped_column(Text, nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # ordering
 
     profile: Mapped[Profile] = relationship(back_populates="offerings")

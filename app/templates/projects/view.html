@@ -35,14 +35,22 @@
 
     <main class="flex-1 pb-20">
 
-      {# ---- Project-hero: screenshot van de live site (val terug op image_url) ---- #}
+      {# ---- Hero: een ingesloten showreel-speler (video/audio) óf een screenshot
+             van de live site (project). De embed-HTML is server-side gebouwd uit een
+             provider-allowlist (embed_service) → veilig om |safe te renderen. ---- #}
       <section class="cover mt-2" data-reveal="materialize" style="--d:140ms">
+        {% if offering.embed_html %}
+        {{ offering.embed_html | safe }}
+        {% else %}
         {% set _hero = (offering.screenshot_url or offering.image_url) | safe_url %}
         {% if _hero %}<img src="{{ _hero }}" alt="Screenshot van {{ offering.title }}" loading="lazy">{% endif %}
+        {% endif %}
       </section>
 
       <section class="mt-8" data-reveal="materialize" style="--d:240ms">
-        <div class="eyebrow eyebrow--plain">Project</div>
+        <div class="eyebrow eyebrow--plain">
+          {%- if offering.kind.value == 'video' %}Video{% elif offering.kind.value == 'audio' %}Audio{% else %}Project{% endif -%}
+        </div>
         <h1 class="headline mt-3">{{ offering.title }}</h1>
         <div class="mt-4 display-name">
           door
@@ -57,7 +65,7 @@
         <div class="project-ai-note">✦ door de agent samengevat uit de live site</div>
         <p class="lede mt-3" style="max-width:58ch;white-space:pre-line">{{ offering.summary }}</p>
       </section>
-      {% elif offering.url %}
+      {% elif offering.url and offering.kind.value == 'project' %}
       {# Enrich loopt async (screenshot + samenvatting komen er aan): eerlijke
          "agent aan het werk"-staat i.p.v. een lege doos. #}
       <section class="mt-10" data-reveal style="--d:300ms">
