@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.70.2] - 2026-06-22
+### Docs — Pivot vastgelegd: open multidisciplinair maker-platform met showcase (PRD APPROVAL PENDING)
+- Strategische pivot van Richard: van besloten WhatsApp-groep → **open voor iedereen met AI-affiniteit, alle
+  disciplines**, mét approval die **spam filtert i.p.v. mensen** (niemand wordt "niet geschikt" genoemd).
+- Nieuwe PRD **`docs/PRD-open-showcase.md`** (v0.1.0, APPROVAL PENDING): drie lagen — toegang zonder oordeel
+  (AI-spam-triage → auto-welkom + flag-review, genadige toestanden) · multidisciplinaire showcase (typed werk-
+  item-model = generalisatie van `Offering` + agent-uit-link + oEmbed-embeds) · verbinding (matchmaking op de
+  rijkere showcase). Fasering A→D, edge cases + succescriteria. **Geen code — wacht op akkoord.**
+- Beslissing vastgelegd in `context/decisions.md` (2026-06-22, met de 3 bevestigde keuzes + afgewezen
+  alternatieven). `docs/PRD.md` (v0.1.0 WhatsApp-MVP) gemarkeerd als gedeeltelijk gesuperseed. `status.md`
+  bijgewerkt met de pivot als huidige focus.
+
 ## [0.70.1] - 2026-06-22
 ### Fixed — Voordeur-compositie: geen lege verticale ruimte meer onder de constellatie
 - Op de publieke voordeur clusterden de (nu 3) makers in de bovenste 30% van een vaste `16/9`-constellatiebox

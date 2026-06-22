@@ -6,6 +6,44 @@ Elke beslissing bevat: **Context** (waarom kiezen), **Beslissing** (wat), **Alte
 
 ---
 
+## [2026-06-22] Pivot: open multidisciplinair maker-platform met showcase (poort filtert spam, niet mensen)
+
+**Context**: dewereldvan.ai ontstond uit één WhatsApp-groep, maar moet iedereen verwelkomen die er
+"op wil en hoort". Richards expliciete eis: een open platform voor álle AI-disciplines om werk te
+tonen en te verbinden — mét approval tegen spam, maar **zonder mensen te schofferen door ze als "niet
+geschikt" te kwalificeren**.
+
+**Beslissing**: drie keuzes vastgelegd (door Richard bevestigd):
+1. **Wie hoort erbij** = iedereen met **AI-affiniteit** (alle disciplines: coders, trainers, audio/
+   video, design, research, beleid, nieuwsgierigen). Thema = AI, géén prestige-lat. De oude framing
+   "scherpste AI-makers" blijft de *toon/ambitie*, niet langer een *toegangscriterium*.
+2. **Toegangsmodel** = de poort **filtert spam, niet mensen**. Lidmaatschap losgekoppeld van oordeel:
+   AI-spam-triage (alleen spam-likelihood, nooit prestige) → **auto-welkom** voor echte makers, alleen
+   twijfel/spam in Richards review-queue. Genadige toestanden (welkom · "we kijken even mee" · stil-
+   niet-geactiveerd mét recovery); **nooit** "niet geschikt".
+3. **Showcase als spil** = het profiel wordt een agent-gebouwde, multidisciplinaire etalage van echt
+   werk in native vorm (project/workshop/video-showreel/audio/galerij/writing), via één **typed werk-
+   item-model** (generalisatie van `Offering`, geen herbouw) + oEmbed-embeds. De showcase ís tegelijk
+   het anti-spam-signaal (effort-as-signal).
+
+PRD: `docs/PRD-open-showcase.md` (v0.1.0, APPROVAL PENDING). Fasering A (toegang herframen) → B (AI-
+spam-triage + auto-welkom) → C (showcase-generalisatie, video/audio eerst) → D (discipline-facet +
+discovery).
+
+**Alternatieven**:
+- Besloten/invite-only houden: afgewezen — botst met "iedereen die er op wil en hoort".
+- Echt iedereen, geen thema-grens: afgewezen — verwatert de AI-niche en de waarde per maker.
+- Praktiserende-AI-mensen-lat: afgewezen — brengt de "ben ik serieus genoeg?"-drempel terug die juist weg moet.
+- Binaire mens-keurt-mens approval houden: afgewezen — dát is het oordeel dat schoffeert.
+- Vaste profiel-secties per discipline (i.p.v. typed werk-item): afgewezen — rigide, hoge onderhoudslast, sluit nieuwe disciplines buiten.
+
+**Gevolgen**: additieve datamodel-impact (`Offering.kind`+embed, discipline-facet, triage-status),
+geen herbouw. Verbreedt instroom; migreert niets weg (teaser-wachtlijst + bestaande leden ongemoeid).
+Vereist Turnstile op registratie + de triage als eerste zeef. Vervangt de visie-/toegang-delen van
+`docs/PRD.md` (v0.1.0).
+
+---
+
 ## [2026-06-21] Bezoeker-AI-ervaring met harde €50/week kosten-cap
 
 **Context**: De showcase moet niet-leden de kracht van AI laten *ervaren*, niet erover laten lezen.

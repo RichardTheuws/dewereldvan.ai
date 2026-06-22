@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.70.1 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.70.2 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -50,6 +50,16 @@
   her-geobserveerd). Statische assets cache-gebust (`?v={{ asset_ver }}`). Volledig reduced-motion-safe.
 
 ## Huidige focus
+**🔭 PIVOT (2026-06-22) — open multidisciplinair maker-platform met showcase.** Strategische koers-
+wijziging: van besloten WhatsApp-groep → **open voor iedereen met AI-affiniteit, alle disciplines**.
+De poort **filtert spam, niet mensen** (AI-spam-triage → auto-welkom voor echte makers, alleen twijfel
+in de review-queue; nooit "niet geschikt"). Het profiel wordt een agent-gebouwde **multidisciplinaire
+showcase** (project/workshop/video-showreel/audio/galerij via een typed werk-item-model = generalisatie
+van `Offering`). **PRD: `docs/PRD-open-showcase.md` (v0.1.0, APPROVAL PENDING)** + beslissing 2026-06-22
+in `decisions.md`. Fasering A (toegang herframen) → B (spam-triage + auto-welkom) → C (showcase) → D
+(discipline-facet). **Nog niet gebouwd — wacht op akkoord op de PRD.**
+
+### Eerdere focus (afgerond)
 **Sitewide ervaring-audit + UAT-fundament** (2026-06-21, v0.56.0). Een read-only audit-workflow toetste 12
 schermen tegen de noordster (W1–W5) + STYLEGUIDE: **9/10 FAIL, alleen de besloten canvas PASS** — patroon is
 overal "mooi maar niet slim" (kosmische schil grotendeels conform, maar het W-mechanisme + getoonde

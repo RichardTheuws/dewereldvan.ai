@@ -2,7 +2,13 @@
 
 **Versie**: 0.1.0
 **Datum**: 2026-06-17
-**Status**: 🟡 APPROVAL PENDING (Fase 0 start ná akkoord)
+**Status**: 🟢 Fase 0–5 grotendeels gebouwd (zie `context/status.md`)
+
+> ⚠️ **GEDEELTELIJK GESUPERSEED (2026-06-22).** De visie-, doelgroep- en toegang-delen hieronder
+> (besloten WhatsApp-groep, "scherpste AI-makers" als toegangscriterium) zijn vervangen door de
+> **pivot naar een open, multidisciplinair maker-platform** — zie **`docs/PRD-open-showcase.md`** en
+> de beslissing van 2026-06-22 in `context/decisions.md`. Dit document blijft staan als historie van
+> de oorspronkelijke MVP-fasering; raadpleeg de pivot-PRD voor de huidige richting.
 
 ## 1. Doel
 Een platform waar leden van een WhatsApp-groep een profiel aanmaken (wie ze zijn, wat ze
