@@ -59,6 +59,9 @@ PUBLIC_INDEXABLE = {
     "/leden/{slug}",
     "/projecten/{slug}",
     "/proef",
+    # Publieke community-content: anon mag lezen (toevoegen blijft login-gated).
+    "/agenda",
+    "/nieuws",
 }
 # Publiek bereikbaar (anon → 200) maar bewust noindex (auth + post-delete).
 PUBLIC_NOINDEX = {
@@ -76,8 +79,6 @@ PUBLIC_FRAGMENTS = {
 }
 # Besloten: anon → 303 naar /login. Lid → 200/2xx.
 MEMBER_ONLY = {
-    "/agenda",
-    "/nieuws",
     "/ideeen",
     "/ideeen/lijkt-op",
     "/roadmap",

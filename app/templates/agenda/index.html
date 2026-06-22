@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="nl">
-{# Agenda (Post/event) — standalone cosmic-document. Login-gated + noindex.
-   Iedereen voegt meetups toe; frequentie-badge + eerstvolgende countdown. #}
+{# Agenda (Post/event) — standalone cosmic-document. Publiek leesbaar (ook anon,
+   indexeerbaar); toevoegen is login-gated. Frequentie-badge + countdown. #}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  {% set noindex = true %}
+  {% set noindex = false %}
   {% set seo_title = "Agenda — dewereldvan.ai" %}
   {% include "_seo_head.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
@@ -36,7 +36,15 @@
       </section>
 
       <section class="mt-10" data-reveal style="--d:460ms">
+        {% if member %}
         {% include "agenda/_form.html" %}
+        {% else %}
+        {# Anon: lezen mag, toevoegen vraagt lidmaatschap (lichte, open uitnodiging). #}
+        <div class="card" style="padding:18px 22px">
+          <span class="muted">Ken jij een AI-meetup?</span>
+          <a class="text-link" href="/register">Word lid</a> om de agenda aan te vullen.
+        </div>
+        {% endif %}
       </section>
 
       <section class="mt-12" data-reveal style="--d:560ms">

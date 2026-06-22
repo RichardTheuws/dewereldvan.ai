@@ -3,6 +3,19 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.81.0] - 2026-06-22
+### Changed — Agenda & nieuws publiek leesbaar voor anonieme bezoekers
+- Een anonieme bezoeker kan nu **`/agenda` en `/nieuws` direct lezen** (geen login-redirect meer) — passend
+  bij het open platform; de open-preview-banner blijft staan. De pagina's zijn ook **indexeerbaar** (noindex
+  weg) zodat de publieke community-content vindbaar wordt.
+- **Schrijven blijft login-gated**: het toevoeg-formulier is voor anon vervangen door een lichte "Word lid"-
+  uitnodiging; de POST-routes houden `require_member`. Pending/ongekeurd nieuws blijft nooit publiek zichtbaar.
+- GET-routes gebruiken nu `current_member` (optioneel) i.p.v. `require_member`; admin-acties tonen alleen voor
+  ingelogde admins.
+- **UAT-contract bijgewerkt**: `/agenda` + `/nieuws` van `MEMBER_ONLY` → `PUBLIC_INDEXABLE` (de zelf-groeiende
+  ervaring-UAT dwong dit netjes af). Tests: anon leest (200, geen noindex, geen formulier), anon POST → login,
+  lid ziet het formulier. 999 groen.
+
 ## [0.80.1] - 2026-06-22
 ### Fixed — Ledengids 500 op Postgres: json-kolommen → jsonb (DISTINCT-operator)
 - De `/leden`-query doet `SELECT DISTINCT` over hele Profile-rijen. Een gewone Postgres `json`-kolom heeft

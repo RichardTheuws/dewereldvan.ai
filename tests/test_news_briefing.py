@@ -344,7 +344,7 @@ def seed(SessionTest):
     return ids
 
 
-def test_public_nieuws_is_noindex_and_hides_pending(make_client, seed, SessionTest):
+def test_public_nieuws_is_indexable_and_hides_pending(make_client, seed, SessionTest):
     # Eén pending kandidaat + één live item.
     s = SessionTest()
     post_service.create_curated_news(
@@ -362,12 +362,13 @@ def test_public_nieuws_is_noindex_and_hides_pending(make_client, seed, SessionTe
     s.commit()
     s.close()
 
-    client = make_client(seed["member"])
+    # Anon: de pagina is publiek leesbaar én indexeerbaar (open platform).
+    client = make_client(None)
     resp = client.get("/nieuws")
     assert resp.status_code == 200
-    assert "noindex" in resp.text  # login-gated pagina
+    assert "noindex" not in resp.text  # publiek-indexeerbaar (geen noindex)
     assert "ZICHTBAAR LIVE" in resp.text
-    assert "VERBORGEN KANDIDAAT" not in resp.text  # pending nooit publiek
+    assert "VERBORGEN KANDIDAAT" not in resp.text  # pending nooit publiek (kritiek)
     # De AI-duiding van een live item is zichtbaar.
     assert "Dit is de duiding." in resp.text
 

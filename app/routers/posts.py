@@ -26,7 +26,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import require_admin, require_member
+from app.deps import current_member, require_admin, require_member
 from app.models import EventFrequency, Member, NewsRole, Post, PostKind, Tool
 from app.schemas.post import EventForm, NewsForm
 from app.services import post_service
@@ -47,16 +47,16 @@ def _is_admin(member: Member) -> bool:
 # --------------------------------------------------------------------------- #
 
 
-def _agenda_context(db: Session, member: Member) -> dict:
+def _agenda_context(db: Session, member: Member | None) -> dict:
     return {
         "events": post_service.list_events(db),
         "member": member,
-        "is_admin": _is_admin(member),
+        "is_admin": member is not None and _is_admin(member),
         "frequencies": list(EventFrequency),
     }
 
 
-def _nieuws_context(db: Session, member: Member) -> dict:
+def _nieuws_context(db: Session, member: Member | None) -> dict:
     briefing = post_service.list_briefing(db)
     return {
         # ``items`` = het volledige (gesorteerde) archief incl. deze week — voor het
@@ -64,7 +64,7 @@ def _nieuws_context(db: Session, member: Member) -> dict:
         "items": post_service.list_news(db),
         "briefing_this_week": briefing.briefing_this_week,
         "member": member,
-        "is_admin": _is_admin(member),
+        "is_admin": member is not None and _is_admin(member),
         "roles": list(NewsRole),
         # De getoonde tool-catalogus-namen voor de detectie-op-weergave (geen
         # nieuwe tabel): de kaart matcht deze tegen ai_take/titel.
@@ -89,10 +89,11 @@ def _card_context(db: Session, post: Post, member: Member) -> dict:
 @router.get("/agenda", response_class=HTMLResponse)
 def agenda_index(
     request: Request,
-    member: Member = Depends(require_member),
+    member: Member | None = Depends(current_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
-    """De kosmische agenda: volledige pagina, of het lijst-fragment bij htmx."""
+    """De kosmische agenda: publiek leesbaar (ook anon). Toevoegen blijft login-gated
+    (POST). Volledige pagina, of het lijst-fragment bij htmx."""
     ctx = _agenda_context(db, member)
     if request.headers.get("HX-Request"):
         return _render(request, "agenda/_list.html", ctx)
@@ -166,10 +167,11 @@ def agenda_submit(
 @router.get("/nieuws", response_class=HTMLResponse)
 def nieuws_index(
     request: Request,
-    member: Member = Depends(require_member),
+    member: Member | None = Depends(current_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
-    """Het kosmische nieuws: volledige pagina, of het lijst-fragment bij htmx."""
+    """Het kosmische nieuws: publiek leesbaar (ook anon). Plaatsen blijft login-gated
+    (POST). Volledige pagina, of het lijst-fragment bij htmx."""
     ctx = _nieuws_context(db, member)
     if request.headers.get("HX-Request"):
         return _render(request, "nieuws/_list.html", ctx)

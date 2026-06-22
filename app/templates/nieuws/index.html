@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="nl">
-{# Nieuws (Post/nieuws) — standalone cosmic-document. Login-gated + noindex.
-   Artikelen, interviews en uitgelicht werk van leden; iedereen plaatst direct. #}
+{# Nieuws (Post/nieuws) — standalone cosmic-document. Publiek leesbaar (ook anon,
+   indexeerbaar); plaatsen is login-gated. Artikelen, interviews, uitgelicht werk. #}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  {% set noindex = true %}
+  {% set noindex = false %}
   {% set seo_title = "Nieuws — dewereldvan.ai" %}
   {% include "_seo_head.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
@@ -35,7 +35,15 @@
       </section>
 
       <section class="mt-10" data-reveal style="--d:460ms">
+        {% if member %}
         {% include "nieuws/_form.html" %}
+        {% else %}
+        {# Anon: lezen mag, plaatsen vraagt lidmaatschap (lichte, open uitnodiging). #}
+        <div class="card" style="padding:18px 22px">
+          <span class="muted">Iets geschreven of ergens uitgelicht?</span>
+          <a class="text-link" href="/register">Word lid</a> om het te delen.
+        </div>
+        {% endif %}
       </section>
 
       {% if briefing_this_week %}

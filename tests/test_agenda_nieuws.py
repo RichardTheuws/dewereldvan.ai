@@ -92,9 +92,26 @@ def make_client(route_engine, SessionTest):
 # Auth-poort                                                                   #
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("path", ["/agenda", "/nieuws"])
-def test_anonymous_redirects_to_login(make_client, path):
+def test_anonymous_can_read_pages(make_client, path):
+    """Anon mag agenda + nieuws gewoon lezen (open platform) — geen login-redirect,
+    indexeerbaar (geen noindex), met de open-preview-banner. Toevoegen blijft gated."""
     client = make_client(None)
     resp = client.get(path, follow_redirects=False)
+    assert resp.status_code == 200
+    assert "Word lid" in resp.text  # anon ziet de uitnodiging i.p.v. het formulier
+    assert 'name="title"' not in resp.text  # het toevoeg-formulier is verborgen
+    assert 'name="robots" content="noindex' not in resp.text  # publiek indexeerbaar
+
+
+@pytest.mark.parametrize("path", ["/agenda", "/nieuws"])
+def test_anonymous_cannot_post(make_client, path):
+    """De schrijfkant blijft login-gated: anon POST (mét geldige CSRF) → login."""
+    client = make_client(None)
+    token = csrf_token(client, path)  # anon kan nu de pagina laden → geldige token
+    resp = client.post(
+        path, data={"title": "x"}, headers={"X-CSRF-Token": token},
+        follow_redirects=False,
+    )
     assert resp.status_code in (302, 303)
     assert resp.headers["location"].endswith("/login")
 
@@ -104,6 +121,7 @@ def test_approved_member_sees_page(make_client, seed, path):
     client = make_client(seed["member"])
     resp = client.get(path)
     assert resp.status_code == 200
+    assert 'name="title"' in resp.text  # ingelogd lid ziet het toevoeg-formulier
 
 
 # --------------------------------------------------------------------------- #
