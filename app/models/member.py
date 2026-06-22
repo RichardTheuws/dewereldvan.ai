@@ -59,6 +59,10 @@ class Member(Base, TimestampMixin):
     # Hoogwatermerk: t/m welke concierge_turn.id het geheugen is bijgewerkt (maakt
     # de distill-job idempotent — alleen leden met nieuwere turns hoeven opnieuw).
     memory_synced_turn_id: Mapped[int | None] = mapped_column(nullable=True)
+    # Pivot Fase B: korte reden van de spam-triage bij registratie (waarom auto-
+    # welkom of in de review-queue). Puur voor de admin-queue; geen oordeel over de
+    # persoon. None = niet getrieerd (bv. AI uit → handmatig bekeken).
+    triage_note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     profile: Mapped[Profile | None] = relationship(
         back_populates="member", uselist=False, cascade="all, delete-orphan"

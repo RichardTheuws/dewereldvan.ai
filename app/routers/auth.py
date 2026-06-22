@@ -29,9 +29,11 @@ from app.email import EmailMessage, EmailSender, EmailSendError
 from app.email import templates as email_templates
 from app.models import Member, MemberRole, MemberStatus
 from app.schemas.auth import MagicLinkRequest, RegisterForm
+from app.services import approval as approval_service
 from app.services import magic_link as magic_link_service
 from app.services import onboarding_service
 from app.services import registration as registration_service
+from app.services import triage_service
 
 router = APIRouter(tags=["auth"])
 
@@ -139,11 +141,30 @@ def register_submit(
             },
             status_code=429,
         )
-    db.commit()
-    # Only notify admins for genuinely new pending registrations (not repeats).
+    # Pivot Fase B: de poort filtert spam, niet mensen. Een nieuwe aanmelding wordt
+    # getrieerd op spam-/bot-waarschijnlijkheid (nooit op "relevantie"). Lijkt het een
+    # echt mens → auto-welkom (direct goedgekeurd + welkomst-mail). Twijfel → blijft
+    # pending in de admin-queue (mens beslist). NOOIT auto-weren. Triage faalt veilig
+    # naar review, dus registratie strandt nooit op de AI.
+    auto_welcomed = False
     if result.created:
+        verdict = triage_service.assess_registration(data.name, data.email)
+        result.member.triage_note = verdict.reason
+        if verdict.is_welcome:
+            try:
+                approval_service.approve_member(db, result.member, actor=None)
+                auto_welcomed = True
+            except approval_service.IllegalTransition:
+                pass  # niet pending (race) → laat staan, geen auto-welkom
+    db.commit()
+    # Alleen admins porren als een mens nog moet kijken (niet bij auto-welkom).
+    if result.created and not auto_welcomed:
         _notify_admins_new_registration(sender, result.member)
-    return _render(request, "auth/register_done.html", {"email": data.email})
+    return _render(
+        request,
+        "auth/register_done.html",
+        {"email": data.email, "auto_welcomed": auto_welcomed},
+    )
 
 
 # --------------------------------------------------------------------------- #

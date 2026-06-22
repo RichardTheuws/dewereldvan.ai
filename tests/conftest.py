@@ -36,6 +36,11 @@ os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 # app/storage/photos.py resolvet UPLOAD_DIR op import (zoals CONSOLE_EMAIL_DIR).
 _UPLOAD_DIR = tempfile.mkdtemp(prefix="dwv-uploads-")
 os.environ.setdefault("UPLOAD_DIR", _UPLOAD_DIR)
+# Borg de "geen netwerk"-belofte: wis een eventueel geërfde ANTHROPIC_API_KEY uit de
+# dev-shell, zodat een lazy ``anthropic.Anthropic()`` (bv. de registratie-spam-triage)
+# nooit écht belt. AI-tests installeren hun eigen fake-client (install_fake_anthropic);
+# zonder fake valt elke AI-call veilig terug (triage → review).
+os.environ.pop("ANTHROPIC_API_KEY", None)
 
 import pytest  # noqa: E402
 from app.email.base import EmailMessage  # noqa: E402

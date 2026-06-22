@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     # here so settings stay the single source of truth for config introspection.
     anthropic_api_key: str | None = None  # ANTHROPIC_API_KEY
     anthropic_model: str = "claude-opus-4-8"  # ANTHROPIC_MODEL
+    # Goedkoop, snel model voor de spam-triage bij registratie (pivot Fase B) — een
+    # lichte mens-of-bot-beoordeling, geen reden voor het dure Opus-model.
+    triage_model: str = "claude-haiku-4-5-20251001"  # TRIAGE_MODEL
     fal_key: str | None = None  # FAL_KEY — fal.ai cover generation
     ai_enrich_enabled: bool = True  # AI_ENRICH_ENABLED
     rate_limit_ai_enrich_per_hour: int = 10  # per lid

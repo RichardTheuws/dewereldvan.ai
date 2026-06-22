@@ -21,6 +21,13 @@
       </span>
       {% if message %}<span class="muted" style="font-size:0.85rem">{{ message }}</span>{% endif %}
     </div>
+    {% if member.triage_note and member.status.value == 'pending' %}
+    {# Waarom dit lid in de review-queue staat (spam-triage). Geen oordeel over de
+       persoon — alleen het signaal dat een mens even moet kijken. #}
+    <p style="margin:8px 0 0;color:var(--muted);font-size:0.82rem">
+      <span aria-hidden="true">✦</span> {{ member.triage_note }}
+    </p>
+    {% endif %}
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     {% if member.status.value == 'pending' %}

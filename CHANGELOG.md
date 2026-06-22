@@ -3,6 +3,26 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.72.0] - 2026-06-22
+### Added — Pivot Fase B: AI-spam-triage + auto-welkom (de poort wordt slim) + open preview
+- **De preview is open**: de banner zegt nu "Open preview — iedereen die met AI bouwt, leert of er beleid over
+  maakt is welkom" (was "Besloten preview — alleen op uitnodiging"). We leven de pivot direct na.
+- **Spam-triage bij registratie** (`triage_service.assess_registration`): een goedkope, snelle Claude-call
+  (Haiku, `TRIAGE_MODEL`) beoordeelt **alleen** of een aanmelding van een echt mens lijkt of van een bot/spam —
+  **nooit** of iemand "relevant/goed genoeg" is. Twee uitkomsten: `welcome` (lijkt echt) of `review` (twijfel).
+- **Auto-welkom**: een `welcome`-verdict keurt het lid **direct** goed (krijgt meteen de welkomst-/login-mail);
+  de aanmeld-pagina viert het ("Je bent erbij"). `review` blijft pending in de admin-queue, mét de triage-reden
+  bij de kaart zodat je ziet wáárom een mens moet kijken. Jouw op-last daalt: alleen twijfel komt nog langs.
+- **Nooit auto-weren**: er is geen auto-spam/auto-afwijzing — een AI-vergissing mag nooit een echt mens
+  buitensluiten. Spam markeren blijft een handmatige actie. **KILL-fallback**: `AI_ENRICH_ENABLED` uit → alles
+  `review` (= het gedrag van vóór de pivot); élke fout (geen key, netwerk, refusal, rare output) → `review`. De
+  registratie strandt dus nooit op de AI.
+- **Datamodel**: additieve migratie 0026 — `member.triage_note` (Text, nullable) voor de reden in de queue.
+  Bestaande leden houden `NULL`. Config `triage_model` (default Haiku 4.5).
+- **Tests**: 8 nieuwe (service: uit→review, WELKOM→welcome, BEKIJK/onverwacht/refusal/fout→review; route:
+  auto-welkom keurt goed + viert, review blijft pending mét reden). conftest wist `ANTHROPIC_API_KEY` zodat de
+  triage-call in de suite nooit écht belt (no-network-contract). 946 groen.
+
 ## [0.71.0] - 2026-06-22
 ### Added — Pivot Fase A: toegang herframen — de poort verwelkomt, oordeelt niet
 - Eerste bouwfase van de open-showcase-pivot (`docs/PRD-open-showcase.md`): pure framing + genadige

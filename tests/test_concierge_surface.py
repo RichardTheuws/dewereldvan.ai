@@ -249,8 +249,9 @@ def test_preview_banner_server_rendered_text(make_client, seed):
     """De band staat er zonder JS (server-rendered boodschap)."""
     client = make_client(None)
     resp = client.get("/leden")
-    assert "Besloten preview" in resp.text
-    assert "alleen op uitnodiging" in resp.text
+    # Pivot: open preview (was "besloten — alleen op uitnodiging").
+    assert "Open preview" in resp.text
+    assert "is welkom" in resp.text
 
 
 def test_preview_banner_hidden_when_cookie_set(make_client, seed):

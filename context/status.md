@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.71.0 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.72.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -57,9 +57,11 @@ in de review-queue; nooit "niet geschikt"). Het profiel wordt een agent-gebouwde
 showcase** (project/workshop/video-showreel/audio/galerij via een typed werk-item-model = generalisatie
 van `Offering`). **PRD: `docs/PRD-open-showcase.md` (v0.1.0, APPROVAL PENDING)** + beslissing 2026-06-22
 in `decisions.md`. Fasering A (toegang herframen) → B (spam-triage + auto-welkom) → C (showcase) → D
-(discipline-facet). **Fase A LIVE (v0.71.0)**: registratie/aanmelding/welkomst-mail/admin-queue
-herframed (poort = anti-spam, niet oordeel; "Welkom heten"/"Markeer als spam"; genadige herstel-route
-via `contact_email`). Volgende: **Fase B** (AI-spam-triage + auto-welkom).
+(discipline-facet). **Fase A+B LIVE**: A (v0.71.0) herframede registratie/queue/mail (poort = anti-spam,
+niet oordeel). B (v0.72.0): de open preview-banner + **spam-triage** (`triage_service`, Haiku) bij
+registratie → **auto-welkom** voor echte makers, alleen twijfel in de queue (mét reden); nooit auto-weren;
+KILL-fallback naar review bij AI-uit/fout (migr. 0026 `member.triage_note`). Volgende: **Fase C** (showcase:
+`Offering.kind` + oEmbed-embeds, video/audio eerst).
 
 ### Eerdere focus (afgerond)
 **Sitewide ervaring-audit + UAT-fundament** (2026-06-21, v0.56.0). Een read-only audit-workflow toetste 12
