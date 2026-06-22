@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.75.1] - 2026-06-22
+### Fixed — Geen lege cover-box + kind-bewuste sectiekop op de projectpagina
+- Een werk-item zonder beeld én zonder embed (bv. een workshop in afwachting van de screenshot) toonde een
+  lege, omrande cover-box. De hero rendert nu alleen nog bij een embed of een echt beeld. Browser-geverifieerd:
+  de workshop-pagina opent direct op de titel + 🗓 datum · 📍 locatie-pills (geen leeg vak).
+- De sectiekop "Over dit project" is kind-bewust: "Over deze workshop" bij een workshop.
+
 ## [0.75.0] - 2026-06-22
 ### Added — Pivot Fase C (increment 2): workshop/sessie-werk-item — datum + locatie uit een link
 - Trainers krijgen een native vorm: plak een workshop-/event-link bij een werk-item en de agent herkent dat
