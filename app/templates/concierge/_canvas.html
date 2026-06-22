@@ -92,7 +92,7 @@
     <section id="canvas-ambient" class="canvas-ambient mt-12" data-reveal style="--d:560ms">
       <div class="canvas-ambient__head">
         <span class="eyebrow eyebrow--plain">De wereld nu</span>
-        <span class="canvas-ambient__count">{{ member_count }} maker{{ 's' if member_count != 1 else '' }} · klik een ster, of vraag de agent</span>
+        <span class="canvas-ambient__count">{{ member_count }} maker{{ 's' if member_count != 1 else '' }}{% if new_maker_count and new_maker_count >= 1 %} · <span class="canvas-ambient__new">{{ new_maker_count }} nieuw deze week ✦</span>{% endif %} · klik een ster, of vraag de agent</span>
       </div>
       <div class="mt-6">{% include "_constellation.html" %}</div>
       <a class="link home-constellation__all mt-6" href="/leden">Bekijk alle makers →</a>

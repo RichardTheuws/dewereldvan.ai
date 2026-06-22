@@ -387,6 +387,40 @@
   border-color: rgba(246, 205, 134, 0.65);
   box-shadow: 0 0 20px -3px rgba(246, 205, 134, 0.6);
 }
+/* "Pas verschenen" (slice 2): een maker die deze week verscheen ademt zachtjes,
+   zodat het lid de groei opmerkt. Alleen de canvas levert ``new_star_ids`` → de
+   publieke voordeur blijft rustig. prefers-reduced-motion dooft de pulse. */
+.cosmic .home-star--new .home-star__dot {
+  border-color: rgba(246, 205, 134, 0.85);
+  box-shadow: 0 0 22px -2px rgba(246, 205, 134, 0.75);
+  animation: home-star-breathe 3.2s ease-in-out infinite;
+}
+.cosmic .home-star__new {
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(246, 205, 134, 0.16);
+  border: 1px solid rgba(246, 205, 134, 0.55);
+  color: #f6cd86;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  pointer-events: none;
+  z-index: 4;
+}
+@keyframes home-star-breathe {
+  0%, 100% { box-shadow: 0 0 16px -3px rgba(246, 205, 134, 0.55); }
+  50% { box-shadow: 0 0 28px 0 rgba(246, 205, 134, 0.9); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cosmic .home-star--new .home-star__dot { animation: none; }
+}
+.cosmic .canvas-ambient__new { color: #f6cd86; }
 .cosmic .home-star__name {
   font-family: "JetBrains Mono", monospace;
   font-size: 11px;

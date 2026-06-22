@@ -3,6 +3,26 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.70.0] - 2026-06-22
+### Added — De lid-canvas wordt tijd-bewust: pas-verschenen makers gloeien (slice 2 van de verras-canvas)
+- Slice 1 (v0.68.0) gaf de canvas-ruststaat de levende graaf; die was echter elk bezoek identiek. Nu is de
+  constellatie **tijd-bewust**: makers die < 7 dagen geleden verschenen (zelfde `created_at`-bron als de
+  nieuwe-makers-chip) schuiven naar voren in de zichtbare sterren én krijgen een zachte gouden "nieuw"-gloed +
+  pill. De kop erkent de groei: "De wereld nu · {N} makers · {K} nieuw deze week ✦". Het lid ziet zo dat de
+  wereld groeide terwijl het weg was — gegrond op echte data, **nul AI-kosten**.
+- **AUGMENT, geen REPLACE**: de persoonlijke open-state-signalen (intro's/matches/discovery) worden al gedekt door
+  de suggestie-chips onderaan de canvas (`nudge_service.select_chips`) — die heb ik bewust NIET gedupliceerd. Deze
+  slice voegt een *visueel, in-graaf* groei-signaal toe dat de chips niet geven.
+- Nieuwe helper `members_service.select_living_stars(profiles, *, now, limit, recent_days)` → `(stars, new_ids,
+  new_count)`: puur in-memory op de al-geladen lijst (geen extra query; `member` is eager-geladen). `new_count`
+  telt álle nieuwe makers (ook buiten de slice) voor de kop; `new_ids` alleen de zichtbare voor de gloed.
+- `_constellation.html` kreeg een **opt-in** `new_star_ids`-flag → alleen de lid-canvas levert 'm; de publieke
+  voordeur (`index.html`) blijft exact zoals 'ie was. CSS: `home-star--new` (ademende gloed, `prefers-reduced-
+  motion` dooft de pulse) + de "nieuw"-pill, in `cosmic.css` (cache-bust via `asset_ver`).
+- **Tests**: unit (`select_living_stars` — nieuw-eerst, ids, telling-voorbij-slice) + route (canvas gloeit/erkent
+  bij recente makers; blijft rustig bij oude) + **e2e in echte Chromium** (glow + kop, geen JS-fouten). Visueel
+  met eigen ogen geverifieerd op de ambient-screenshot. 940 unit + e2e groen.
+
 ## [0.69.0] - 2026-06-22
 ### Added — Goedgekeurde leden krijgen automatisch hun login-mail (geen handmatig porren meer)
 - Tot nu toe stuurde "goedkeuren" in `/admin/queue` géén mail; Richard moest een goedgekeurd lid handmatig

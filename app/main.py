@@ -279,8 +279,13 @@ def _register_core_routes(app: FastAPI) -> None:
             # Ambient ruststaat: de canvas mag NIET leeg landen. Geef de echte
             # levende graaf mee (zelfde poort-call als de voordeur) zodat het lid
             # in een ademende wereld landt i.p.v. een leeg veld — gegrond, nul AI.
+            # Slice 2: de graaf is tijd-bewust — pas-verschenen makers schuiven naar
+            # voren + krijgen een "nieuw"-gloed, zodat het lid ziet dat de wereld
+            # groeide terwijl het weg was ("verbaas iedereen, zelfs mij").
             public_profiles = members_service.list_public_profiles(db)
-            preview_stars = public_profiles[:8]
+            preview_stars, new_star_ids, new_maker_count = (
+                members_service.select_living_stars(public_profiles)
+            )
             return templates.TemplateResponse(
                 request,
                 "concierge/_canvas.html",
@@ -290,6 +295,8 @@ def _register_core_routes(app: FastAPI) -> None:
                     "member_count": len(public_profiles),
                     "preview_stars": preview_stars,
                     "star_links": compute_graph_links(preview_stars),
+                    "new_star_ids": new_star_ids,
+                    "new_maker_count": new_maker_count,
                 },
             )
         # De voordeur toont één echt signaal (aantal publieke makers) + een

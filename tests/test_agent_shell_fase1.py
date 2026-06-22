@@ -417,6 +417,64 @@ def test_chips_route_renders_at_least_roadmap(make_client, SessionTest):
     assert "canvas-chip" in resp.text
 
 
+def test_canvas_marks_new_makers_this_week(make_client, SessionTest):
+    """Slice 2: pas-verschenen makers gloeien in de canvas-constellatie + de kop
+    erkent de groei ("N nieuw deze week"). Gegrond op echte created_at, nul AI."""
+    from app.models import Profile
+
+    s = SessionTest()
+    viewer = Member(email="kijker@x.nl", name="Kijker", status=MemberStatus.approved)
+    s.add(viewer)
+    s.flush()
+    # 3 verse publieke makers (default created_at = nu → "deze week") zodat de
+    # constellatie rendert (guard >= 3) én de nieuw-markering aangaat.
+    for i in range(3):
+        m = Member(email=f"vers{i}@x.nl", name=f"Vers {i}",
+                   status=MemberStatus.approved)
+        s.add(m)
+        s.flush()
+        s.add(Profile(member_id=m.id, slug=f"vers-{i}", display_name=f"Vers {i}",
+                      visibility=Visibility.public))
+    s.commit()
+    mid = viewer.id
+    s.close()
+
+    body = make_client(mid).get("/").text
+    assert "home-star--new" in body          # de gloed-klasse rendert
+    assert "nieuw deze week" in body         # de kop erkent de groei
+    assert "3 nieuw deze week" in body       # gegronde telling
+
+
+def test_canvas_no_new_marker_when_makers_are_old(make_client, SessionTest):
+    """Zonder recente makers blijft de constellatie rustig — geen valse gloed."""
+    from datetime import timedelta
+
+    from app.models import Profile
+    from app.security import naive_utc, utcnow
+
+    old = naive_utc(utcnow()) - timedelta(days=60)
+    s = SessionTest()
+    viewer = Member(email="kijker2@x.nl", name="Kijker", status=MemberStatus.approved)
+    s.add(viewer)
+    s.flush()
+    for i in range(3):
+        m = Member(email=f"oud{i}@x.nl", name=f"Oud {i}",
+                   status=MemberStatus.approved)
+        m.created_at = old
+        s.add(m)
+        s.flush()
+        s.add(Profile(member_id=m.id, slug=f"oud-{i}", display_name=f"Oud {i}",
+                      visibility=Visibility.public))
+    s.commit()
+    mid = viewer.id
+    s.close()
+
+    body = make_client(mid).get("/").text
+    assert "home-constellation" in body      # de graaf rendert nog steeds
+    assert "home-star--new" not in body      # maar niets gloeit als "nieuw"
+    assert "nieuw deze week" not in body
+
+
 def test_load_profile_builder_for_member(SessionTest):
     m = Member(email="pb@x.nl", name="Bouwer", status=MemberStatus.approved)
     s = SessionTest()

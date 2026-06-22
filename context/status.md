@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.69.0 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.70.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -22,7 +22,9 @@
 - **Toegang**: open registratie → admin-goedkeuring → passwordless magic-link → server-side sessie.
   Goedkeuren stuurt zélf de welkomst-/login-mail (v0.69.0, fail-safe in `approve_member`) — geen handmatig porren.
 - **Agent-Shell**: voor ingelogde leden ís de concierge de navigatie (geen menu); interfaces
-  materialiseren in-stroom via de `surface`-tool (registry in `concierge_service`).
+  materialiseren in-stroom via de `surface`-tool (registry in `concierge_service`). De canvas-ruststaat
+  toont de levende makers-graaf (v0.68.0) en is **tijd-bewust** (v0.70.0): pas-verschenen makers gloeien +
+  de kop erkent "{K} nieuw deze week" (`members_service.select_living_stars`, nul AI).
 - **Profiel**: levende AI-profielbouw (`/profiel/ai/bouwen`), inline editen, fal-cover, AI-toolsets.
   **Bekijk-als-bezoeker** (`/profiel/voorbeeld`, v0.48.0): zie exact wat anderen zien vóór je publiceert —
   zelfde publieke `view.html` met `is_owner=False`, altijd `noindex`, progress-bewuste preview-chrome

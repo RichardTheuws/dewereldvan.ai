@@ -107,6 +107,56 @@ def test_blank_filters_are_ignored(db, make_member, make_profile):
 
 
 # --------------------------------------------------------------------------- #
+# select_living_stars — tijd-bewuste constellatie (slice 2)                   #
+# --------------------------------------------------------------------------- #
+def test_select_living_stars_new_first_with_ids_and_count(db, make_member, make_profile):
+    """Pas-verschenen makers schuiven naar voren + worden als 'nieuw' gemarkeerd."""
+    from datetime import timedelta
+
+    from app.security import naive_utc, utcnow
+
+    now = utcnow()
+    old_m = make_member(email="oud@example.com", name="Oud")
+    old_m.created_at = naive_utc(now) - timedelta(days=30)
+    new_m = make_member(email="nieuw@example.com", name="Nieuw")
+    new_m.created_at = naive_utc(now) - timedelta(days=2)
+    db.flush()
+    old_p = make_profile(old_m, display_name="Oud")
+    new_p = make_profile(new_m, display_name="Nieuw")
+
+    stars, new_ids, count = members_service.select_living_stars(
+        [old_p, new_p], now=now
+    )
+    assert stars[0].id == new_p.id            # nieuw eerst (zichtbaar in de slice)
+    assert new_ids == {new_p.id}              # alleen de nieuwe gloeit
+    assert count == 1                         # totaal-telling voor de kop
+
+
+def test_select_living_stars_count_includes_makers_beyond_slice(
+    db, make_member, make_profile
+):
+    """new_count telt ALLE nieuwe makers, ook buiten de zichtbare ``limit``."""
+    from datetime import timedelta
+
+    from app.security import naive_utc, utcnow
+
+    now = utcnow()
+    profiles = []
+    for i in range(5):
+        m = make_member(email=f"m{i}@example.com", name=f"Maker {i}")
+        m.created_at = naive_utc(now) - timedelta(days=1)
+        db.flush()
+        profiles.append(make_profile(m, display_name=f"Maker {i}"))
+
+    stars, new_ids, count = members_service.select_living_stars(
+        profiles, now=now, limit=2
+    )
+    assert len(stars) == 2          # slice gerespecteerd
+    assert len(new_ids) == 2        # alleen de zichtbare nieuwe gloeien
+    assert count == 5               # maar de kop weet: 5 nieuw
+
+
+# --------------------------------------------------------------------------- #
 # HTTP-laag — /leden lekt geen besloten/geschorst                            #
 # --------------------------------------------------------------------------- #
 @pytest.fixture

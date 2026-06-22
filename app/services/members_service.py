@@ -14,6 +14,8 @@ Filters (alle server-side, optioneel, combineerbaar):
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
+
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
 
@@ -29,8 +31,44 @@ from app.models import (
     profile_tag,
     profile_tool,
 )
+from app.security import naive_utc, utcnow
 
-__all__ = ["list_public_profiles", "filter_vocabulary"]
+__all__ = ["list_public_profiles", "filter_vocabulary", "select_living_stars"]
+
+# "Pas verschenen" in de constellatie: een maker waarvan de eigenaar (Member) korter
+# dan dit aantal dagen geleden is aangemaakt. Zelfde created_at-bron als de
+# "nieuwe makers"-chip (nudge_service._count_new_members) → één waarheid.
+RECENT_MAKER_DAYS = 7
+
+
+def select_living_stars(
+    profiles: list[Profile],
+    *,
+    now: datetime | None = None,
+    limit: int = 8,
+    recent_days: int = RECENT_MAKER_DAYS,
+) -> tuple[list[Profile], set[int], int]:
+    """Kies tot ``limit`` sterren voor de constellatie, pas-verschenen makers eerst.
+
+    De levende graaf moet laten ZIEN dat de wereld groeide: makers die < ``recent_days``
+    dagen geleden verschenen, schuiven naar voren (zodat ze in de zichtbare slice
+    vallen en het lid de groei opmerkt). Retourneert ``(stars, new_ids, new_count)``:
+    de gekozen profielen, de set Profile-ids bínnen die slice die nieuw zijn (voor de
+    "nieuw"-gloed), en het TOTAAL aantal nieuwe makers (ook buiten de slice, voor de
+    kop-telling). Puur in-memory op een al-geladen lijst — nul extra query (``member``
+    is eager-geladen door ``list_public_profiles``).
+    """
+    cutoff = naive_utc(now or utcnow()) - timedelta(days=recent_days)
+
+    def _is_new(p: Profile) -> bool:
+        m = p.member
+        return m is not None and m.created_at is not None and m.created_at >= cutoff
+
+    new = [p for p in profiles if _is_new(p)]
+    rest = [p for p in profiles if not _is_new(p)]
+    stars = (new + rest)[:limit]
+    new_ids = {p.id for p in stars if _is_new(p)}
+    return stars, new_ids, len(new)
 
 
 def filter_vocabulary(db: Session) -> dict[str, list[str]]:

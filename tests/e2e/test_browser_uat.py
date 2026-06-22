@@ -155,6 +155,10 @@ def test_member_lands_in_canvas_agent_shell(live_server, page: Page):
     ambient = page.locator("#canvas-ambient")
     expect(ambient).to_be_visible()
     assert page.locator("#canvas-ambient .home-star").count() >= 3
+    # Slice 2: de verse seed-makers zijn "deze week" verschenen → de graaf is
+    # tijd-bewust: ten minste één ster gloeit als "nieuw" + de kop erkent de groei.
+    assert page.locator("#canvas-ambient .home-star--new").count() >= 1
+    expect(page.locator(".canvas-ambient__new")).to_contain_text("nieuw deze week")
     ambient.scroll_into_view_if_needed()
     ambient.screenshot(path="tests/e2e/_canvas_ambient.png")
     page.screenshot(path="tests/e2e/_member_canvas.png", full_page=True)
