@@ -3,6 +3,12 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.74.1] - 2026-06-22
+### Fixed — Schone console op de embed-speler
+- De video-iframe had zowel `allow="fullscreen"` als het oudere `allowfullscreen` → browser-warning
+  ("Allow attribute will take precedence"). De redundante `allowfullscreen` is weg; fullscreen blijft werken
+  via `allow`. Live geverifieerd: de YouTube-showreel rendert in de kosmische 16:9-hero (eyebrow "Video").
+
 ## [0.74.0] - 2026-06-22
 ### Added — Pivot Fase C (increment 1): multidisciplinaire showcase — video/audio-showreel uit een link
 - Het profiel toont werk nu in z'n eigen vorm. Eerste increment: **video- en audio-showreels** via oEmbed —

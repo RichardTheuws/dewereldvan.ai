@@ -124,7 +124,7 @@ def _build_iframe(src: str, shape: str) -> str:
     return (
         '<div class="embed-frame embed-frame--video">'
         f'<iframe src="{src}" loading="lazy" sandbox="{sandbox}" allow="{allow}" '
-        f'allowfullscreen title="Ingesloten video"></iframe></div>'
+        f'title="Ingesloten video"></iframe></div>'
     )
 
 
