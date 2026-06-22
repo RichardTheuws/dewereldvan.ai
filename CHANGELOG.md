@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.79.2] - 2026-06-22
+### Fixed — Homepage-copy pivot-conform: van "besloten" naar "open"
+- De hero-subkop én de SEO-omschrijving op de (nu publieke) homepage zeiden nog "Een besloten plek voor wie
+  serieus met AI bouwt" — dat sprak de pivot (open, iedereen met AI-affiniteit) tegen, terwijl de preview-banner
+  al "open" zei. Nu: "Een open plek voor iedereen in NL & BE die met AI bouwt, traint of er beleid over maakt."
+- Sluit aan op de banner-wording en de pivot-beslissing; gewone, heldere taal (STYLEGUIDE). Alleen copy; de
+  invite-only flow (invite-mail/landing) houdt bewust z'n eigen "besloten preview"-framing.
+
 ## [0.79.1] - 2026-06-22
 ### Changed — 🚀 Launch: de apex `dewereldvan.ai` serveert nu het platform (teaser eruit)
 - **Apex-cut-over**: `dewereldvan.ai` + `www` wijzen niet langer naar de teaser-wachtlijst maar naar de

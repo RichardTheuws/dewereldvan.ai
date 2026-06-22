@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.79.1 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.79.2 · **Branch**: `main`
 
 ## Waar het draait
 - **🚀 LIVE (volledige app)**: **https://dewereldvan.ai** (apex, canonical) + `www` + `app.dewereldvan.ai` —
@@ -146,8 +146,7 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
 - [ ] Browser-verificatie auto-crystallisatie-op-`load` (1b; JS, niet in TestClient te dekken).
 - [x] **🚀 Launch** (2026-06-22, v0.79.1): apex+www-ingress teaser→app (CF-API), DNS omgezet, `BASE_URL`→apex,
       wachtlijst (6) → `member` (4 al lid, 2 nieuw pending), teaser gestopt. Browser-geverifieerd.
-- [ ] **Homepage-copy pivot-conform maken**: hero-subkop zegt nog "Een besloten plek" terwijl de pivot open is
-      (de preview-banner zegt al correct "open"). Front-and-center op de nu-publieke apex → fixen.
+- [x] **Homepage-copy pivot-conform** (v0.79.2): hero-subkop + SEO-desc "besloten"→"open" (sluit op de banner aan).
 - [ ] **Optioneel**: `www`→apex 301-redirect (nu serveren beide; canonical wijst al naar apex).
 
 ## Blokkades

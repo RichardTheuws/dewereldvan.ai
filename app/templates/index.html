@@ -10,7 +10,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = false %}
   {% set seo_title = "dewereldvan.ai — de wereld van de scherpste AI-makers" %}
-  {% set seo_desc = "Een besloten plek voor wie in NL & BE serieus met AI bouwt. Maak je profiel, ontdek wat anderen maken, deel waar je naar zoekt." %}
+  {% set seo_desc = "Een open plek voor iedereen in NL & BE die met AI bouwt, traint of er beleid over maakt. Maak je profiel, ontdek wat anderen maken, deel waar je naar zoekt." %}
   {% set og_type = "website" %}
   {% set og_image = (base_url ~ "/static/og-default.png") if base_url else none %}
   {% set jsonld = none %}
@@ -43,7 +43,7 @@
           {% if logged_in %}Welkom in de wereld.{% else %}Geef een link. De agent bouwt je profiel.{% endif %}
         </h1>
         <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
-          {% if logged_in %}Ga verder met je profiel, of ontdek wat de anderen maken.{% else %}Een besloten plek voor wie in NL &amp; BE serieus met AI bouwt. Plak één link — de agent leest 'm en zet je profiel klaar.{% endif %}
+          {% if logged_in %}Ga verder met je profiel, of ontdek wat de anderen maken.{% else %}Een open plek voor iedereen in NL &amp; BE die met AI bouwt, traint of er beleid over maakt. Plak één link — de agent leest 'm en zet je profiel klaar.{% endif %}
         </p>
 
         {% if not logged_in %}
