@@ -41,7 +41,16 @@
              beeld én geen embed → geen lege cover-box (bv. een workshop in afwachting
              van de screenshot). ---- #}
       {% set _hero = (offering.screenshot_url or offering.image_url) | safe_url %}
-      {% if offering.embed_html or _hero %}
+      {% if offering.kind.value == 'gallery' and offering.gallery_urls %}
+      {# Galerij: een raster van gehotlinkte beelden uit de portfolio-link (nul-opslag).
+         Een gebroken beeld blokkeert de rest niet (los <img>, lazy, geen referrer). #}
+      <section class="gallery-grid mt-2" data-reveal="materialize" style="--d:140ms">
+        {% for src in offering.gallery_urls %}
+        {% set _g = src | safe_url %}
+        {% if _g %}<img class="gallery-grid__item" src="{{ _g }}" alt="Werk van {{ profile.display_name }}" loading="lazy" referrerpolicy="no-referrer">{% endif %}
+        {% endfor %}
+      </section>
+      {% elif offering.embed_html or _hero %}
       <section class="cover mt-2" data-reveal="materialize" style="--d:140ms">
         {% if offering.embed_html %}
         {{ offering.embed_html | safe }}
@@ -53,7 +62,7 @@
 
       <section class="mt-8" data-reveal="materialize" style="--d:240ms">
         <div class="eyebrow eyebrow--plain">
-          {%- if offering.kind.value == 'video' %}Video{% elif offering.kind.value == 'audio' %}Audio{% elif offering.kind.value == 'workshop' %}Workshop{% elif offering.kind.value == 'writing' %}Publicatie{% else %}Project{% endif -%}
+          {%- if offering.kind.value == 'video' %}Video{% elif offering.kind.value == 'audio' %}Audio{% elif offering.kind.value == 'workshop' %}Workshop{% elif offering.kind.value == 'writing' %}Publicatie{% elif offering.kind.value == 'gallery' %}Galerij{% else %}Project{% endif -%}
         </div>
         <h1 class="headline mt-3">{{ offering.title }}</h1>
         <div class="mt-4 display-name">
@@ -101,7 +110,7 @@
 
       {% if offering.description %}
       <section class="mt-10" data-reveal style="--d:360ms">
-        <div class="section-title mb-3">{% if offering.kind.value == 'workshop' %}Over deze workshop{% elif offering.kind.value == 'writing' %}Over deze publicatie{% else %}Over dit project{% endif %}</div>
+        <div class="section-title mb-3">{% if offering.kind.value == 'workshop' %}Over deze workshop{% elif offering.kind.value == 'writing' %}Over deze publicatie{% elif offering.kind.value == 'gallery' %}Over dit werk{% else %}Over dit project{% endif %}</div>
         <p class="lede" style="max-width:58ch;white-space:pre-line">{{ offering.description }}</p>
       </section>
       {% endif %}
@@ -110,7 +119,7 @@
       {% if _ext %}
       <section class="mt-10" data-reveal style="--d:420ms">
         <a class="btn" href="{{ _ext }}" target="_blank" rel="noopener nofollow">
-          {% if offering.kind.value == 'workshop' %}Naar de workshop →{% elif offering.kind.value == 'writing' %}Lees het artikel →{% else %}Bekijk het live →{% endif %}
+          {% if offering.kind.value == 'workshop' %}Naar de workshop →{% elif offering.kind.value == 'writing' %}Lees het artikel →{% elif offering.kind.value == 'gallery' %}Bekijk het werk →{% else %}Bekijk het live →{% endif %}
         </a>
         <div class="card-url mt-3">{{ _ext }}</div>
       </section>

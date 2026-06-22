@@ -54,6 +54,7 @@ DISCIPLINES: list[tuple[str, str, str, OfferingKind]] = [
     ("audio", "Audio-AI", "Audio-AI", OfferingKind.audio),
     ("trainer", "Trainers", "Trainer", OfferingKind.workshop),
     ("publicaties", "Publicaties", "Publicatie", OfferingKind.writing),
+    ("design", "Design", "Design", OfferingKind.gallery),
 ]
 _DISCIPLINE_KIND: dict[str, OfferingKind] = {s: k for s, _fl, _cl, k in DISCIPLINES}
 
@@ -74,6 +75,9 @@ _DESIRED_KIND_KEYWORDS: dict[OfferingKind, tuple[str, ...]] = {
     OfferingKind.writing: (
         "artikel", "publicatie", "paper", "onderzoek", "whitepaper", "essay",
         "rapport", "research",
+    ),
+    OfferingKind.gallery: (
+        "galerij", "portfolio", "ontwerp", "illustratie", "design", "grafisch",
     ),
 }
 

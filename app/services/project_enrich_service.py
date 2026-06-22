@@ -15,6 +15,7 @@ Best-effort + gegated op ``ai_enrich_enabled`` (samenvatting) resp. CF-creds
 from __future__ import annotations
 
 import logging
+import re
 import threading
 from dataclasses import dataclass
 from datetime import datetime
@@ -115,11 +116,13 @@ _CLASSIFY_TOOL = {
         "properties": {
             "category": {
                 "type": "string",
-                "enum": ["event", "article", "other"],
+                "enum": ["event", "article", "gallery", "other"],
                 "description": (
                     "'event' = een workshop/sessie/training/talk met een datum. "
                     "'article' = een gepubliceerd artikel, blogpost, paper of essay. "
-                    "'other' = iets anders (bv. een product/project/tool/portfolio)."
+                    "'gallery' = een portfolio/galerij die meerdere beelden, ontwerpen "
+                    "of visueel werk toont (designer/illustrator/kunstenaar). "
+                    "'other' = iets anders (bv. een product/project/tool)."
                 ),
             },
             "date_iso": {
@@ -136,12 +139,17 @@ _CLASSIFY_TOOL = {
 }
 _CLASSIFY_SYSTEM = (
     "Classificeer de gegeven pagina-tekst als 'event' (workshop/sessie/training/talk "
-    "met datum), 'article' (gepubliceerd artikel/blogpost/paper/essay) of 'other'. "
+    "met datum), 'article' (gepubliceerd artikel/blogpost/paper/essay), 'gallery' "
+    "(een portfolio/galerij met meerdere beelden/ontwerpen/visueel werk) of 'other'. "
     "Gebruik UITSLUITEND wat in de tekst staat — verzin geen datum of locatie. Bij "
     "twijfel kies 'other'. Roep record_classification exact één keer aan."
 )
 
-_CATEGORY_KIND = {"event": OfferingKind.workshop, "article": OfferingKind.writing}
+_CATEGORY_KIND = {
+    "event": OfferingKind.workshop,
+    "article": OfferingKind.writing,
+    "gallery": OfferingKind.gallery,
+}
 
 
 def _tool_input(msg: object, name: str) -> dict | None:
@@ -204,6 +212,51 @@ def classify_work_item(markdown: str | None, *, client=None) -> WorkClassificati
     return WorkClassification(kind)
 
 
+# --------------------------------------------------------------------------- #
+# Galerij-extractie (pivot Fase C inc. 4) — meerdere beelden uit de markdown.  #
+# Nul-opslag: we hotlinken de externe beeld-URLs (de browser van de bezoeker   #
+# haalt ze), consistent met de oEmbed-/unfurl-aanpak. Geen download, geen SSRF.#
+# --------------------------------------------------------------------------- #
+
+GALLERY_MIN_IMAGES = 2  # minder dan dit → geen galerij (val terug op project)
+GALLERY_MAX_IMAGES = 12  # cap (focus + paginagewicht)
+
+# Markdown-beeldsyntax: ``![alt](url "title")`` — pak de URL tot spatie of ')'.
+_MD_IMAGE = re.compile(r"!\[[^\]]*\]\(\s*(<?)([^)\s>]+)")
+_IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif")
+# Chrome/ruis die geen portfolio-werk is (icoon/logo/avatar/sprite/spacer).
+_IMAGE_NOISE = ("favicon", "sprite", "logo", "avatar", "icon", "spacer", "pixel", "badge")
+
+
+def extract_gallery_images(markdown: str | None) -> list[str]:
+    """Haal tot ``GALLERY_MAX_IMAGES`` echte beeld-URLs uit de pagina-markdown.
+
+    Filtert op absolute https-URLs met een beeld-extensie, weert evidente chrome
+    (favicon/logo/sprite/…), ontdubbelt met behoud van volgorde. Zero-AI, puur
+    op de al-opgehaalde markdown — geen extra fetch.
+    """
+    if not markdown:
+        return []
+    out: list[str] = []
+    seen: set[str] = set()
+    for _br, raw in _MD_IMAGE.findall(markdown):
+        url = raw.strip().rstrip(">")
+        if not url.lower().startswith("https://"):
+            continue  # alleen https (geen mixed-content, geen relatieve paden)
+        path = url.split("?", 1)[0].split("#", 1)[0].lower()
+        if not path.endswith(_IMAGE_EXTS):
+            continue
+        if any(n in url.lower() for n in _IMAGE_NOISE):
+            continue
+        if url in seen:
+            continue
+        seen.add(url)
+        out.append(url)
+        if len(out) >= GALLERY_MAX_IMAGES:
+            break
+    return out
+
+
 def enrich_offering(db: Session, offering: Offering, *, client=None) -> bool:
     """Vul de ONTBREKENDE verrijking (screenshot/samenvatting) voor één offering.
 
@@ -244,12 +297,20 @@ def enrich_offering(db: Session, offering: Offering, *, client=None) -> bool:
             changed = True
 
     # --- Werk-item-classificatie (alleen voor 'project'-items) ---
-    # Plakt een trainer een workshop-link of een onderzoeker een publicatie, dan
-    # herkent de agent dat → kind=workshop (datum/locatie) of writing (render past
-    # zich aan). 'Gewoon' een project → blijft project.
+    # Plakt een trainer een workshop-link, een onderzoeker een publicatie of een
+    # designer een portfolio, dan herkent de agent dat → kind=workshop (datum/
+    # locatie) / writing / gallery (beelden). 'Gewoon' een project → blijft project.
     if need_classify and md:
         cls = classify_work_item(md, client=client)
-        if cls is not None:
+        if cls is not None and cls.kind is OfferingKind.gallery:
+            # Galerij: haal de beelden uit dezelfde markdown (nul-opslag, hotlink).
+            # Te weinig beeld → géén lege galerij; blijf project (fail-safe).
+            images = extract_gallery_images(md)
+            if len(images) >= GALLERY_MIN_IMAGES:
+                offering.kind = OfferingKind.gallery
+                offering.gallery_urls = images
+                changed = True
+        elif cls is not None:
             offering.kind = cls.kind
             offering.event_at = cls.event_at
             offering.location = cls.location

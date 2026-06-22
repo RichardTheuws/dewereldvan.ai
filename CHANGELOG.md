@@ -3,6 +3,27 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.79.0] - 2026-06-22
+### Added — Pivot Fase C (increment 4): galerij-werk-item — de pivot is compleet
+- Designers, illustratoren en kunstenaars krijgen een native vorm: plak een portfolio-/galerij-link en de
+  agent herkent dat het een **galerij** is → `kind=gallery` (render: eyebrow "Galerij", 🖼-kaartbadge,
+  een **beeld-raster** als hero, "Bekijk het werk →"-CTA).
+- **Nul-opslag, consistent met de oEmbed/unfurl-aanpak**: `project_enrich_service.extract_gallery_images`
+  haalt de beeld-URLs uit dezelfde Cloudflare-markdown (geen extra fetch) en **hotlinkt** ze — de browser
+  van de bezoeker laadt de beelden, niet onze server (geen SSRF, geen file-storage, geen op-last-verhoging).
+  Filtert op absolute https + beeld-extensie, weert chrome (favicon/logo/sprite…), ontdubbelt, cap op 12.
+- De classifier (`classify_work_item`) kreeg een categorie `gallery` erbij (één call, geen extra AI-kosten
+  t.o.v. inc.3). **Fail-safe**: geclassificeerd als galerij maar < 2 bruikbare beelden → blijft project
+  (nooit een lege galerij).
+- **Datamodel**: additieve `offering.gallery_urls` (JSON, nullable; migratie 0029). Bestaande rijen ongemoeid.
+- **Fase D uitgebreid**: nieuwe discipline **Design** (gallery) in de gids-filter + per-kaart-tag; de
+  match-engine herkent een vraag om een portfolio/ontwerp/illustratie (`infer_desired_kinds`).
+- **Tests**: `extract_gallery_images` (filter/dedup/cap/leeg), classifier→gallery, enrich-promotie naar
+  gallery mét beelden + fallback-naar-project bij te weinig beeld. 987 groen. Browser-geverifieerd (grid +
+  eyebrow + CTA renderen; geen JS-fout).
+- **Opruiming**: wees-duplicaat `app/templates/projects/view 2.html` (per ongeluk meegecommit in v0.75.0,
+  nergens gerenderd) verwijderd.
+
 ## [0.78.0] - 2026-06-22
 ### Added — Pivot fast-follow: discovery-op-discipline in de matchmaking
 - De match-engine is nu **werk-soort-bewust**: vraagt iemands `Need` expliciet om een workshop, video,

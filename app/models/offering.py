@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -56,6 +56,11 @@ class Offering(Base, TimestampMixin):
     # uit een geplakte event-link (extract_event); beide optioneel.
     event_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     location: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    # Galerij (kind='gallery'): een lijst externe beeld-URLs, geëxtraheerd uit de
+    # geplakte portfolio-/galerij-link (project_enrich_service.extract_gallery_images).
+    # Gehotlinkt (nul-opslag, consistent met de oEmbed-/unfurl-aanpak); de browser van
+    # de bezoeker haalt de beelden, niet onze server → geen SSRF, geen storage-op-last.
+    gallery_urls: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # ordering
 
     profile: Mapped[Profile] = relationship(back_populates="offerings")

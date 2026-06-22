@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.78.0 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.79.0 · **Branch**: `main`
 
 ## Waar het draait
 - **Preview (volledige app)**: https://app.dewereldvan.ai — M4 (`server-mini`), Docker
@@ -72,8 +72,12 @@ Trainers/Publicaties) afgeleid uit `offering.kind` (geen apart datamodel) + per-
 **Discovery-op-discipline LIVE** (v0.78.0): de match-engine is werk-soort-bewust — een `Need` die expliciet
 om een workshop/video/audio/publicatie vraagt haalt werk-items van dát soort naar voren (zero-AI
 `infer_desired_kinds` → `DISCIPLINE_BOOST` in de kandidaat-ranking; werk-soort meegegeven aan het LLM-oordeel).
-Zo voedt de Fase-D-data nu matchmaking, niet alleen de gids-filter. **Resterend van de pivot**: alleen nog
-gallery (designers, multi-image). NB admin-comms via Telegram (v0.73.0, `notify_admins`).
+Zo voedt de Fase-D-data nu matchmaking, niet alleen de gids-filter. **Galerij-werk-item LIVE** (v0.79.0,
+Fase C inc.4 — de laatste pivot-bouwsteen): de agent herkent een portfolio-link → `kind=gallery`,
+`extract_gallery_images` hotlinkt de beeld-URLs uit de Cloudflare-markdown (nul-opslag, geen SSRF), render =
+beeld-raster + 🖼-badge; fail-safe < 2 beelden → blijft project. Discipline **Design** toegevoegd aan
+gids-filter + match. Migratie 0029 (`offering.gallery_urls` JSON). **De pivot (A→D + showcase incrementen 1-4)
+is daarmee compleet.** NB admin-comms via Telegram (v0.73.0, `notify_admins`).
 
 ### Eerdere focus (afgerond)
 **Sitewide ervaring-audit + UAT-fundament** (2026-06-21, v0.56.0). Een read-only audit-workflow toetste 12

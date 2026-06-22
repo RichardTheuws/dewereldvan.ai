@@ -100,6 +100,47 @@ def test_classify_other_returns_none(monkeypatch):
     assert pe.classify_work_item("# Een SaaS-product", client=client) is None
 
 
+def test_classify_gallery_returns_gallery(monkeypatch):
+    monkeypatch.setattr(settings, "ai_enrich_enabled", True)
+    client = FakeClient(classification={"category": "gallery"})
+    out = pe.classify_work_item("# Portfolio\n![werk](https://x.nl/a.jpg)", client=client)
+    assert out is not None
+    assert out.kind is OfferingKind.gallery
+    assert out.event_at is None and out.location is None
+
+
+# --------------------------------------------------------------------------- #
+# extract_gallery_images — beeld-URLs uit de markdown (zero-AI)               #
+# --------------------------------------------------------------------------- #
+def test_extract_gallery_images_filters_dedup_and_caps():
+    md = (
+        "# Portfolio\n"
+        "![a](https://cdn.nl/1.jpg)\n"
+        "![b](https://cdn.nl/2.PNG?w=800)\n"   # extensie case + query → ok
+        "![a-again](https://cdn.nl/1.jpg)\n"    # dubbel → ontdubbeld
+        "![logo](https://cdn.nl/logo.png)\n"    # ruis → geweerd
+        "![rel](/lokaal/3.jpg)\n"               # relatief/niet-https → geweerd
+        "![doc](https://cdn.nl/brochure.pdf)\n" # geen beeld-extensie → geweerd
+        "![c](https://cdn.nl/3.webp)\n"
+    )
+    out = pe.extract_gallery_images(md)
+    assert out == [
+        "https://cdn.nl/1.jpg",
+        "https://cdn.nl/2.PNG?w=800",
+        "https://cdn.nl/3.webp",
+    ]
+
+
+def test_extract_gallery_images_caps_at_max():
+    md = "\n".join(f"![n](https://cdn.nl/{i}.jpg)" for i in range(50))
+    assert len(pe.extract_gallery_images(md)) == pe.GALLERY_MAX_IMAGES
+
+
+def test_extract_gallery_images_empty():
+    assert pe.extract_gallery_images(None) == []
+    assert pe.extract_gallery_images("# Geen beelden hier") == []
+
+
 def test_classify_gated_off(monkeypatch):
     monkeypatch.setattr(settings, "ai_enrich_enabled", False)
     client = FakeClient(classification={"category": "event", "date_iso": "2026-07-15"})
@@ -157,3 +198,32 @@ def test_enrich_plain_project_stays_project(db, make_member, make_profile, monke
     assert off.kind is OfferingKind.project
     assert off.event_at is None
     assert off.summary == "Een SaaS-product voor X."
+
+
+def test_enrich_promotes_to_gallery_with_images(db, make_member, make_profile, monkeypatch):
+    _mock_render(
+        monkeypatch,
+        "# Portfolio van Mara\n"
+        "![werk 1](https://cdn.nl/a.jpg)\n"
+        "![werk 2](https://cdn.nl/b.png)\n"
+        "![werk 3](https://cdn.nl/c.webp)\n",
+    )
+    off = _offering(db, make_member, make_profile, email="d@x.nl", title="Portfolio")
+    client = FakeClient(classification={"category": "gallery"}, summary="Het portfolio van Mara.")
+    assert pe.enrich_offering(db, off, client=client) is True
+    assert off.kind is OfferingKind.gallery
+    assert off.gallery_urls == [
+        "https://cdn.nl/a.jpg",
+        "https://cdn.nl/b.png",
+        "https://cdn.nl/c.webp",
+    ]
+
+
+def test_enrich_gallery_too_few_images_stays_project(db, make_member, make_profile, monkeypatch):
+    # Geclassificeerd als galerij, maar slechts één beeld → geen lege galerij; blijft project.
+    _mock_render(monkeypatch, "# Portfolio\n![enig werk](https://cdn.nl/a.jpg)\n")
+    off = _offering(db, make_member, make_profile, email="e@x.nl", title="Portfolio")
+    client = FakeClient(classification={"category": "gallery"}, summary="Portfolio.")
+    pe.enrich_offering(db, off, client=client)
+    assert off.kind is OfferingKind.project
+    assert off.gallery_urls is None
