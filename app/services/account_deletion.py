@@ -38,6 +38,7 @@ from app.models import (
     ConciergeTurn,
     Connection,
     DiscoveryRun,
+    EventAttendance,
     Feedback,
     GroupInvite,
     Idea,
@@ -177,6 +178,11 @@ def delete_member_completely(db: Session, member: Member) -> None:
     db.execute(delete(Idea).where(Idea.member_id == member_id))
 
     db.execute(delete(Feedback).where(Feedback.member_id == member_id))
+    # RSVP-aanmeldingen van dit lid (de events zelf blijven; SET NULL op de
+    # toevoeger dekt dat). Eigen aanmeldingen verdwijnen volledig.
+    db.execute(
+        delete(EventAttendance).where(EventAttendance.member_id == member_id)
+    )
     db.execute(
         delete(ConciergeNudgeDismissal).where(
             ConciergeNudgeDismissal.member_id == member_id

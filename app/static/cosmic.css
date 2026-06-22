@@ -3852,6 +3852,60 @@ a.roadmap-item__origin:focus-visible {
 /* agenda-categoriefilter — zelfde chiprij als /leden, wat lucht eronder */
 .cosmic .agenda-filters { margin-bottom: 18px; }
 
+/* ---- RSVP-strip (de sociale laag op de agenda) ---- */
+.cosmic .event-rsvp {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.cosmic .event-rsvp__count {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.cosmic .event-rsvp__going {
+  color: var(--cyan);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.cosmic .event-rsvp__role { color: var(--muted); }
+.cosmic .event-rsvp__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cosmic .rsvp-btn {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  border-radius: 100px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.cosmic .rsvp-btn:hover {
+  color: var(--text);
+  border-color: rgba(63, 210, 255, 0.45);
+}
+.cosmic .rsvp-btn--on {
+  color: var(--bg, #0b0d1a);
+  background: var(--cyan);
+  border-color: var(--cyan);
+}
+.cosmic .rsvp-btn--clear { margin-left: auto; }
+.cosmic .rsvp-btn--clear:hover { color: #ffb3b3; border-color: rgba(255, 179, 179, 0.5); }
+.cosmic .event-rsvp__join {
+  font-size: 0.85rem;
+  color: var(--cyan);
+}
+
 /* ---- nieuws-specifiek ---- */
 .cosmic .news-card__date {
   font-family: "JetBrains Mono", monospace;

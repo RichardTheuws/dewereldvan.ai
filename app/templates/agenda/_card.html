@@ -31,6 +31,9 @@
 
   {% if post.description %}<p class="event-card__text">{{ post.description }}</p>{% endif %}
 
+  {% set summary = (rsvp or {}).get(post.id) %}
+  {% include "agenda/_rsvp.html" %}
+
   <div class="event-card__foot">
     {% if post.added_by %}<span class="event-card__by">toegevoegd door {{ post.added_by.name }}</span>{% endif %}
     {% if post.url %}<a class="event-card__link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">website ↗</a>{% endif %}

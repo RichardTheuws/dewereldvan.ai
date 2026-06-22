@@ -526,6 +526,164 @@ def test_account_deletion_nullifies_post_author(SessionTest, seed):
 
 
 # --------------------------------------------------------------------------- #
+# RSVP / aanwezigheid (de sociale laag)                                       #
+# --------------------------------------------------------------------------- #
+def _event(s, seed, title="Meetup"):
+    from app.models import EventFrequency, Post, PostKind
+
+    post = Post(added_by_id=seed["member"], kind=PostKind.event, title=title,
+                frequency=EventFrequency.eenmalig)
+    s.add(post)
+    s.commit()
+    return post
+
+
+def test_rsvp_set_role_upserts(SessionTest, seed):
+    """Eén rol per lid per event: een rol wijzigen update de rij i.p.v. te dupliceren."""
+    from app.models import EventAttendance, EventAttendanceRole, Member
+    from app.services import attendance_service
+
+    s = SessionTest()
+    post = _event(s, seed)
+    member = s.get(Member, seed["member"])
+    attendance_service.set_role(s, member=member, post=post, role=EventAttendanceRole.attending)
+    s.commit()
+    attendance_service.set_role(s, member=member, post=post, role=EventAttendanceRole.speaking)
+    s.commit()
+    rows = s.query(EventAttendance).all()
+    assert len(rows) == 1  # geen dubbele rij
+    assert rows[0].role == EventAttendanceRole.speaking
+    s.close()
+
+
+def test_rsvp_summary_counts_and_names(SessionTest, seed):
+    """De summary telt per rol + benoemt sprekers/organisatoren + de eigen keuze."""
+    from app.models import EventAttendanceRole, Member
+    from app.services import attendance_service
+
+    s = SessionTest()
+    post = _event(s, seed)
+    a = s.get(Member, seed["member"])   # "Lid A"
+    b = s.get(Member, seed["admin"])    # "Beheerder"
+    attendance_service.set_role(s, member=a, post=post, role=EventAttendanceRole.speaking)
+    attendance_service.set_role(s, member=b, post=post, role=EventAttendanceRole.attending)
+    s.commit()
+    summary = attendance_service.summary_for(s, post, viewer=a)
+    assert summary.total == 2
+    assert summary.speaking == 1 and summary.attending == 1
+    assert summary.viewer_role == "speaking"
+    assert [att.name for att in summary.speakers] == ["Lid A"]
+    assert summary.speakers[0].slug is None  # geen publiek profiel → geen link
+    s.close()
+
+
+def test_rsvp_route_swaps_strip(make_client, seed, SessionTest):
+    """Lid meldt zich aan → strip komt terug met de telling + de eigen keuze actief."""
+    from app.models import EventAttendance
+
+    s = SessionTest()
+    post = _event(s, seed)
+    pid = post.id
+    s.close()
+
+    client = make_client(seed["member"])
+    token = csrf_token(client, "/agenda")
+    resp = client.post(
+        f"/agenda/{pid}/rsvp", data={"role": "attending"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    assert f'id="rsvp-{pid}"' in resp.text
+    assert "1 gaat" in resp.text
+    assert 'aria-pressed="true"' in resp.text  # eigen keuze actief gemarkeerd
+
+    s = SessionTest()
+    assert s.query(EventAttendance).count() == 1
+    s.close()
+
+
+def test_rsvp_clear_removes_attendance(make_client, seed, SessionTest):
+    from app.models import EventAttendance, EventAttendanceRole, Member
+    from app.services import attendance_service
+
+    s = SessionTest()
+    post = _event(s, seed)
+    pid = post.id
+    member = s.get(Member, seed["member"])
+    attendance_service.set_role(s, member=member, post=post, role=EventAttendanceRole.attending)
+    s.commit()
+    s.close()
+
+    client = make_client(seed["member"])
+    token = csrf_token(client, "/agenda")
+    resp = client.post(f"/agenda/{pid}/rsvp/clear", headers={"X-CSRF-Token": token})
+    assert resp.status_code == 200
+    s = SessionTest()
+    assert s.query(EventAttendance).count() == 0
+    s.close()
+
+
+def test_anon_cannot_rsvp(make_client, seed, SessionTest):
+    """RSVP is login-gated; anon POST → /login en er ontstaat geen aanmelding."""
+    from app.models import EventAttendance
+
+    s = SessionTest()
+    pid = _event(s, seed).id
+    s.close()
+
+    client = make_client(None)
+    token = csrf_token(client, "/agenda")
+    resp = client.post(
+        f"/agenda/{pid}/rsvp", data={"role": "attending"},
+        headers={"X-CSRF-Token": token}, follow_redirects=False,
+    )
+    assert resp.status_code in (302, 303)
+    assert resp.headers["location"].endswith("/login")
+    s = SessionTest()
+    assert s.query(EventAttendance).count() == 0
+    s.close()
+
+
+def test_rsvp_invalid_role_rejected(make_client, seed, SessionTest):
+    from app.models import EventAttendance
+
+    s = SessionTest()
+    pid = _event(s, seed).id
+    s.close()
+
+    client = make_client(seed["member"])
+    token = csrf_token(client, "/agenda")
+    resp = client.post(
+        f"/agenda/{pid}/rsvp", data={"role": "zomaar"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 400
+    s = SessionTest()
+    assert s.query(EventAttendance).count() == 0
+    s.close()
+
+
+def test_account_deletion_wipes_attendance(SessionTest, seed):
+    """AVG: een gewist lid verliest z'n aanmeldingen; het event zelf blijft."""
+    from app.models import EventAttendance, EventAttendanceRole, Member, Post
+    from app.services import attendance_service
+    from app.services.account_deletion import delete_member_completely
+
+    s = SessionTest()
+    post = _event(s, seed)
+    post_id = post.id
+    member = s.get(Member, seed["member"])
+    attendance_service.set_role(s, member=member, post=post, role=EventAttendanceRole.attending)
+    s.commit()
+
+    delete_member_completely(s, member)
+    s.commit()
+    assert s.query(EventAttendance).count() == 0  # eigen aanmelding weg
+    assert s.get(Post, post_id) is not None  # event blijft (community-waarde)
+    s.close()
+
+
+# --------------------------------------------------------------------------- #
 # Helpers — relatieve_tijd / nl_datum                                         #
 # --------------------------------------------------------------------------- #
 def test_relatieve_tijd_buckets():

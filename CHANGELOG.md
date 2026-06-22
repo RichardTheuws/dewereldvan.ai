@@ -3,6 +3,25 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.84.0] - 2026-06-22
+### Added — RSVP op de agenda (aanwezig / organiseert / spreekt) — de agenda wordt sociaal
+- Elk lid kan zich per event aanmelden met één rol: **Ik ga / Ik organiseer / Ik spreek hier** (wederzijds
+  exclusief, één rol per lid per event — her-kiezen = wijzigen, geen dubbele rij). De event-kaart toont nu de
+  **telling** ("3 gaan") + de **namen van organisatoren/sprekers**, die linken naar hun publieke profiel —
+  een echte graaf-knoop (geen aparte graaf-tabel). Anon ziet de telling + "Word lid om je aan te melden".
+- **Model**: nieuwe tabel `event_attendance` (`EventAttendance`) met rol-enum + unieke `(post_id, member_id)`;
+  beide FK's `ON DELETE CASCADE`. Migratie `0033_event_attendance`.
+- **AVG**: de expliciete wis-keten (`account_deletion`) verwijdert de aanmeldingen van een gewist lid; het
+  event zelf blijft (community-waarde, `added_by` → NULL).
+- **Service** `attendance_service`: `set_role` (upsert), `clear`, en `summaries`/`summary_for` die de stand van
+  een hele lijst events in **één** query opbouwen (geen N+1) — tellingen + namen + de eigen keuze van de kijker.
+- **Routes**: `POST /agenda/{id}/rsvp` (rol) + `POST /agenda/{id}/rsvp/clear`, login-gated (CSRF via body-
+  `hx-headers`), htmx-swap van alléén de RSVP-strip. Ongeldige rol → 400; anon → /login.
+- **Tests**: upsert (rol wijzigen = geen dubbele rij), summary-tellingen + namen + eigen keuze, route-swap met
+  actieve staat, clear, anon-login-gate, ongeldige rol, account-deletion wist aanmeldingen. 1021 groen.
+  Anon-strip + spreker-met-profiel-link visueel geverifieerd in de browser; de ingelogde klik-flow is via de
+  end-to-end test gedekt (lokale HTTPS-cookie-constraint verhinderde de browser-klik).
+
 ## [0.83.0] - 2026-06-22
 ### Added — Agenda-categorieën (meetup/conferentie/coding/workshop/talk/hackathon/overig)
 - Elk agenda-event heeft nu een **soort**: een korte, herkenbare set (geen vrije tags). Voedt een

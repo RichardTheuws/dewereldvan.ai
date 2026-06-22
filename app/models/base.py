@@ -172,6 +172,18 @@ class EventCategory(str, enum.Enum):
     overig = "overig"
 
 
+class EventAttendanceRole(str, enum.Enum):
+    """De rol waarmee een lid bij een agenda-event betrokken is (RSVP). Eén rol per
+    lid per event (her-zetten = update). ``attending`` telt als 'ik ga'; de andere
+    twee zijn óók aanwezig maar met een actieve rol (zichtbaar op de kaart als
+    organisator/spreker → graaf-knoop naar hun profiel). Langste waarde 'organizing'
+    = 10 → de SQLEnum (native_enum=False) maakt er VARCHAR(10) van."""
+
+    attending = "attending"  # ik ga / aanwezig
+    organizing = "organizing"  # ik (mede-)organiseer
+    speaking = "speaking"  # ik spreek hier
+
+
 class PostReviewState(str, enum.Enum):
     """Redactie-staat van een ``Post`` ("De Briefing", doc 02 §4). Lid-bijdragen
     zijn ``live`` (huidig gedrag, ongewijzigd); AI-gecureerde kandidaten starten

@@ -27,9 +27,17 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import current_member, require_admin, require_member
-from app.models import EventFrequency, Member, NewsRole, Post, PostKind, Tool
+from app.models import (
+    EventAttendanceRole,
+    EventFrequency,
+    Member,
+    NewsRole,
+    Post,
+    PostKind,
+    Tool,
+)
 from app.schemas.post import EventForm, NewsForm
-from app.services import post_draft_service, post_service
+from app.services import attendance_service, post_draft_service, post_service
 
 router = APIRouter(tags=["posts"])
 
@@ -50,14 +58,17 @@ def _is_admin(member: Member) -> bool:
 def _agenda_context(
     db: Session, member: Member | None, *, category: str = ""
 ) -> dict:
+    events = post_service.list_events(db, category=category)
     return {
-        "events": post_service.list_events(db, category=category),
+        "events": events,
         "member": member,
         "is_admin": member is not None and _is_admin(member),
         "frequencies": list(EventFrequency),
         # Categorie-filterchips + form-select (slug, label).
         "category_options": post_service.category_options(),
         "category": category,
+        # RSVP-stand per event-id (één query, geen N+1) — voedt de RSVP-strip.
+        "rsvp": attendance_service.summaries(db, events, viewer=member),
     }
 
 
@@ -83,7 +94,11 @@ def _tool_names(db: Session) -> list[str]:
 
 
 def _card_context(db: Session, post: Post, member: Member) -> dict:
-    return {"post": post, "member": member, "is_admin": _is_admin(member)}
+    ctx = {"post": post, "member": member, "is_admin": _is_admin(member)}
+    if post.kind == PostKind.event:
+        # Eén-event-rsvp-stand zodat de gemoderate kaart de strip behoudt.
+        ctx["rsvp"] = {post.id: attendance_service.summary_for(db, post, viewer=member)}
+    return ctx
 
 
 # --------------------------------------------------------------------------- #
@@ -182,6 +197,56 @@ def agenda_concept(
     ctx["form"] = draft
     ctx["is_concept"] = True
     return _render(request, "agenda/_form.html", ctx)
+
+
+# --------------------------------------------------------------------------- #
+# Agenda — RSVP / aanwezigheid (de sociale laag)                              #
+# --------------------------------------------------------------------------- #
+
+
+def _rsvp_strip(request: Request, db: Session, post: Post, member: Member) -> HTMLResponse:
+    """Render alléén de RSVP-strip van één event (htmx-swap-target)."""
+    summary = attendance_service.summary_for(db, post, viewer=member)
+    return _render(
+        request, "agenda/_rsvp.html", {"post": post, "summary": summary, "member": member}
+    )
+
+
+@router.post("/agenda/{post_id}/rsvp", response_class=HTMLResponse)
+def agenda_rsvp(
+    request: Request,
+    post_id: int,
+    role: str = Form(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Meld je aan (of wijzig je rol) voor een event; swap de RSVP-strip."""
+    post = post_service.get_visible(db, post_id, kind=PostKind.event)
+    if post is None:
+        return HTMLResponse("", status_code=status.HTTP_404_NOT_FOUND)
+    try:
+        attendance_role = EventAttendanceRole(role)
+    except ValueError:
+        return HTMLResponse("", status_code=status.HTTP_400_BAD_REQUEST)
+    attendance_service.set_role(db, member=member, post=post, role=attendance_role)
+    db.commit()
+    return _rsvp_strip(request, db, post, member)
+
+
+@router.post("/agenda/{post_id}/rsvp/clear", response_class=HTMLResponse)
+def agenda_rsvp_clear(
+    request: Request,
+    post_id: int,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Trek je aanmelding voor een event in; swap de RSVP-strip."""
+    post = post_service.get_visible(db, post_id, kind=PostKind.event)
+    if post is None:
+        return HTMLResponse("", status_code=status.HTTP_404_NOT_FOUND)
+    attendance_service.clear(db, member=member, post=post)
+    db.commit()
+    return _rsvp_strip(request, db, post, member)
 
 
 # --------------------------------------------------------------------------- #

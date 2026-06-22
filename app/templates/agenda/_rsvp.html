@@ -1,0 +1,45 @@
+{# RSVP-strip van één event (swap-target #rsvp-{id}). De drie rollen sluiten elkaar
+   uit (één rol per lid); de eigen keuze is actief gemarkeerd. Organisatoren/sprekers
+   linken naar hun publieke profiel = graaf-knoop. Anon ziet de telling + een
+   uitnodiging om lid te worden. CSRF erft via de body-`hx-headers`. #}
+{% set s = summary %}
+<div id="rsvp-{{ post.id }}" class="event-rsvp">
+  {% if s and s.has_anyone %}
+  <div class="event-rsvp__count">
+    <span class="event-rsvp__going">{{ s.total }} {% if s.total == 1 %}gaat{% else %}gaan{% endif %}</span>
+    {% if s.organizers %}
+    <span class="event-rsvp__role">· organisatie:
+      {% for a in s.organizers %}{% if a.slug %}<a class="text-link" href="/leden/{{ a.slug }}">{{ a.name }}</a>{% else %}{{ a.name }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
+    </span>
+    {% endif %}
+    {% if s.speakers %}
+    <span class="event-rsvp__role">· spreker{% if s.speakers|length > 1 %}s{% endif %}:
+      {% for a in s.speakers %}{% if a.slug %}<a class="text-link" href="/leden/{{ a.slug }}">{{ a.name }}</a>{% else %}{{ a.name }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
+    </span>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if member %}
+  {% set vr = s.viewer_role if s else none %}
+  <div class="event-rsvp__actions" role="group" aria-label="Meld je aan voor dit event">
+    {% for slug, label in [("attending", "Ik ga"), ("organizing", "Ik organiseer"), ("speaking", "Ik spreek hier")] %}
+    <button type="button"
+            class="rsvp-btn{% if vr == slug %} rsvp-btn--on{% endif %}"
+            aria-pressed="{{ 'true' if vr == slug else 'false' }}"
+            hx-post="/agenda/{{ post.id }}/rsvp"
+            hx-vals='{"role": "{{ slug }}"}'
+            hx-target="#rsvp-{{ post.id }}"
+            hx-swap="outerHTML">{{ label }}</button>
+    {% endfor %}
+    {% if vr %}
+    <button type="button" class="rsvp-btn rsvp-btn--clear"
+            hx-post="/agenda/{{ post.id }}/rsvp/clear"
+            hx-target="#rsvp-{{ post.id }}"
+            hx-swap="outerHTML">Afmelden</button>
+    {% endif %}
+  </div>
+  {% else %}
+  <a class="event-rsvp__join text-link" href="/register">Word lid om je aan te melden</a>
+  {% endif %}
+</div>
