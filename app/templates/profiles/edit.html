@@ -91,6 +91,34 @@
                    value="{{ tags_string }}"
                    placeholder="bijv. fotografie, duurzaamheid, ontwerp">
           </div>
+
+          {# --- Waar ik voor opensta: beacon-chips (slaan mee met dit form) --- #}
+          <div>
+            <span class="field-label">Waar ik voor opensta</span>
+            <p class="muted" style="margin:2px 0 12px;font-size:0.9rem;line-height:1.5;max-width:54ch">
+              Laat anderen zien waarvoor ze je mogen benaderen. Op je profiel worden dit
+              uitnodigende signalen — één klik en de bezoeker kan je gericht aanspreken.
+            </p>
+            {% set has_suggestion = openness_suggested - openness_selected %}
+            <div class="open-chips">
+              {% for o in openness_options %}
+              {% set is_sel = o.slug in openness_selected %}
+              {% set is_sug = o.slug in openness_suggested and not is_sel %}
+              <label class="open-chip{% if is_sug %} open-chip--suggested{% endif %}">
+                <input type="checkbox" name="open_to" value="{{ o.slug }}" {% if is_sel %}checked{% endif %}>
+                <span class="open-chip__icon" aria-hidden="true">{{ o.icon }}</span>
+                <span class="open-chip__label">{{ o.label }}</span>
+                {% if is_sug %}<span class="open-chip__hint" title="De agent stelt dit voor op basis van je werk">✦ voorgesteld</span>{% endif %}
+              </label>
+              {% endfor %}
+            </div>
+            {% if has_suggestion %}
+            <p class="muted" style="margin:10px 0 0;font-size:0.85rem;line-height:1.5">
+              ✦ De agent stelt enkele opties voor op basis van wat je maakt — vink aan wat klopt.
+            </p>
+            {% endif %}
+          </div>
+
           <div>
             <button type="submit" class="btn">Opslaan</button>
           </div>

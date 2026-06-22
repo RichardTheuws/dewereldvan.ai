@@ -501,6 +501,101 @@
   border-color: var(--cyan, #3fd2ff);
 }
 .cosmic .disc-chip:focus-within { outline: 2px solid rgba(63, 210, 255, 0.5); outline-offset: 2px; }
+/* "Open voor"-filterrij: zelfde chips, met een mono-label ervoor. */
+.cosmic .member-filters__open { align-items: center; }
+.cosmic .member-filters__open-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: 2px;
+}
+
+/* ---- "Waar ik voor opensta" — editor-chips (checkbox, multi-select) ---- */
+.cosmic .open-chips { display: flex; flex-wrap: wrap; gap: 9px; }
+.cosmic .open-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-size: 13px;
+  transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  user-select: none;
+}
+.cosmic .open-chip input { position: absolute; opacity: 0; width: 0; height: 0; }
+.cosmic .open-chip:hover { color: var(--text); border-color: rgba(177, 92, 255, 0.5); }
+.cosmic .open-chip:has(input:checked) {
+  color: #f3eaff;
+  border-color: var(--violet);
+  background: rgba(109, 93, 252, 0.22);
+  box-shadow: 0 0 14px rgba(109, 93, 252, 0.35);
+}
+.cosmic .open-chip:focus-within { outline: 2px solid rgba(177, 92, 255, 0.55); outline-offset: 2px; }
+.cosmic .open-chip__icon { font-size: 14px; line-height: 1; }
+.cosmic .open-chip--suggested { border-style: dashed; border-color: rgba(246, 205, 134, 0.5); }
+.cosmic .open-chip__hint {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  opacity: 0.9;
+}
+
+/* ---- "Open voor" — publieke beacons (gloeiende signalen, vaak actionable) ---- */
+.cosmic .open-beacons { display: flex; flex-wrap: wrap; gap: 12px; }
+.cosmic .open-beacon {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(109, 93, 252, 0.4);
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(109, 93, 252, 0.22), transparent 70%),
+    rgba(255, 255, 255, 0.02);
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  position: relative;
+  overflow: hidden;
+}
+.cosmic .open-beacon__icon { font-size: 18px; line-height: 1; margin-bottom: 4px; }
+.cosmic .open-beacon__label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: #eef0ff;
+}
+.cosmic .open-beacon__blurb { font-size: 12px; color: var(--muted); }
+.cosmic .open-beacon__cta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--gold);
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 0.2s, transform 0.2s;
+  margin-top: 4px;
+}
+.cosmic .open-beacon--action { cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+.cosmic .open-beacon--action:hover {
+  border-color: var(--violet);
+  box-shadow: 0 0 22px rgba(109, 93, 252, 0.4);
+  transform: translateY(-2px);
+}
+.cosmic .open-beacon--action:hover .open-beacon__cta { opacity: 1; transform: translateY(0); }
+.cosmic .open-beacon--action:focus-visible { outline: 2px solid rgba(177, 92, 255, 0.6); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .cosmic .open-beacon--action:hover { transform: none; }
+  .cosmic .open-beacon__cta { transition: none; }
+}
 /* Discipline-tags op een ledenkaart (afgeleid uit de werk-items). */
 .cosmic .member-star__disciplines {
   display: flex;

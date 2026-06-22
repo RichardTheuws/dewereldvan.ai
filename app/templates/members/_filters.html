@@ -24,6 +24,21 @@
     {% endfor %}
   </div>
   {% endif %}
+  {# "Open voor"-chips: filter op waar leden voor benaderbaar zijn (radio's, zelfde
+     submit als de rest; ``:checked`` stuurt de actieve staat). #}
+  {% if openness_options %}
+  <div class="member-filters__disciplines member-filters__open" role="group" aria-label="Filter op waar leden voor openstaan">
+    <span class="member-filters__open-label">Open voor</span>
+    <label class="disc-chip">
+      <input type="radio" name="open_to" value=""{% if not open_to %} checked{% endif %}> Alle
+    </label>
+    {% for o in openness_options %}
+    <label class="disc-chip">
+      <input type="radio" name="open_to" value="{{ o.slug }}"{% if open_to == o.slug %} checked{% endif %}> {{ o.icon }} {{ o.label }}
+    </label>
+    {% endfor %}
+  </div>
+  {% endif %}
   <div class="member-filters__field">
     <label class="field-label" for="f-tag">Tag</label>
     <input id="f-tag" name="tag" type="search" value="{{ tag or '' }}"

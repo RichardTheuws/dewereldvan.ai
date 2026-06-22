@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from sqlalchemy import or_, select
+from sqlalchemy import String, cast, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models import (
@@ -57,6 +57,12 @@ DISCIPLINES: list[tuple[str, str, str, OfferingKind]] = [
     ("design", "Design", "Design", OfferingKind.gallery),
 ]
 _DISCIPLINE_KIND: dict[str, OfferingKind] = {s: k for s, _fl, _cl, k in DISCIPLINES}
+
+# Geldige openness-slugs (voor de /leden "Open voor"-filter). Uit de catalogus zodat
+# er één waarheid is; lokaal geïmporteerd om importvolgorde-ruis te vermijden.
+from app.services import openness_service as _openness  # noqa: E402
+
+_OPENNESS_SLUGS: frozenset[str] = frozenset(o.slug for o in _openness.OPENNESS)
 
 # Trefwoorden waaruit een VRAAG ("wat ik zoek") een gewenste werk-soort prijsgeeft:
 # "ik zoek een workshop over RAG" → workshop, "wie maakt video?" → video. Zero-AI; dit
@@ -186,6 +192,7 @@ def list_public_profiles(
     zoekt: str | None = None,
     tool: str | None = None,
     discipline: str | None = None,
+    open_to: str | None = None,
 ) -> list[Profile]:
     """Publieke, goedgekeurde profielen voor de constellatie, optioneel gefilterd.
 
@@ -252,6 +259,13 @@ def list_public_profiles(
             Offering.kind == _DISCIPLINE_KIND[discipline_q],
         )
         stmt = stmt.where(disc_match.exists())
+
+    # "Open voor" (openness): ``Profile.open_to`` is een JSON-lijst slugs. Dialect-
+    # neutrale match: cast naar tekst en LIKE op de gequote slug (``"interviews"``).
+    # Veilig omdat de slugs uit een vaste catalogus komen (geen substring-overlap).
+    open_to_q = (open_to or "").strip().lower()
+    if open_to_q in _OPENNESS_SLUGS:
+        stmt = stmt.where(cast(Profile.open_to, String).ilike(f'%"{open_to_q}"%'))
 
     stmt = (
         stmt.distinct()

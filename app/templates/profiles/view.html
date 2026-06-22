@@ -97,6 +97,37 @@
       {% endif %}
       {% endmacro %}
 
+      {# "Open voor" — gloeiende beacons. Voor een bezoeker zijn ze actionable:
+         klik → de concierge opent met een kant-en-klare intro (data-concierge-prefill,
+         nul AI-kosten op de instant-laag). Voor de eigenaar/preview = stil signaal. #}
+      {% macro section_open_to() %}
+      {% if open_to_items %}
+      <section class="mt-12" data-reveal="materialize" style="--d:300ms">
+        <div class="section-title mb-3">Open voor</div>
+        <div class="open-beacons">
+          {% for it in open_to_items %}
+          {% if is_owner %}
+          <span class="open-beacon">
+            <span class="open-beacon__icon" aria-hidden="true">{{ it.icon }}</span>
+            <span class="open-beacon__label">{{ it.label }}</span>
+            <span class="open-beacon__blurb">{{ it.blurb }}</span>
+          </span>
+          {% else %}
+          <button type="button" class="open-beacon open-beacon--action"
+                  data-concierge-prefill="{{ it.intro }}"
+                  title="Spreek {{ profile.display_name }} hierover aan">
+            <span class="open-beacon__icon" aria-hidden="true">{{ it.icon }}</span>
+            <span class="open-beacon__label">{{ it.label }}</span>
+            <span class="open-beacon__blurb">{{ it.blurb }}</span>
+            <span class="open-beacon__cta" aria-hidden="true">aanspreken →</span>
+          </button>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+      {% endmacro %}
+
       {% macro section_roles() %}
       {% set roles = profile.profile_links | selectattr('kind.value', 'equalto', 'affiliation') | list %}
       {% if roles %}
@@ -194,12 +225,14 @@
          balanced → bio eerst. Alle blokken blijven aanwezig (geen content-verlies). #}
       {% if ecls == "emphasis-projects" %}
         {{ section_projects() }}
+        {{ section_open_to() }}
         {{ section_bio() }}
         {{ section_roles() }}
         {{ section_tools() }}
         {{ section_seeking() }}
         {{ section_related() }}
       {% else %}
+        {{ section_open_to() }}
         {{ section_bio() }}
         {{ section_roles() }}
         {{ section_projects() }}

@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-22 · **Versie**: 0.79.2 · **Branch**: `main`
+**Laatste update**: 2026-06-22 · **Versie**: 0.80.0 · **Branch**: `main`
 
 ## Waar het draait
 - **🚀 LIVE (volledige app)**: **https://dewereldvan.ai** (apex, canonical) + `www` + `app.dewereldvan.ai` —
@@ -29,6 +29,10 @@
   zelfde publieke `view.html` met `is_owner=False`, altijd `noindex`, progress-bewuste preview-chrome
   ("Maak openbaar" alleen als het nog niet openbaar is). Ingangen op bewerk-header + AI-publiceer-dok.
 - **Projecten**: screenshot-hero + AI-samenvatting (Cloudflare Browser Rendering, async + nachtjob).
+- **Open voor** (v0.80.0): elk profiel kan engagement-beschikbaarheid kiezen (klantwerk/trainingen/spreken/
+  interviews/samenwerkingen → `Profile.open_to` JSON, `openness_service`). Publiek = gloeiende **beacons** die
+  voor een bezoeker actionable zijn (klik → concierge-prefill met intro, nul AI-kosten); editor toont een
+  gegronde suggestie uit de werk-items; `/leden` heeft een "Open voor"-discovery-filter.
 - **Community**: agenda + nieuws (`Post`), ideeënbus, roadmap.
 - **Matchmaking**: `MatchSuggestion` + intro-flow (`Connection`) + push-chips.
 - **Discovery** (footprint-engine): zoekt een lid online op → entity-resolution → classificeer →

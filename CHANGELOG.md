@@ -3,6 +3,28 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.80.0] - 2026-06-22
+### Added — "Waar ik voor opensta": engagement-beacons op elk profiel
+- Elk profiel kan nu aangeven waar je voor benaderbaar bent: **klantwerk · trainingen · spreken ·
+  interviews · samenwerkingen** (`Profile.open_to`, JSON; migratie 0030; catalogus in `openness_service`).
+- **De amaze zit in de intelligentie + de ervaring:**
+  - *Publieke beacons die iets dóen*: op je profiel worden de keuzes gloeiende signalen. Voor een bezoeker
+    zijn ze **actionable** — één klik opent de concierge met een kant-en-klare intro ("Ik wil {naam}
+    interviewen") via de bestaande `data-concierge-prefill`-haak (instant-laag = nul AI-kosten). Static label
+    → directe interactie.
+  - *Gegronde suggestie in de editor*: de agent stelt opties voor op basis van je werk-items (workshops →
+    trainingen/spreken, publicaties → interviews, …) — `openness_service.infer_suggested`, zero-AI, jij kiest.
+  - *Discoverability*: een "Open voor"-filterrij op `/leden` (zelfde chip-patroon als discipline) — vind wie
+    openstaat voor spreken, interviews, samenwerking. Dialect-neutrale JSON-match (cast+LIKE op de catalogus-slug).
+- Richards profiel staat op **interviews + samenwerkingen**.
+- **Tests**: normalize/labels/intro/infer (catalogus), profiel-save (genormaliseerd, leeg → None), en de
+  /leden open_to-filter. 995 groen. Migratie 0030 schoon (Postgres + SQLite).
+
+### Fixed — Invite-mail & -landing pivot-conform
+- De groep-invite-mail en de invite-landingpagina zeiden nog "besloten preview, alleen voor genodigden".
+  Nu: het platform is **open**; de uitnodiging is een **directe sleutel** (wachtrij overslaan). Warme,
+  persoonlijke toon behouden; alleen de gesloten-framing herschreven.
+
 ## [0.79.2] - 2026-06-22
 ### Fixed — Homepage-copy pivot-conform: van "besloten" naar "open"
 - De hero-subkop én de SEO-omschrijving op de (nu publieke) homepage zeiden nog "Een besloten plek voor wie

@@ -21,6 +21,7 @@ from app.services import (
     emphasis_service,
     graph_service,
     members_service,
+    openness_service,
     photo_service,
     seo_service,
 )
@@ -54,6 +55,7 @@ def members_index(
     zoekt: str = Query("", alias="zoekt"),
     tool: str = Query("", alias="tool"),
     discipline: str = Query("", alias="discipline"),
+    open_to: str = Query("", alias="open_to"),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
     """De kosmische constellatie van publieke leden + server-side filter/zoek.
@@ -63,11 +65,13 @@ def members_index(
     indexeerbare pagina (zodat een gedeelde gefilterde URL ook stand-alone werkt).
     """
     profiles = members_service.list_public_profiles(
-        db, tag=tag, maakt=maakt, zoekt=zoekt, tool=tool, discipline=discipline
+        db, tag=tag, maakt=maakt, zoekt=zoekt, tool=tool,
+        discipline=discipline, open_to=open_to,
     )
     ctx = _grid_context(profiles)
     ctx.update(
-        {"tag": tag, "maakt": maakt, "zoekt": zoekt, "tool": tool, "discipline": discipline}
+        {"tag": tag, "maakt": maakt, "zoekt": zoekt, "tool": tool,
+         "discipline": discipline, "open_to": open_to}
     )
     # Graaf-graad per kaart: maakt van losse kaarten zichtbaar verbonden knopen
     # (gegrond op gedeelde tags/tools, in-memory, nul AI). Geldt voor beide takken.
@@ -85,4 +89,5 @@ def members_index(
     ctx["tag_vocab"] = vocab["tags"]
     ctx["tool_vocab"] = vocab["tools"]
     ctx["discipline_options"] = members_service.discipline_options()
+    ctx["openness_options"] = openness_service.options()
     return _render(request, "members/index.html", ctx)

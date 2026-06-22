@@ -149,12 +149,17 @@ def update_profile(
     bio: str | None,
     makes_summary: str | None,
     raw_tags: str | None,
+    open_to: list[str] | None = None,
 ) -> Profile:
     """Apply edited profile fields, replace tags, recompute completeness."""
+    from app.services import openness_service
+
     profile.display_name = display_name
     profile.bio = bio
     profile.makes_summary = makes_summary
     set_tags(db, profile, raw_tags)
+    # Openness genormaliseerd tegen de catalogus; leeg → None (geen lege lijst opslaan).
+    profile.open_to = openness_service.normalize(open_to) or None
     recompute_completeness(profile)
     db.flush()
     return profile

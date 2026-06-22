@@ -26,6 +26,7 @@ from app.services import (
     emphasis_service,
     graph_service,
     offering_slug,
+    openness_service,
     photo_service,
     profile_service,
     seo_service,
@@ -66,11 +67,32 @@ def _tool_notes_context(db: Session, profile: Profile, viewer: Member | None) ->
     }
 
 
+def _openness_items(profile: Profile) -> list[dict]:
+    """De publieke 'Open voor'-beacons: per gekozen openness het icoon/label/blurb +
+    de kant-en-klare concierge-prefill-intro (voornaam ingevuld). Lege lijst → geen
+    sectie. Gedeeld door de publieke view én de eigenaar-preview."""
+    return [
+        {
+            "slug": o.slug,
+            "icon": o.icon,
+            "label": o.label,
+            "blurb": o.blurb,
+            "intro": openness_service.intro_for(o.slug, profile.display_name),
+        }
+        for o in openness_service.labels_for(profile.open_to)
+    ]
+
+
 def _edit_context(request: Request, profile: Profile, **extra) -> dict:
     ctx = {
         "profile": profile,
         "tags_string": _tags_string(profile),
         "photo": photo_service.photo_or_initials(profile),
+        # "Waar ik voor opensta": de catalogus + de al-gekozen set + een gegronde
+        # suggestie uit de werk-items (zachte hint in de editor, nul AI-kosten).
+        "openness_options": openness_service.options(),
+        "openness_selected": set(profile.open_to or []),
+        "openness_suggested": set(openness_service.infer_suggested(profile)),
     }
     ctx.update(extra)
     return ctx
@@ -99,6 +121,7 @@ def edit_submit(
     bio: str = Form(""),
     makes_summary: str = Form(""),
     tags: str = Form(""),
+    open_to: list[str] = Form(default=[]),
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
@@ -109,6 +132,7 @@ def edit_submit(
             bio=bio,
             makes_summary=makes_summary,
             tags=tags,
+            open_to=open_to,
         )
     except ValidationError:
         db.rollback()
@@ -130,6 +154,7 @@ def edit_submit(
         bio=data.bio,
         makes_summary=data.makes_summary,
         raw_tags=data.tags,
+        open_to=data.open_to,
     )
     db.commit()
     return _render(
@@ -178,6 +203,7 @@ def preview_profile(
             "photo": photo_service.photo_or_initials(profile),
             "emphasis_cls": emphasis_service.emphasis_class(profile),
             "canonical": seo_service.canonical_url(f"/leden/{profile.slug}"),
+            "open_to_items": _openness_items(profile),
             "jsonld": None,
             "og_image": None,
         },
@@ -412,6 +438,7 @@ def view_profile(
             "photo": photo_service.photo_or_initials(profile),
             "emphasis_cls": emphasis_service.emphasis_class(profile),
             "canonical": seo_service.canonical_url(f"/leden/{profile.slug}"),
+            "open_to_items": _openness_items(profile),
             # Mens-naast-AI-correctiepad voor de tool-dossiers (doc 03 §4.3).
             **_tool_notes_context(db, profile, viewer),
             # JSON-LD + OG-beeld alleen voor publiek-indexeerbare profielen.

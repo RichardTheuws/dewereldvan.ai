@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -67,6 +67,11 @@ class Profile(Base, TimestampMixin):
     )
     # Raw member input kept for audit / regenerate; cascades away on member delete.
     ai_source_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # "Waar ik voor opensta" — een lid-gekozen lijst engagement-soorten (canonieke
+    # slugs uit ``openness_service.OPENNESS``: klantwerk/trainingen/spreken/interviews/
+    # samenwerkingen). Signaleert beschikbaarheid (los van offerings "wat ik maak" en
+    # needs "wat ik zoek"); voedt de publieke beacons + de /leden-discovery-filter.
+    open_to: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
 
     member: Mapped[Member] = relationship(back_populates="profile")
     offerings: Mapped[list[Offering]] = relationship(
