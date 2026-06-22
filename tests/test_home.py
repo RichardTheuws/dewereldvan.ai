@@ -260,3 +260,19 @@ def test_home_preview_shown_at_three(client, SessionTest):
     assert resp.status_code == 200
     # Het kopstuk toont de echte mini-constellatie van leden (W1).
     assert "home-constellation" in resp.text
+
+
+def test_home_constellation_sparse_with_few_makers(client, SessionTest):
+    """Compositie-fix: bij <=4 makers krijgt de constellatie de kortere --sparse
+    box, zodat de weinige sterren 'm vullen i.p.v. een groot gat eronder te laten."""
+    _seed_public(SessionTest, 3)
+    resp = client.get("/")
+    assert "home-constellation--sparse" in resp.text
+
+
+def test_home_constellation_not_sparse_with_many_makers(client, SessionTest):
+    """Bij >=5 makers gebruikt de constellatie de volle (default) box."""
+    _seed_public(SessionTest, 6)
+    resp = client.get("/")
+    assert "home-constellation" in resp.text
+    assert "home-constellation--sparse" not in resp.text

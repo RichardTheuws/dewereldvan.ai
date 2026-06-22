@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.70.1] - 2026-06-22
+### Fixed — Voordeur-compositie: geen lege verticale ruimte meer onder de constellatie
+- Op de publieke voordeur clusterden de (nu 3) makers in de bovenste 30% van een vaste `16/9`-constellatiebox
+  (~517px hoog) → een gat van ~350px eronder vóór "Bekijk alle makers" en de community-kaarten. Browser-
+  geverifieerd: de box is 518px→304px, de sterren spreiden nu over de volle box, het gat is weg.
+- Twee gerichte ingrepen in de gedeelde `_constellation.html` + `cosmic.css`: (1) de coords zijn **progressief
+  gebalanceerd** — elk prefix (de eerste N posities) spreidt al over breedte én hoogte; (2) een **count-bewuste**
+  `home-constellation--sparse` (≤4 makers → kortere/smallere box: `5/2`, mobiel `1/1`). De volle `16/9` blijft voor
+  ≥5 makers. Beide komen óók de lid-canvas-constellatie ten goede.
+- **Tests**: route-asserties (`--sparse` bij 3 makers, niet bij 6) + de bestaande e2e-constellatie (5 makers,
+  default box) bleef groen in echte Chromium. Live voordeur (3 echte makers) met eigen ogen geverifieerd.
+
 ## [0.70.0] - 2026-06-22
 ### Added — De lid-canvas wordt tijd-bewust: pas-verschenen makers gloeien (slice 2 van de verras-canvas)
 - Slice 1 (v0.68.0) gaf de canvas-ruststaat de levende graaf; die was echter elk bezoek identiek. Nu is de

@@ -5,9 +5,14 @@
    door de publieke voordeur (index.html) én de lid-canvas.
    Optioneel ``new_star_ids`` (set Profile-ids): die sterren krijgen de "pas
    verschenen"-gloed — alleen de canvas levert 'm aan (de voordeur blijft ongemoeid). #}
-{% set coords = [[18,30],[44,15],[72,22],[87,46],[63,64],[37,75],[13,57],[52,43]] %}
+{# Coords zijn PROGRESSIEF gebalanceerd: elk prefix (de eerste N posities) spreidt
+   al over breedte én hoogte, zodat 3-4 makers de box vullen i.p.v. bovenin te
+   clusteren (anders een groot gat onder de sterren). Bij weinig makers krijgt de
+   box bovendien een kortere hoogte (--sparse) zodat er geen lege ruimte overblijft. #}
+{% set coords = [[20,30],[74,34],[46,68],[86,62],[58,16],[15,58],[68,50],[38,46]] %}
 {% set _new_ids = new_star_ids or [] %}
-<div class="home-constellation" data-reveal>
+{% set _n = preview_stars | length %}
+<div class="home-constellation{% if _n <= 4 %} home-constellation--sparse{% endif %}" data-reveal>
   <svg class="home-constellation__links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
     {% for a, b in (star_links or []) %}
     {% if a < (coords | length) and b < (coords | length) %}

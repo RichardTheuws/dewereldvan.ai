@@ -337,8 +337,15 @@
   aspect-ratio: 16 / 9;
   max-width: 920px;
 }
+/* Weinig makers (<=4): een kortere, smallere box zodat de sterren 'm vullen en er
+   geen lege verticale ruimte onder de constellatie overblijft (compositie-fix). */
+.cosmic .home-constellation--sparse {
+  aspect-ratio: 5 / 2;
+  max-width: 760px;
+}
 @media (max-width: 640px) {
   .cosmic .home-constellation { aspect-ratio: 3 / 4; }
+  .cosmic .home-constellation--sparse { aspect-ratio: 1 / 1; }
 }
 .cosmic .home-constellation__links {
   position: absolute;
