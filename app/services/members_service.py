@@ -45,28 +45,28 @@ __all__ = [
 # Discipline (pivot Fase D) = de set werk-soorten die een maker TOONT — afgeleid uit
 # de ``kind`` van z'n werk-items (geen apart datamodel). Zo classificeert de showcase
 # de maker uit z'n eigen werk: een video → Video-AI, een workshop → Trainer, enz.
-# (slug, label, offering-kind). Volgorde = de chip-volgorde op /leden.
-DISCIPLINES: list[tuple[str, str, OfferingKind]] = [
-    ("bouwer", "Bouwers", OfferingKind.project),
-    ("video", "Video-AI", OfferingKind.video),
-    ("audio", "Audio-AI", OfferingKind.audio),
-    ("trainer", "Trainers", OfferingKind.workshop),
-    ("publicaties", "Publicaties", OfferingKind.writing),
+# (slug, filter-label (meervoud, voor de chiprij), kaart-label (enkelvoud, per maker),
+# offering-kind). Volgorde = de chip-/tag-volgorde.
+DISCIPLINES: list[tuple[str, str, str, OfferingKind]] = [
+    ("bouwer", "Bouwers", "Bouwer", OfferingKind.project),
+    ("video", "Video-AI", "Video-AI", OfferingKind.video),
+    ("audio", "Audio-AI", "Audio-AI", OfferingKind.audio),
+    ("trainer", "Trainers", "Trainer", OfferingKind.workshop),
+    ("publicaties", "Publicaties", "Publicatie", OfferingKind.writing),
 ]
-_DISCIPLINE_KIND: dict[str, OfferingKind] = {s: k for s, _l, k in DISCIPLINES}
-_DISCIPLINE_LABEL: dict[OfferingKind, str] = {k: _l for _s, _l, k in DISCIPLINES}
+_DISCIPLINE_KIND: dict[str, OfferingKind] = {s: k for s, _fl, _cl, k in DISCIPLINES}
 
 
 def discipline_options() -> list[tuple[str, str]]:
-    """(slug, label) voor de filter-chips op /leden."""
-    return [(s, label) for s, label, _k in DISCIPLINES]
+    """(slug, meervoud-label) voor de filter-chips op /leden."""
+    return [(s, flabel) for s, flabel, _cl, _k in DISCIPLINES]
 
 
 def derive_disciplines(profile: Profile) -> list[str]:
-    """De discipline-labels die uit de werk-items van dit profiel blijken (in vaste
-    volgorde; puur in-memory op de al-geladen ``offerings`` → geen query)."""
+    """De discipline-labels (enkelvoud) die uit de werk-items van dit profiel blijken
+    (vaste volgorde; puur in-memory op de al-geladen ``offerings`` → geen query)."""
     kinds = {o.kind for o in profile.offerings}
-    return [label for _s, label, k in DISCIPLINES if k in kinds]
+    return [clabel for _s, _fl, clabel, k in DISCIPLINES if k in kinds]
 
 # "Pas verschenen" in de constellatie: een maker waarvan de eigenaar (Member) korter
 # dan dit aantal dagen geleden is aangemaakt. Zelfde created_at-bron als de

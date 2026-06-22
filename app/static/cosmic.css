@@ -495,7 +495,6 @@
 }
 .cosmic .disc-chip input { position: absolute; opacity: 0; width: 0; height: 0; }
 .cosmic .disc-chip:hover { color: var(--text); border-color: rgba(63, 210, 255, 0.45); }
-.cosmic .disc-chip.is-active,
 .cosmic .disc-chip:has(input:checked) {
   color: #04040e;
   background: var(--cyan, #3fd2ff);

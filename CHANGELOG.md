@@ -3,6 +3,12 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.77.1] - 2026-06-22
+### Fixed — Discipline-chips: zuivere actief-staat + enkelvoud op de kaart
+- De actieve filter-chip wordt nu puur door `:has(input:checked)` gestuurd (de `.is-active`-class werd stale na
+  een htmx-grid-swap → kon twee chips highlighten). De server zet `checked` op de juiste radio voor deep-links.
+- Per-maker discipline-tags zijn enkelvoud ("Bouwer"/"Trainer"/"Publicatie") i.p.v. de meervoud-filterlabels.
+
 ## [0.77.0] - 2026-06-22
 ### Added — Pivot Fase D: discipline-filter op de ledengids (de multidisciplinaire showcase wordt doorzoekbaar)
 - De gids is nu te filteren op **discipline** (Bouwers · Video-AI · Audio-AI · Trainers · Publicaties) — een

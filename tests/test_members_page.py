@@ -145,8 +145,8 @@ def test_derive_disciplines_from_offering_kinds(db, make_member, make_profile, m
     db.flush()
 
     labels = members_service.derive_disciplines(p)
-    # Vaste volgorde (DISCIPLINES): Video-AI vóór Trainers.
-    assert labels == ["Video-AI", "Trainers"]
+    # Vaste volgorde (DISCIPLINES); kaart-labels zijn enkelvoud (Video-AI vóór Trainer).
+    assert labels == ["Video-AI", "Trainer"]
 
 
 def test_discipline_options_shape():
