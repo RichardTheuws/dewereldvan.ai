@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.88.2] - 2026-06-23
+### Fixed — Onzichtbare kosmische pagina's: reveal-director ontbrak
+- `/profiel/verbind` (connect) en de AVG-afscheidspagina (`profiles/deleted.html`) renderden met JS aan een
+  **lege pagina**: ze gebruiken `data-reveal` (start op `opacity:0`) maar includen `ai/_cosmic_canvas.html` níét —
+  de director die `body.ready` zet. Zonder director blijft alles onzichtbaar (de `<noscript>`-fallback dekt
+  alleen JS-úít). Beide pagina's includen de director nu, conform de 28 andere kosmische pagina's. Ze krijgen
+  meteen ook de levende sterrenhemel die ze misten.
+- Regressie-test `tests/test_reveal_director.py`: scant álle templates en dwingt af dat elke volledige cosmic-
+  pagina met `data-reveal` de reveal-director include — zodat dit type "blanco pagina" niet meer stil terugkeert.
+
 ## [0.88.1] - 2026-06-23
 ### Changed — Aankondigings-mail: nette aanhef + expliciete privacy-geruststelling
 - De mail legt nu expliciet uit dat **je profiel pas zichtbaar wordt als je het zélf op openbaar zet** (12 van
