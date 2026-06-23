@@ -684,6 +684,100 @@ def test_account_deletion_wipes_attendance(SessionTest, seed):
 
 
 # --------------------------------------------------------------------------- #
+# Admin — agenda-shortlist (AI-gecureerde event-kandidaten, Increment 3)       #
+# --------------------------------------------------------------------------- #
+def _pending_event(s, title="Twijfel-event"):
+    from app.services import post_service
+
+    return post_service.create_curated_event(
+        s, title=title, url=f"https://example.com/{title}", confidence=70, live=False,
+    )
+
+
+def test_admin_event_shortlist_lists_pending(make_client, seed, SessionTest):
+    """De shortlist toont pending event-kandidaten; live events horen er niet bij."""
+    from app.services import post_service
+
+    s = SessionTest()
+    _pending_event(s, "Wacht-op-keur")
+    post_service.create_curated_event(
+        s, title="Al-live", url="https://example.com/live", confidence=95, live=True,
+    )
+    s.commit()
+    s.close()
+
+    client = make_client(seed["admin"])
+    resp = client.get("/admin/agenda")
+    assert resp.status_code == 200
+    assert "Wacht-op-keur" in resp.text
+    assert "Al-live" not in resp.text
+
+
+def test_admin_event_approve_makes_live(make_client, seed, SessionTest):
+    from app.models import Post, PostReviewState
+
+    s = SessionTest()
+    post = _pending_event(s)
+    s.commit()
+    pid = post.id
+    s.close()
+
+    client = make_client(seed["admin"])
+    token = csrf_token(client, "/admin/agenda")
+    resp = client.post(f"/admin/agenda/{pid}/keur-goed", headers={"X-CSRF-Token": token})
+    assert resp.status_code == 200
+    s = SessionTest()
+    assert s.get(Post, pid).review_state == PostReviewState.live
+    s.close()
+
+
+def test_admin_event_reject(make_client, seed, SessionTest):
+    from app.models import Post, PostReviewState
+
+    s = SessionTest()
+    post = _pending_event(s)
+    s.commit()
+    pid = post.id
+    s.close()
+
+    client = make_client(seed["admin"])
+    token = csrf_token(client, "/admin/agenda")
+    resp = client.post(f"/admin/agenda/{pid}/weiger", headers={"X-CSRF-Token": token})
+    assert resp.status_code == 200
+    s = SessionTest()
+    assert s.get(Post, pid).review_state == PostReviewState.rejected
+    s.close()
+
+
+def test_non_admin_cannot_see_event_shortlist(make_client, seed):
+    """De agenda-shortlist is admin-only."""
+    client = make_client(seed["member"])
+    resp = client.get("/admin/agenda", follow_redirects=False)
+    assert resp.status_code in (302, 303, 403)
+
+
+def test_curated_live_event_appears_on_public_agenda(SessionTest, seed):
+    """Een auto-goedgekeurd (live) AI-event staat publiek op de agenda; een pending
+    kandidaat niet (de live-poort in _visible)."""
+    from app.security import utcnow
+    from app.services import post_service
+
+    s = SessionTest()
+    post_service.create_curated_event(
+        s, title="Auto-live event", url="https://example.com/auto", confidence=95,
+        live=True, next_at=utcnow() + timedelta(days=5), location="Online",
+    )
+    post_service.create_curated_event(
+        s, title="Pending event", url="https://example.com/pend", confidence=70, live=False,
+    )
+    s.commit()
+    titles = [e.title for e in post_service.list_events(s)]
+    assert "Auto-live event" in titles
+    assert "Pending event" not in titles
+    s.close()
+
+
+# --------------------------------------------------------------------------- #
 # Helpers — relatieve_tijd / nl_datum                                         #
 # --------------------------------------------------------------------------- #
 def test_relatieve_tijd_buckets():

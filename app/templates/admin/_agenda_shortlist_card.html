@@ -1,0 +1,47 @@
+{# Eén AI-event-kandidaat in de admin-shortlist (kaart-vorm; swap-doel). Na
+   goedkeuren/weigeren swapt de server deze kaart in place (hx-swap="outerHTML"):
+   de knoppen verdwijnen, ``message`` toont de uitkomst. Spiegelt
+   _news_shortlist_card.html. Top-level element = <div> (matcht de swap). #}
+{% set pending = post.review_state and post.review_state.value == "pending_review" %}
+{% set cat = post.category.value if post.category else "" %}
+{% set freq = post.frequency.value if post.frequency else "" %}
+<div id="event-cand-{{ post.id }}" class="card"
+     style="display:flex;flex-direction:column;gap:10px;padding:16px 18px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="min-width:0">
+      <p style="margin:0;color:var(--text);font-weight:500">
+        <a class="text-link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">{{ post.title }}</a>
+      </p>
+      <div style="margin-top:6px;display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;color:var(--muted);font-size:0.9rem">
+        {% if cat %}<span class="cat-badge cat-badge--{{ cat }}">{{ cat }}</span>{% endif %}
+        {% if freq %}<span class="freq-badge freq-badge--{{ freq }}"><span aria-hidden="true">✦</span> {{ freq }}</span>{% endif %}
+        {% if post.next_at %}<span>📅 {{ post.next_at | nl_datum }}</span>{% else %}<span style="color:#ffb3b3">⚠ geen datum</span>{% endif %}
+        {% if post.location %}<span>📍 {{ post.location }}</span>{% else %}<span style="color:#ffb3b3">⚠ geen locatie</span>{% endif %}
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="chip chip--pending">confidence {{ post.ai_relevance if post.ai_relevance is not none else "—" }}</span>
+        <span class="chip chip--muted">gevonden door dewereldvan</span>
+        {% if post.source %}<span class="muted" style="font-size:0.85rem">{{ post.source }}</span>{% endif %}
+        {% if message %}<span class="muted" style="font-size:0.85rem">{{ message }}</span>{% endif %}
+      </div>
+    </div>
+    {% if pending %}
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <button class="btn btn--sm"
+              hx-post="/admin/agenda/{{ post.id }}/keur-goed"
+              hx-target="#event-cand-{{ post.id }}" hx-swap="outerHTML">
+        Goedkeuren
+      </button>
+      <button class="btn btn--ghost btn--sm"
+              hx-post="/admin/agenda/{{ post.id }}/weiger"
+              hx-target="#event-cand-{{ post.id }}" hx-swap="outerHTML"
+              hx-confirm="Deze kandidaat weigeren?">
+        Weigeren
+      </button>
+    </div>
+    {% endif %}
+  </div>
+  {% if post.description %}
+  <p class="muted" style="margin:0;font-size:0.92rem">{{ post.description }}</p>
+  {% endif %}
+</div>

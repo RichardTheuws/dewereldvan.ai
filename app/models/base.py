@@ -74,6 +74,11 @@ class AuditAction(str, enum.Enum):
     # weigert (→ rejected). VARCHAR-enum → additieve waarden, geen migratie nodig.
     news_approved = "news_approved"
     news_rejected = "news_rejected"
+    # Agenda-curatie (Increment 3): de mens-in-de-lus-poort op AI-gecureerde
+    # event-kandidaten die de auto-keur-drempel NIET haalden. VARCHAR-enum →
+    # additieve waarden, geen migratie nodig.
+    event_approved = "event_approved"
+    event_rejected = "event_rejected"
     # Tool-review-note-moderatie (doc 03 §4.3, Fase C): admin verbergt een
     # mens-naast-AI-aanvulling. VARCHAR-enum → additieve waarde, geen migratie nodig.
     tool_note_hidden = "tool_note_hidden"

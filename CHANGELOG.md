@@ -3,6 +3,28 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.85.0] - 2026-06-23
+### Added — AI-agenda-curatie: vult de agenda met ECHTE events + keurt het zekere zelf goed
+- De wekelijkse curatie (maandag, M4-cron) zoekt het web af naar aankomende **NL/BE AI-events & meetups** en
+  plaatst ze: **zeker** (hoge confidence + gegronde datum + locatie) → direct **live** op de agenda; **twijfel**
+  → `pending_review` in de nieuwe admin-queue `/admin/agenda`. In lijn met je keuze "AI cureert én keurt zelf
+  goed wat ze zeker kan keuren".
+- **Harde grondingsregel**: events komen UITSLUITEND uit echte event-pagina's (web_search + web_fetch op
+  Opus 4.8), nooit uit model-geheugen — geen verzonnen datum/locatie. Bron-strategie: **web-search** (geen
+  hand-onderhouden seed-lijst). `event_curation_service` spiegelt het bewezen `news_curation_service`-SDK-patroon
+  exact (pause-loop, refusal-check, eigen `record_event_item`-tool, geen `messages.parse`).
+- **Auto-keur-poort** (`auto_approvable`): confidence ≥ 85 én datum én locatie → live; anders pending.
+  KILL-fallback: AI uit of een fout → lege lijst → niets gepubliceerd (nooit silent-publish bij twijfel).
+- **Idempotent**: dedup op URL (`create_curated_event`) — een herhaalde run maakt geen dubbele events.
+- **Admin-surface**: `/admin/agenda` (shortlist van twijfel-kandidaten) + één-klik goedkeuren/weigeren
+  (htmx-swap, AuditLog `event_approved`/`event_rejected` — additieve enum-waarden, geen migratie).
+- **Seintje**: na de run een best-effort Telegram-push naar de admins (hoeveel live, hoeveel wachten).
+- **Cron**: `curate_events` toegevoegd aan `nightly-jobs.sh`, wekelijks op **maandag** (los van de nieuws-
+  curatie op zondag zodat de twee AI-tool-loops elkaar niet kruisen).
+- **Tests**: gegronde mapping, grondings-/drempel-poorten, `_parse_dt`, `auto_approvable`, live-vs-pending +
+  dedup persist, pending-sortering, admin approve/reject + admin-only-gate, en dat een live AI-event publiek
+  verschijnt maar een pending niet. 1037 groen.
+
 ## [0.84.0] - 2026-06-22
 ### Added — RSVP op de agenda (aanwezig / organiseert / spreekt) — de agenda wordt sociaal
 - Elk lid kan zich per event aanmelden met één rol: **Ik ga / Ik organiseer / Ik spreek hier** (wederzijds

@@ -54,4 +54,15 @@ else
   echo "--- $(ts) curate_news overgeslagen (alleen zondag) ---"
 fi
 
+# Wekelijkse gate: agenda-curatie draait ALLEEN op maandag (date +%u == 1), los
+# van de nieuws-curatie (zondag) zodat de twee AI-tool-loops elkaar niet kruisen.
+# AI keurt het zekere automatisch goed (live); twijfel → /admin/agenda. Best-effort.
+if [ "$(date +%u)" = "1" ]; then
+  echo "--- $(ts) curate_events (wekelijks, maandag) ---"
+  "$DOCKER" compose exec -T web python -m app.jobs.curate_events || \
+    echo "WAARSCHUWING: curate_events eindigde met een fout"
+else
+  echo "--- $(ts) curate_events overgeslagen (alleen maandag) ---"
+fi
+
 echo "=== $(ts) nightly-jobs done ==="

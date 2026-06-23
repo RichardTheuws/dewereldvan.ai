@@ -41,13 +41,17 @@ __all__ = [
     "create_event",
     "create_news",
     "create_curated_news",
+    "create_curated_event",
     "list_events",
     "category_options",
     "list_news",
     "list_briefing",
     "list_pending_review",
+    "list_pending_events",
     "approve_news",
     "reject_news",
+    "approve_event",
+    "reject_event",
     "get_visible",
     "set_hidden",
     "iso_week_anchor",
@@ -365,6 +369,92 @@ def create_curated_news(
     return post
 
 
+def _coerce_category(value: object) -> EventCategory:
+    try:
+        return EventCategory((value or "").strip()) if not isinstance(value, EventCategory) else value
+    except ValueError:
+        return EventCategory.meetup
+
+
+def _coerce_frequency(value: object) -> EventFrequency:
+    try:
+        return EventFrequency((value or "").strip()) if not isinstance(value, EventFrequency) else value
+    except ValueError:
+        return EventFrequency.eenmalig
+
+
+def create_curated_event(
+    db: Session,
+    *,
+    title: str,
+    url: str,
+    category: object = EventCategory.meetup,
+    frequency: object = EventFrequency.eenmalig,
+    confidence: int | None = None,
+    live: bool = False,
+    next_at: datetime | None = None,
+    location: str | None = None,
+    cadence_note: str | None = None,
+    description: str | None = None,
+    source: str | None = None,
+) -> Post:
+    """Maak één AI-gecureerd agenda-event (door de wekelijkse curatie-job).
+
+    AUTO-KEUR-POORT: ``live=True`` (alleen als de job het zeker genoeg vond —
+    ``event_curation_service.auto_approvable``) → direct publiek. Anders
+    ``pending_review`` (admin-queue, twijfel). NOOIT silent-publish bij twijfel.
+
+    Idempotent op ``url``: een herhaalde run (zelfde event-pagina) maakt GEEN
+    duplicaat — het bestaande event (in welke staat dan ook) wordt teruggegeven."""
+    clean_url = (url or "").strip()[:500]
+    if clean_url:
+        existing = db.scalar(
+            select(Post).where(Post.kind == PostKind.event, Post.url == clean_url)
+        )
+        if existing is not None:
+            return existing  # dedup: geen dubbel event
+
+    post = Post(
+        added_by_id=None,
+        kind=PostKind.event,
+        title=(title or "").strip()[:200],
+        url=clean_url or None,
+        description=(description or None),
+        category=_coerce_category(category),
+        frequency=_coerce_frequency(frequency),
+        next_at=next_at,
+        location=(location or None),
+        cadence_note=(cadence_note or None),
+        source=(source or None),
+        review_state=PostReviewState.live if live else PostReviewState.pending_review,
+        source_kind=PostSourceKind.ai_curated,
+        ai_relevance=confidence,
+    )
+    db.add(post)
+    db.flush()
+    return post
+
+
+def list_pending_events(db: Session) -> list[Post]:
+    """De admin-shortlist voor de agenda: AI-gecureerde event-kandidaten die de
+    auto-keur-drempel niet haalden (``review_state == pending_review``). Hoogste
+    confidence eerst, dan aankomende datum, dan nieuwste."""
+    stmt = select(Post).where(
+        Post.kind == PostKind.event,
+        Post.review_state == PostReviewState.pending_review,
+    )
+    items = list(db.scalars(stmt).all())
+    return sorted(
+        items,
+        key=lambda p: (
+            -(p.ai_relevance or 0),
+            p.next_at or datetime.max,
+            _neg_dt(p.created_at),
+            -p.id,
+        ),
+    )
+
+
 def approve_news(db: Session, post: Post, *, actor: Member | None = None) -> Post:
     """Keur een AI-kandidaat goed → ``live`` (publiek zichtbaar) + AuditLog.
     Spiegelt ``set_hidden``/``admin_hide``: de transitie is de enige plek waar een
@@ -392,6 +482,39 @@ def reject_news(db: Session, post: Post, *, actor: Member | None = None) -> Post
             actor_member_id=actor.id if actor is not None else None,
             target_member_id=post.added_by_id,
             detail=f"post#{post.id} (nieuws) rejected",
+        )
+    )
+    db.flush()
+    return post
+
+
+def approve_event(db: Session, post: Post, *, actor: Member | None = None) -> Post:
+    """Keur een AI-event-kandidaat goed → ``live`` (publiek op de agenda) +
+    AuditLog. Spiegelt ``approve_news`` (de enige plek waar een twijfel-voorstel
+    publiek wordt)."""
+    post.review_state = PostReviewState.live
+    db.add(
+        AuditLog(
+            action=AuditAction.event_approved,
+            actor_member_id=actor.id if actor is not None else None,
+            target_member_id=post.added_by_id,
+            detail=f"post#{post.id} (event) approved -> live",
+        )
+    )
+    db.flush()
+    return post
+
+
+def reject_event(db: Session, post: Post, *, actor: Member | None = None) -> Post:
+    """Weiger een AI-event-kandidaat → ``rejected`` (blijft uit de agenda) +
+    AuditLog. We verwijderen niet (dedup-context + meet de goedkeur-ratio)."""
+    post.review_state = PostReviewState.rejected
+    db.add(
+        AuditLog(
+            action=AuditAction.event_rejected,
+            actor_member_id=actor.id if actor is not None else None,
+            target_member_id=post.added_by_id,
+            detail=f"post#{post.id} (event) rejected",
         )
     )
     db.flush()

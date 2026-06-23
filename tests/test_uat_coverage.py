@@ -103,6 +103,7 @@ ADMIN_ONLY = {
     "/admin/queue",
     "/admin/feedback",
     "/admin/nieuws",
+    "/admin/agenda",
     "/admin/roadmap",
     "/admin/uitnodiging",
 }

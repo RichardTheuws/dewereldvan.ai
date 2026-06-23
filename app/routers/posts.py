@@ -426,6 +426,66 @@ def admin_news_reject(
     return _shortlist_card(request, post, "Geweigerd.")
 
 
+# --------------------------------------------------------------------------- #
+# Admin — agenda-shortlist (AI-gecureerde event-kandidaten, twijfel)          #
+# --------------------------------------------------------------------------- #
+
+
+@router.get("/admin/agenda", response_class=HTMLResponse)
+def admin_event_shortlist(
+    request: Request,
+    admin: Member = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """De shortlist met AI-gecureerde event-kandidaten die de auto-keur-drempel
+    niet haalden (``pending_review``). Goedkeuren zet 'm live op de agenda."""
+    return _render(
+        request,
+        "admin/agenda_shortlist.html",
+        {"pending": post_service.list_pending_events(db)},
+    )
+
+
+def _event_shortlist_card(request: Request, post: Post, message: str) -> HTMLResponse:
+    return _render(
+        request, "admin/_agenda_shortlist_card.html", {"post": post, "message": message}
+    )
+
+
+@router.post("/admin/agenda/{post_id}/keur-goed", response_class=HTMLResponse)
+def admin_event_approve(
+    request: Request,
+    post_id: int,
+    admin: Member = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Keur een AI-event-kandidaat goed → ``live`` (publiek) + AuditLog; swap de rij."""
+    post = db.get(Post, post_id)
+    if post is None:
+        return HTMLResponse("", status_code=status.HTTP_404_NOT_FOUND)
+    post_service.approve_event(db, post, actor=admin)
+    db.commit()
+    db.refresh(post)
+    return _event_shortlist_card(request, post, "Goedgekeurd — staat nu op de agenda.")
+
+
+@router.post("/admin/agenda/{post_id}/weiger", response_class=HTMLResponse)
+def admin_event_reject(
+    request: Request,
+    post_id: int,
+    admin: Member = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Weiger een AI-event-kandidaat → ``rejected`` (blijft van de agenda) + AuditLog."""
+    post = db.get(Post, post_id)
+    if post is None:
+        return HTMLResponse("", status_code=status.HTTP_404_NOT_FOUND)
+    post_service.reject_event(db, post, actor=admin)
+    db.commit()
+    db.refresh(post)
+    return _event_shortlist_card(request, post, "Geweigerd.")
+
+
 def _first_error(exc: Exception, fallback: str) -> str:
     """Haal een leesbare reden uit een Pydantic-ValidationError, of val terug."""
     try:
