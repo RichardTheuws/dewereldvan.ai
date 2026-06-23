@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.88.1] - 2026-06-23
+### Changed — Aankondigings-mail: nette aanhef + expliciete privacy-geruststelling
+- De mail legt nu expliciet uit dat **je profiel pas zichtbaar wordt als je het zélf op openbaar zet** (12 van
+  de 15 leden hebben nog geen publiek profiel — dit verlaagt de drempel en respecteert de privacy).
+- De aanhef gebruikt de **voornaam** waar het een echte naam is, en valt netjes terug op een neutrale aanhef
+  ("Er is veel nieuw.") bij placeholder-/e-mailprefix-namen (geen "Er is veel nieuw, herberttenhave.").
+
 ## [0.88.0] - 2026-06-23
 ### Added — Eenmalige features-aankondigings-mail naar de leden (dry-run-veilig)
 - Kosmische HTML-mail (`emails/announcement.html` + `render_announcement`) die de nieuwe functies opsomt en

@@ -4,7 +4,7 @@
 {% extends "_base.html" %}
 {% block subject %}Er is veel nieuw op dewereldvan.ai{% endblock %}
 {% block preheader %}Je profiel uit één link, een agent die voor je zoekt, een echte agenda — kom je het proberen?{% endblock %}
-{% block heading %}Er is veel nieuw, {{ name }}.{% endblock %}
+{% block heading %}Er is veel nieuw{% if name %}, {{ name }}{% endif %}.{% endblock %}
 {% block body %}
   <p style="margin:0 0 16px 0;">
     De afgelopen tijd is dewereldvan.ai flink gegroeid. De kern: je onderhoudt één

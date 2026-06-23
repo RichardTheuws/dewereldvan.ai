@@ -243,8 +243,9 @@ def render_announcement(
         f"<strong style='color:#eef0ff;'>{escape(title)}</strong> — {escape(text)}</p>"
         for icon, title, text in ANNOUNCEMENT_FEATURES
     )
+    _greet = f"Er is veel nieuw, {escape(name)}." if name else "Er is veel nieuw."
     fallback = _inline_shell(
-        heading=f"Er is veel nieuw, {escape(name)}.",
+        heading=_greet,
         body_html=(
             "<p style='margin:0 0 14px 0;'>Je onderhoudt één profiel, een agent doet "
             "het werk. Dit kun je nu:</p>" + rows +

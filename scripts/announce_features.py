@@ -32,6 +32,24 @@ logger = logging.getLogger("announce_features")
 
 SUBJECT = "Er is veel nieuw op dewereldvan.ai"
 
+# Tokens die geen echte aanhef zijn (placeholder-namen) → neutrale aanhef.
+_DENY_NAME = {"gebruiker", "onbekend", "user", "naam", "lid", "test"}
+
+
+def _greeting_name(raw_name: str) -> str:
+    """De voornaam voor de aanhef, of '' (→ neutrale 'Er is veel nieuw.').
+
+    Gebruikt alleen een eerste token dat eruitziet als een échte naam (hoofdletter,
+    alfabetisch, geen placeholder). Zo voorkomen we 'Er is veel nieuw, herberttenhave.'
+    of '…, Gebruiker Onbekend.' — bij twijfel een nette neutrale aanhef."""
+    first = (raw_name or "").strip().split()[:1]
+    if not first:
+        return ""
+    token = first[0]
+    if token[:1].isupper() and token.replace("-", "").isalpha() and token.lower() not in _DENY_NAME:
+        return token
+    return ""
+
 
 def _urls() -> dict[str, str]:
     base = settings.base_url.rstrip("/")
@@ -46,8 +64,9 @@ def _urls() -> dict[str, str]:
 
 def _text_body(name: str, urls: dict[str, str]) -> str:
     """Platte-tekst-variant (zelfde inhoud als de HTML — sommige clients tonen deze)."""
+    greet = f"Er is veel nieuw, {name}." if name else "Er is veel nieuw."
     lines = [
-        f"Er is veel nieuw, {name}.",
+        greet,
         "",
         "Je onderhoudt één profiel, een agent doet het werk. Dit kun je nu:",
         "",
@@ -95,20 +114,21 @@ def main() -> int:
         logger.info("  - %s <%s>", m.name, m.email)
 
     if not args.send:
-        sample = members[0].name if members else "Naam"
-        logger.info("\n--- DRY-RUN — voorbeeld tekst-body (aanhef '%s') ---\n%s",
-                    sample, _text_body(sample, urls))
+        sample = _greeting_name(members[0].name) if members else ""
+        logger.info("\n--- DRY-RUN — voorbeeld tekst-body (aanhef: '%s') ---\n%s",
+                    sample or "(neutraal)", _text_body(sample, urls))
         logger.info("\nDRY-RUN: er is NIETS verstuurd. Draai met --send om te versturen.")
         return 0
 
     sender = get_email_sender()
     sent = failed = 0
     for m in members:
+        greet = _greeting_name(m.name)
         msg = EmailMessage(
             to=m.email,
             subject=SUBJECT,
-            text_body=_text_body(m.name, urls),
-            html_body=render_announcement(m.name, **urls),
+            text_body=_text_body(greet, urls),
+            html_body=render_announcement(greet, **urls),
         )
         try:
             sender.send(msg)
