@@ -1,5 +1,14 @@
 # Plan — Agenda: categorieën + RSVP + AI-curatie (execution-ready)
 
+> ✅ **VOLLEDIG UITGEVOERD + LIVE (2026-06-23)** — alle drie increments staan op productie:
+> - Increment 1 (categorieën: badge + filterchips + AI-draft) — **v0.83.0**
+> - Increment 2 (RSVP: aanwezig/organiseert/spreekt + graaf-knoop-namen) — **v0.84.0**
+> - Increment 3 (AI-curatie via web-search, auto-keur ≥85 + datum + locatie → live; twijfel → `/admin/agenda`;
+>   wekelijks maandag-cron) — **v0.85.0**. Bron-keuze: **web-search** (geen seed-lijst).
+> Eerste supervised prod-run: 5 echte NL AI-conferenties gevonden, 3 auto-live, 2 pending. 1037 tests groen.
+> De rest van dit bestand is de oorspronkelijke spec (referentie).
+
+
 > **Doel van dit bestand**: het volgende increment zó vastleggen dat de volgende sessie
 > **direct kan bouwen** (Gouden Regel #9), zonder opnieuw te verkennen. Aangemaakt aan het
 > eind van de sessie van 2026-06-22 (v0.82.0). Alle paden/patronen hieronder zijn deze
