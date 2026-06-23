@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.87.0] - 2026-06-23
+### Changed — Agenda-curatie vindt nu óók lokale, terugkerende meetups (slimmer)
+- De curatie zocht vooral grote conferenties. Nu zoekt ze **bewust breed** naar lokale, terugkerende AI-meetups:
+  Meetup.com-groepen per NL/BE-stad, bekende community-reeksen (Aimelo, PyData-chapters, GenAI/LLM-meetups,
+  AI Tinkerers, …), en reeksen met een vaste cadans. De grondingsregel blijft hard (alleen uit echte pagina's).
+- **Terugkerende meetups gaan nu óók automatisch live** wanneer ze zeker zijn: de auto-keur-poort accepteert
+  naast een concrete datum ook een **gegronde cadans** (terugkerende frequentie + `cadence_note` uit de pagina)
+  + locatie + hoge confidence. Zo belandden lokale meetups niet langer onnodig in de admin-queue.
+- **Tests**: terugkerende meetup mét cadans + locatie → auto-live; zonder cadans (ongegrond) of met frequentie
+  "eenmalig" → queue. 1040 groen.
+
 ## [0.86.0] - 2026-06-23
 ### Changed — Roadmap als écht cosmisch kanban + homepage-waardepropositie + agenda-approvals zichtbaar
 - **Agenda-approvals zichtbaar**: een admin ziet nu op `/agenda` een banner ("N door de agent gevonden

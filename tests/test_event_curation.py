@@ -62,10 +62,28 @@ def test_auto_approvable_rules():
     assert ec.auto_approvable(zeker) is True
     # te lage confidence
     assert ec.auto_approvable(ec.EventCandidate(**base, confidence=70, next_at=datetime(2026, 7, 1), location="Almelo")) is False
-    # geen datum
+    # eenmalig zonder datum → niet auto (geen tijd-anker)
     assert ec.auto_approvable(ec.EventCandidate(**base, confidence=95, next_at=None, location="Almelo")) is False
     # geen locatie
     assert ec.auto_approvable(ec.EventCandidate(**base, confidence=95, next_at=datetime(2026, 7, 1), location=None)) is False
+
+
+def test_auto_approvable_recurring_meetup_without_date():
+    """Een terugkerende meetup met gegronde cadans + locatie mag auto-live, óók zonder
+    losse datum (precies wat lokale meetups deblokkeert)."""
+    rec = dict(title="Aimelo", url="https://aimelo.nl", category="meetup")
+    # wekelijks + cadens + locatie + hoge confidence → auto
+    assert ec.auto_approvable(ec.EventCandidate(
+        **rec, frequency="wekelijks", cadence_note="elke woensdag 18:00",
+        confidence=90, next_at=None, location="Almelo")) is True
+    # terugkerend maar GEEN cadans (ongegrond) → naar de queue
+    assert ec.auto_approvable(ec.EventCandidate(
+        **rec, frequency="wekelijks", cadence_note=None,
+        confidence=90, next_at=None, location="Almelo")) is False
+    # cadens maar frequentie eenmalig → geen geldige terugkeer → queue
+    assert ec.auto_approvable(ec.EventCandidate(
+        **rec, frequency="eenmalig", cadence_note="ooit",
+        confidence=90, next_at=None, location="Almelo")) is False
 
 
 # --------------------------------------------------------------------------- #
