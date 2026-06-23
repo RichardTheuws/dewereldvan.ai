@@ -95,27 +95,76 @@
         {% endif %}
       </section>
 
-      {# Slim secundair: levende deuren naar de community (voor leden gelabeld). #}
+      {# Waarom een profiel + wat er nú al kan. De belofte (noordster): één profiel
+         onderhouden, het netwerk werkt voor je terwijl je weg bent. #}
+      <section class="mt-20" id="wat-kan">
+        <div class="section-title" data-reveal style="--d:160ms">Waarom je hier een profiel maakt</div>
+        <p class="lede mt-3" style="max-width:52ch" data-reveal style="--d:220ms">
+          Je onderhoudt één profiel. Daarna doet een agent het werk: hij brengt jou
+          kansen — gegrond, klein, op het juiste moment. De op-last is bijna nul.
+        </p>
+        <div class="feature-grid mt-8">
+          <div class="feature-card" data-reveal="drift" style="--d:200ms">
+            <span class="feature-card__spark" aria-hidden="true">✦</span>
+            <div class="feature-card__title">Profiel uit één link</div>
+            <div class="feature-card__desc">Plak een link — de agent leest 'm en zet je profiel klaar. In minuten, geen formulier.</div>
+          </div>
+          <div class="feature-card" data-reveal="drift" style="--d:260ms">
+            <span class="feature-card__spark" aria-hidden="true">✦</span>
+            <div class="feature-card__title">Een agent die voor je zoekt</div>
+            <div class="feature-card__desc">Matches met wie jij nodig hebt, makers in jouw domein, intro-voorstellen — jij beslist, één klik wist alles.</div>
+          </div>
+          <div class="feature-card" data-reveal="drift" style="--d:320ms">
+            <span class="feature-card__spark" aria-hidden="true">✦</span>
+            <div class="feature-card__title">In je eigen tool</div>
+            <div class="feature-card__desc">Werk met het netwerk vanuit Claude Code of Cursor via MCP. Geen context-switch.</div>
+          </div>
+          <div class="feature-card" data-reveal="drift" style="--d:380ms">
+            <span class="feature-card__spark" aria-hidden="true">✦</span>
+            <div class="feature-card__title">Agenda &amp; nieuws</div>
+            <div class="feature-card__desc">AI-meetups in NL/BE (meld je aan) en een wekelijkse briefing van wat ertoe doet.</div>
+          </div>
+        </div>
+      </section>
+
+      {# Wat komt eraan — de roadmap is publiek + levend. #}
+      <section class="mt-20" id="wat-komt">
+        <div class="section-title" data-reveal style="--d:160ms">Wat we nog van plan zijn</div>
+        <p class="lede mt-3" style="max-width:52ch" data-reveal style="--d:220ms">
+          We bouwen in de open. Zie wat er al staat, wat in aanbouw is en wat we
+          overwegen — en stuur mee.
+        </p>
+        <div class="mt-6 flex flex-wrap items-center gap-3" data-reveal style="--d:300ms">
+          <a class="btn btn--ghost" href="/roadmap">Bekijk de roadmap</a>
+          <a class="link" href="/ideeen">Opper een idee →</a>
+        </div>
+      </section>
+
+      {# Open project — meebouwen. #}
+      <section class="mt-20" id="meebouwen">
+        <div class="section-title" data-reveal style="--d:160ms">Een open project — bouw mee</div>
+        <p class="lede mt-3" style="max-width:54ch" data-reveal style="--d:220ms">
+          dewereldvan.ai is een open project. De code staat op GitHub, de roadmap is
+          openbaar, en de ideeën komen van de leden. Meebouwen — met code of met een
+          idee — is welkom.
+        </p>
+        <div class="mt-6 flex flex-wrap items-center gap-3" data-reveal style="--d:300ms">
+          <a class="btn btn--ghost" href="https://github.com/RichardTheuws/dewereldvan.ai" target="_blank" rel="noopener">Bekijk de code op GitHub ↗</a>
+          {% if not logged_in %}<a class="btn" href="/register">Word lid</a>{% endif %}
+        </div>
+      </section>
+
+      {% if logged_in %}
+      {# Snelle deur naar het eigen profiel (alleen voor ingelogde leden). #}
       <section class="mt-20">
         <div class="grid">
-          <a class="card" href="/ideeen" data-reveal="drift" style="--d:160ms">
-            <div class="card-label">Ideeën</div>
-            <div class="card-desc">Stel voor wat dit platform moet worden — en stem mee.</div>
-            {% if not logged_in %}<div class="home-gate__note">voor leden</div>{% endif %}
-          </a>
-          <a class="card" href="/roadmap" data-reveal="drift" style="--d:220ms">
-            <div class="card-label">Roadmap</div>
-            <div class="card-desc">Zie waar we mee bezig zijn en wat eraan komt.</div>
-            {% if not logged_in %}<div class="home-gate__note">voor leden</div>{% endif %}
-          </a>
-          {% if logged_in %}
-          <a class="card" href="/profiel/ai/bouwen" data-reveal="drift" style="--d:280ms">
+          <a class="card" href="/profiel/ai/bouwen" data-reveal="drift" style="--d:160ms">
             <div class="card-label">Jouw profiel</div>
             <div class="card-desc">Bouw of verfijn je profiel — wie je bent en waar je naar zoekt.</div>
           </a>
-          {% endif %}
         </div>
       </section>
+      {% endif %}
     </main>
 
     <footer class="c-head" style="border-top:1px solid var(--line);--d:880ms" data-reveal>

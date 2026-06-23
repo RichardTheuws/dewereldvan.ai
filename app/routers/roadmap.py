@@ -7,9 +7,9 @@ Routes (zie bouwcontract §3 E3):
 - POST ``/admin/roadmap/{id}/bewerken``   — update, swap rij.
 - POST ``/admin/roadmap/{id}/verwijderen``— delete, swap leeg.
 
-Auth: ``/roadmap`` is voorlopig ``require_member`` (login-gated, noindex; mag later
-publiek — dan dependency -> ``current_member`` + noindex conditioneel). Admin-CRUD
-``require_admin``. CSRF via ``hx-headers``.
+Auth: ``/roadmap`` is **publiek + indexeerbaar** — de levende roadmap is een
+transparant onderdeel van de waardepropositie (noordster: open, transparant; voedt
+de homepage "wat komt eraan"). Admin-CRUD ``require_admin``. CSRF via ``hx-headers``.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import require_admin, require_member
+from app.deps import current_member, require_admin
 from app.models import Member, RoadmapStatus
 from app.schemas.roadmap import RoadmapItemForm
 from app.services import roadmap_service
@@ -39,15 +39,22 @@ def _render(request: Request, name: str, ctx: dict | None = None, **kw) -> HTMLR
 @router.get("/roadmap", response_class=HTMLResponse)
 def index(
     request: Request,
-    member: Member = Depends(require_member),
+    member: Member | None = Depends(current_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
-    """De kosmische, levende roadmap — gegroepeerd per fase, op positie gesorteerd."""
-    grouped = roadmap_service.list_grouped(db)
+    """De kosmische, levende roadmap — een echt kanban op status (overwegen →
+    gepland → in aanbouw → gelanceerd), publiek leesbaar (ook anon, indexeerbaar)."""
+    columns = roadmap_service.list_by_status(db)
+    shipped = sum(len(items) for status, _label, items in columns if status.value == "gedaan")
     return _render(
         request,
         "roadmap/index.html",
-        {"grouped": grouped, "statuses": list(RoadmapStatus)},
+        {
+            "columns": columns,
+            "shipped_count": shipped,
+            "member": member,
+            "statuses": list(RoadmapStatus),
+        },
     )
 
 

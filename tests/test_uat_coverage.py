@@ -62,6 +62,8 @@ PUBLIC_INDEXABLE = {
     # Publieke community-content: anon mag lezen (toevoegen blijft login-gated).
     "/agenda",
     "/nieuws",
+    # Levende roadmap is publiek + indexeerbaar (transparantie = waardepropositie).
+    "/roadmap",
 }
 # Publiek bereikbaar (anon → 200) maar bewust noindex (auth + post-delete).
 PUBLIC_NOINDEX = {
@@ -81,7 +83,6 @@ PUBLIC_FRAGMENTS = {
 MEMBER_ONLY = {
     "/ideeen",
     "/ideeen/lijkt-op",
-    "/roadmap",
     "/welkom",
     "/profiel/voorbeeld",
     "/profiel/bewerken",

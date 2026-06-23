@@ -1,8 +1,9 @@
 """Tests for the roadmap (E3): zichtbaarheid, admin-CRUD, en promote->SET NULL.
 
 The headline guarantees:
-- ``/roadmap`` is login-gated (anon -> /login, approved member -> 200), items
-  grouped per phase and ordered by position.
+- ``/roadmap`` is **publiek** (anon -> 200, indexeerbaar), items als een echt
+  kanban gegroepeerd per **status** (overwegen → gepland → bezig → gedaan) en
+  binnen een kolom op positie geordend.
 - Admin CRUD mutates the DB; non-admins get 403.
 - After promoting an idea to a roadmap item, deleting that idea NULLs the item's
   ``linked_idea_id`` (FK ondelete=SET NULL) — the item survives.
@@ -85,11 +86,15 @@ def make_client(route_engine, SessionTest):
 # --------------------------------------------------------------------------- #
 # Zichtbaarheid                                                                #
 # --------------------------------------------------------------------------- #
-def test_roadmap_anonymous_redirects_to_login(make_client):
+def test_roadmap_public_for_anon(make_client):
+    """De roadmap is publiek + indexeerbaar (geen login-redirect, geen noindex)."""
     client = make_client(None)
     resp = client.get("/roadmap", follow_redirects=False)
-    assert resp.status_code in (302, 303)
-    assert resp.headers["location"].endswith("/login")
+    assert resp.status_code == 200
+    assert 'name="robots" content="noindex' not in resp.text
+    # De vier vaste kanban-kolommen staan er altijd (ook leeg).
+    for label in ("Overwegen", "Gepland", "In aanbouw", "Gelanceerd"):
+        assert label in resp.text
 
 
 def test_roadmap_member_ok(make_client, seed):
@@ -124,16 +129,16 @@ def test_roadmap_item_shows_grounded_idea_origin(make_client, seed, SessionTest)
     assert f"/ideeen#idea-{iid}" in body
 
 
-def test_roadmap_groups_by_phase_in_position_order(make_client, seed, SessionTest):
+def test_roadmap_groups_by_status_in_position_order(make_client, seed, SessionTest):
     from app.models import RoadmapItem, RoadmapStatus
 
     s = SessionTest()
     s.add_all(
         [
-            RoadmapItem(title="Nu-eerst", status=RoadmapStatus.bezig, phase="Nu", position=0),
-            RoadmapItem(title="Nu-tweede", status=RoadmapStatus.bezig, phase="Nu", position=1),
+            RoadmapItem(title="Bezig-eerst", status=RoadmapStatus.bezig, phase="Nu", position=0),
+            RoadmapItem(title="Bezig-tweede", status=RoadmapStatus.bezig, phase="Nu", position=1),
             RoadmapItem(
-                title="Later-item", status=RoadmapStatus.overwegen, phase="Later", position=5
+                title="Overweeg-item", status=RoadmapStatus.overwegen, phase="Later", position=5
             ),
         ]
     )
@@ -144,10 +149,32 @@ def test_roadmap_groups_by_phase_in_position_order(make_client, seed, SessionTes
     resp = client.get("/roadmap")
     assert resp.status_code == 200
     body = resp.text
-    for title in ("Nu-eerst", "Nu-tweede", "Later-item"):
+    for title in ("Bezig-eerst", "Bezig-tweede", "Overweeg-item"):
         assert title in body
-    # Within the "Nu" phase, position 0 renders before position 1.
-    assert body.index("Nu-eerst") < body.index("Nu-tweede")
+    # Binnen de "bezig"-kolom rendert positie 0 vóór positie 1.
+    assert body.index("Bezig-eerst") < body.index("Bezig-tweede")
+    # Kolom-leesvolgorde: overwegen-kolom staat vóór de bezig-kolom.
+    assert body.index("Overweeg-item") < body.index("Bezig-eerst")
+
+
+def test_list_by_status_always_four_columns(SessionTest):
+    """Een echt kanban: alle vier de status-kolommen komen terug, óók de lege,
+    in vaste leesvolgorde."""
+    from app.models import RoadmapItem, RoadmapStatus
+    from app.services import roadmap_service
+
+    s = SessionTest()
+    s.add(RoadmapItem(title="Eén ding", status=RoadmapStatus.gedaan, phase="X", position=0))
+    s.commit()
+    cols = roadmap_service.list_by_status(s)
+    assert [status.value for status, _label, _items in cols] == [
+        "overwegen", "gepland", "bezig", "gedaan",
+    ]
+    # gedaan-kolom heeft het item; de rest is leeg (maar wel aanwezig).
+    by_status = {status.value: items for status, _label, items in cols}
+    assert [i.title for i in by_status["gedaan"]] == ["Eén ding"]
+    assert by_status["overwegen"] == [] and by_status["gepland"] == []
+    s.close()
 
 
 # --------------------------------------------------------------------------- #

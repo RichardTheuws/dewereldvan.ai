@@ -59,16 +59,20 @@ def _agenda_context(
     db: Session, member: Member | None, *, category: str = ""
 ) -> dict:
     events = post_service.list_events(db, category=category)
+    is_admin = member is not None and _is_admin(member)
     return {
         "events": events,
         "member": member,
-        "is_admin": member is not None and _is_admin(member),
+        "is_admin": is_admin,
         "frequencies": list(EventFrequency),
         # Categorie-filterchips + form-select (slug, label).
         "category_options": post_service.category_options(),
         "category": category,
         # RSVP-stand per event-id (één query, geen N+1) — voedt de RSVP-strip.
         "rsvp": attendance_service.summaries(db, events, viewer=member),
+        # Admin-affordance: hoeveel AI-gecureerde event-kandidaten op goedkeuring
+        # wachten (alleen voor admins berekend; voedt de "te beoordelen"-banner).
+        "pending_events_count": len(post_service.list_pending_events(db)) if is_admin else 0,
     }
 
 

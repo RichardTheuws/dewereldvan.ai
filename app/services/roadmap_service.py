@@ -20,7 +20,18 @@ __all__ = [
     "get",
     "list_all",
     "list_grouped",
+    "list_by_status",
+    "STATUS_COLUMNS",
     "parse_status",
+]
+
+# De vier kanban-kolommen, in leesvolgorde (idee → gelanceerd). Het label is de
+# zichtbare kolomkop (mensentaal); de enum-waarde stuurt de kleur-gecodeerde dot.
+STATUS_COLUMNS: list[tuple[RoadmapStatus, str]] = [
+    (RoadmapStatus.overwegen, "Overwegen"),
+    (RoadmapStatus.gepland, "Gepland"),
+    (RoadmapStatus.bezig, "In aanbouw"),
+    (RoadmapStatus.gedaan, "Gelanceerd"),
 ]
 
 
@@ -77,6 +88,31 @@ def list_grouped(db: Session) -> list[tuple[str, list[RoadmapItem]]]:
             order.append(item.phase)
         buckets[item.phase].append(item)
     return [(phase, buckets[phase]) for phase in order]
+
+
+def list_by_status(
+    db: Session,
+) -> list[tuple[RoadmapStatus, str, list[RoadmapItem]]]:
+    """De vier vaste kanban-kolommen (op ``status``), in leesvolgorde — óók de lege
+    (een echt bord toont alle fasen). Binnen een kolom op ``position`` dan ``id``.
+    Eén query, gegronde herkomst eager-geladen (geen N+1)."""
+    items = list(
+        db.scalars(
+            select(RoadmapItem)
+            .options(
+                selectinload(RoadmapItem.linked_idea).options(
+                    joinedload(Idea.member), selectinload(Idea.votes)
+                )
+            )
+            .order_by(RoadmapItem.position.asc(), RoadmapItem.id.asc())
+        ).all()
+    )
+    buckets: dict[RoadmapStatus, list[RoadmapItem]] = {
+        status: [] for status, _ in STATUS_COLUMNS
+    }
+    for item in items:
+        buckets.setdefault(item.status, []).append(item)
+    return [(status, label, buckets[status]) for status, label in STATUS_COLUMNS]
 
 
 def _next_position(db: Session, phase: str) -> int:

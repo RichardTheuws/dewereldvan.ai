@@ -52,6 +52,20 @@
         {% endif %}
       </section>
 
+      {% if is_admin and pending_events_count and pending_events_count > 0 %}
+      <section class="mt-8" data-reveal style="--d:520ms">
+        <a class="admin-banner" href="/admin/agenda">
+          <span class="admin-banner__spark" aria-hidden="true">✦</span>
+          <span class="admin-banner__text">
+            <strong>{{ pending_events_count }}</strong> door de agent gevonden
+            event{{ 's' if pending_events_count != 1 else '' }}
+            wacht{{ 'en' if pending_events_count != 1 else '' }} op je beoordeling
+          </span>
+          <span class="admin-banner__cta">Beoordeel →</span>
+        </a>
+      </section>
+      {% endif %}
+
       <section class="mt-12" data-reveal style="--d:560ms">
         <div class="section-title mb-5">Wat er te doen is</div>
         {% include "agenda/_filters.html" %}

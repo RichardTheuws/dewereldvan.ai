@@ -1,27 +1,28 @@
-{# Roadmap-board (E3) — fasen als kolommen, items op positie. Lege roadmap krijgt
-   ook de kosmische behandeling. ``grouped`` = list[(phase, [items])]. #}
-{% if grouped %}
-<div class="roadmap-board">
-  {% for phase, items in grouped %}
-  <div class="roadmap-col" data-reveal style="--d:{{ 80 * loop.index0 }}ms">
+{# Roadmap-board — een echt kosmisch kanban: vier vaste status-kolommen (overwegen →
+   gepland → in aanbouw → gelanceerd), óók de lege. ``columns`` = list[(status, label,
+   [items])]. Elke kolom heeft een kleur-gecodeerde rand-gloed (status-dot-kleur). #}
+<div class="roadmap-board roadmap-board--kanban">
+  {% for status, label, items in columns %}
+  {% set st = status.value %}
+  <div class="roadmap-col roadmap-col--{{ st }}" data-reveal style="--d:{{ 90 * loop.index0 }}ms">
     <div class="roadmap-col__head">
-      <span class="roadmap-col__phase">{{ phase }}</span>
+      <span class="roadmap-col__phase">
+        <span class="roadmap-dot roadmap-dot--{{ st }}" aria-hidden="true"></span> {{ label }}
+      </span>
       <span class="roadmap-col__count">{{ items | length }}</span>
     </div>
     <div class="roadmap-col__items">
       {% for item in items %}
         {% include "roadmap/_item.html" %}
+      {% else %}
+      <div class="roadmap-col__empty">
+        {% if st == "gedaan" %}Nog niets gelanceerd hier.
+        {% elif st == "bezig" %}Nu even niets in aanbouw.
+        {% elif st == "gepland" %}Nog niets ingepland.
+        {% else %}Niets in overweging — <a class="text-link" href="/ideeen">opper iets</a>.{% endif %}
+      </div>
       {% endfor %}
     </div>
   </div>
   {% endfor %}
 </div>
-{% else %}
-<div class="constellation-empty" data-reveal>
-  <span class="constellation-empty__spark" aria-hidden="true">✦</span>
-  <p class="lede" style="max-width:46ch;margin:0 auto">
-    De kaart is nog leeg — maar er wordt al gedacht. Heb jij een richting in je
-    hoofd? Laat 'm achter in de <a class="text-link" href="/ideeen">ideeenbus</a>.
-  </p>
-</div>
-{% endif %}

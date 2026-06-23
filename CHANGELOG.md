@@ -3,6 +3,29 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.86.0] - 2026-06-23
+### Changed — Roadmap als écht cosmisch kanban + homepage-waardepropositie + agenda-approvals zichtbaar
+- **Agenda-approvals zichtbaar**: een admin ziet nu op `/agenda` een banner ("N door de agent gevonden
+  events wachten op je beoordeling → Beoordeel") die naar `/admin/agenda` linkt. De pending-kandidaten waren
+  alleen via een directe URL te vinden; nu zijn ze in-context vindbaar.
+- **Roadmap is nu een echt kosmisch kanban-bord**: vier vaste status-kolommen (Overwegen → Gepland → In
+  aanbouw → Gelanceerd), óók de lege, elk met een status-getinte kop-gloed. Items zijn **cosmische notes**
+  (status-dot, fase-tag, corner-spark, status-gekleurde accent-rand). Op mobiel een swipebare kanban
+  (scroll-snap). Groepeert nu op **status** i.p.v. de verwarrende vrije `phase`-string.
+- **Roadmap-inhoud verversd** (`scripts/seed_roadmap.py`, idempotent): stond nog op pre-pivot-inhoud (bv.
+  "Events" onder Overwegen terwijl de agenda al live is). Nu de echte staat — **11 dingen gelanceerd**
+  (AI-profiel uit een link, ontdekking, ledengids, matchmaking+intro's, MCP, agenda+RSVP, agenda-curatie,
+  nieuws-briefing, tool-catalogus, ideeënbus, notificaties), 1 in aanbouw, 2 gepland, 2 in overweging.
+  Community-gevoede (idee-gekoppelde) items blijven behouden.
+- **Roadmap publiek + indexeerbaar**: de levende roadmap is transparant onderdeel van de waardepropositie
+  (noordster), niet meer login-gated.
+- **Homepage-waardepropositie**: nieuwe secties die vertellen **waarom** je een profiel maakt (één profiel,
+  de agent werkt voor je), **wat er nu al kan** (4 feature-cards), **wat eraan komt** (link naar de publieke
+  roadmap) en **hoe je meebouwt** (open project, GitHub, ideeën).
+- **GitHub-repo-beschrijving** bijgewerkt naar de huidige realiteit (geen "teaser" meer).
+- Alles binnen het kosmische concept (`docs/STYLEGUIDE.md`): indigo glas-notes, goud spaarzaam accent,
+  Fraunces/JetBrains Mono, eenvoudige microcopy. 1039 tests groen; roadmap + homepage browser-geverifieerd.
+
 ## [0.85.0] - 2026-06-23
 ### Added — AI-agenda-curatie: vult de agenda met ECHTE events + keurt het zekere zelf goed
 - De wekelijkse curatie (maandag, M4-cron) zoekt het web af naar aankomende **NL/BE AI-events & meetups** en

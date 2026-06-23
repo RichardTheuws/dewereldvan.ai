@@ -1,8 +1,13 @@
-{# Eén roadmap-item (E3, leden-weergave). #}
-<article class="roadmap-item roadmap-item--{{ item.status.value }}">
+{# Eén roadmap-item als cosmische note (kanban-kaartje). Status-dot + label boven,
+   titel, omschrijving, optionele fase-tag, en de gegronde herkomst (uit een idee). #}
+<article class="roadmap-item roadmap-note roadmap-item--{{ item.status.value }}">
+  <span class="roadmap-note__spark" aria-hidden="true">✦</span>
   <div class="roadmap-item__status">
     <span class="roadmap-dot roadmap-dot--{{ item.status.value }}" aria-hidden="true"></span>
     <span class="roadmap-item__statuslabel">{{ item.status.value }}</span>
+    {% if item.phase and item.phase not in ("Later", "") %}
+    <span class="roadmap-note__phase">{{ item.phase }}</span>
+    {% endif %}
   </div>
   <h3 class="roadmap-item__title">{{ item.title }}</h3>
   {% if item.description %}

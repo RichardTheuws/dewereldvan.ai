@@ -2305,6 +2305,71 @@ a.roadmap-item__origin:focus-visible {
   transform: translateX(2px);
 }
 
+/* ---- Echt kosmisch kanban (4 vaste status-kolommen) ---- */
+.cosmic .roadmap-board--kanban {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+/* per-kolom een status-getinte kop-gloed (de dot-kleur als sfeer) */
+.cosmic .roadmap-col--overwegen { background: radial-gradient(80% 60% at 50% 0%, rgba(144, 151, 196, 0.10), transparent 60%), var(--card); }
+.cosmic .roadmap-col--gepland   { background: radial-gradient(80% 60% at 50% 0%, rgba(63, 210, 255, 0.12), transparent 60%), var(--card); }
+.cosmic .roadmap-col--bezig     { background: radial-gradient(80% 60% at 50% 0%, rgba(177, 92, 255, 0.13), transparent 60%), var(--card); }
+.cosmic .roadmap-col--gedaan    { background: radial-gradient(80% 60% at 50% 0%, rgba(246, 205, 134, 0.13), transparent 60%), var(--card); }
+.cosmic .roadmap-col__phase { display: inline-flex; align-items: center; gap: 7px; color: var(--text); }
+.cosmic .roadmap-col__empty {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  text-align: center;
+  padding: 18px 10px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+}
+
+/* cosmische note (kanban-kaartje) — bouwt op .roadmap-item */
+.cosmic .roadmap-note { position: relative; overflow: hidden; }
+.cosmic .roadmap-note::before {
+  /* dunne, status-gekleurde accent-rand links */
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--muted); opacity: 0.7;
+}
+.cosmic .roadmap-item--gepland.roadmap-note::before { background: var(--cyan); }
+.cosmic .roadmap-item--bezig.roadmap-note::before { background: var(--magenta); }
+.cosmic .roadmap-item--gedaan.roadmap-note::before { background: var(--gold); }
+.cosmic .roadmap-note__spark {
+  position: absolute; top: 9px; right: 11px;
+  color: var(--muted); opacity: 0.35; font-size: 11px;
+  transition: opacity 0.3s, color 0.3s;
+}
+.cosmic .roadmap-note:hover .roadmap-note__spark { opacity: 0.85; color: var(--cyan); }
+.cosmic .roadmap-note__phase {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  padding: 1px 7px;
+  margin-left: auto;
+}
+@media (max-width: 860px) {
+  /* mobiel: een echte horizontaal-swipebare kanban (scroll-snap per kolom) */
+  .cosmic .roadmap-board--kanban {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: 84%;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 10px;
+    margin-inline: calc(-1 * var(--wrap-pad, 20px));
+    padding-inline: var(--wrap-pad, 20px);
+  }
+  .cosmic .roadmap-board--kanban > .roadmap-col { scroll-snap-align: start; }
+}
+
 /* admin board */
 .cosmic .rm-create {
   border: 1px solid var(--line);
@@ -3904,6 +3969,79 @@ a.roadmap-item__origin:focus-visible {
 .cosmic .event-rsvp__join {
   font-size: 0.85rem;
   color: var(--cyan);
+}
+
+/* ---- admin-affordance-banner (bv. "N events wachten op je beoordeling") ---- */
+.cosmic .admin-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(246, 205, 134, 0.32);
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(246, 205, 134, 0.1), transparent 60%),
+    rgba(255, 255, 255, 0.025);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.3s;
+}
+.cosmic .admin-banner:hover {
+  border-color: rgba(246, 205, 134, 0.55);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 38px -22px rgba(246, 205, 134, 0.5);
+}
+.cosmic .admin-banner__spark { color: var(--gold); font-size: 1.1rem; }
+.cosmic .admin-banner__text { flex: 1; font-size: 0.94rem; color: #d7d9f2; }
+.cosmic .admin-banner__text strong { color: var(--gold); }
+.cosmic .admin-banner__cta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+/* ---- Homepage value-prop feature-cards (wat je hier kunt) ---- */
+.cosmic .feature-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+.cosmic .feature-card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 130% at 0% 0%, rgba(109, 93, 252, 0.12), transparent 55%),
+    var(--card, rgba(255, 255, 255, 0.025));
+  padding: 20px 20px 22px;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.25s, box-shadow 0.35s;
+}
+.cosmic .feature-card:hover {
+  border-color: rgba(63, 210, 255, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 46px -24px rgba(63, 210, 255, 0.5);
+}
+.cosmic .feature-card__spark {
+  color: var(--gold);
+  font-size: 1rem;
+  opacity: 0.9;
+}
+.cosmic .feature-card__title {
+  font-family: "Fraunces", serif;
+  font-weight: 400;
+  font-size: 1.18rem;
+  line-height: 1.2;
+  color: var(--text);
+  margin-top: 10px;
+}
+.cosmic .feature-card__desc {
+  margin-top: 7px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #c7cbe8;
 }
 
 /* ---- nieuws-specifiek ---- */
