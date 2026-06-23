@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.88.0] - 2026-06-23
+### Added — Eenmalige features-aankondigings-mail naar de leden (dry-run-veilig)
+- Kosmische HTML-mail (`emails/announcement.html` + `render_announcement`) die de nieuwe functies opsomt en
+  uitnodigt om ze te proberen, ideeën in te sturen en mee te bouwen via GitHub. Eén feature-bron
+  (`ANNOUNCEMENT_FEATURES`) voedt zowel de HTML als de tekst-fallback.
+- Verzend-script `scripts/announce_features.py` — **dry-run is de default** (toont ontvangers + tekst, verstuurt
+  niets); pas met `--send` gaat 'ie echt uit (Cloudflare-backend op M4). Per-ontvanger fail-safe; aanhef
+  gepersonaliseerd. Ontvangers = goedgekeurde leden met e-mail.
+- Mail visueel geverifieerd in de browser. 1040 tests groen.
+
 ## [0.87.0] - 2026-06-23
 ### Changed — Agenda-curatie vindt nu óók lokale, terugkerende meetups (slimmer)
 - De curatie zocht vooral grote conferenties. Nu zoekt ze **bewust breed** naar lokale, terugkerende AI-meetups:

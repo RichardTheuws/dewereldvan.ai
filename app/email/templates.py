@@ -43,6 +43,23 @@ __all__ = [
     "render_approval",
     "render_invite",
     "render_intro",
+    "render_announcement",
+    "ANNOUNCEMENT_FEATURES",
+]
+
+# De features-lijst voor de aankondigings-mail (icoon, titel, één zin). Eén bron,
+# zodat de HTML-mail en de tekst-fallback exact hetzelfde vertellen.
+ANNOUNCEMENT_FEATURES: list[tuple[str, str, str]] = [
+    ("✦", "Je profiel uit één link",
+     "Plak een link — de agent leest 'm en bouwt je profiel. Bijwerken gaat in een gesprek."),
+    ("✦", "Een agent die voor je zoekt",
+     "Matches met wie jij nodig hebt, makers in jouw domein, intro-voorstellen. Jij beslist."),
+    ("✦", "In je eigen tool (MCP)",
+     "Werk met het netwerk vanuit Claude Code of Cursor — geen context-switch."),
+    ("✦", "Een echte agenda + nieuws",
+     "AI-meetups & events in NL/BE (meld je aan) en een wekelijkse nieuws-briefing."),
+    ("✦", "Een open, levende roadmap",
+     "Zie wat er al staat, in aanbouw is en gepland — en stuur mee met je ideeën."),
 ]
 
 
@@ -208,4 +225,46 @@ def render_intro(to_name: str, from_name: str, message: str, login_url: str) -> 
         from_name=from_name,
         message=message,
         login_url=login_url,
+    )
+
+
+def render_announcement(
+    name: str,
+    *,
+    login_url: str,
+    roadmap_url: str,
+    agenda_url: str,
+    ideas_url: str,
+    github_url: str,
+) -> str:
+    """HTML-body voor de eenmalige features-aankondigings-mail (alle URLs al veilig)."""
+    rows = "".join(
+        f"<p style='margin:0 0 10px 0;'><span style='color:#f6cd86;'>{icon}</span> "
+        f"<strong style='color:#eef0ff;'>{escape(title)}</strong> — {escape(text)}</p>"
+        for icon, title, text in ANNOUNCEMENT_FEATURES
+    )
+    fallback = _inline_shell(
+        heading=f"Er is veel nieuw, {escape(name)}.",
+        body_html=(
+            "<p style='margin:0 0 14px 0;'>Je onderhoudt één profiel, een agent doet "
+            "het werk. Dit kun je nu:</p>" + rows +
+            "<p style='margin:14px 0 0 0;'>Log in en kijk rond — en heb je een idee of "
+            "wil je meebouwen, dat kan, het is een open project.</p>"
+            "<p style='margin:12px 0 0 0; padding-left:12px; border-left:2px solid "
+            "#3fd2ff; color:#b9bce0;'><strong style='color:#eef0ff;'>Jij bepaalt wat "
+            "zichtbaar is.</strong> Je profiel staat op privé tot je het zelf op "
+            "openbaar zet — niemand ziet het voordat jij akkoord geeft.</p>"
+        ),
+        cta=_inline_button("Log in en probeer het", login_url),
+    )
+    return _render(
+        "announcement.html",
+        fallback,
+        name=name,
+        features=ANNOUNCEMENT_FEATURES,
+        login_url=login_url,
+        roadmap_url=roadmap_url,
+        agenda_url=agenda_url,
+        ideas_url=ideas_url,
+        github_url=github_url,
     )
