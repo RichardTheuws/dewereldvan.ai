@@ -153,10 +153,12 @@
   var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
   var W,H,DPR,cx,cy, bg=[], flux=[], raf=null, idleRaf=null, audio=null;
-  var running=false, t0=0, chimes=0, use3d=false, seeded=false, warpStarted=false;
+  var running=false, t0=0, chimes=0, use3d=false, seeded=false, warpStarted=false, lite=false;
 
   // tijdlijn (ms na de klik): EMERGE = extreme close-up → uitzoom; TRANS = wereld
   // valt uiteen in particles; MORPH = wordmark vormt; WARP = hyperspace → homepage.
+  // Desktop (3D) = ruime tijdlijn; mobiel/lite (2D, geen WebGL) = snappere tijdlijn
+  // zonder de zware 3D-fase (zie begin()).
   var EMERGE=2600, TRANS=5600, MORPH0=5800, MORPH1=8700, WELC=8900, WARP=9900, END=12500;
 
   function seen(){ return /(?:^|;\s*)dwv_intro_seen=1/.test(document.cookie); }
@@ -321,16 +323,22 @@
     root.hidden=true; root.setAttribute('aria-hidden','true'); window.removeEventListener('resize',resize); }
 
   function begin(){ enterUI.classList.add('is-gone');
+    // Lite (mobiel / geen WebGL): geen 3D-fase, snappere tijdlijn, particles komen
+    // meteen op zodat de opening niet seconden lang leeg is.
+    if(lite){ EMERGE=0; TRANS=1300; MORPH0=1500; MORPH1=4600; WELC=4900; WARP=6100; END=8500; }
     try{ audio=makeAudio(); audio.start(); }catch(e){ audio=null; }
     chimes=0; t0=performance.now(); raf=requestAnimationFrame(frame); }
 
   function startSequence(){
-    // Probeer de 3D-wereld te mounten; lukt het binnen ~2.5s niet, dan 2D-fallback.
-    if(window.__DWV3D__ && !window.__DWV3D__.failed){
+    // Mobiel of geen WebGL → lichte 2D-intro (geen zware 3D-wereld = vloeiend +
+    // altijd aanwezig). Desktop met WebGL → de volle 3D-wereld (mount, ~2.5s gate).
+    var mobile = innerWidth < 760;
+    if(!mobile && window.__DWV3D__ && !window.__DWV3D__.failed){
       var done=false;
-      window.__DWV3D__.mount(c3).then(function(){ if(done)return; done=true; use3d=window.__DWV3D__.ready; begin(); });
-      setTimeout(function(){ if(done)return; done=true; use3d=window.__DWV3D__.ready; begin(); }, 2500);
-    } else { use3d=false; begin(); }
+      var go=function(){ if(done)return; done=true; use3d=window.__DWV3D__.ready; lite=!use3d; begin(); };
+      window.__DWV3D__.mount(c3).then(go);
+      setTimeout(go, 2500);
+    } else { use3d=false; lite=true; begin(); }
   }
 
   function idle(){ ctx.globalCompositeOperation='source-over'; ctx.fillStyle='rgba(4,4,14,.3)'; ctx.fillRect(0,0,W,H);

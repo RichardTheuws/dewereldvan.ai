@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.96.1] - 2026-06-28
+### Fixed — Mobiele intro: lichte, betrouwbare 2D-variant (i.p.v. zware/afwezige 3D)
+- Op mobiel (`innerWidth < 760`) of zonder WebGL draait de intro nu als **lichte 2D-variant**: sterrenveld →
+  particles vormen het wordmark → klassieke warp → homepage. **Geen Three.js/WebGL** → geen perf-jank en geen
+  afhankelijkheid van import-map/WebGL-support (de oorzaak van "belabberd/afwezig" op telefoons). De volle
+  **3D-wereld blijft op desktop** (≥760px). Snappere mobiele tijdlijn (~8,5s) zodat de opening niet seconden
+  leeg is. Browser-geverifieerd (390px): geen 3D, wordmark vormt, warp draagt over aan de hero, geen errors.
+
 ## [0.96.0] - 2026-06-28
 ### Added — Intro LIVE voor first-time bezoekers + duidelijke replay in de nav
 - De cinematic intro speelt nu **automatisch voor een eerste bezoek** op de homepage (`DWV_INTRO_FIRST=true`),
