@@ -170,14 +170,15 @@
     <footer class="c-head" style="border-top:1px solid var(--line);--d:880ms" data-reveal>
       <span class="muted">© 2026 dewereldvan.ai</span>
       <a class="link" href="/privacy">Privacy</a>
-      <button type="button" class="link" style="background:none;border:none;cursor:pointer;font:inherit"
-              onclick="window.dispatchEvent(new CustomEvent('dwv:intro-replay'))">↻ intro</button>
     </footer>
   </div>
 
   {% if logged_in %}{% include "_feedback_affordance.html" %}{% endif %}
   {% set concierge_context = "home" %}
   {% include "_concierge.html" %}
+  {# Intro LIVE voor first-time bezoekers (cookie-gated: één keer per browser).
+     Crawlers/JS-uit krijgen direct de homepage (intro is JS-only). #}
+  <script>window.DWV_INTRO_FIRST = true;</script>
   {# _intro vóór de canvas-director: het zet window.__DWV_INTRO_PENDING__ zodat de
      director de hero-reveal vasthoudt tot de intro 'm overdraagt (de morph). #}
   {% include "_intro.html" %}

@@ -197,6 +197,30 @@
   text-underline-offset: 3px;
 }
 
+/* Replay van de openingsanimatie — rustige ghost-pill in de hoofdnav (alleen op
+   de home, waar de intro-overlay leeft). Duidelijk maar ondergeschikt. */
+.cosmic .cnav__replay {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 0.38rem 0.85rem;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.25s, border-color 0.25s;
+}
+.cosmic .cnav__replay:hover,
+.cosmic .cnav__replay:focus-visible {
+  color: var(--gold);
+  border-color: rgba(246, 205, 134, 0.5);
+  outline: none;
+}
+.cosmic .cnav__replay .spark { color: var(--gold); }
+
 /* ---- hoofdnav (cnav) — herbruikbaar, vervangt de ad-hoc .c-head-headers ----
    Erft de .c-head-typografie (mono 12.5px). Niet sticky/geen backdrop-filter
    (GPU-duur op zwakke devices). Mobiel: CSS-only flex-wrap, geen hamburger. */

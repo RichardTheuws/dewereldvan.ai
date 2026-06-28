@@ -20,6 +20,13 @@
       <span class="cnav__concierge-spark" aria-hidden="true">✦</span>
       <span class="cnav__concierge-text">Vraag de wereld</span>
     </button>
+    {% if nav_active == 'home' %}
+    {# Replay van de openingsanimatie — alleen op de home, waar de intro leeft. #}
+    <button type="button" class="cnav__replay" title="Speel de openingsanimatie opnieuw af"
+            onclick="window.dispatchEvent(new CustomEvent('dwv:intro-replay'))">
+      <span class="spark" aria-hidden="true">✦</span> Opening
+    </button>
+    {% endif %}
     {% if request.session.get("is_admin") %}
     {# Operationeel: de admin houdt altijd toegang tot de goedkeur-queue. #}
     <a class="cnav__link cnav__link--admin" href="/admin/queue">Beheer</a>
@@ -50,6 +57,13 @@
       <span class="cnav__concierge-spark" aria-hidden="true">✦</span>
       <span class="cnav__concierge-text">Vraag de wereld</span>
     </button>
+    {% if nav_active == 'home' %}
+    {# Replay van de openingsanimatie — alleen op de home, waar de intro leeft. #}
+    <button type="button" class="cnav__replay" title="Speel de openingsanimatie opnieuw af"
+            onclick="window.dispatchEvent(new CustomEvent('dwv:intro-replay'))">
+      <span class="spark" aria-hidden="true">✦</span> Opening
+    </button>
+    {% endif %}
     <a class="cnav__link" href="/login">Inloggen</a>
     <a class="btn btn--ghost btn--sm" href="/register">Word lid</a>
   </div>

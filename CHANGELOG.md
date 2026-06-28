@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.96.0] - 2026-06-28
+### Added — Intro LIVE voor first-time bezoekers + duidelijke replay in de nav
+- De cinematic intro speelt nu **automatisch voor een eerste bezoek** op de homepage (`DWV_INTRO_FIRST=true`),
+  cookie-gated op één keer per browser (`dwv_intro_seen`). Crawlers/JS-uit krijgen direct de homepage (de intro
+  is JS-only, standaard verborgen) — geen SEO-impact.
+- **Duidelijke replay** op een natuurlijke plek: een rustige "✦ Opening"-ghost-pill in de hoofdnav, **alleen op
+  de home** (waar de intro-overlay leeft), in zowel de anonieme als ingelogde nav-variant. De oude, obscure
+  "↻ intro"-footerlink is verwijderd. Geverifieerd: verse bezoeker (geen cookie) → portaal opent automatisch;
+  replay-knop dispatcht `dwv:intro-replay`.
+
 ## [0.95.1] - 2026-06-28
 ### Fixed — Ongestylede links (default-blauw) + favicon-404 + naam-truncatie
 - **Links**: `a.link` was alleen binnen `.c-head` (footer/header) gestyled → overal elders (home-CTA's,
