@@ -37,7 +37,7 @@ from app.models import (
     Tool,
 )
 from app.schemas.post import EventForm, NewsForm
-from app.services import attendance_service, post_draft_service, post_service
+from app.services import attendance_service, post_draft_service, post_service, seo_service
 
 router = APIRouter(tags=["posts"])
 
@@ -122,6 +122,7 @@ def agenda_index(
     ctx = _agenda_context(db, member, category=category)
     if request.headers.get("HX-Request"):
         return _render(request, "agenda/_list.html", ctx)
+    ctx["canonical"] = seo_service.canonical_url("/agenda")
     return _render(request, "agenda/index.html", ctx)
 
 
@@ -269,6 +270,7 @@ def nieuws_index(
     ctx = _nieuws_context(db, member)
     if request.headers.get("HX-Request"):
         return _render(request, "nieuws/_list.html", ctx)
+    ctx["canonical"] = seo_service.canonical_url("/nieuws")
     return _render(request, "nieuws/index.html", ctx)
 
 

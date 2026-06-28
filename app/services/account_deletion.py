@@ -55,6 +55,7 @@ from app.models import (
     Post,
     Profile,
     ProfileLink,
+    ToolReviewNote,
     profile_tag,
     profile_tool,
 )
@@ -121,6 +122,13 @@ def delete_member_completely(db: Session, member: Member) -> None:
     # gedeeld artikel houdt nut voor de groep), maar verliezen de toevoeger-anker.
     db.execute(
         update(Post).where(Post.added_by_id == member_id).values(added_by_id=None)
+    )
+    # Tool-review-notities blijven staan (netwerk-kennis, geanonimiseerd), maar
+    # verliezen de auteur-anker (SET NULL — zelfde keuze als Post/GroupInvite).
+    db.execute(
+        update(ToolReviewNote)
+        .where(ToolReviewNote.member_id == member_id)
+        .values(member_id=None)
     )
 
     # --- 4. Afhankelijke rijen verwijderen (kinderen vóór ouders) -------------

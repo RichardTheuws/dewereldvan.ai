@@ -22,7 +22,7 @@ from app.db import get_db
 from app.deps import current_member, require_admin
 from app.models import Member, RoadmapStatus
 from app.schemas.roadmap import RoadmapItemForm
-from app.services import roadmap_service
+from app.services import roadmap_service, seo_service
 
 router = APIRouter(tags=["roadmap"])
 
@@ -54,6 +54,7 @@ def index(
             "shipped_count": shipped,
             "member": member,
             "statuses": list(RoadmapStatus),
+            "canonical": seo_service.canonical_url("/roadmap"),
         },
     )
 

@@ -171,9 +171,10 @@ def render_invite(name: str, invite_url: str) -> str:
     fallback = _inline_shell(
         heading=f"Hoi {escape(name)},",
         body_html=(
-            "<p style='margin:0 0 12px 0;'>Je bent uitgenodigd voor de besloten "
-            "preview van dewereldvan.ai — de plek voor wie in NL &amp; BE serieus "
-            "met AI bouwt. Maak nu je eigen profiel; onze AI bouwt het met je mee.</p>"
+            "<p style='margin:0 0 12px 0;'>Je bent uitgenodigd voor dewereldvan.ai — "
+            "een open community voor iedereen in NL &amp; BE die met AI bouwt, traint, "
+            "ontwerpt, onderzoekt of er beleid over maakt. Maak nu je eigen profiel; "
+            "onze AI bouwt het met je mee.</p>"
             "<p style='margin:0;'>Je houdt altijd de regie: je kunt je profiel met "
             "één klik volledig wissen, wanneer je maar wilt.</p>"
         ),

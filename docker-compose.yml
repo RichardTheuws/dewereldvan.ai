@@ -1,7 +1,16 @@
+# Begrens de Docker json-file logs zodat ze onder publieke traffic niet onbeperkt
+# groeien en de (gedeelde) M4-schijf vol laten lopen. Per service via de anchor.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   web:
     build: .
     env_file: .env
+    logging: *default-logging
     depends_on:
       postgres:
         condition: service_healthy
@@ -20,6 +29,7 @@ services:
 
   postgres:
     image: postgres:16
+    logging: *default-logging
     environment:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: app
@@ -35,6 +45,7 @@ services:
 
   cloudflared:
     image: cloudflare/cloudflared:latest
+    logging: *default-logging
     command: tunnel --no-autoupdate run
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN}   # OPERATOR SUPPLIES — do NOT invent. Empty in repo.

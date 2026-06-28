@@ -249,8 +249,8 @@ def test_preview_banner_server_rendered_text(make_client, seed):
     """De band staat er zonder JS (server-rendered boodschap)."""
     client = make_client(None)
     resp = client.get("/leden")
-    # Pivot: open preview (was "besloten — alleen op uitnodiging").
-    assert "Open preview" in resp.text
+    # Pivot: open & welcoming (was "besloten — alleen op uitnodiging", daarna "Open preview").
+    assert "dewereldvan.ai is open" in resp.text
     assert "is welkom" in resp.text
 
 

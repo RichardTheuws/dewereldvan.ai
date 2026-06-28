@@ -1,8 +1,9 @@
 User-agent: *
 Allow: /
-Disallow: /profiel/
 Disallow: /admin/
+Disallow: /onboarding/
 Disallow: /login
 Disallow: /register
+Disallow: /auth/
 
 Sitemap: {{ base_url }}/sitemap.xml

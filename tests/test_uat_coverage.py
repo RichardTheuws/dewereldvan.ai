@@ -64,6 +64,8 @@ PUBLIC_INDEXABLE = {
     "/nieuws",
     # Levende roadmap is publiek + indexeerbaar (transparantie = waardepropositie).
     "/roadmap",
+    # Privacyverklaring: publiek + indexeerbaar (AVG/ePrivacy, vindbaar via footer).
+    "/privacy",
 }
 # Publiek bereikbaar (anon → 200) maar bewust noindex (auth + post-delete).
 PUBLIC_NOINDEX = {

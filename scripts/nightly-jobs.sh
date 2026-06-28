@@ -23,33 +23,28 @@ cd "$APP_DIR" || { echo "FOUT: $APP_DIR niet gevonden"; exit 1; }
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 echo "=== $(ts) nightly-jobs start ==="
 
-echo "--- $(ts) refresh_matches ---"
-"$DOCKER" compose exec -T web python -m app.jobs.refresh_matches || \
-  echo "WAARSCHUWING: refresh_matches eindigde met een fout"
+# Verzamel gefaalde jobs zodat we aan het eind ÉÉN Telegram-ping sturen i.p.v.
+# een storing stil in een logfile te laten verdwijnen (unattended-operator).
+FAILED=()
+run_job() {  # run_job <naam> <module>
+  echo "--- $(ts) $1 ---"
+  if ! "$DOCKER" compose exec -T web python -m "$2"; then
+    echo "WAARSCHUWING: $1 eindigde met een fout"
+    FAILED+=("$1")
+  fi
+}
 
-echo "--- $(ts) distill_memories ---"
-"$DOCKER" compose exec -T web python -m app.jobs.distill_memories || \
-  echo "WAARSCHUWING: distill_memories eindigde met een fout"
-
-echo "--- $(ts) enrich_projects ---"
-"$DOCKER" compose exec -T web python -m app.jobs.enrich_projects || \
-  echo "WAARSCHUWING: enrich_projects eindigde met een fout"
-
-echo "--- $(ts) enrich_tool_logos ---"
-"$DOCKER" compose exec -T web python -m app.jobs.enrich_tool_logos || \
-  echo "WAARSCHUWING: enrich_tool_logos eindigde met een fout"
-
-echo "--- $(ts) review_tools ---"
-"$DOCKER" compose exec -T web python -m app.jobs.review_tools || \
-  echo "WAARSCHUWING: review_tools eindigde met een fout"
+run_job refresh_matches    app.jobs.refresh_matches
+run_job distill_memories   app.jobs.distill_memories
+run_job enrich_projects    app.jobs.enrich_projects
+run_job enrich_tool_logos  app.jobs.enrich_tool_logos
+run_job review_tools       app.jobs.review_tools
 
 # Wekelijkse gate: nieuws-curatie draait ALLEEN op zondag (date +%u == 7).
 # "Schaarste = signaal" — dagelijks zou te veel admin-poort-werk en lauwe items
 # geven. Best-effort (geen `set -e`-breuk); de job is zelf idempotent + faal-veilig.
 if [ "$(date +%u)" = "7" ]; then
-  echo "--- $(ts) curate_news (wekelijks, zondag) ---"
-  "$DOCKER" compose exec -T web python -m app.jobs.curate_news || \
-    echo "WAARSCHUWING: curate_news eindigde met een fout"
+  run_job curate_news app.jobs.curate_news
 else
   echo "--- $(ts) curate_news overgeslagen (alleen zondag) ---"
 fi
@@ -58,11 +53,17 @@ fi
 # van de nieuws-curatie (zondag) zodat de twee AI-tool-loops elkaar niet kruisen.
 # AI keurt het zekere automatisch goed (live); twijfel → /admin/agenda. Best-effort.
 if [ "$(date +%u)" = "1" ]; then
-  echo "--- $(ts) curate_events (wekelijks, maandag) ---"
-  "$DOCKER" compose exec -T web python -m app.jobs.curate_events || \
-    echo "WAARSCHUWING: curate_events eindigde met een fout"
+  run_job curate_events app.jobs.curate_events
 else
   echo "--- $(ts) curate_events overgeslagen (alleen maandag) ---"
+fi
+
+# Eén consolidated seintje bij ≥1 gefaalde job (best-effort; mag de run niet breken).
+if [ "${#FAILED[@]}" -gt 0 ]; then
+  MSG="Nightly-jobs: $(IFS=', '; echo "${FAILED[*]}") faalde(n) op $(ts)."
+  echo "$MSG"
+  "$DOCKER" compose exec -T web python -m app.jobs.notify_ops "$MSG" \
+    || echo "WAARSCHUWING: kon ops-melding niet versturen"
 fi
 
 echo "=== $(ts) nightly-jobs done ==="

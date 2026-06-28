@@ -205,5 +205,8 @@ def test_robots_route(client):
     assert resp.status_code == 200
     assert "text/plain" in resp.headers["content-type"]
     assert "Sitemap:" in resp.text
-    assert "Disallow: /profiel/" in resp.text
     assert "Disallow: /admin/" in resp.text
+    assert "Disallow: /login" in resp.text
+    # De besloten profielen zitten op /leden/{slug} en zijn per-pagina noindex
+    # (de echte poort); robots disallowt geen niet-bestaande /profiel/-route meer.
+    assert "Disallow: /profiel/" not in resp.text

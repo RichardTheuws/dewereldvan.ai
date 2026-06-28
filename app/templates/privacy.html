@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Privacyverklaring (AVG/ePrivacy). Publiek + indexeerbaar. Standalone cosmic-
+   document (extendt base.html NIET): eigen <body class="cosmic">, includet de
+   achtergrond + de reveal-director (ai/_cosmic_canvas.html) zodat data-reveal
+   onthuld wordt. Eenvoudige, heldere NL binnen de kosmische identiteit. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = false %}
+  {% set seo_title = "Privacyverklaring — dewereldvan.ai" %}
+  {% set seo_desc = "Hoe dewereldvan.ai met je gegevens omgaat: welke data, waarvoor, hoe lang, welke partijen, en je rechten — inclusief je profiel met één klik wissen." %}
+  {% set og_type = "website" %}
+  {% set og_image = (base_url ~ "/static/og-default.png") if base_url else none %}
+  {% set jsonld = none %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    {% include "_cosmic_nav.html" %}
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">Je data, jouw regie</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Privacyverklaring</h1>
+        <p class="lede mt-5" style="max-width:60ch;--d:380ms" data-reveal>
+          Kort en helder: welke gegevens we verwerken, waarvoor, hoe lang, met welke
+          partijen, en welke rechten je hebt. Je houdt altijd de regie — je profiel
+          is standaard besloten en je kunt alles met één klik wissen.
+        </p>
+        <p class="muted mt-3" style="font-size:.92rem" data-reveal style="--d:440ms">
+          Laatst bijgewerkt: 28 juni 2026.
+        </p>
+      </section>
+
+      <section class="mt-12" data-reveal style="--d:200ms">
+        <div class="section-title mb-3">1. Wie is verantwoordelijke</div>
+        <p class="lede" style="max-width:62ch;font-size:1.02rem">
+          dewereldvan.ai is een dienst van <strong>Theuws Consulting</strong>. Voor vragen
+          over je gegevens of deze verklaring: <a class="link" href="mailto:richard@theuws.com">richard@theuws.com</a>.
+        </p>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:200ms">
+        <div class="section-title mb-3">2. Welke gegevens we verwerken</div>
+        <ul class="lede" style="max-width:62ch;font-size:1.02rem;line-height:1.7">
+          <li><strong>Account</strong>: je naam en e-mailadres (voor inloggen via een magic-link).</li>
+          <li><strong>Profiel</strong>: wat je zelf invult of laat opbouwen uit een link — bio, werk, projecten, tags, tools, foto, en waar je naar zoekt.</li>
+          <li><strong>Technisch</strong>: bij aanmelden bewaren we het IP-adres van het verzoek (spam-/misbruikpreventie). Bij gebruik van de site verwerken we standaard server-logs.</li>
+          <li><strong>Geen tracking</strong>: we gebruiken geen advertentie- of analytics-trackers.</li>
+        </ul>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:200ms">
+        <div class="section-title mb-3">3. Waarvoor en op welke grondslag</div>
+        <ul class="lede" style="max-width:62ch;font-size:1.02rem;line-height:1.7">
+          <li><strong>Je account en profiel beheren</strong> — uitvoering van de dienst die je vraagt.</li>
+          <li><strong>Je profiel publiek tonen</strong> — alleen met jouw expliciete toestemming. Standaard is je profiel besloten (alleen-leden); publiek word je pas als je dat zelf aanzet.</li>
+          <li><strong>Spam en misbruik weren</strong> (IP bij aanmelding, een spam-check) — gerechtvaardigd belang om de community gezond te houden. We beoordelen nooit je "niveau", alleen of een aanmelding echt of spam is.</li>
+        </ul>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:200ms">
+        <div class="section-title mb-3">4. Partijen die we inschakelen</div>
+        <p class="lede" style="max-width:62ch;font-size:1.02rem">
+          We delen je gegevens niet met derden voor hun eigen doeleinden. Voor het draaien
+          van de dienst gebruiken we een beperkt aantal verwerkers:
+        </p>
+        <ul class="lede" style="max-width:62ch;font-size:1.02rem;line-height:1.7">
+          <li><strong>Cloudflare</strong> — hosting-toegang (tunnel/CDN), DNS, e-mailbezorging en spam-beveiliging (Turnstile).</li>
+          <li><strong>Anthropic</strong> — de AI die je profiel mee opbouwt en de assistent aandrijft. Gegevens die je daarvoor aanbiedt worden verwerkt om jouw verzoek uit te voeren.</li>
+        </ul>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:200ms">
+        <div class="section-title mb-3">5. Hoe lang we bewaren</div>
+        <p class="lede" style="max-width:62ch;font-size:1.02rem">
+          We bewaren je gegevens zolang je een account hebt. Wis je je profiel, dan
+          verwijderen we je gegevens definitief (zie punt 7). Server-logs en backups
+          roteren automatisch en verdwijnen daarna vanzelf.
+        </p>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:200ms">
+        <div class="section-title mb-3">6. Cookies</div>
+        <p class="lede" style="max-width:62ch;font-size:1.02rem">
+          We gebruiken alleen functioneel-noodzakelijke cookies: een beveiligde
+          sessie-cookie (ingelogd blijven), een kleine voorkeurscookie (een eenmaal
+          gesloten melding niet steeds terugtonen), en een beveiligingscookie van
+          Cloudflare Turnstile. Geen advertentie- of volgcookies, dus geen cookiebanner nodig.
+        </p>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:200ms">
+        <div class="section-title mb-3">7. Je rechten</div>
+        <p class="lede" style="max-width:62ch;font-size:1.02rem">
+          Je hebt recht op inzage, correctie, verwijdering en bezwaar. Het meeste regel
+          je zelf, direct:
+        </p>
+        <ul class="lede" style="max-width:62ch;font-size:1.02rem;line-height:1.7">
+          <li><strong>Inzien/aanpassen</strong>: je profiel bewerk je zelf, wanneer je wilt.</li>
+          <li><strong>Zichtbaarheid</strong>: je zet je profiel zelf op besloten of openbaar.</li>
+          <li><strong>Volledig wissen</strong>: met één klik verwijder je je profiel en al je gegevens definitief, inclusief je foto.</li>
+        </ul>
+        <p class="lede mt-4" style="max-width:62ch;font-size:1.02rem">
+          Liever dat wij iets voor je doen, of een klacht? Mail
+          <a class="link" href="mailto:richard@theuws.com">richard@theuws.com</a>. Je kunt
+          ook een klacht indienen bij de Autoriteit Persoonsgegevens.
+        </p>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:680ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

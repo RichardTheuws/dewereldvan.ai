@@ -204,7 +204,13 @@ def sitemap_entries(db: Session) -> list[SitemapEntry]:
     )
     profiles = list(db.scalars(stmt).unique().all())
 
-    entries: list[SitemapEntry] = []
+    # De vaste publieke landingspagina's eerst (homepage + hubs) — zonder deze
+    # mist de sitemap precies de pagina's die moeten ranken. Geen lastmod (ze
+    # veranderen continu / niet per-entity te bepalen).
+    entries: list[SitemapEntry] = [
+        SitemapEntry(loc=canonical_url(path))
+        for path in ("/", "/leden", "/agenda", "/nieuws", "/roadmap")
+    ]
     for profile in profiles:
         if not _is_public(profile):  # defensief; query dekt dit al
             continue

@@ -111,6 +111,15 @@ def _seed_full_member(db, *, email: str, shared_tag=None):
     db.add(MemberChannel(member_id=member.id, channel="telegram", address="123"))
     db.add(NotificationPref(member_id=member.id, channel="telegram"))
 
+    # Tool-review-notitie van dit lid: SET NULL bij wissing (notitie overleeft,
+    # attributie verdwijnt) — geen CASCADE, geen dangling member-anker.
+    from app.models import Tool, ToolReviewNote
+
+    tool = Tool(name=f"Tool {member.id}", slug=f"tool-{member.id}")
+    db.add(tool)
+    db.flush()
+    db.add(ToolReviewNote(tool_id=tool.id, member_id=member.id, body="Werkt goed."))
+
     db.flush()
     return member, photo_path, shared_tag
 
@@ -197,6 +206,14 @@ def test_delete_member_completely_removes_everything(db):
         select(Profile.id).where(Profile.member_id == other.id)
     )
     assert all(row[0] == other_profile_id for row in remaining_links)
+
+    # Tool-review-notitie: GEEN dangling member-anker (SET NULL), maar de notitie
+    # zelf overleeft (netwerk-kennis), en de tool blijft bestaan.
+    from app.models import Tool, ToolReviewNote
+
+    assert _count(ToolReviewNote, ToolReviewNote.member_id) == 0  # geen anker meer
+    assert db.scalar(select(func.count()).select_from(ToolReviewNote)) == 2  # beide notities bestaan nog
+    assert db.scalar(select(func.count()).select_from(Tool)) == 2  # beide tools intact
 
     # Het foto-bestand op schijf is weg.
     assert not photo_path.exists()

@@ -3,6 +3,29 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.90.0] - 2026-06-28
+### Added / Fixed — Pre-public-launch hardening (5-sporen-audit → blockers gedicht)
+Een brede pre-launch-audit (security/privacy/SEO/op-last/content) leverde 1 KILL + meerdere FAILs. Security was
+volledig PASS. Gedicht:
+- **DB-backup (KILL)**: `scripts/backup-db.sh` (gzip, sanity-guard, 30-dagen-rotatie, creds runtime uit de
+  container — geen secret in repo) + LaunchAgent `com.theuws.dewereldvan.backup` (03:00). Eerste backup gemaakt
+  én restore-getest (15 leden live = 15 hersteld). Voorheen bestond er geen enkel herstelpunt.
+- **Privacyverklaring (AVG/ePrivacy)**: nieuwe publieke, indexeerbare `/privacy`-pagina (`privacy.html` +
+  route in `seo.py`) — verantwoordelijke Theuws Consulting, verwerkte data (incl. `registration_ip`),
+  grondslagen, subverwerkers (Cloudflare, Anthropic), bewaartermijn, cookies, rechten incl. 1-klik-wissen.
+  Footer-link op de homepage + agent-shell-menu + akkoord-regel bij registratie.
+- **AVG-wis-gat**: `delete_member_completely` nulde `ToolReviewNote.member_id` niet (dangling FK op engines
+  zonder SET-NULL-handhaving). Nu genuld zoals Post/GroupInvite + test-fixture die de gap dekt.
+- **SEO**: lege canonicals op `/agenda`+`/nieuws`+`/roadmap` gezet (+ defensieve conditionele canonical in
+  `_seo_head.html`); dode `robots.txt`-regel (`/profiel/`) vervangen door de echte login-gated paden; sitemap
+  bevat nu ook de homepage + hub-pagina's; ontbrekende meta-descriptions op agenda/nieuws toegevoegd.
+- **Op-last/weerbaarheid**: log-limieten op alle containers (`docker-compose.yml`, max-size 10m × 3) tegen
+  schijf-vollopen; nightly-jobs sturen nu één **Telegram-ping bij ≥1 gefaalde job** (`app/jobs/notify_ops.py`,
+  hergebruikt `notify_admins`) i.p.v. stil in een logfile; httpx-logger op WARNING zodat de Telegram-bot-token
+  niet meer in de logs lekt. M4-schijf 95% → 87% (~71GB vrijgemaakt, ongebruikte images).
+- **Content**: sitewide PREVIEW-banner geherformuleerd naar een blijvende open uitnodiging ("dewereldvan.ai is
+  open — …"); laatste stale "besloten preview / serieus met AI"-string in de invite-mail-fallback weggehaald.
+
 ## [0.89.0] - 2026-06-28
 ### Changed — Positionerings-pivot: van "elite/hoog" naar open & welcoming community
 - De community werd op een paar scherpe plekken nog "hoog" neergezet ("de scherpste / meest vooruitstrevende

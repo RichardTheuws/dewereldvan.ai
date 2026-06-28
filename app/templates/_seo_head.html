@@ -15,7 +15,7 @@
 {% if noindex %}
 <meta name="robots" content="noindex">
 {% else %}
-<link rel="canonical" href="{{ canonical }}">
+{% if canonical %}<link rel="canonical" href="{{ canonical }}">{% endif %}
 {% if seo_desc %}<meta name="description" content="{{ seo_desc | striptags | truncate(160) }}">{% endif %}
 <meta property="og:type" content="{{ og_type }}">
 <meta property="og:title" content="{{ seo_title }}">

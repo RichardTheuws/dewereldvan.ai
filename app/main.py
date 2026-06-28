@@ -54,6 +54,9 @@ from app.routers import (
 from app.services import members_service, post_service, seo_service
 
 logging.basicConfig(level=logging.INFO)
+# httpx logt elke uitgaande request-URL op INFO — inclusief de Telegram-bot-URL mét
+# token. Op WARNING zetten houdt dat secret (en de ruis) uit de logs.
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"

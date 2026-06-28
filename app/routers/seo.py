@@ -13,7 +13,7 @@ uit ``seo_service`` (settings.base_url).
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import Response
+from fastapi.responses import HTMLResponse, Response
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -21,6 +21,16 @@ from app.db import get_db
 from app.services import seo_service
 
 router = APIRouter(tags=["seo"])
+
+
+@router.get("/privacy", response_class=HTMLResponse)
+def privacy(request: Request) -> HTMLResponse:
+    """Publieke, indexeerbare privacyverklaring (AVG/ePrivacy). Statisch, geen DB."""
+    return request.app.state.templates.TemplateResponse(
+        request,
+        "privacy.html",
+        {"canonical": seo_service.canonical_url("/privacy")},
+    )
 
 
 @router.get("/sitemap.xml")
