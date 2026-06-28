@@ -1,0 +1,362 @@
+{# Cinematic intro voor first-time bezoekers — "Van leegte naar wereld".
+   Real-time generatief (canvas), climax = sterren morphen tot het wordmark
+   'dewereldvan.ai', geluid etherisch & warm (Web Audio, gesynthetiseerd → geen
+   asset te hosten). Naadloze dissolve naar de homepage eronder (zelfde sterren).
+
+   Veilig uitgerold: activeert ALLEEN bij ?intro=1 (preview) of een replay-event.
+   First-visit-auto staat klaar achter window.DWV_INTRO_FIRST (nu false) zodat
+   echte bezoekers niets zien tot dit goedgekeurd is.
+
+   Toegankelijk: geluid pas ná de klik (browser-policy + mandaat "maker klikt
+   zelf"); prefers-reduced-motion → statische landing zonder motion/geluid; werkt
+   zonder JS niet zichtbaar (overlay is hidden tot JS 'm toont = progressive
+   enhancement). #}
+<div id="dwv-intro" class="dwv-intro" hidden aria-hidden="true" role="dialog" aria-label="Welkom-intro">
+  <canvas id="dwv-intro-canvas" aria-hidden="true"></canvas>
+  <div class="dwv-intro__enter" id="dwv-intro-enter">
+    <div class="dwv-intro__eyebrow">dewereldvan.ai</div>
+    <button type="button" class="dwv-intro__go" id="dwv-intro-go">✦ Betreed de wereld</button>
+    <button type="button" class="dwv-intro__skip" id="dwv-intro-skip">overslaan</button>
+  </div>
+  <div class="dwv-intro__welcome" id="dwv-intro-welcome" aria-hidden="true">Welkom in de wereld van AI</div>
+</div>
+
+<style>
+  .dwv-intro{position:fixed;inset:0;z-index:9999;background:var(--bg-0,#04040e);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+    transition:opacity .9s ease}
+  .dwv-intro[hidden]{display:none}
+  .dwv-intro.is-out{opacity:0;pointer-events:none}
+  #dwv-intro-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .dwv-intro__enter{position:relative;z-index:2;text-align:center;
+    transition:opacity .6s ease, transform .6s ease}
+  .dwv-intro__enter.is-gone{opacity:0;transform:translateY(-8px);pointer-events:none}
+  .dwv-intro__eyebrow{font-family:"JetBrains Mono",monospace;font-size:.8rem;
+    letter-spacing:.32em;text-transform:uppercase;color:var(--muted,#9097c4);
+    margin-bottom:1.4rem;opacity:.85}
+  .dwv-intro__go{font-family:"Fraunces",Georgia,serif;font-size:1.45rem;
+    color:#f4f1ff;background:rgba(255,255,255,.04);
+    border:1px solid var(--line,rgba(255,255,255,.14));
+    border-radius:999px;padding:.85rem 1.9rem;cursor:pointer;
+    box-shadow:0 0 0 0 rgba(246,205,134,.0);
+    transition:box-shadow .4s ease, border-color .4s ease, background .4s ease}
+  .dwv-intro__go:hover,.dwv-intro__go:focus-visible{
+    border-color:rgba(246,205,134,.6);background:rgba(246,205,134,.07);
+    box-shadow:0 0 28px 2px rgba(246,205,134,.18);outline:none}
+  .dwv-intro__skip{display:block;margin:1.1rem auto 0;background:none;border:none;
+    color:var(--muted,#9097c4);font-size:.85rem;cursor:pointer;opacity:.6;
+    text-decoration:underline;text-underline-offset:3px}
+  .dwv-intro__skip:hover{opacity:1}
+  .dwv-intro__welcome{position:absolute;z-index:2;left:50%;bottom:22%;
+    transform:translateX(-50%);font-family:"Fraunces",Georgia,serif;
+    font-size:1.15rem;color:var(--muted,#9097c4);letter-spacing:.02em;
+    opacity:0;transition:opacity 1s ease;text-align:center;white-space:nowrap}
+  .dwv-intro__welcome.is-in{opacity:1}
+</style>
+
+<script>
+(function () {
+  var root = document.getElementById('dwv-intro');
+  if (!root || root.dataset.bound) return;
+  root.dataset.bound = '1';
+
+  var canvas = document.getElementById('dwv-intro-canvas');
+  var enterUI = document.getElementById('dwv-intro-enter');
+  var welcome = document.getElementById('dwv-intro-welcome');
+  var goBtn = document.getElementById('dwv-intro-go');
+  var skipBtn = document.getElementById('dwv-intro-skip');
+  var ctx = canvas.getContext('2d');
+  var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  var W, H, DPR, stars = [], targets = [], raf = null, audio = null;
+  var running = false, t0 = 0, connectChimes = 0;
+
+  // --- timeline (ms) ---
+  var IGNITE = 1200, CONNECT = 4000, PULLBACK = 6500, MORPH = 9200, HOLD = 10800, END = 11700;
+
+  function cookieSeen() { return /(?:^|;\s*)dwv_intro_seen=1/.test(document.cookie); }
+  function setSeen() { document.cookie = 'dwv_intro_seen=1; path=/; max-age=31536000; samesite=lax'; }
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.width = innerWidth * DPR; H = canvas.height = innerHeight * DPR;
+  }
+
+  function seedStars() {
+    var n = Math.min(240, Math.floor(innerWidth * innerHeight / 8500));
+    stars = Array.from({ length: n }, function (_, i) {
+      var gold = Math.random() < 0.12;
+      return {
+        x: Math.random() * W, y: Math.random() * H,
+        bx: 0, by: 0, tx: null, ty: null,
+        r: (Math.random() * 1.3 + 0.5) * DPR * (gold ? 1.7 : 1),
+        gold: gold, tw: Math.random() * Math.PI * 2,
+        vx: (Math.random() - .5) * 0.04 * DPR, vy: (Math.random() - .5) * 0.04 * DPR,
+        born: i / n  // gespreide fade-in
+      };
+    });
+    stars.forEach(function (s) { s.bx = s.x; s.by = s.y; });
+  }
+
+  // Tekst → particle-doelen: render het wordmark offscreen, sample de pixels.
+  function buildWordmarkTargets() {
+    targets = [];
+    var off = document.createElement('canvas');
+    off.width = W; off.height = H;
+    var o = off.getContext('2d');
+    var size = Math.min(W * 0.115, H * 0.22);
+    o.fillStyle = '#fff';
+    o.textAlign = 'center'; o.textBaseline = 'middle';
+    o.font = '600 ' + size + 'px "Fraunces", Georgia, serif';
+    o.fillText('dewereldvan.ai', W / 2, H / 2);
+    var img = o.getData ? null : o.getImageData(0, 0, W, H).data;
+    var stride = Math.max(4, Math.floor(6 * DPR));
+    for (var y = 0; y < H; y += stride) {
+      for (var x = 0; x < W; x += stride) {
+        if (img[(y * W + x) * 4 + 3] > 128) targets.push({ x: x, y: y });
+      }
+    }
+    // shuffle zodat de toewijzing organisch oogt
+    for (var i = targets.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1)), tmp = targets[i]; targets[i] = targets[j]; targets[j] = tmp;
+    }
+    stars.forEach(function (s, k) {
+      if (targets.length) { var tt = targets[k % targets.length]; s.tx = tt.x; s.ty = tt.y; }
+    });
+  }
+
+  function ease(p) { return p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+  function frame(now) {
+    var t = now - t0;
+    ctx.clearRect(0, 0, W, H);
+
+    // globale "camera": inzoom bij ignite, terugtrekken bij pullback
+    var scale = 1, cx = W / 2, cy = H / 2;
+    if (t < IGNITE) scale = 1.25 - 0.25 * ease(clamp01(t / IGNITE));
+    else if (t < PULLBACK) scale = 1.0;
+    else if (t < MORPH) scale = 1.0 - 0.28 * ease(clamp01((t - PULLBACK) / (MORPH - PULLBACK)));
+    else scale = 0.72;
+
+    // nevel-gloed bloeit op vanaf pullback
+    var neb = clamp01((t - CONNECT) / (PULLBACK - CONNECT)) * 0.5;
+    if (neb > 0) {
+      var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.6);
+      g.addColorStop(0, 'rgba(63,120,255,' + (neb * 0.5) + ')');
+      g.addColorStop(0.5, 'rgba(80,40,140,' + (neb * 0.22) + ')');
+      g.addColorStop(1, 'rgba(4,4,14,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    }
+
+    var morphP = t > PULLBACK ? ease(clamp01((t - PULLBACK) / (MORPH - PULLBACK))) : 0;
+
+    // verbindingslijnen (alleen tijdens connect-fase, bij het centrum)
+    if (t > IGNITE && t < PULLBACK + 400) {
+      var cp = clamp01((t - IGNITE) / (CONNECT - IGNITE));
+      var reach = 150 * DPR * cp;
+      ctx.lineWidth = DPR * 0.5;
+      for (var i = 0; i < stars.length; i += 2) {
+        var a = stars[i];
+        var dax = a.bx - cx, day = a.by - cy;
+        if (dax * dax + day * day > (reach * 1.2) * (reach * 1.2)) continue;
+        for (var j = i + 1; j < Math.min(stars.length, i + 10); j++) {
+          var b = stars[j];
+          var dx = a.bx - b.bx, dy = a.by - b.by, d = Math.hypot(dx, dy);
+          if (d < reach) {
+            var o2 = (1 - d / reach) * 0.28 * (1 - morphP);
+            ctx.strokeStyle = 'rgba(150,180,255,' + o2 + ')';
+            ctx.beginPath(); ctx.moveTo(a.bx, a.by); ctx.lineTo(b.bx, b.by); ctx.stroke();
+          }
+        }
+      }
+      // chimes synchroon met het ontstaan van verbindingen
+      var wantChimes = Math.floor(cp * 7);
+      while (audio && connectChimes < wantChimes) { audio.chime(connectChimes); connectChimes++; }
+    }
+
+    // sterren
+    ctx.save();
+    for (var k = 0; k < stars.length; k++) {
+      var s = stars[k];
+      // idle drift op de basispositie
+      s.bx += s.vx; s.by += s.vy;
+      if (s.bx < 0) s.bx = W; if (s.bx > W) s.bx = 0; if (s.by < 0) s.by = H; if (s.by > H) s.by = 0;
+
+      // positie: van basisveld → wordmark-doel (morph)
+      var px = s.bx, py = s.by, hasTarget = s.tx != null;
+      if (morphP > 0 && hasTarget) {
+        px = s.bx + (s.tx - s.bx) * morphP;
+        py = s.by + (s.ty - s.by) * morphP;
+      }
+      // camera-scale rond centrum
+      px = cx + (px - cx) * scale; py = cy + (py - cy) * scale;
+
+      // fade-in (gespreid), centrale ster eerst sterk
+      var appear = clamp01((t / IGNITE) - s.born * 0.8);
+      var isCenter = k === 0;
+      var tw = 0.55 + 0.45 * Math.sin(now * 0.001 + s.tw);
+      var alpha = appear * tw;
+      // niet-wordmark-sterren doven tijdens de morph
+      if (morphP > 0 && !hasTarget) alpha *= (1 - morphP);
+      // wordmark-sterren worden goud + helder op de climax
+      var goldish = s.gold || (morphP > 0.6 && hasTarget);
+      var rr = s.r * (isCenter ? (1 + 2 * (1 - clamp01(t / IGNITE))) : 1) * (morphP > 0 && hasTarget ? (1 - 0.25 * morphP) : 1);
+
+      ctx.beginPath(); ctx.arc(px, py, Math.max(0.3, rr), 0, Math.PI * 2);
+      if (goldish) {
+        var ga = clamp01(alpha + morphP * 0.4);
+        ctx.fillStyle = 'rgba(246,205,134,' + ga + ')';
+        ctx.shadowColor = 'rgba(246,205,134,.9)'; ctx.shadowBlur = (6 + 8 * morphP) * DPR;
+      } else {
+        ctx.fillStyle = 'rgba(225,232,255,' + (0.6 * alpha) + ')';
+        ctx.shadowBlur = 0;
+      }
+      ctx.fill();
+    }
+    ctx.restore(); ctx.shadowBlur = 0;
+
+    // welkom-tekst + uitfaden
+    if (t > HOLD && !welcome.classList.contains('is-in')) welcome.classList.add('is-in');
+    if (t > PULLBACK && audio && !audio._whooshed) { audio.whoosh(); audio._whooshed = true; }
+
+    if (t >= END) { finish(); return; }
+    raf = requestAnimationFrame(frame);
+  }
+
+  function finish() {
+    if (audio) audio.stop();
+    setSeen();
+    root.classList.add('is-out');
+    setTimeout(function () { teardown(); }, 950);
+  }
+
+  function teardown() {
+    if (raf) cancelAnimationFrame(raf); raf = null; running = false;
+    root.hidden = true; root.setAttribute('aria-hidden', 'true');
+    window.removeEventListener('resize', resize);
+  }
+
+  function startSequence() {
+    enterUI.classList.add('is-gone');
+    try { audio = makeAudio(); audio.start(); } catch (e) { audio = null; }
+    buildWordmarkTargets();
+    connectChimes = 0; t0 = performance.now();
+    raf = requestAnimationFrame(frame);
+  }
+
+  function show() {
+    if (running) return; running = true;
+    root.hidden = false; root.removeAttribute('aria-hidden');
+    root.classList.remove('is-out');
+    welcome.classList.remove('is-in');
+    resize(); seedStars();
+    window.addEventListener('resize', resize);
+
+    if (reduce) {
+      // Geen motion/geluid: toon een rustige statische landing, dan dissolve.
+      enterUI.classList.add('is-gone'); welcome.classList.add('is-in');
+      var o = ctx; o.clearRect(0, 0, W, H);
+      for (var i = 0; i < 90; i++) {
+        o.beginPath(); o.arc(Math.random() * W, Math.random() * H, 1.1 * DPR, 0, 7);
+        o.fillStyle = 'rgba(225,232,255,.5)'; o.fill();
+      }
+      setTimeout(finish, 2600);
+      return;
+    }
+    enterUI.classList.remove('is-gone');
+    // rustige idle-starfield achter de knop tot de bezoeker klikt
+    idleDraw();
+  }
+
+  var idleRaf = null;
+  function idleDraw() {
+    if (!running || !root.hidden === false) {}
+    ctx.clearRect(0, 0, W, H);
+    for (var k = 0; k < stars.length; k++) {
+      var s = stars[k]; s.bx += s.vx; s.by += s.vy;
+      if (s.bx < 0) s.bx = W; if (s.bx > W) s.bx = 0; if (s.by < 0) s.by = H; if (s.by > H) s.by = 0;
+      var tw = 0.4 + 0.35 * Math.sin(performance.now() * 0.001 + s.tw);
+      ctx.beginPath(); ctx.arc(s.bx, s.by, s.r, 0, 7);
+      ctx.fillStyle = (s.gold ? 'rgba(246,205,134,' : 'rgba(225,232,255,') + (0.45 * tw) + ')';
+      ctx.fill();
+    }
+    if (!t0) idleRaf = requestAnimationFrame(idleDraw);
+  }
+
+  // --- Web Audio: etherisch & warm (gesynthetiseerd, geen asset) ---
+  function makeAudio() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    var ac = new AC();
+    var master = ac.createGain(); master.gain.value = 0.0001; master.connect(ac.destination);
+    // procedurele reverb (impulse)
+    var conv = ac.createConvolver();
+    var len = ac.sampleRate * 2.6, buf = ac.createBuffer(2, len, ac.sampleRate);
+    for (var c = 0; c < 2; c++) { var d = buf.getChannelData(c);
+      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5); }
+    conv.buffer = buf; conv.connect(master);
+    var wet = ac.createGain(); wet.gain.value = 0.55; wet.connect(conv);
+    var dry = ac.createGain(); dry.gain.value = 0.7; dry.connect(master);
+
+    // warme pad-akkoord (A majeur-sfeer), zacht lowpass + trage filter-LFO
+    var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.Q.value = 0.6;
+    lp.connect(dry); lp.connect(wet);
+    var lfo = ac.createOscillator(); lfo.frequency.value = 0.07;
+    var lfoG = ac.createGain(); lfoG.gain.value = 350; lfo.connect(lfoG); lfoG.connect(lp.frequency); lfo.start();
+    var padG = ac.createGain(); padG.gain.value = 0.0; padG.connect(lp);
+    [110, 164.81, 277.18].forEach(function (f, idx) {
+      var o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      o.detune.value = (idx - 1) * 6; o.connect(padG); o.start();
+    });
+
+    var penta = [659.25, 783.99, 880, 987.77, 1174.66, 1318.51];
+    return {
+      _whooshed: false,
+      start: function () {
+        if (ac.state === 'suspended') ac.resume();
+        master.gain.setValueAtTime(0.0001, ac.currentTime);
+        master.gain.exponentialRampToValueAtTime(0.9, ac.currentTime + 2.2);
+        padG.gain.setValueAtTime(0.0001, ac.currentTime);
+        padG.gain.exponentialRampToValueAtTime(0.16, ac.currentTime + 2.5);
+      },
+      chime: function (i) {
+        var o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'sine'; o.frequency.value = penta[i % penta.length];
+        var n = ac.currentTime;
+        g.gain.setValueAtTime(0.0001, n);
+        g.gain.exponentialRampToValueAtTime(0.22, n + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, n + 1.9);
+        o.connect(g); g.connect(wet); g.connect(dry); o.start(n); o.stop(n + 2.0);
+      },
+      whoosh: function () {
+        var n = ac.currentTime, src = ac.createBufferSource();
+        var b = ac.createBuffer(1, ac.sampleRate * 1.2, ac.sampleRate), dd = b.getChannelData(0);
+        for (var i = 0; i < dd.length; i++) dd[i] = (Math.random() * 2 - 1);
+        src.buffer = b;
+        var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.8;
+        bp.frequency.setValueAtTime(300, n); bp.frequency.exponentialRampToValueAtTime(2200, n + 1.0);
+        var g = ac.createGain(); g.gain.setValueAtTime(0.0001, n);
+        g.gain.exponentialRampToValueAtTime(0.12, n + 0.25); g.gain.exponentialRampToValueAtTime(0.0001, n + 1.15);
+        src.connect(bp); bp.connect(g); g.connect(wet); src.start(n); src.stop(n + 1.2);
+      },
+      stop: function () {
+        try { master.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.8);
+          setTimeout(function () { ac.close(); }, 950); } catch (e) {}
+      }
+    };
+  }
+
+  goBtn.addEventListener('click', function () { if (!t0) { if (idleRaf) cancelAnimationFrame(idleRaf); startSequence(); } });
+  skipBtn.addEventListener('click', finish);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && running) finish(); });
+  window.addEventListener('dwv:intro-replay', function () {
+    teardown(); t0 = 0; connectChimes = 0; show();
+  });
+
+  // Activatie: ?intro=1 (preview) of eerste bezoek (achter de vlag) — anders niets.
+  var params = new URLSearchParams(location.search);
+  var firstVisit = (window.DWV_INTRO_FIRST === true) && !cookieSeen();
+  if (params.has('intro') || firstVisit) show();
+})();
+</script>

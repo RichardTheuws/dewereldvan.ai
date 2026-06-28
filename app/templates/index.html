@@ -170,6 +170,8 @@
     <footer class="c-head" style="border-top:1px solid var(--line);--d:880ms" data-reveal>
       <span class="muted">© 2026 dewereldvan.ai</span>
       <a class="link" href="/privacy">Privacy</a>
+      <button type="button" class="link" style="background:none;border:none;cursor:pointer;font:inherit"
+              onclick="window.dispatchEvent(new CustomEvent('dwv:intro-replay'))">↻ intro</button>
     </footer>
   </div>
 
@@ -177,5 +179,6 @@
   {% set concierge_context = "home" %}
   {% include "_concierge.html" %}
   {% include "ai/_cosmic_canvas.html" %}
+  {% include "_intro.html" %}
 </body>
 </html>

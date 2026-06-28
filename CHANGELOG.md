@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.92.0] - 2026-06-28
+### Added — Cinematic intro (prototype, achter vlag) voor first-time bezoekers
+- `_intro.html`: een real-time generatieve cosmic-intro — leegte → ignitie → verbindende constellatie →
+  pull-back → **sterren morphen tot het wordmark `dewereldvan.ai`** (tekst-naar-particles) → dissolve naar de
+  homepage (zelfde sterren = naadloos). Geluid **etherisch & warm**, volledig in de browser gesynthetiseerd
+  (Web Audio: warme pad + chimes per verbinding + reverb + whoosh) — geen audiobestand te hosten (lage op-last).
+- Toegankelijk: geluid pas ná de klik ("✦ Betreed de wereld"); `prefers-reduced-motion` → statische landing
+  zonder motion/geluid; skip + Esc; replay via "↻ intro" in de footer. Cookie `dwv_intro_seen` voor first-visit.
+- **Veilig uitgerold**: activeert alleen bij `?intro=1` (preview) of `window.DWV_INTRO_FIRST` (nu false) —
+  echte bezoekers zien nog niets. Zero-budget prototype; de €25 blijft gereserveerd voor gerichte upgrades.
+
 ## [0.91.0] - 2026-06-28
 ### Added — App-uptime-alert + bot-token geroteerd
 - **Uptime-monitoring**: `scripts/healthcheck.sh` + LaunchAgent `com.theuws.dewereldvan.healthcheck` (elke 5 min)
