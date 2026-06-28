@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -145,8 +146,21 @@ def register_member(
         # Concierge: herken een mede-oprichter op naam → éénmalig welkomstmoment.
         is_founder=is_founder_name(name),
     )
-    db.add(member)
-    db.flush()
+    # De bestaat-check hierboven en deze insert zijn niet atomair: bij een dubbele
+    # submit (of twee gelijktijdige requests) passeren beide de check vóór een van
+    # beide commit, en de tweede INSERT schendt ``ix_member_email``. We proberen de
+    # insert in een savepoint; een ``IntegrityError`` (race) rollt alleen dat
+    # savepoint terug — de buitenste sessie blijft bruikbaar — en wordt idempotent
+    # afgehandeld: haal het inmiddels-bestaande lid op en geef created=False terug.
+    try:
+        with db.begin_nested():
+            db.add(member)
+            db.flush()
+    except IntegrityError:
+        existing = get_member_by_email(db, email)
+        if existing is not None:
+            return RegistrationResult(member=existing, created=False)
+        raise
     if is_admin:
         db.add(
             AuditLog(

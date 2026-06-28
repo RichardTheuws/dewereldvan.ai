@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.96.3] - 2026-06-28
+### Fixed — "lid worden" gaf internal server error (500) bij dubbel-submit
+- Op lanceerdag meldde een lid (Bart) dat "lid worden" een internal server error gaf. Productielog: `POST /register`
+  → **500** met `psycopg.errors.UniqueViolation` op `ix_member_email`. Oorzaak: registratie is bedoeld idempotent
+  (`get_member_by_email` → `created=False`), maar de bestaat-check en de `INSERT` zijn **niet atomair**. Bij een
+  dubbel-submit (of twee gelijktijdige requests) passeren beide de check vóór een van beide commit, en de tweede
+  `INSERT` schendt de unique-constraint → onafgevangen `IntegrityError` → 500. Klassieke TOCTOU-race.
+- Fix: de `INSERT` draait nu in een **savepoint** (`begin_nested`); een `IntegrityError` (race) rolt alleen dat
+  savepoint terug — de sessie blijft bruikbaar — en wordt **idempotent** afgehandeld: het inmiddels-bestaande lid
+  wordt opgehaald en als `created=False` teruggegeven (dezelfde vriendelijke bevestiging, geen 500). Identiek aan
+  het bestaande `idea_service.vote()`-patroon.
+- Test-harness: het pysqlite-savepoint-recept (expliciete `BEGIN` + `PRAGMA foreign_keys=ON` op connect) toegevoegd
+  aan de conftest-engine, zodat SQLite `SAVEPOINT`-rollback en `ON DELETE`-FK-acties faithfully werken — vereist om
+  de race-recovery (en latente isolatie-lekkage in de vote-tests) correct te testen. Regressie-test toegevoegd.
+
 ## [0.96.2] - 2026-06-28
 ### Fixed — /proef gaf 502 (lege "probeer je eigen link") — dubbele Content-Length
 - Een echt lid meldde dat "probeer het met je eigen link" niks deed: het lees-blok flitste en verdween, geen

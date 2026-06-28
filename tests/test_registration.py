@@ -41,6 +41,41 @@ def test_duplicate_registration_is_idempotent(db):
     assert count == 1
 
 
+def test_concurrent_duplicate_registration_recovers_from_integrityerror(db, monkeypatch):
+    """Race / dubbel-submit: de bestaat-check ziet het lid nog niet, de INSERT wel.
+
+    Reproduceert het launch-incident (Bart's dubbel-submit → 500). Het lid bestaat
+    al in de DB, maar de ``get_member_by_email``-check geeft bij de eerste aanroep
+    (de pre-insert-check) ``None`` terug — alsof de gelijktijdige aanmelding nog niet
+    zichtbaar was. De daaropvolgende INSERT schendt ``ix_member_email``; de service
+    moet dat afvangen en idempotent ``created=False`` teruggeven i.p.v. een 500.
+    """
+    import app.services.registration as reg
+
+    first = register_member(db, name="Bart", email="race@example.com", now=NOW)
+    assert first.created is True
+
+    real_lookup = reg.get_member_by_email
+    calls = {"n": 0}
+
+    def flaky_lookup(session, email):
+        calls["n"] += 1
+        if calls["n"] == 1:  # alleen de pre-insert bestaat-check faalt te zien
+            return None
+        return real_lookup(session, email)
+
+    monkeypatch.setattr(reg, "get_member_by_email", flaky_lookup)
+
+    second = register_member(db, name="Bart Opnieuw", email="race@example.com", now=NOW)
+    assert second.created is False  # geen 500: idempotent hersteld
+    assert second.member.id == first.member.id
+
+    count = db.scalar(
+        select(func.count()).select_from(Member).where(Member.email == "race@example.com")
+    )
+    assert count == 1
+
+
 def test_duplicate_is_case_insensitive(db):
     register_member(db, name="A", email="Case@Example.com", now=NOW)
     again = register_member(db, name="B", email="case@example.com", now=NOW)

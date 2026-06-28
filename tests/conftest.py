@@ -54,7 +54,7 @@ from app.models import (  # noqa: E402
     ProfileEmphasis,
     Visibility,
 )
-from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy import create_engine, event  # noqa: E402
 from sqlalchemy.orm import Session, sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
@@ -89,6 +89,27 @@ def engine():
         poolclass=StaticPool,
         future=True,
     )
+    # pysqlite's legacy transaction handling breaks SAVEPOINT (nested) rollback:
+    # after a ``begin_nested`` IntegrityError the outer transaction is no longer
+    # rolled back cleanly, so rows leak between tests. The documented SQLAlchemy
+    # recipe disables pysqlite's implicit BEGIN and emits it ourselves, restoring
+    # correct SAVEPOINT semantics — required to faithfully test the idempotent
+    # race recovery in registration_service / idea_service (which use savepoints).
+    @event.listens_for(eng, "connect")
+    def _sqlite_connect(dbapi_connection, _record):
+        dbapi_connection.isolation_level = None
+        # Enforce FKs at connect time (autocommit, no transaction active yet):
+        # ``PRAGMA foreign_keys`` is a no-op inside a transaction, and our explicit
+        # BEGIN below means one is always active by the time a test runs — so the
+        # pragma must be set here for ON DELETE SET NULL/CASCADE to fire.
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+    @event.listens_for(eng, "begin")
+    def _sqlite_emit_begin(conn):
+        conn.exec_driver_sql("BEGIN")
+
     Base.metadata.create_all(eng)
     yield eng
     Base.metadata.drop_all(eng)

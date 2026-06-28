@@ -5,7 +5,12 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-28 · **Versie**: 0.96.2 · **Branch**: `main`
+**Laatste update**: 2026-06-28 · **Versie**: 0.96.3 · **Branch**: `main`
+
+> **0.96.3** — Lanceerdag-fix: "lid worden" gaf een 500 (`UniqueViolation` op `ix_member_email`) bij
+> dubbel-submit — de idempotente bestaat-check en de INSERT waren niet atomair (TOCTOU-race). `register_member`
+> draait de INSERT nu in een savepoint en handelt de race idempotent af (`created=False`, geen 500). Conftest
+> kreeg het pysqlite-savepoint-recept (expliciete BEGIN + `PRAGMA foreign_keys=ON`) om dit faithfully te testen.
 
 ## Waar het draait
 - **🚀 LIVE (volledige app)**: **https://dewereldvan.ai** (apex, canonical) + `www` + `app.dewereldvan.ai` —
