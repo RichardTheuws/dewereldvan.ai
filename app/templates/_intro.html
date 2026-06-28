@@ -22,7 +22,7 @@
 
 <style>
   .dwv-intro{position:fixed;inset:0;z-index:9999;background:#04040e;
-    display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity 1s ease}
+    display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity 1.4s ease}
   .dwv-intro[hidden]{display:none}
   .dwv-intro.is-out{opacity:0;pointer-events:none}
   #dwv-intro-2d,#dwv-intro-3d{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -61,6 +61,17 @@
   var renderer, scene, camera, group, mesh = null, sampled = [];
   var API = { ready:false, failed:false };
 
+  // Zachte ronde glow-sprite voor de knopen (anders rendert PointsMaterial harde
+  // witte vierkanten — vooral lelijk van dichtbij).
+  var _dot = null;
+  function dotTex(){
+    if(_dot) return _dot;
+    var cv=document.createElement('canvas'); cv.width=cv.height=64; var c=cv.getContext('2d');
+    var g=c.createRadialGradient(32,32,0,32,32,32);
+    g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(.35,'rgba(255,228,178,.85)'); g.addColorStop(1,'rgba(255,228,178,0)');
+    c.fillStyle=g; c.fillRect(0,0,64,64); _dot=new THREE.CanvasTexture(cv); return _dot;
+  }
+
   API.mount = function(canvas){
     return new Promise(function(resolve){
       try{
@@ -71,8 +82,8 @@
         camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
         camera.position.set(0,0,4.4);
         scene.add(new THREE.AmbientLight(0x3a44aa, 0.7));
-        var pg=new THREE.PointLight(0xf6cd86,2.4,60); pg.position.set(3.5,2.5,4); scene.add(pg);
-        var pb=new THREE.PointLight(0x3a6bff,2.2,60); pb.position.set(-3.5,-1.5,2); scene.add(pb);
+        var pg=new THREE.PointLight(0xf6cd86,1.7,60); pg.position.set(3.5,2.5,4); scene.add(pg);
+        var pb=new THREE.PointLight(0x3a6bff,1.6,60); pb.position.set(-3.5,-1.5,2); scene.add(pb);
         group = new THREE.Group(); scene.add(group);
         new GLTFLoader().load('/static/models/wereld-van-ai.glb?v={{ asset_ver }}', function(gltf){
           var root = gltf.scene;
@@ -84,11 +95,9 @@
           root.traverse(function(o){
             if(!o.isMesh) return;
             var geo = o.geometry;
-            o.material = new THREE.MeshStandardMaterial({color:0x121248, metalness:.45, roughness:.35, transparent:true, opacity:.26});
+            o.material = new THREE.MeshStandardMaterial({color:0x121248, metalness:.45, roughness:.4, transparent:true, opacity:.20});
             o.add(new THREE.LineSegments(new THREE.WireframeGeometry(geo),
-              new THREE.LineBasicMaterial({color:0xf6cd86, transparent:true, opacity:.65, blending:THREE.AdditiveBlending})));
-            o.add(new THREE.Points(geo,
-              new THREE.PointsMaterial({color:0xffe6b4, size:.035, transparent:true, opacity:.9, blending:THREE.AdditiveBlending, sizeAttenuation:true})));
+              new THREE.LineBasicMaterial({color:0xf6cd86, transparent:true, opacity:.6, blending:THREE.AdditiveBlending})));
             if(!mesh){ mesh=o; var pos=geo.attributes.position, st=Math.max(1,Math.floor(pos.count/1400));
               for(var i=0;i<pos.count;i+=st) sampled.push(new THREE.Vector3().fromBufferAttribute(pos,i)); }
           });
@@ -97,10 +106,18 @@
       }catch(e){ API.failed=true; resolve(); }
     });
   };
-  API.render = function(ms){
+  var _rotY = 0, _lastMs = null;
+  // camDist = camera-afstand (voor de openings-uitzoom), spin = rotatie/drift-factor
+  // (0 tijdens de uitzoom → 1 daarna). Rotatie accumuleert zodat spin-ramp geen sprong geeft.
+  API.render = function(ms, camDist, spin){
     if(!renderer) return;
-    if(group){ group.rotation.y = ms*0.00026; group.rotation.x = Math.sin(ms*0.00018)*0.14; }
-    camera.position.x = Math.sin(ms*0.00014)*0.55; camera.position.y = Math.cos(ms*0.00011)*0.3; camera.lookAt(0,0,0);
+    spin = (spin==null) ? 1 : spin;
+    var dt = (_lastMs==null) ? 16 : Math.min(60, ms-_lastMs); _lastMs = ms;
+    _rotY += dt*0.00026*spin;
+    if(group){ group.rotation.y = _rotY; group.rotation.x = Math.sin(ms*0.00018)*0.14*spin; }
+    var z = (camDist==null) ? 4.4 : camDist;
+    camera.position.set(Math.sin(ms*0.00014)*0.55*spin, Math.cos(ms*0.00011)*0.3*spin, z);
+    camera.lookAt(0,0,0);
     renderer.render(scene,camera);
   };
   API.resize = function(){ if(renderer){ renderer.setSize(innerWidth,innerHeight,false); camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); } };
@@ -136,10 +153,11 @@
   var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
   var W,H,DPR,cx,cy, bg=[], flux=[], raf=null, idleRaf=null, audio=null;
-  var running=false, t0=0, chimes=0, use3d=false, seeded=false, outroStarted=false, brandPre=null;
+  var running=false, t0=0, chimes=0, use3d=false, seeded=false, warpStarted=false;
 
-  // tijdlijn (ms na de klik)
-  var WORLDIN=1500, TRANS=4900, MORPH0=5100, MORPH1=8300, WELC=8600, OUTRO=9900, END=11800;
+  // tijdlijn (ms na de klik): EMERGE = extreme close-up → uitzoom; TRANS = wereld
+  // valt uiteen in particles; MORPH = wordmark vormt; WARP = hyperspace → homepage.
+  var EMERGE=2600, TRANS=5600, MORPH0=5800, MORPH1=8700, WELC=8900, WARP=9900, END=12500;
 
   function seen(){ return /(?:^|;\s*)dwv_intro_seen=1/.test(document.cookie); }
   function setSeen(){ document.cookie='dwv_intro_seen=1; path=/; max-age=31536000; samesite=lax'; }
@@ -192,10 +210,15 @@
     var t = now - t0;
     var morph = t>MORPH0 ? smoother((t-MORPH0)/(MORPH1-MORPH0)) : 0;
 
-    // 3D act 1: render de wereld + fade 'm in/uit rond de overgang
+    // 3D: Act 0 = extreme close-up → vloeiende uitzoom (vertragend), rotatie/drift
+    // bouwt mee op; daarna behold; rond de overgang faden we de wereld uit.
     if (use3d && window.__DWV3D__){
-      if (t < TRANS+1300){ window.__DWV3D__.render(now);
-        var a = t<WORLDIN ? smooth(t/WORLDIN) : (t<TRANS ? 1 : 1-smooth((t-TRANS)/1200));
+      if (t < TRANS+1300){
+        var camDist, spin;
+        if (t < EMERGE){ var em=smoother(t/EMERGE); camDist=2.45+(4.4-2.45)*em; spin=em; }
+        else { camDist=4.4; spin=1; }
+        window.__DWV3D__.render(now, camDist, spin);
+        var a = t<500 ? smooth(t/500) : (t<TRANS ? 1 : 1-smooth((t-TRANS)/1200));
         set3dOpacity(a);
       } else if (c3.style.opacity!=='0'){ set3dOpacity(0); }
     }
@@ -203,75 +226,97 @@
     // overgang: knopen → particles
     if (t>=TRANS && !seeded) seedFromWorld();
 
-    // 2D-laag: trails (zachter tijdens beweging, harder tijdens morph voor crisp tekst)
-    var fade = morph>0?0.34:0.14;
+    // 2D-laag: trails. Warp = lange strepen (lage fade); morph = crisp (hoge fade).
+    var fade = warpStarted?0.09:(morph>0?0.34:0.14);
     ctx.globalCompositeOperation='source-over'; ctx.fillStyle='rgba(4,4,14,'+fade+')'; ctx.fillRect(0,0,W,H);
 
-    // nevel-gloed groeit rond de overgang
-    var neb = smooth((t-WORLDIN)/(TRANS-WORLDIN))*0.4;
-    if(neb>0){ var g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*.62);
-      g.addColorStop(0,'rgba(60,120,255,'+(neb*.4)+')'); g.addColorStop(.5,'rgba(96,52,168,'+(neb*.18)+')'); g.addColorStop(1,'rgba(4,4,14,0)');
-      ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+    // nevel-gloed groeit rond de overgang (niet tijdens de warp)
+    if(!warpStarted){ var neb = smooth((t-EMERGE)/(TRANS-EMERGE))*0.4;
+      if(neb>0){ var g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*.62);
+        g.addColorStop(0,'rgba(60,120,255,'+(neb*.4)+')'); g.addColorStop(.5,'rgba(96,52,168,'+(neb*.18)+')'); g.addColorStop(1,'rgba(4,4,14,0)');
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H); } }
 
     ctx.globalCompositeOperation='lighter';
 
-    // achtergrond-sterren (parallax + twinkle)
-    var bgA = smooth(t/(WORLDIN*1.2));
-    for(var i=0;i<bg.length;i++){ var s=bg[i]; s.x+=s.vx; s.y+=s.vy;
-      if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;
-      var tw=.5+.5*Math.sin(now*.001+s.tw);
-      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.2832);
-      ctx.fillStyle=(s.gold?'rgba(246,205,134,':'rgba(200,214,255,')+(bgA*tw*.5)+')'; ctx.fill(); }
+    if(warpStarted){
+      drawWarp(t);
+    } else {
+      // achtergrond-sterren (parallax + twinkle)
+      var bgA = smooth(t/1400);
+      for(var i=0;i<bg.length;i++){ var s=bg[i]; s.x+=s.vx; s.y+=s.vy;
+        if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;
+        var tw=.5+.5*Math.sin(now*.001+s.tw);
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.2832);
+        ctx.fillStyle=(s.gold?'rgba(246,205,134,':'rgba(200,214,255,')+(bgA*tw*.5)+')'; ctx.fill(); }
 
-    // particles: pas vanaf de overgang (ze ZIJN de uiteengevallen wereld)
-    if(seeded){
-      for(var k=0;k<flux.length;k++){ var f=flux[k];
-        var px,py;
-        if(outroStarted && brandPre){ var op=smoother((t-OUTRO)/1000);
-          px=f.tx+(brandPre.x-f.tx)*op; py=f.ty+(brandPre.y-f.ty)*op;
-          var oa=1-op*0.85, orr=1-0.5*op;
-        } else { var mp=smoother((morph-f.delay)/(1-f.delay));
-          px=f.ox+(f.tx-f.ox)*mp; py=f.oy+(f.ty-f.oy)*mp; var oa=1, orr=1, mpv=mp; }
-        var tw=.6+.4*Math.sin(now*.0014+f.tw);
-        var prog = outroStarted?1:smoother((morph-f.delay)/(1-f.delay));
-        var gold = prog>0.2;
-        var alpha=(gold?(0.55+0.45*prog):0.55)*tw*(oa||1);
-        var rr=f.r*(1-0.25*prog)*(orr||1);
-        ctx.beginPath(); ctx.arc(px,py,Math.max(.4,rr),0,6.2832);
-        ctx.fillStyle=(gold?'rgba(248,210,140,':'rgba(214,224,255,')+clamp01(alpha)+')'; ctx.fill();
+      // particles: pas vanaf de overgang (ze ZIJN de uiteengevallen wereld)
+      if(seeded){
+        for(var k=0;k<flux.length;k++){ var f=flux[k];
+          var mp=smoother((morph-f.delay)/(1-f.delay));
+          var px=f.ox+(f.tx-f.ox)*mp, py=f.oy+(f.ty-f.oy)*mp;
+          var tw2=.6+.4*Math.sin(now*.0014+f.tw);
+          var gold=mp>0.2;
+          var alpha=(gold?(0.55+0.45*mp):0.55)*tw2;
+          var rr=f.r*(1-0.25*mp);
+          ctx.beginPath(); ctx.arc(px,py,Math.max(.4,rr),0,6.2832);
+          ctx.fillStyle=(gold?'rgba(248,210,140,':'rgba(214,224,255,')+clamp01(alpha)+')'; ctx.fill();
+        }
+        if(morph>0.6){ var gg=ctx.createRadialGradient(cx,cy,0,cx,cy,W*.42);
+          gg.addColorStop(0,'rgba(246,205,134,'+((morph-0.6)*.10)+')'); gg.addColorStop(1,'rgba(246,205,134,0)');
+          ctx.fillStyle=gg; ctx.fillRect(0,0,W,H); }
       }
-      if(morph>0.6 && !outroStarted){ var gg=ctx.createRadialGradient(cx,cy,0,cx,cy,W*.42);
-        gg.addColorStop(0,'rgba(246,205,134,'+((morph-0.6)*.10)+')'); gg.addColorStop(1,'rgba(246,205,134,0)');
-        ctx.fillStyle=gg; ctx.fillRect(0,0,W,H); }
     }
 
     ctx.globalCompositeOperation='source-over';
 
     if(audio){ var w=Math.floor(smooth(t/TRANS)*8); while(chimes<w){ audio.chime(chimes); chimes++; } }
-    if(t>WELC && t<OUTRO && !welcome.classList.contains('is-in')) welcome.classList.add('is-in');
+    if(t>WELC && t<WARP && !welcome.classList.contains('is-in')) welcome.classList.add('is-in');
     if(t>TRANS && audio && !audio._w){ audio.whoosh(); audio._w=true; }
     if(audio && morph>0 && !audio._swelled){ audio.swell(); audio._swelled=true; }
-    if(t>OUTRO && !outroStarted) startOutro();
+    if(t>WARP && !warpStarted) startWarp();
 
     if(t>=END){ teardown(); return; }
     raf=requestAnimationFrame(frame);
   }
 
-  function startOutro(){
-    outroStarted=true; setSeen(); if(audio) audio.stop();
-    var b=document.querySelector('.brand');
-    if(b){ var r=b.getBoundingClientRect(); var bx=(r.left+r.width*.5)*DPR, by=(r.top+r.height*.5)*DPR;
-      brandPre={x:bx,y:by}; } else { brandPre={x:cx,y:-H*.1}; }
+  // Warp: sterren + wordmark-particles stretchen radiaal weg van het centrum,
+  // versnellend (hyperspace). De trail-fade maakt er strepen van; een centrale
+  // flits + de overlay-fade verbergen de cut naar de homepage (die meebloeit).
+  function drawWarp(t){
+    var wp=clamp01((t-WARP)/(END-WARP)), acc=wp*wp, reach=Math.hypot(W,H)*1.15;
+    for(var i=0;i<bg.length;i++){ var s=bg[i];
+      var r=s._r0+reach*acc*s._sp, px=cx+Math.cos(s._ang)*r, py=cy+Math.sin(s._ang)*r;
+      ctx.beginPath(); ctx.arc(px,py,s.r*(1+2*acc),0,6.2832);
+      ctx.fillStyle='rgba(200,214,255,'+clamp01(.7*(1-wp*.3))+')'; ctx.fill(); }
+    for(var k=0;k<flux.length;k++){ var f=flux[k];
+      var r2=f._r0+reach*acc*f._sp, px2=cx+Math.cos(f._ang)*r2, py2=cy+Math.sin(f._ang)*r2;
+      var a=clamp01(1-smooth((wp-0.25)/0.75));
+      ctx.beginPath(); ctx.arc(px2,py2,f.r*(1+1.5*acc),0,6.2832);
+      ctx.fillStyle='rgba(248,210,140,'+a+')'; ctx.fill(); }
+    var fl=Math.sin(clamp01(wp/0.55)*Math.PI)*0.55;
+    if(fl>0){ var g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*0.5);
+      g.addColorStop(0,'rgba(225,232,255,'+fl+')'); g.addColorStop(.4,'rgba(150,180,255,'+(fl*.4)+')'); g.addColorStop(1,'rgba(4,4,14,0)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+  }
+
+  function startWarp(){
+    warpStarted=true; setSeen();
+    if(audio){ audio.warp(); audio.fadeOut(2300); }
+    // snapshot: radiale richting + startradius per ster/particle (vanuit het centrum)
+    for(var i=0;i<bg.length;i++){ var s=bg[i]; s._ang=Math.atan2(s.y-cy,s.x-cx); s._r0=Math.hypot(s.x-cx,s.y-cy); s._sp=rnd(.5,1.3); }
+    for(var k=0;k<flux.length;k++){ var f=flux[k]; var dx=f.tx-cx, dy=f.ty-cy;
+      f._ang=(dx||dy)?Math.atan2(dy,dx):rnd(0,6.28); f._r0=Math.hypot(dx,dy); f._sp=rnd(.7,1.5); }
     welcome.classList.remove('is-in');
+    // overdracht: de homepage-hero bloeit mee terwijl de warp de cut verbergt
     try{ window.dispatchEvent(new CustomEvent('dwv:intro-handoff')); }catch(e){}
-    root.classList.add('is-out');
+    setTimeout(function(){ root.classList.add('is-out'); }, 650);
   }
 
   function finish(){ if(audio) audio.stop(); setSeen();
     try{ window.dispatchEvent(new CustomEvent('dwv:intro-handoff')); }catch(e){}
-    root.classList.add('is-out'); setTimeout(teardown,1050); }
+    root.classList.add('is-out'); setTimeout(teardown,1450); }
   function teardown(){ if(raf)cancelAnimationFrame(raf); raf=null; if(idleRaf)cancelAnimationFrame(idleRaf); idleRaf=null;
-    running=false; t0=0; seeded=false; outroStarted=false; brandPre=null;
+    running=false; t0=0; seeded=false; warpStarted=false;
     try{ if(window.__DWV3D__&&window.__DWV3D__.dispose) window.__DWV3D__.dispose(); }catch(e){}
     root.hidden=true; root.setAttribute('aria-hidden','true'); window.removeEventListener('resize',resize); }
 
@@ -331,7 +376,21 @@
         for(var i=0;i<dd.length;i++)dd[i]=Math.random()*2-1; src.buffer=bb; var bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=.8;
         bp.frequency.setValueAtTime(280,n); bp.frequency.exponentialRampToValueAtTime(2400,n+1.1); var g=ac.createGain();
         g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.12,n+.3); g.gain.exponentialRampToValueAtTime(.0001,n+1.25); src.connect(bp); bp.connect(g); g.connect(wet); src.start(n); src.stop(n+1.3); },
-      stop:function(){ try{ master.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.9); setTimeout(function(){ac.close();},1000);}catch(e){} } };
+      // Stijgende warp-sweep (hyperspace) + shimmer naar de climax.
+      warp:function(){ var n=ac.currentTime;
+        var src=ac.createBufferSource(); var bb=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate),dd=bb.getChannelData(0);
+        for(var i=0;i<dd.length;i++)dd[i]=Math.random()*2-1; src.buffer=bb;
+        var bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=1.1;
+        bp.frequency.setValueAtTime(200,n); bp.frequency.exponentialRampToValueAtTime(3600,n+1.7);
+        var g=ac.createGain(); g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.18,n+.6); g.gain.exponentialRampToValueAtTime(.0001,n+2);
+        src.connect(bp); bp.connect(g); g.connect(wet); g.connect(dry); src.start(n); src.stop(n+2);
+        var o=ac.createOscillator(),og=ac.createGain(); o.type='sine'; o.frequency.setValueAtTime(440,n); o.frequency.exponentialRampToValueAtTime(1320,n+1.6);
+        og.gain.setValueAtTime(.0001,n); og.gain.exponentialRampToValueAtTime(.12,n+.8); og.gain.exponentialRampToValueAtTime(.0001,n+2.1); o.connect(og); og.connect(wet); og.connect(dry); o.start(n); o.stop(n+2.2); },
+      // Zachte, lange uitfade (geen abrupte stop) — lost door de warp heen op.
+      fadeOut:function(ms){ try{ var s=(ms||900)/1000; master.gain.cancelScheduledValues(ac.currentTime);
+        master.gain.setValueAtTime(Math.max(master.gain.value,.0001),ac.currentTime);
+        master.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+s); setTimeout(function(){try{ac.close();}catch(e){}}, ms+200);}catch(e){} },
+      stop:function(){ this.fadeOut(1100); } };
   }
 
   goBtn.addEventListener('click', function(){ if(!t0){ if(idleRaf){cancelAnimationFrame(idleRaf);idleRaf=null;} startSequence(); } });

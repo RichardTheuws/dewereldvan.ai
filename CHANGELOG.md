@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.95.0] - 2026-06-28
+### Changed — Intro: openings-uitzoom, warp-overgang, vloeiende audio (regie-noten verwerkt)
+- **Opening**: de wereld vult nu het frame bij de start (gouden wireframe-lattice-globe) en **zoomt vloeiend,
+  vertragend uit** naar het overzicht; rotatie/drift bouwen pas dáárna op (geen sprong — rotatie accumuleert).
+- **Overgang naar de homepage = klassieke warp**: de wordmark-particles + sterren stretchen radiaal weg in
+  hyperspace-strepen met een centrale lichtflits; in die flits draagt de intro over (`dwv:intro-handoff`) en
+  bloeit de homepage-hero mee op. Veel vloeiender dan de dissolve.
+- **Audio lost niet meer abrupt op**: lange, zachte uitfade (~2,3s) + een stijgende warp-sweep/shimmer die de
+  overgang draagt (`fadeOut`/`warp`).
+- **Wereld opgeschoond**: de losse node-points renderden als harde witte vierkanten (PointsMaterial) — verwijderd;
+  de gouden wireframe-lattice is nu de ster. Lampen getemperd zodat vlakken van dichtbij niet uitblinken.
+- Browser-geverifieerd: volledige boog draait zonder console-errors; warp draagt over aan de hero; nette
+  fallbacks (geen WebGL → 2D-intro; reduced-motion → statisch wordmark).
+
 ## [0.94.0] - 2026-06-28
 ### Added — 3D "Wereld van AI" als centerpiece van de intro (Meshy + Three.js)
 - Act 1 van de intro is nu een **echte 3D gloeiende AI-wereld**: een Meshy-gegenereerde lattice-globe van
