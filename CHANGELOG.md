@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.92.1] - 2026-06-28
+### Changed — Cinematic intro: scherpere wordmark + meer cinematische diepte
+- Engine herbouwd: eigen dichte particle-pool (tot **3200** punten op desktop, 1600 mobiel) i.p.v. 240
+  hergebruikte sterren → leesbare, scherpe wordmark-vorming. Font gegarandeerd geladen (`document.fonts.ready`)
+  vóór het samplen, dichtere sampling, additieve glow + motion-trails, parallax-diepte en een per-letter
+  gestagede morph (links→rechts). Pixel-geverifieerd: wordmark-band 756×72px, gecentreerd.
+- Meshy Studio API-key veilig opgeslagen in de M4-`.env` (saldo gevalideerd) voor de aankomende 3D-`Wereld van AI`.
+
 ## [0.92.0] - 2026-06-28
 ### Added — Cinematic intro (prototype, achter vlag) voor first-time bezoekers
 - `_intro.html`: een real-time generatieve cosmic-intro — leegte → ignitie → verbindende constellatie →

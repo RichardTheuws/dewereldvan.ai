@@ -1,16 +1,12 @@
 {# Cinematic intro voor first-time bezoekers — "Van leegte naar wereld".
-   Real-time generatief (canvas), climax = sterren morphen tot het wordmark
-   'dewereldvan.ai', geluid etherisch & warm (Web Audio, gesynthetiseerd → geen
-   asset te hosten). Naadloze dissolve naar de homepage eronder (zelfde sterren).
+   Real-time generatief (canvas). Climax = een dichte particle-zwerm morpht tot
+   het wordmark 'dewereldvan.ai' (tekst dicht gesampled, font gegarandeerd
+   geladen), met additieve glow + motion-trails. Geluid etherisch & warm
+   (Web Audio, gesynthetiseerd → geen asset). Naadloze dissolve naar de homepage.
 
-   Veilig uitgerold: activeert ALLEEN bij ?intro=1 (preview) of een replay-event.
-   First-visit-auto staat klaar achter window.DWV_INTRO_FIRST (nu false) zodat
-   echte bezoekers niets zien tot dit goedgekeurd is.
-
-   Toegankelijk: geluid pas ná de klik (browser-policy + mandaat "maker klikt
-   zelf"); prefers-reduced-motion → statische landing zonder motion/geluid; werkt
-   zonder JS niet zichtbaar (overlay is hidden tot JS 'm toont = progressive
-   enhancement). #}
+   Veilig: activeert ALLEEN bij ?intro=1 (preview) of window.DWV_INTRO_FIRST.
+   Toegankelijk: geluid pas ná de klik; prefers-reduced-motion → statisch
+   wordmark + welkom, geen motion/geluid; werkt onzichtbaar zonder JS. #}
 <div id="dwv-intro" class="dwv-intro" hidden aria-hidden="true" role="dialog" aria-label="Welkom-intro">
   <canvas id="dwv-intro-canvas" aria-hidden="true"></canvas>
   <div class="dwv-intro__enter" id="dwv-intro-enter">
@@ -22,36 +18,31 @@
 </div>
 
 <style>
-  .dwv-intro{position:fixed;inset:0;z-index:9999;background:var(--bg-0,#04040e);
+  .dwv-intro{position:fixed;inset:0;z-index:9999;background:#04040e;
     display:flex;align-items:center;justify-content:center;overflow:hidden;
-    transition:opacity .9s ease}
+    transition:opacity 1s ease}
   .dwv-intro[hidden]{display:none}
   .dwv-intro.is-out{opacity:0;pointer-events:none}
   #dwv-intro-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   .dwv-intro__enter{position:relative;z-index:2;text-align:center;
-    transition:opacity .6s ease, transform .6s ease}
-  .dwv-intro__enter.is-gone{opacity:0;transform:translateY(-8px);pointer-events:none}
+    transition:opacity .7s ease, transform .7s ease}
+  .dwv-intro__enter.is-gone{opacity:0;transform:translateY(-10px);pointer-events:none}
   .dwv-intro__eyebrow{font-family:"JetBrains Mono",monospace;font-size:.8rem;
-    letter-spacing:.32em;text-transform:uppercase;color:var(--muted,#9097c4);
-    margin-bottom:1.4rem;opacity:.85}
-  .dwv-intro__go{font-family:"Fraunces",Georgia,serif;font-size:1.45rem;
-    color:#f4f1ff;background:rgba(255,255,255,.04);
-    border:1px solid var(--line,rgba(255,255,255,.14));
-    border-radius:999px;padding:.85rem 1.9rem;cursor:pointer;
-    box-shadow:0 0 0 0 rgba(246,205,134,.0);
-    transition:box-shadow .4s ease, border-color .4s ease, background .4s ease}
-  .dwv-intro__go:hover,.dwv-intro__go:focus-visible{
-    border-color:rgba(246,205,134,.6);background:rgba(246,205,134,.07);
-    box-shadow:0 0 28px 2px rgba(246,205,134,.18);outline:none}
-  .dwv-intro__skip{display:block;margin:1.1rem auto 0;background:none;border:none;
-    color:var(--muted,#9097c4);font-size:.85rem;cursor:pointer;opacity:.6;
-    text-decoration:underline;text-underline-offset:3px}
+    letter-spacing:.34em;text-transform:uppercase;color:#9097c4;margin-bottom:1.5rem;opacity:.8}
+  .dwv-intro__go{font-family:"Fraunces",Georgia,serif;font-size:1.5rem;color:#f4f1ff;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);
+    border-radius:999px;padding:.9rem 2rem;cursor:pointer;
+    transition:box-shadow .45s ease, border-color .45s ease, background .45s ease}
+  .dwv-intro__go:hover,.dwv-intro__go:focus-visible{border-color:rgba(246,205,134,.6);
+    background:rgba(246,205,134,.07);box-shadow:0 0 34px 3px rgba(246,205,134,.2);outline:none}
+  .dwv-intro__skip{display:block;margin:1.2rem auto 0;background:none;border:none;
+    color:#9097c4;font-size:.85rem;cursor:pointer;opacity:.55;text-decoration:underline;text-underline-offset:3px}
   .dwv-intro__skip:hover{opacity:1}
-  .dwv-intro__welcome{position:absolute;z-index:2;left:50%;bottom:22%;
-    transform:translateX(-50%);font-family:"Fraunces",Georgia,serif;
-    font-size:1.15rem;color:var(--muted,#9097c4);letter-spacing:.02em;
-    opacity:0;transition:opacity 1s ease;text-align:center;white-space:nowrap}
-  .dwv-intro__welcome.is-in{opacity:1}
+  .dwv-intro__welcome{position:absolute;z-index:2;left:50%;bottom:24%;transform:translateX(-50%);
+    font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:1.25rem;color:#cdd2f0;
+    letter-spacing:.01em;opacity:0;transition:opacity 1.4s ease;text-align:center;white-space:nowrap;
+    text-shadow:0 0 24px rgba(80,110,220,.5)}
+  .dwv-intro__welcome.is-in{opacity:.92}
 </style>
 
 <script>
@@ -68,295 +59,293 @@
   var ctx = canvas.getContext('2d');
   var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-  var W, H, DPR, stars = [], targets = [], raf = null, audio = null;
-  var running = false, t0 = 0, connectChimes = 0;
+  var W, H, DPR, cx, cy, bg = [], flux = [], targets = [], raf = null, idleRaf = null;
+  var audio = null, running = false, t0 = 0, chimes = 0;
 
-  // --- timeline (ms) ---
-  var IGNITE = 1200, CONNECT = 4000, PULLBACK = 6500, MORPH = 9200, HOLD = 10800, END = 11700;
+  // tijdlijn (ms na de klik)
+  var IGNITE = 1700, STREAM = 4600, PULL = 6600, MORPH0 = 6600, MORPH1 = 9600, WELC = 9900, END = 12400;
 
-  function cookieSeen() { return /(?:^|;\s*)dwv_intro_seen=1/.test(document.cookie); }
+  function seen() { return /(?:^|;\s*)dwv_intro_seen=1/.test(document.cookie); }
   function setSeen() { document.cookie = 'dwv_intro_seen=1; path=/; max-age=31536000; samesite=lax'; }
+  function clamp01(v){ return v<0?0:v>1?1:v; }
+  function smooth(p){ p=clamp01(p); return p*p*(3-2*p); }                 // smoothstep
+  function smoother(p){ p=clamp01(p); return p*p*p*(p*(p*6-15)+10); }     // smootherstep
+  function rnd(a,b){ return a + Math.random()*(b-a); }
 
-  function resize() {
+  function resize(){
     DPR = Math.min(window.devicePixelRatio || 1, 2);
-    W = canvas.width = innerWidth * DPR; H = canvas.height = innerHeight * DPR;
+    W = canvas.width = Math.floor(innerWidth * DPR);
+    H = canvas.height = Math.floor(innerHeight * DPR);
+    cx = W/2; cy = H/2;
   }
 
-  function seedStars() {
-    var n = Math.min(240, Math.floor(innerWidth * innerHeight / 8500));
-    stars = Array.from({ length: n }, function (_, i) {
-      var gold = Math.random() < 0.12;
-      return {
-        x: Math.random() * W, y: Math.random() * H,
-        bx: 0, by: 0, tx: null, ty: null,
-        r: (Math.random() * 1.3 + 0.5) * DPR * (gold ? 1.7 : 1),
-        gold: gold, tw: Math.random() * Math.PI * 2,
-        vx: (Math.random() - .5) * 0.04 * DPR, vy: (Math.random() - .5) * 0.04 * DPR,
-        born: i / n  // gespreide fade-in
-      };
+  // achtergrond-sterren met parallax-diepte (blijven leven door de hele intro)
+  function seedBg(){
+    var n = Math.min(170, Math.floor(innerWidth*innerHeight/9000));
+    bg = Array.from({length:n}, function(){
+      var z = rnd(.2,1);
+      return { x:Math.random()*W, y:Math.random()*H, z:z,
+        r:(rnd(.5,1.5))*DPR*(.5+z*.7), tw:Math.random()*6.28,
+        vx:rnd(-.03,.03)*DPR*z, vy:rnd(-.03,.03)*DPR*z, gold:Math.random()<.08 };
     });
-    stars.forEach(function (s) { s.bx = s.x; s.by = s.y; });
   }
 
-  // Tekst → particle-doelen: render het wordmark offscreen, sample de pixels.
-  function buildWordmarkTargets() {
-    targets = [];
-    var off = document.createElement('canvas');
-    off.width = W; off.height = H;
-    var o = off.getContext('2d');
-    var size = Math.min(W * 0.115, H * 0.22);
-    o.fillStyle = '#fff';
-    o.textAlign = 'center'; o.textBaseline = 'middle';
-    o.font = '600 ' + size + 'px "Fraunces", Georgia, serif';
-    o.fillText('dewereldvan.ai', W / 2, H / 2);
-    var img = o.getData ? null : o.getImageData(0, 0, W, H).data;
-    var stride = Math.max(4, Math.floor(6 * DPR));
-    for (var y = 0; y < H; y += stride) {
-      for (var x = 0; x < W; x += stride) {
-        if (img[(y * W + x) * 4 + 3] > 128) targets.push({ x: x, y: y });
+  // wordmark → dichte particle-doelen (font gegarandeerd geladen, crisp gesampled)
+  function buildTargets(){
+    return (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function(){
+      var off = document.createElement('canvas'); off.width = W; off.height = H;
+      var o = off.getContext('2d');
+      var text = 'dewereldvan.ai';
+      var fs = Math.min(W*0.135, H*0.28);
+      o.textAlign='center'; o.textBaseline='middle'; o.fillStyle='#fff';
+      o.font = '600 '+fs+'px "Fraunces", Georgia, serif';
+      while (o.measureText(text).width > W*0.84 && fs > 12){ fs -= 3; o.font='600 '+fs+'px "Fraunces", Georgia, serif'; }
+      o.fillText(text, W/2, H*0.5);
+      var img = o.getImageData(0,0,W,H).data, pts = [];
+      var stride = Math.max(3, Math.round(3*DPR));
+      for (var y=0; y<H; y+=stride) for (var x=0; x<W; x+=stride){
+        if (img[(y*W+x)*4+3] > 130) pts.push([x+rnd(-1,1), y+rnd(-1,1)]);
       }
-    }
-    // shuffle zodat de toewijzing organisch oogt
-    for (var i = targets.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1)), tmp = targets[i]; targets[i] = targets[j]; targets[j] = tmp;
-    }
-    stars.forEach(function (s, k) {
-      if (targets.length) { var tt = targets[k % targets.length]; s.tx = tt.x; s.ty = tt.y; }
+      // shuffle + cap voor performance
+      for (var i=pts.length-1;i>0;i--){ var j=(Math.random()*(i+1))|0, t=pts[i]; pts[i]=pts[j]; pts[j]=t; }
+      // Dichtere pool = scherpere letters. Wat lager op smalle/mobiele schermen
+      // (minder rekenwerk), ruim op desktop voor crisp wordmark.
+      var CAP = innerWidth < 760 ? 1600 : 3200;
+      if (pts.length > CAP){ var k=[], step=pts.length/CAP; for (var m=0;m<CAP;m++) k.push(pts[(m*step)|0]); pts=k; }
+      targets = pts;
+      // flux-particles: één per doel; starten verspreid, krijgen een per-particle delay
+      flux = pts.map(function(p){
+        var ang = Math.random()*6.28, rad = rnd(.3,1.1)*Math.max(W,H)*.5;
+        return {
+          x: cx+Math.cos(ang)*rad, y: cy+Math.sin(ang)*rad,
+          ox:0, oy:0, tx:p[0], ty:p[1],
+          // drift-baan vóór de morph (zachte orbit rond centrum)
+          ph: Math.random()*6.28, sp: rnd(.2,.6), orb: rnd(.08,.30)*Math.min(W,H),
+          delay: clamp01(p[0]/W)*0.45 + Math.random()*0.12,   // links→rechts onthullen
+          r: rnd(.9,1.7)*DPR, tw: Math.random()*6.28
+        };
+      });
+      flux.forEach(function(f){ f.ox=f.x; f.oy=f.y; });
     });
   }
 
-  function ease(p) { return p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
-  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function drawNebula(t){
+    var bloom = smooth((t-IGNITE)/(PULL-IGNITE)) * 0.55;
+    if (bloom<=0) return;
+    var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W,H)*0.62);
+    g.addColorStop(0, 'rgba(60,120,255,'+(bloom*0.42)+')');
+    g.addColorStop(.45,'rgba(96,52,168,'+(bloom*0.20)+')');
+    g.addColorStop(1, 'rgba(4,4,14,0)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  }
 
-  function frame(now) {
+  function camScale(t){
+    if (t < IGNITE) return 1.22 - 0.22*smooth(t/IGNITE);
+    if (t < PULL)   return 1.0;
+    if (t < MORPH1) return 1.0 - 0.26*smooth((t-PULL)/(MORPH1-PULL));
+    return 0.74;
+  }
+
+  function frame(now){
     var t = now - t0;
-    ctx.clearRect(0, 0, W, H);
+    var scale = camScale(t);
+    var morph = t>MORPH0 ? smoother((t-MORPH0)/(MORPH1-MORPH0)) : 0;
 
-    // globale "camera": inzoom bij ignite, terugtrekken bij pullback
-    var scale = 1, cx = W / 2, cy = H / 2;
-    if (t < IGNITE) scale = 1.25 - 0.25 * ease(clamp01(t / IGNITE));
-    else if (t < PULLBACK) scale = 1.0;
-    else if (t < MORPH) scale = 1.0 - 0.28 * ease(clamp01((t - PULLBACK) / (MORPH - PULLBACK)));
-    else scale = 0.72;
+    // trail-fade: minder fade tijdens beweging (mooie sporen), meer tijdens de
+    // morph zodat de letters stabiel/crisp staan
+    var fade = morph>0 ? 0.34 : 0.16;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(4,4,14,'+fade+')';
+    ctx.fillRect(0,0,W,H);
 
-    // nevel-gloed bloeit op vanaf pullback
-    var neb = clamp01((t - CONNECT) / (PULLBACK - CONNECT)) * 0.5;
-    if (neb > 0) {
-      var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.6);
-      g.addColorStop(0, 'rgba(63,120,255,' + (neb * 0.5) + ')');
-      g.addColorStop(0.5, 'rgba(80,40,140,' + (neb * 0.22) + ')');
-      g.addColorStop(1, 'rgba(4,4,14,0)');
-      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    drawNebula(t);
+
+    ctx.globalCompositeOperation = 'lighter';
+
+    // achtergrond-sterren (parallax + twinkle), faden in tijdens ignite
+    var bgA = smooth(t/ (IGNITE*1.3));
+    for (var i=0;i<bg.length;i++){
+      var s=bg[i]; s.x+=s.vx; s.y+=s.vy;
+      if(s.x<0)s.x=W; if(s.x>W)s.x=0; if(s.y<0)s.y=H; if(s.y>H)s.y=0;
+      var px=cx+(s.x-cx)*scale, py=cy+(s.y-cy)*scale;
+      var tw=.5+.5*Math.sin(now*.001+s.tw);
+      ctx.beginPath(); ctx.arc(px,py,s.r,0,6.2832);
+      ctx.fillStyle = (s.gold?'rgba(246,205,134,':'rgba(200,214,255,')+(bgA*tw*.55*(1-.4*morph))+')';
+      ctx.fill();
     }
 
-    var morphP = t > PULLBACK ? ease(clamp01((t - PULLBACK) / (MORPH - PULLBACK))) : 0;
-
-    // verbindingslijnen (alleen tijdens connect-fase, bij het centrum)
-    if (t > IGNITE && t < PULLBACK + 400) {
-      var cp = clamp01((t - IGNITE) / (CONNECT - IGNITE));
-      var reach = 150 * DPR * cp;
-      ctx.lineWidth = DPR * 0.5;
-      for (var i = 0; i < stars.length; i += 2) {
-        var a = stars[i];
-        var dax = a.bx - cx, day = a.by - cy;
-        if (dax * dax + day * day > (reach * 1.2) * (reach * 1.2)) continue;
-        for (var j = i + 1; j < Math.min(stars.length, i + 10); j++) {
-          var b = stars[j];
-          var dx = a.bx - b.bx, dy = a.by - b.by, d = Math.hypot(dx, dy);
-          if (d < reach) {
-            var o2 = (1 - d / reach) * 0.28 * (1 - morphP);
-            ctx.strokeStyle = 'rgba(150,180,255,' + o2 + ')';
-            ctx.beginPath(); ctx.moveTo(a.bx, a.by); ctx.lineTo(b.bx, b.by); ctx.stroke();
+    // verbindingslijnen rond het centrum tijdens de stream-fase
+    if (t>IGNITE && t<PULL+300){
+      var cp = smooth((t-IGNITE)/(STREAM-IGNITE));
+      var reach = 130*DPR*cp, lim = (reach*reach);
+      ctx.lineWidth = DPR*0.6;
+      for (var a=0; a<flux.length; a+=7){
+        var f=flux[a]; var fx=f.ox, fy=f.oy;
+        var dx0=fx-cx, dy0=fy-cy; if (dx0*dx0+dy0*dy0 > lim*4) continue;
+        for (var b=a+7; b<Math.min(flux.length,a+42); b+=7){
+          var g2=flux[b]; var dx=fx-g2.ox, dy=fy-g2.oy, d2=dx*dx+dy*dy;
+          if (d2<lim){ var o=(1-Math.sqrt(d2)/reach)*0.22*(1-morph);
+            ctx.strokeStyle='rgba(120,160,255,'+o+')';
+            ctx.beginPath();
+            ctx.moveTo(cx+(fx-cx)*scale, cy+(fy-cy)*scale);
+            ctx.lineTo(cx+(g2.ox-cx)*scale, cy+(g2.oy-cy)*scale);
+            ctx.stroke();
           }
         }
       }
-      // chimes synchroon met het ontstaan van verbindingen
-      var wantChimes = Math.floor(cp * 7);
-      while (audio && connectChimes < wantChimes) { audio.chime(connectChimes); connectChimes++; }
+      var want = Math.floor(cp*8);
+      while (audio && chimes<want){ audio.chime(chimes); chimes++; }
     }
 
-    // sterren
-    ctx.save();
-    for (var k = 0; k < stars.length; k++) {
-      var s = stars[k];
-      // idle drift op de basispositie
-      s.bx += s.vx; s.by += s.vy;
-      if (s.bx < 0) s.bx = W; if (s.bx > W) s.bx = 0; if (s.by < 0) s.by = H; if (s.by > H) s.by = 0;
+    // flux-particles: pre-morph zweven ze op een zachte orbit; tijdens de morph
+    // lerpen ze (per-particle gestaged) naar hun wordmark-doel
+    for (var k=0;k<flux.length;k++){
+      var f=flux[k];
+      // zwevende basispositie (orbit + drift), vóór de morph
+      var ox = f.ox + Math.cos(now*.0006*f.sp+f.ph)*f.orb*0.06;
+      var oy = f.oy + Math.sin(now*.0006*f.sp+f.ph)*f.orb*0.06;
+      var px, py, mp=0;
+      if (morph>0){
+        mp = smoother((morph - f.delay) / (1 - f.delay));
+        px = ox + (f.tx-ox)*mp; py = oy + (f.ty-oy)*mp;
+      } else { px=ox; py=oy; }
+      px = cx+(px-cx)*scale; py = cy+(py-cy)*scale;
 
-      // positie: van basisveld → wordmark-doel (morph)
-      var px = s.bx, py = s.by, hasTarget = s.tx != null;
-      if (morphP > 0 && hasTarget) {
-        px = s.bx + (s.tx - s.bx) * morphP;
-        py = s.by + (s.ty - s.by) * morphP;
-      }
-      // camera-scale rond centrum
-      px = cx + (px - cx) * scale; py = cy + (py - cy) * scale;
-
-      // fade-in (gespreid), centrale ster eerst sterk
-      var appear = clamp01((t / IGNITE) - s.born * 0.8);
-      var isCenter = k === 0;
-      var tw = 0.55 + 0.45 * Math.sin(now * 0.001 + s.tw);
-      var alpha = appear * tw;
-      // niet-wordmark-sterren doven tijdens de morph
-      if (morphP > 0 && !hasTarget) alpha *= (1 - morphP);
-      // wordmark-sterren worden goud + helder op de climax
-      var goldish = s.gold || (morphP > 0.6 && hasTarget);
-      var rr = s.r * (isCenter ? (1 + 2 * (1 - clamp01(t / IGNITE))) : 1) * (morphP > 0 && hasTarget ? (1 - 0.25 * morphP) : 1);
-
-      ctx.beginPath(); ctx.arc(px, py, Math.max(0.3, rr), 0, Math.PI * 2);
-      if (goldish) {
-        var ga = clamp01(alpha + morphP * 0.4);
-        ctx.fillStyle = 'rgba(246,205,134,' + ga + ')';
-        ctx.shadowColor = 'rgba(246,205,134,.9)'; ctx.shadowBlur = (6 + 8 * morphP) * DPR;
-      } else {
-        ctx.fillStyle = 'rgba(225,232,255,' + (0.6 * alpha) + ')';
-        ctx.shadowBlur = 0;
-      }
+      var appear = smooth((t-300)/(STREAM-300));
+      var tw = .6+.4*Math.sin(now*.0014+f.tw);
+      var gold = mp>0.25;
+      var alpha = appear*tw*(gold? (0.5+0.5*mp) : 0.5);
+      var rr = f.r*(1 - 0.25*mp);
+      ctx.beginPath(); ctx.arc(px,py,Math.max(.4,rr),0,6.2832);
+      if (gold){ ctx.fillStyle='rgba(248,210,140,'+clamp01(alpha)+')'; }
+      else { ctx.fillStyle='rgba(214,224,255,'+clamp01(alpha)+')'; }
       ctx.fill();
     }
-    ctx.restore(); ctx.shadowBlur = 0;
 
-    // welkom-tekst + uitfaden
-    if (t > HOLD && !welcome.classList.contains('is-in')) welcome.classList.add('is-in');
-    if (t > PULLBACK && audio && !audio._whooshed) { audio.whoosh(); audio._whooshed = true; }
+    // zachte goud-gloed over het wordmark op de climax (additief, subtiel)
+    if (morph>0.6){
+      var gg=ctx.createRadialGradient(cx,cy,0,cx,cy,W*0.42);
+      gg.addColorStop(0,'rgba(246,205,134,'+((morph-0.6)*0.10)+')');
+      gg.addColorStop(1,'rgba(246,205,134,0)');
+      ctx.fillStyle=gg; ctx.fillRect(0,0,W,H);
+    }
 
-    if (t >= END) { finish(); return; }
+    ctx.globalCompositeOperation = 'source-over';
+
+    if (t>WELC && !welcome.classList.contains('is-in')) welcome.classList.add('is-in');
+    if (t>PULL && audio && !audio._w){ audio.whoosh(); audio._w=true; }
+    if (audio && morph>0 && !audio._swelled){ audio.swell(); audio._swelled=true; }
+
+    if (t>=END){ finish(); return; }
     raf = requestAnimationFrame(frame);
   }
 
-  function finish() {
+  function finish(){
     if (audio) audio.stop();
     setSeen();
     root.classList.add('is-out');
-    setTimeout(function () { teardown(); }, 950);
+    setTimeout(teardown, 1050);
   }
-
-  function teardown() {
-    if (raf) cancelAnimationFrame(raf); raf = null; running = false;
-    root.hidden = true; root.setAttribute('aria-hidden', 'true');
+  function teardown(){
+    if (raf) cancelAnimationFrame(raf); raf=null;
+    if (idleRaf) cancelAnimationFrame(idleRaf); idleRaf=null;
+    running=false; t0=0;
+    root.hidden=true; root.setAttribute('aria-hidden','true');
     window.removeEventListener('resize', resize);
   }
 
-  function startSequence() {
+  function startSequence(){
     enterUI.classList.add('is-gone');
-    try { audio = makeAudio(); audio.start(); } catch (e) { audio = null; }
-    buildWordmarkTargets();
-    connectChimes = 0; t0 = performance.now();
+    try { audio = makeAudio(); audio.start(); } catch(e){ audio=null; }
+    chimes=0; t0 = performance.now();
     raf = requestAnimationFrame(frame);
   }
 
-  function show() {
+  function idle(){
+    ctx.globalCompositeOperation='source-over';
+    ctx.fillStyle='rgba(4,4,14,0.30)'; ctx.fillRect(0,0,W,H);
+    ctx.globalCompositeOperation='lighter';
+    for (var i=0;i<bg.length;i++){ var s=bg[i]; s.x+=s.vx; s.y+=s.vy;
+      if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;
+      var tw=.4+.4*Math.sin(performance.now()*.001+s.tw);
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.2832);
+      ctx.fillStyle=(s.gold?'rgba(246,205,134,':'rgba(200,214,255,')+(.5*tw)+')'; ctx.fill();
+    }
+    ctx.globalCompositeOperation='source-over';
+    if (!t0) idleRaf = requestAnimationFrame(idle);
+  }
+
+  function drawStaticWordmark(){
+    ctx.fillStyle='#04040e'; ctx.fillRect(0,0,W,H);
+    ctx.globalCompositeOperation='lighter';
+    for (var i=0;i<flux.length;i++){ var f=flux[i];
+      ctx.beginPath(); ctx.arc(f.tx,f.ty,1.3*DPR,0,6.2832);
+      ctx.fillStyle='rgba(248,210,140,.9)'; ctx.fill(); }
+    ctx.globalCompositeOperation='source-over';
+  }
+
+  function show(){
     if (running) return; running = true;
-    root.hidden = false; root.removeAttribute('aria-hidden');
-    root.classList.remove('is-out');
-    welcome.classList.remove('is-in');
-    resize(); seedStars();
+    root.hidden=false; root.removeAttribute('aria-hidden');
+    root.classList.remove('is-out'); welcome.classList.remove('is-in');
+    resize(); seedBg();
     window.addEventListener('resize', resize);
-
-    if (reduce) {
-      // Geen motion/geluid: toon een rustige statische landing, dan dissolve.
-      enterUI.classList.add('is-gone'); welcome.classList.add('is-in');
-      var o = ctx; o.clearRect(0, 0, W, H);
-      for (var i = 0; i < 90; i++) {
-        o.beginPath(); o.arc(Math.random() * W, Math.random() * H, 1.1 * DPR, 0, 7);
-        o.fillStyle = 'rgba(225,232,255,.5)'; o.fill();
+    buildTargets().then(function(){
+      if (reduce){
+        enterUI.classList.add('is-gone'); welcome.classList.add('is-in');
+        drawStaticWordmark(); setTimeout(finish, 3000);
       }
-      setTimeout(finish, 2600);
-      return;
-    }
-    enterUI.classList.remove('is-gone');
-    // rustige idle-starfield achter de knop tot de bezoeker klikt
-    idleDraw();
-  }
-
-  var idleRaf = null;
-  function idleDraw() {
-    if (!running || !root.hidden === false) {}
-    ctx.clearRect(0, 0, W, H);
-    for (var k = 0; k < stars.length; k++) {
-      var s = stars[k]; s.bx += s.vx; s.by += s.vy;
-      if (s.bx < 0) s.bx = W; if (s.bx > W) s.bx = 0; if (s.by < 0) s.by = H; if (s.by > H) s.by = 0;
-      var tw = 0.4 + 0.35 * Math.sin(performance.now() * 0.001 + s.tw);
-      ctx.beginPath(); ctx.arc(s.bx, s.by, s.r, 0, 7);
-      ctx.fillStyle = (s.gold ? 'rgba(246,205,134,' : 'rgba(225,232,255,') + (0.45 * tw) + ')';
-      ctx.fill();
-    }
-    if (!t0) idleRaf = requestAnimationFrame(idleDraw);
-  }
-
-  // --- Web Audio: etherisch & warm (gesynthetiseerd, geen asset) ---
-  function makeAudio() {
-    var AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return null;
-    var ac = new AC();
-    var master = ac.createGain(); master.gain.value = 0.0001; master.connect(ac.destination);
-    // procedurele reverb (impulse)
-    var conv = ac.createConvolver();
-    var len = ac.sampleRate * 2.6, buf = ac.createBuffer(2, len, ac.sampleRate);
-    for (var c = 0; c < 2; c++) { var d = buf.getChannelData(c);
-      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5); }
-    conv.buffer = buf; conv.connect(master);
-    var wet = ac.createGain(); wet.gain.value = 0.55; wet.connect(conv);
-    var dry = ac.createGain(); dry.gain.value = 0.7; dry.connect(master);
-
-    // warme pad-akkoord (A majeur-sfeer), zacht lowpass + trage filter-LFO
-    var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.Q.value = 0.6;
-    lp.connect(dry); lp.connect(wet);
-    var lfo = ac.createOscillator(); lfo.frequency.value = 0.07;
-    var lfoG = ac.createGain(); lfoG.gain.value = 350; lfo.connect(lfoG); lfoG.connect(lp.frequency); lfo.start();
-    var padG = ac.createGain(); padG.gain.value = 0.0; padG.connect(lp);
-    [110, 164.81, 277.18].forEach(function (f, idx) {
-      var o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-      o.detune.value = (idx - 1) * 6; o.connect(padG); o.start();
     });
+    if (reduce) return;
+    enterUI.classList.remove('is-gone');
+    if (!idleRaf) idle();
+  }
 
-    var penta = [659.25, 783.99, 880, 987.77, 1174.66, 1318.51];
+  // --- Web Audio: etherisch & warm (gesynthetiseerd) ---
+  function makeAudio(){
+    var AC = window.AudioContext || window.webkitAudioContext; if(!AC) return null;
+    var ac = new AC();
+    var master = ac.createGain(); master.gain.value=0.0001; master.connect(ac.destination);
+    var conv = ac.createConvolver(); var len=ac.sampleRate*3, b=ac.createBuffer(2,len,ac.sampleRate);
+    for(var c=0;c<2;c++){var d=b.getChannelData(c);for(var i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6);}
+    conv.buffer=b; conv.connect(master);
+    var wet=ac.createGain(); wet.gain.value=0.6; wet.connect(conv);
+    var dry=ac.createGain(); dry.gain.value=0.7; dry.connect(master);
+    var lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=850; lp.Q.value=0.6; lp.connect(dry); lp.connect(wet);
+    var lfo=ac.createOscillator(); lfo.frequency.value=0.06; var lg=ac.createGain(); lg.gain.value=320; lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
+    var pad=ac.createGain(); pad.gain.value=0.0001; pad.connect(lp);
+    [110,164.81,277.18,329.63].forEach(function(f,i){var o=ac.createOscillator();o.type='sine';o.frequency.value=f;o.detune.value=(i-1.5)*5;o.connect(pad);o.start();});
+    var penta=[659.25,783.99,880,987.77,1174.66,1318.51,1567.98];
     return {
-      _whooshed: false,
-      start: function () {
-        if (ac.state === 'suspended') ac.resume();
-        master.gain.setValueAtTime(0.0001, ac.currentTime);
-        master.gain.exponentialRampToValueAtTime(0.9, ac.currentTime + 2.2);
-        padG.gain.setValueAtTime(0.0001, ac.currentTime);
-        padG.gain.exponentialRampToValueAtTime(0.16, ac.currentTime + 2.5);
-      },
-      chime: function (i) {
-        var o = ac.createOscillator(), g = ac.createGain();
-        o.type = 'sine'; o.frequency.value = penta[i % penta.length];
-        var n = ac.currentTime;
-        g.gain.setValueAtTime(0.0001, n);
-        g.gain.exponentialRampToValueAtTime(0.22, n + 0.015);
-        g.gain.exponentialRampToValueAtTime(0.0001, n + 1.9);
-        o.connect(g); g.connect(wet); g.connect(dry); o.start(n); o.stop(n + 2.0);
-      },
-      whoosh: function () {
-        var n = ac.currentTime, src = ac.createBufferSource();
-        var b = ac.createBuffer(1, ac.sampleRate * 1.2, ac.sampleRate), dd = b.getChannelData(0);
-        for (var i = 0; i < dd.length; i++) dd[i] = (Math.random() * 2 - 1);
-        src.buffer = b;
-        var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 0.8;
-        bp.frequency.setValueAtTime(300, n); bp.frequency.exponentialRampToValueAtTime(2200, n + 1.0);
-        var g = ac.createGain(); g.gain.setValueAtTime(0.0001, n);
-        g.gain.exponentialRampToValueAtTime(0.12, n + 0.25); g.gain.exponentialRampToValueAtTime(0.0001, n + 1.15);
-        src.connect(bp); bp.connect(g); g.connect(wet); src.start(n); src.stop(n + 1.2);
-      },
-      stop: function () {
-        try { master.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.8);
-          setTimeout(function () { ac.close(); }, 950); } catch (e) {}
-      }
+      _w:false,_swelled:false,
+      start:function(){ if(ac.state==='suspended')ac.resume();
+        master.gain.setValueAtTime(.0001,ac.currentTime); master.gain.exponentialRampToValueAtTime(.9,ac.currentTime+2.4);
+        pad.gain.setValueAtTime(.0001,ac.currentTime); pad.gain.exponentialRampToValueAtTime(.17,ac.currentTime+2.8); },
+      chime:function(i){ var o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;
+        o.type='sine'; o.frequency.value=penta[i%penta.length];
+        g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.2,n+.02); g.gain.exponentialRampToValueAtTime(.0001,n+2.0);
+        o.connect(g); g.connect(wet); g.connect(dry); o.start(n); o.stop(n+2.1); },
+      swell:function(){ var o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;
+        o.type='sine'; o.frequency.setValueAtTime(220,n); o.frequency.exponentialRampToValueAtTime(440,n+2.4);
+        g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.12,n+1.6); g.gain.exponentialRampToValueAtTime(.0001,n+3.2);
+        o.connect(g); g.connect(wet); g.connect(dry); o.start(n); o.stop(n+3.3); },
+      whoosh:function(){ var n=ac.currentTime,src=ac.createBufferSource();
+        var bb=ac.createBuffer(1,ac.sampleRate*1.3,ac.sampleRate),dd=bb.getChannelData(0);
+        for(var i=0;i<dd.length;i++)dd[i]=Math.random()*2-1; src.buffer=bb;
+        var bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=.8;
+        bp.frequency.setValueAtTime(280,n); bp.frequency.exponentialRampToValueAtTime(2400,n+1.1);
+        var g=ac.createGain(); g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.12,n+.3); g.gain.exponentialRampToValueAtTime(.0001,n+1.25);
+        src.connect(bp); bp.connect(g); g.connect(wet); src.start(n); src.stop(n+1.3); },
+      stop:function(){ try{ master.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.9); setTimeout(function(){ac.close();},1000);}catch(e){} }
     };
   }
 
-  goBtn.addEventListener('click', function () { if (!t0) { if (idleRaf) cancelAnimationFrame(idleRaf); startSequence(); } });
+  goBtn.addEventListener('click', function(){ if(!t0){ if(idleRaf){cancelAnimationFrame(idleRaf);idleRaf=null;} startSequence(); } });
   skipBtn.addEventListener('click', finish);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && running) finish(); });
-  window.addEventListener('dwv:intro-replay', function () {
-    teardown(); t0 = 0; connectChimes = 0; show();
-  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && running) finish(); });
+  window.addEventListener('dwv:intro-replay', function(){ teardown(); show(); });
 
-  // Activatie: ?intro=1 (preview) of eerste bezoek (achter de vlag) — anders niets.
   var params = new URLSearchParams(location.search);
-  var firstVisit = (window.DWV_INTRO_FIRST === true) && !cookieSeen();
-  if (params.has('intro') || firstVisit) show();
+  if (params.has('intro') || ((window.DWV_INTRO_FIRST===true) && !seen())) show();
 })();
 </script>
