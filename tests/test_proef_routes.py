@@ -171,6 +171,35 @@ def test_post_allowed_renders_card_and_books_one_spend_row(
         s.close()
 
 
+def test_post_response_headers_valid_and_visitor_cookie_carried(
+    client, turnstile_on, monkeypatch
+):
+    """Regressie: ``_fragment`` mocht NIET alle ``response.raw_headers`` mee-extenden.
+
+    De lege ``HTMLResponse`` draagt z'n eigen ``content-length: 0`` mee; die erbij
+    plakken gaf een tweede, conflicterende Content-Length → een malformed respons
+    die Cloudflare met **502** weigerde (origin logde 200) → /proef "deed niks".
+    De fix neemt alleen de ``set-cookie`` (visitor-cookie) over. Borg: precies één
+    Content-Length, en de visitor-cookie wordt nog steeds gezet.
+    """
+    from app.security import VISITOR_COOKIE
+
+    _mock_card(monkeypatch)
+    token = _csrf(client)
+    resp = client.post(
+        "/proef",
+        data={"url": "https://voorbeeld.nl/", "cf-turnstile-response": "tok"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    # Geen dubbele Content-Length (de 502-oorzaak).
+    assert len(resp.headers.get_list("content-length")) == 1
+    # De visitor-cookie (daglimiet-telunit) wordt nog steeds gezet.
+    assert VISITOR_COOKIE in resp.cookies
+    # En de kaart-inhoud is gewoon aanwezig.
+    assert "Wat onze agent ziet" in resp.text
+
+
 def test_post_card_shows_source_attribution(client, turnstile_on, monkeypatch):
     """Gegrondheid zichtbaar: de verse kaart toont 'gelezen van <host>' — het
     anti-hallucinatie-signaal dat de noordster eist."""

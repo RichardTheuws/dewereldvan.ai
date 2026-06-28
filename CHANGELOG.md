@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.96.2] - 2026-06-28
+### Fixed — /proef gaf 502 (lege "probeer je eigen link") — dubbele Content-Length
+- Een echt lid meldde dat "probeer het met je eigen link" niks deed: het lees-blok flitste en verdween, geen
+  resultaat. Oorzaak: `_fragment` deed `rendered.raw_headers.extend(response.raw_headers)` om de visitor-cookie
+  mee te geven, maar kopieerde zo óók de `content-length: 0`/`content-type` van de lege `HTMLResponse` →
+  **dubbele Content-Length** → malformed respons die **Cloudflare met 502 weigerde** (origin logde 200, htmx
+  swapte dus niets → "deed niks"). Fix: alleen de `set-cookie`-header overnemen. Live geverifieerd: POST /proef
+  nu 200, de kaart/degradatie-staat landt zichtbaar (reveal-op-swap werkt). Regressie-test toegevoegd
+  (één Content-Length + visitor-cookie behouden).
+
 ## [0.96.1] - 2026-06-28
 ### Fixed — Mobiele intro: lichte, betrouwbare 2D-variant (i.p.v. zware/afwezige 3D)
 - Op mobiel (`innerWidth < 760`) of zonder WebGL draait de intro nu als **lichte 2D-variant**: sterrenveld →

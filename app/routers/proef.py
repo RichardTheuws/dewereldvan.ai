@@ -248,9 +248,18 @@ def _ping_admins(db: Session, threshold: str) -> None:
 def _fragment(
     request: Request, name: str, response: HTMLResponse, ctx: dict | None = None
 ) -> HTMLResponse:
-    """Render ``name`` als fragment, met de op ``response`` gezette cookies erbij."""
+    """Render ``name`` als fragment + draag ALLEEN de visitor-cookie over.
+
+    Let op: kopieer NIET alle ``response.raw_headers`` — die lege ``HTMLResponse``
+    draagt z'n eigen ``content-type``/``content-length: 0`` mee. Die mee-extenden
+    gaf een tweede (conflicterende) Content-Length op de echte respons → een
+    malformed HTTP-respons die Cloudflare met **502** weigert (terwijl de origin
+    200 logt). Daarom alleen de ``set-cookie``-header(s) overnemen.
+    """
     rendered = _render(request, name, ctx or {})
-    rendered.raw_headers.extend(response.raw_headers)
+    for key, value in response.raw_headers:
+        if key.lower() == b"set-cookie":
+            rendered.raw_headers.append((key, value))
     return rendered
 
 
