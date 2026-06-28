@@ -31,6 +31,9 @@
       requestAnimationFrame(function () { body.classList.add('ready'); });
     });
   }
+  var _revealed = false;
+  function runReveal() {
+    if (_revealed) return; _revealed = true;
   var scrollMode = !reduce
     && ('IntersectionObserver' in window)
     && body.hasAttribute('data-reveal-scroll');
@@ -72,6 +75,18 @@
         if (probe && getComputedStyle(probe).opacity === '0') body.classList.add('ready');
       }, 1200);
     }
+  }
+  } // einde runReveal
+
+  // Morph-handshake: draait de intro nog? Dan houdt de director de hero-reveal vast
+  // tot de intro 'm overdraagt (dwj:intro-handoff) — zodat de homepage-elementen
+  // precies meebloeien met de wegvloeiende intro i.p.v. er al klaar te staan. Een
+  // failsafe zorgt dat de hero NOOIT verborgen blijft als de intro faalt/uitvalt.
+  if (window.__DWV_INTRO_PENDING__) {
+    window.addEventListener('dwv:intro-handoff', runReveal, { once: true });
+    setTimeout(runReveal, 14000);
+  } else {
+    runReveal();
   }
 
   var canvas = document.getElementById('stars');

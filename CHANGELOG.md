@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.93.0] - 2026-06-28
+### Added — Intro → homepage morpht (geen dissolve meer)
+- De intro draagt nu echt óver i.p.v. weg te faden. Op het climax-moment **vliegt en krimpt de gevormde
+  wordmark `dewereldvan.ai` naar de exacte positie van het nav-merk linksboven** — de titel die je zag ontstaan
+  wórdt het logo. Tegelijk **bloeit de homepage-hero mee op**: de reveal-director houdt de hero-elementen
+  vast (opacity 0) zolang de intro draait (`window.__DWV_INTRO_PENDING__`) en onthult ze pas op het
+  overdrachts-event (`dwv:intro-handoff`), zodat headline/lede precies materialiseren terwijl de overlay
+  wegvloeit. Failsafe in de director (14s) + handoff ook bij skip/Esc/reduced-motion → hero blijft nooit verborgen.
+- `_intro.html` vóór `ai/_cosmic_canvas.html` geïncludeerd zodat de pending-vlag staat vóór de director draait.
+  Geen regressie voor gewone bezoekers/andere pagina's (zonder intro = director onthult direct, als vanouds).
+
 ## [0.92.1] - 2026-06-28
 ### Changed — Cinematic intro: scherpere wordmark + meer cinematische diepte
 - Engine herbouwd: eigen dichte particle-pool (tot **3200** punten op desktop, 1600 mobiel) i.p.v. 240

@@ -178,7 +178,9 @@
   {% if logged_in %}{% include "_feedback_affordance.html" %}{% endif %}
   {% set concierge_context = "home" %}
   {% include "_concierge.html" %}
-  {% include "ai/_cosmic_canvas.html" %}
+  {# _intro vóór de canvas-director: het zet window.__DWV_INTRO_PENDING__ zodat de
+     director de hero-reveal vasthoudt tot de intro 'm overdraagt (de morph). #}
   {% include "_intro.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
 </body>
 </html>

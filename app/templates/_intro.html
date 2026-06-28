@@ -61,9 +61,10 @@
 
   var W, H, DPR, cx, cy, bg = [], flux = [], targets = [], raf = null, idleRaf = null;
   var audio = null, running = false, t0 = 0, chimes = 0;
+  var outroStarted = false, brandPre = null;
 
   // tijdlijn (ms na de klik)
-  var IGNITE = 1700, STREAM = 4600, PULL = 6600, MORPH0 = 6600, MORPH1 = 9600, WELC = 9900, END = 12400;
+  var IGNITE = 1700, STREAM = 4600, PULL = 6600, MORPH0 = 6600, MORPH1 = 9600, WELC = 9900, OUTRO = 10900, END = 12700;
 
   function seen() { return /(?:^|;\s*)dwv_intro_seen=1/.test(document.cookie); }
   function setSeen() { document.cookie = 'dwv_intro_seen=1; path=/; max-age=31536000; samesite=lax'; }
@@ -209,13 +210,21 @@
         mp = smoother((morph - f.delay) / (1 - f.delay));
         px = ox + (f.tx-ox)*mp; py = oy + (f.ty-oy)*mp;
       } else { px=ox; py=oy; }
+      // OUTRO: de gevormde wordmark vliegt + krimpt naar het nav-merk (de morph
+      // naar de homepage — de titel wórdt het logo).
+      var outroP = 0;
+      if (outroStarted && brandPre){
+        outroP = smoother((t-OUTRO)/1000);
+        px = f.tx + (brandPre.x - f.tx)*outroP;
+        py = f.ty + (brandPre.y - f.ty)*outroP;
+      }
       px = cx+(px-cx)*scale; py = cy+(py-cy)*scale;
 
       var appear = smooth((t-300)/(STREAM-300));
       var tw = .6+.4*Math.sin(now*.0014+f.tw);
       var gold = mp>0.25;
-      var alpha = appear*tw*(gold? (0.5+0.5*mp) : 0.5);
-      var rr = f.r*(1 - 0.25*mp);
+      var alpha = appear*tw*(gold? (0.5+0.5*mp) : 0.5)*(1-outroP*0.85);
+      var rr = f.r*(1 - 0.25*mp)*(1 - 0.5*outroP);
       ctx.beginPath(); ctx.arc(px,py,Math.max(.4,rr),0,6.2832);
       if (gold){ ctx.fillStyle='rgba(248,210,140,'+clamp01(alpha)+')'; }
       else { ctx.fillStyle='rgba(214,224,255,'+clamp01(alpha)+')'; }
@@ -232,24 +241,45 @@
 
     ctx.globalCompositeOperation = 'source-over';
 
-    if (t>WELC && !welcome.classList.contains('is-in')) welcome.classList.add('is-in');
+    if (t>WELC && t<OUTRO && !welcome.classList.contains('is-in')) welcome.classList.add('is-in');
     if (t>PULL && audio && !audio._w){ audio.whoosh(); audio._w=true; }
     if (audio && morph>0 && !audio._swelled){ audio.swell(); audio._swelled=true; }
+    if (t>OUTRO && !outroStarted){ startOutro(); }
 
-    if (t>=END){ finish(); return; }
+    if (t>=END){ teardown(); return; }
     raf = requestAnimationFrame(frame);
+  }
+
+  // De morph naar de homepage: bereken de nav-merk-positie, draag de reveal over
+  // (de hero bloeit mee op), en start de overlay-fade terwijl de wordmark erheen
+  // vliegt. brandPre staat in pre-scale-coördinaten (camScale is 0.74 na de morph).
+  function startOutro(){
+    outroStarted = true;
+    setSeen();
+    if (audio) audio.stop();
+    var b = document.querySelector('.brand');
+    if (b){ var r=b.getBoundingClientRect();
+      var bx=(r.left+r.width*0.5)*DPR, by=(r.top+r.height*0.5)*DPR;
+      brandPre = { x: cx+(bx-cx)/0.74, y: cy+(by-cy)/0.74 };
+    } else { brandPre = { x: cx, y: -H*0.1 }; }
+    welcome.classList.remove('is-in');
+    try { window.dispatchEvent(new CustomEvent('dwv:intro-handoff')); } catch(e){}
+    root.classList.add('is-out');
   }
 
   function finish(){
     if (audio) audio.stop();
     setSeen();
+    // Ook bij skip/Esc/reduced-motion de reveal overdragen zodat de homepage
+    // meebloeit met de wegvloeiende overlay (nooit een verborgen hero).
+    try { window.dispatchEvent(new CustomEvent('dwv:intro-handoff')); } catch(e){}
     root.classList.add('is-out');
     setTimeout(teardown, 1050);
   }
   function teardown(){
     if (raf) cancelAnimationFrame(raf); raf=null;
     if (idleRaf) cancelAnimationFrame(idleRaf); idleRaf=null;
-    running=false; t0=0;
+    running=false; t0=0; outroStarted=false; brandPre=null;
     root.hidden=true; root.setAttribute('aria-hidden','true');
     window.removeEventListener('resize', resize);
   }
@@ -346,6 +376,9 @@
   window.addEventListener('dwv:intro-replay', function(){ teardown(); show(); });
 
   var params = new URLSearchParams(location.search);
-  if (params.has('intro') || ((window.DWV_INTRO_FIRST===true) && !seen())) show();
+  var willShow = params.has('intro') || ((window.DWV_INTRO_FIRST===true) && !seen());
+  // Vlag VÓÓR de canvas-director (die ná deze include draait): houd de hero-reveal
+  // vast tot de intro 'm overdraagt → de morph van intro naar homepage.
+  if (willShow) { window.__DWV_INTRO_PENDING__ = true; show(); }
 })();
 </script>
