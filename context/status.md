@@ -5,7 +5,7 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-23 · **Versie**: 0.88.2 · **Branch**: `main`
+**Laatste update**: 2026-06-28 · **Versie**: 0.89.0 · **Branch**: `main`
 
 ## Waar het draait
 - **🚀 LIVE (volledige app)**: **https://dewereldvan.ai** (apex, canonical) + `www` + `app.dewereldvan.ai` —
@@ -128,7 +128,7 @@ dus de meeste hoogste-leverage-ingrepen zijn "maak zichtbaar", niet "bouw". Gepr
   vrij betaald agent-veld op de publieke voordeur; geen nieuwe e-mailkanalen.
 
 **Strategische richting bepaald** (2026-06-21, 4 visie-subteams → `docs/vision/`): De Wereld van AI = een
-levende kaart van het scherpste AI-netwerk waar een agent vóór het lid de graaf doorwerkt; nieuws/tools zijn
+levende kaart van een open, brede AI-community waar een agent vóór het lid de graaf doorwerkt; nieuws/tools zijn
 ondergeschikt aan de graaf. Goedgekeurd: **kosten-fundament → Concept A** (bezoeker bouwt live een mini-kaart
 uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde €50/week-cap**.
 - **Fase 1 (fundament)** live (v0.51.0): `AiSpendLog` + `visitor_ai_guard` (harde €50/wk-cap) + metering +

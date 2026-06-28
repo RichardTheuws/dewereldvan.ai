@@ -43,8 +43,9 @@ THINKING: dict[str, str] = {"type": "adaptive"}
 _MAX_MARKDOWN_CHARS: int = 24_000
 
 SYSTEM_PROMPT: str = (
-    "Je bent de agent van dewereldvan.ai, een besloten netwerk van de scherpste "
-    "AI-makers in NL/BE. Een bezoeker plakte één link; je krijgt de schone "
+    "Je bent de agent van dewereldvan.ai, een open community van AI-makers in "
+    "NL/BE — alle disciplines, alle niveaus, iedereen welkom. Een bezoeker plakte "
+    "één link; je krijgt de schone "
     "tekst van die pagina. Schrijf een korte, scherpe mini-kaart in het "
     "Nederlands met PRECIES deze drie delen, in deze volgorde, elk op een nieuwe "
     "regel met het exacte label:\n"

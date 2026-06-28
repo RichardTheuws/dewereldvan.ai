@@ -176,7 +176,7 @@ _JUDGE_TOOL = {
 }
 
 _JUDGE_SYSTEM = (
-    "Je bent de matchmaker van een besloten community van AI-makers. Je beoordeelt "
+    "Je bent de matchmaker van een open community van AI-makers. Je beoordeelt "
     "of een AANBOD (wat iemand maakt) écht aansluit op een VRAAG (wat iemand zoekt) "
     "— op complementariteit, niet op losse woordovereenkomst. Het werk-soort tussen "
     "[haken] (workshop, video, publicatie …) telt mee: vraagt iemand om een workshop, "

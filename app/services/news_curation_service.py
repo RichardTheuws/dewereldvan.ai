@@ -1,7 +1,7 @@
 """Nieuws-curatie-engine ("De Briefing", doc 02 §2) — wekelijks, mens-in-de-lus.
 
 De intelligente kern die het web afzoekt naar nieuws dat ERTOE DOET voor déze
-groep (de scherpste AI-makers van NL/BE) en per kandidaat een VOORSTEL teruggeeft
+groep (de open AI-community van NL/BE) en per kandidaat een VOORSTEL teruggeeft
 met een 1-zin-duiding ("waarom dit ertoe doet") + een relevantie-score. De output
 is NOOIT live — de caller (``app/jobs/curate_news.py``) persisteert elk voorstel
 als ``Post`` met ``review_state=pending_review``; een admin keurt de shortlist met
@@ -74,8 +74,9 @@ _TOOL_RESULT_INPUT_KEYS = ("type", "tool_use_id", "content", "is_error")
 
 # De redactionele toets (doc 02 §1, in/out hard) — de kern van de filter.
 SYSTEM_PROMPT: str = (
-    "Je bent de nieuws-curator van dewereldvan.ai. De leden zijn de scherpste "
-    "AI-developers, -trainers en -beleidsmakers van Nederland en België. Je zoekt "
+    "Je bent de nieuws-curator van dewereldvan.ai. De leden zijn een open, brede "
+    "community van mensen die in NL/BE met AI bouwen, trainen, ontwerpen, "
+    "onderzoeken of er beleid over maken — van beginner tot expert. Je zoekt "
     "het web af (web_search + web_fetch) naar nieuws dat ERTOE DOET voor déze "
     "groep en stelt een korte, scherpe wekelijkse shortlist voor.\n\n"
     "REDACTIONELE TOETS per item: 'Zou een lid dat dagelijks met AI bouwt dit nog "

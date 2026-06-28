@@ -63,8 +63,9 @@ KNOWLEDGE: tuple[KnowledgeEntry, ...] = (
         id="platform",
         title="Wat is dewereldvan.ai",
         text=(
-            "dewereldvan.ai is een besloten community van vooruitstrevende "
-            "AI-makers, -trainers en -beleidsmakers in NL/BE. Je maakt een "
+            "dewereldvan.ai is een open community voor iedereen in NL/BE die met "
+            "AI bouwt, traint, ontwerpt, onderzoekt of er beleid over maakt — van "
+            "wie net begint tot wie er dagelijks mee werkt. Je maakt een "
             "profiel (wie je bent, wat je maakt, waar je naar zoekt), vindt "
             "elkaar via de ledengids en brengt vraag en aanbod bij elkaar."
         ),
@@ -130,10 +131,10 @@ KNOWLEDGE: tuple[KnowledgeEntry, ...] = (
         id="kosten",
         title="Kosten en lidmaatschap",
         text=(
-            "dewereldvan.ai is een besloten community voor de leden van de groep "
-            "'De Wereld Van AI'. Er is geen openbare verkoop of abonnement: je "
-            "krijgt toegang als lid van de groep, na goedkeuring of via een "
-            "uitnodiging."
+            "dewereldvan.ai is gratis en open voor iedereen die met AI bezig is. "
+            "Er is geen openbare verkoop of abonnement: je meldt je aan (of komt "
+            "via een uitnodiging) en na een korte check om spam te weren ben je "
+            "welkom."
         ),
         keywords=(
             "kosten", "prijs", "betalen", "gratis", "geld", "abonnement",

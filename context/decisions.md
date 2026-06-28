@@ -44,8 +44,13 @@ geschikt" te kwalificeren**.
 
 **Beslissing**: drie keuzes vastgelegd (door Richard bevestigd):
 1. **Wie hoort erbij** = iedereen met **AI-affiniteit** (alle disciplines: coders, trainers, audio/
-   video, design, research, beleid, nieuwsgierigen). Thema = AI, géén prestige-lat. De oude framing
-   "scherpste AI-makers" blijft de *toon/ambitie*, niet langer een *toegangscriterium*.
+   video, design, research, beleid, nieuwsgierigen). Thema = AI, géén prestige-lat.
+   **Positionerings-pivot (2026-06-28):** de oude framing "scherpste/meest vooruitstrevende AI-makers"
+   is nu óók als *toon* losgelaten — niet alleen als toegangscriterium. We positioneren niemand "hoog"
+   of exclusief; overal straalt een **open, welcoming** community uit (van beginner tot expert, alle
+   disciplines). Het "verbazen"-mandaat blijft, maar gaat over de *ervaring*, niet over status. Elite-
+   copy verwijderd uit homepage/leden-SEO, de AI-system-prompts (concierge, /proef, nieuws, tool-review,
+   knowledge) en de mandaten (CLAUDE.md, STYLEGUIDE).
 2. **Toegangsmodel** = de poort **filtert spam, niet mensen**. Lidmaatschap losgekoppeld van oordeel:
    AI-spam-triage (alleen spam-likelihood, nooit prestige) → **auto-welkom** voor echte makers, alleen
    twijfel/spam in Richards review-queue. Genadige toestanden (welkom · "we kijken even mee" · stil-

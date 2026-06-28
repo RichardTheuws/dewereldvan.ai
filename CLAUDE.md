@@ -8,16 +8,18 @@ werk van leden. Domein `dewereldvan.ai` staat op Cloudflare; self-hosted op de M
 achter een Cloudflare Tunnel.
 
 ## ✨ Ervaringsmandaat (NIET ONDERHANDELBAAR)
-De leden van dewereldvan.ai zijn de meest vooruitstrevende AI-developers, -trainers en
--beleidsmakers van NL/BE. **Elke pixel en elke interactie moet hen verbazen.** Dit is geen
-nice-to-have maar de kern van het product.
+dewereldvan.ai is een open, gastvrije community voor iedereen in NL/BE die met AI bouwt, traint,
+ontwerpt, onderzoekt of er beleid over maakt — van wie net begint tot wie er dagelijks mee werkt.
+**Elke pixel en elke interactie moet hen verwelkomen én verbazen.** Dit is geen nice-to-have maar
+de kern van het product. We positioneren niemand "hoog" of exclusief: de toon is overal open en
+uitnodigend, nooit elitair — en juist daarbinnen verrast de ervaring.
 
 - **ALTIJD, IEDEREEN, OVERAL verbazen.** Geen enkele pagina, flow of e-mail mag "een formuliertje
   op een pagina" zijn. Onboarding, profielbouw, feedback, roadmap, ideeënbus — álles krijgt de
   next-level, kosmische behandeling. Een generieke/MVP-look is een **regressie**, geen acceptabel
   tussenstadium.
-- **Bouw nooit een kale interactie.** Vraag je bij elk scherm af: "verrast dit iemand die dagelijks
-  met AI bouwt?" Zo nee → niet af.
+- **Bouw nooit een kale interactie.** Vraag je bij elk scherm af: "voelt dit warm én verrassend —
+  voor wie net begint én voor wie dagelijks met AI bouwt?" Zo nee → niet af.
 - **De stijl is gedefinieerd, niet vrij in te vullen.** Volg **[docs/STYLEGUIDE.md](docs/STYLEGUIDE.md)**
   ("kosmische diepte") tot in de details: typografie, kleur, motion, compositie, microcopy. Hergebruik
   `app/static/cosmic.css` en de teaser-identiteit; introduceer geen tweede look.

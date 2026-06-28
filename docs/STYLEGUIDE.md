@@ -4,9 +4,11 @@
 > scherm, elke flow en elke e-mail. Zie ook het **Ervaringsmandaat** in `CLAUDE.md`.
 
 ## 0. Het principe (de lat)
-De leden zijn de scherpste AI-mensen van NL/BE. **Alles op dewereldvan.ai moet hen verbazen —
-altijd, iedereen, overal.** Een kale interactie of generieke "AI-startup"-look is een regressie.
-De toetssteen bij élk scherm: *"Verrast dit iemand die dagelijks met AI bouwt?"* Zo nee → niet af.
+De leden zijn een open, brede community — iedereen in NL/BE die met AI bouwt, traint, ontwerpt,
+onderzoekt of er beleid over maakt, van beginner tot expert. **Alles op dewereldvan.ai moet hen
+verwelkomen én verbazen — altijd, iedereen, overal.** Een kale interactie of generieke
+"AI-startup"-look is een regressie; een hoge/elitaire toon óók. De toetssteen bij élk scherm:
+*"Voelt dit warm én verrassend — voor wie net begint én voor wie dagelijks met AI bouwt?"* Zo nee → niet af.
 
 Twee assen, allebei verplicht:
 1. **Verfijnd & verrassend** — visueel en in motion (deze styleguide).

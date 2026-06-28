@@ -3,6 +3,26 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.89.0] - 2026-06-28
+### Changed — Positionerings-pivot: van "elite/hoog" naar open & welcoming community
+- De community werd op een paar scherpe plekken nog "hoog" neergezet ("de scherpste / meest vooruitstrevende
+  AI-makers", "besloten community"). Dat is nu **overal** omgezet naar een **open, gastvrije** toon: een
+  community voor iedereen in NL/BE die met AI bouwt, traint, ontwerpt, onderzoekt of er beleid over maakt —
+  **van beginner tot expert**. Community over wát je doet, niet over je niveau. Het "verbazen"-mandaat blijft,
+  maar gaat over de *ervaring*, niet over status.
+- **Reader-visible**: homepage-SEO-titel (`index.html`) en leden-SEO-description + leden-lede (`members/index.html`).
+- **AI-system-prompts** (kleuren elke zin die leden/bezoekers lezen, en "besloten" was óók feitelijk verouderd
+  sinds de toegangs-pivot): concierge (`concierge_service.py`, nu warm/uitnodigend), /proef-bezoeker-agent
+  (`visitor_url_card.py`), nieuws-curator (`news_curation_service.py`), tool-review (`tool_review_service.py`),
+  matchmaker (`match_service.py`) en de twee `knowledge.py`-entries die de concierge verbatim voorleest
+  ("wat is dewereldvan.ai" + "kosten/lidmaatschap" → gratis & open).
+- **Levende mandaten** (anders regenereert toekomstige copy de elite-toon): `CLAUDE.md` (Ervaringsmandaat) en
+  `docs/STYLEGUIDE.md` (§0 de lat) — toetssteen nu *"voelt dit warm én verrassend — voor wie net begint én
+  voor wie dagelijks met AI bouwt?"*.
+- **Visie/bronnen**: `docs/vision/01-noordster.md` (positionerings-regels open gemaakt; de graaf/agent/MCP-moat
+  blijft, "open & welcoming = lage drempel, niet iedereen scrapen"), `context/decisions.md` + `context/status.md`.
+- Geen functionele/gedragswijziging; copy + mandaten. Suite groen (1073 passed).
+
 ## [0.88.2] - 2026-06-23
 ### Fixed — Onzichtbare kosmische pagina's: reveal-director ontbrak
 - `/profiel/verbind` (connect) en de AVG-afscheidspagina (`profiles/deleted.html`) renderden met JS aan een

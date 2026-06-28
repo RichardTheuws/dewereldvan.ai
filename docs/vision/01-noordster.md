@@ -3,11 +3,11 @@
 **Status**: TER GOEDKEURING · **Datum**: 2026-06-21 · **Subteam 1 van 4 (eigenaar noordster)**
 **Kadert**: subteams 2 (nieuws), 3 (tool-review), 4 (bezoeker-ervaring).
 **Leidend**: `CLAUDE.md` (ervaringsmandaat) + `docs/STYLEGUIDE.md` (kosmische diepte). Toetssteen overal:
-**lage operationele last + stabiliteit** (solo-operator, mantelzorg-gebonden) en *"verrast dit iemand
-die dagelijks met AI bouwt?"*.
+**lage operationele last + stabiliteit** (solo-operator, mantelzorg-gebonden) en *"voelt dit warm én
+verrassend — voor wie net begint én voor wie dagelijks met AI bouwt?"*.
 
-> **TL;DR** — Dit is geen directory van mensen die "iets met AI doen". Het is een **levende kaart van het
-> scherpste AI-netwerk van NL/BE waar een agent voor jou doorheen werkt**. De unieke asset is de **graaf**
+> **TL;DR** — Dit is geen statische directory; het is een **levende kaart van de open AI-community van
+> NL/BE waar een agent voor jou doorheen werkt**. De unieke asset is de **graaf**
 > (de makers + hun werk + hun vraag/aanbod) en het unieke mechanisme is **agency over die graaf, bezorgd
 > in de tool waar het lid al zit (MCP)**. Niemand anders heeft die combinatie. Noordster-metric =
 > **gegronde verbindingen die anders niet waren ontstaan**.
@@ -17,13 +17,14 @@ die dagelijks met AI bouwt?"*.
 ## 1. Kernbelofte
 
 ### Eén zin
-**De Wereld van AI laat de scherpste AI-makers van NL/BE elkaar vinden en versterken — een agent doet
+**De Wereld van AI laat AI-makers in NL/BE elkaar vinden en versterken — een agent doet
 het zoekwerk, jij beslist.** Het is een netwerk dat *voor je werkt*, niet een gids die je doorbladert.
 
 ### Wat hier te *halen* is dat nergens anders bestaat
-1. **Toegang tot de juiste mensen, vóór-gefilterd door wie er al ín zit.** Niet "alle AI-mensen", maar
-   precies déze besloten kring (begonnen als WhatsApp-groep van Bart Ensink / Hendrik van Zwol c.s.).
-   De waarde is de samenstelling, niet de schaal.
+1. **Een community waar iedereen met AI bezig is — dus iedereen elkaars werk snapt.** Geen generiek
+   netwerk: een gedeelde basis. Ontstaan uit de WhatsApp-groep van Bart Ensink / Hendrik van Zwol c.s.
+   en nu open voor iedereen die met AI bouwt, traint, ontwerpt, onderzoekt of er beleid over maakt.
+   De waarde zit in die gedeelde basis en in lage drempel, niet in schaal-om-de-schaal.
 2. **Een agent met agency over een graaf die niemand anders heeft.** Vraag/aanbod, domein-aangrenzendheid,
    en wie nieuw is — dat is gestructureerde data waar de concierge + Scout op redeneren. Een LinkedIn-zoek
    of een Notion-lijst kan dit niet: zij hebben de graaf niet en geen agent erbovenop.
@@ -32,7 +33,7 @@ het zoekwerk, jij beslist.** Het is een netwerk dat *voor je werkt*, niet een gi
    leeft waar de aandacht van een AI-bouwer al de hele dag is.
 
 ### (a) Eerste bezoeker — niet-lid, komt via WhatsApp, mobiel
-> **"Dit is waar de scherpste AI-makers van NL/BE zitten — en je ziet binnen 20 seconden waarom je erbij wil."**
+> **"Dit is waar de AI-makers van NL/BE samenkomen — en je ziet binnen 20 seconden waarom je meedoet."**
 
 Belofte: in één scroll begrijpt de bezoeker (1) wíé hier zit (concrete makers + hun werk, niet abstracte
 claims), (2) dát het slim is (de demo bouwt vóór je ogen een profiel uit een link — `/demo`, Nova
@@ -88,7 +89,7 @@ deels aanwezig:
 | Connectie = e-mailadres kopiëren. | Connectie = **gegrond intro-voorstel**, consent-gepoort, één klik. |
 
 **De moat, in één regel:** *agency over een graaf die niemand anders heeft, bezorgd waar het lid al zit.*
-De graaf (scherpste AI-makers + werk + vraag/aanbod) is niet te kopiëren zonder dezelfde mensen; de
+De graaf (de makers + hun werk + vraag/aanbod) is niet te kopiëren zonder dezelfde mensen; de
 disambiguatie-engine (Discovery) en de gegronde, anti-hallucinatie-tooling zijn het uitvoerende verschil.
 
 **Bewust géén** algemene AI-nieuwssite, géén tool-marktplaats, géén open community-forum. Dat zijn
@@ -117,7 +118,7 @@ precisie, dan wordt de agent ruis voor experts (netto negatief) en valt 'm terug
 Eén cijfer, periodiek met de hand af te lezen — geen dashboard-onderhoud.
 
 > Waarom niet "actieve leden" of "pageviews" als noordster? Afgewezen: meet aanwezigheid, niet waarde —
-> een gezond besloten netwerk kan rustig zijn en tóch waardevol (zie de Scout-math: vroeg rustige weken
+> een gezonde community kan rustig zijn en tóch waardevol (zie de Scout-math: vroeg rustige weken
 > zijn correct gedrag, niet falen). De verbinding is de waarde-eenheid.
 
 ---
@@ -154,7 +155,7 @@ De noordster ("agent + graaf, gegrond, lage op-last") is de toetssteen voor subt
 
 ## 6. Aanbeveling
 
-**Vast te leggen als noordster:** *De Wereld van AI is een levende kaart van het scherpste AI-netwerk van
+**Vast te leggen als noordster:** *De Wereld van AI is een levende kaart van de open AI-community van
 NL/BE waar een agent met agency over de graaf voor het lid doorheen werkt — gegrond, in de tool waar het
 lid al zit, met de gegronde verbinding als waarde-eenheid.* Meet succes aan **geaccepteerde intro's/mnd**
 (hoofd), met **profiel-activatie** en **agent-precisie** als support. Dit cementeert wat al gebouwd is
@@ -164,14 +165,15 @@ harde toets: *versterkt dit de graaf + de agent, tegen lage op-last?*
 **Ik leg dit zo vast en geef het door als kader aan subteam 2–4, tenzij je vetoert.**
 
 ### Verworpen alternatieven (1 regel elk)
-- **"Publieke AI-showcase/directory voor heel NL/BE"** — verworpen: open = ruis + hoge curatie-last + geen
-  moat; de besloten samenstelling ís de waarde.
+- **"Generieke publieke directory van heel NL/BE"** — verworpen: schaal-om-de-schaal = ruis + hoge
+  curatie-last + geen moat. Open & welcoming betekent láge drempel, niet "iedereen scrapen": de gedeelde
+  AI-basis + de graaf/agent zijn de waarde, niet de omvang.
 - **"AI-nieuws- en tool-platform"** — verworpen: commodity-producten met redactie-/onderhoudslast, botsen
   met lage-op-last en met de graaf-moat; nieuws/tools horen ondergeschikt aan de makers.
 - **"Community-forum / sociaal netwerk"** — verworpen: WhatsApp blijft het chatkanaal (bewust buiten scope);
   moderatie-last + retentie-druk passen niet bij een solo-operator.
 - **"Vanity-metric (actieve leden / pageviews) als noordster"** — verworpen: meet aanwezigheid, niet de
-  waarde-eenheid (de verbinding); een gezond besloten netwerk mag rustig zijn.
+  waarde-eenheid (de verbinding); een gezonde community mag rustig zijn.
 
 ### Risico's
 - **Netwerk-dichtheid (grootste).** De agent-waarde schaalt met de graaf; bij een dunne community vindt de

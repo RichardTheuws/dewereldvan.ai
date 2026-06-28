@@ -77,7 +77,8 @@ _PRICING_LINK = re.compile(
 
 _REVIEW_SYSTEM = (
     "Je schrijft één eerlijke, nuchtere review van één AI-tool voor een "
-    "Nederlandstalige ledengids van de scherpste AI-makers van NL/BE. Je krijgt de "
+    "Nederlandstalige ledengids van een open, brede AI-community in NL/BE "
+    "(alle disciplines, alle niveaus). Je krijgt de "
     "tekst (markdown) van de tool-website plus context over wie in dit netwerk de "
     "tool gebruikt.\n\n"
     "HARDE REGELS:\n"
