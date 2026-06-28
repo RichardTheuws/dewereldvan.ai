@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.91.0] - 2026-06-28
+### Added — App-uptime-alert + bot-token geroteerd
+- **Uptime-monitoring**: `scripts/healthcheck.sh` + LaunchAgent `com.theuws.dewereldvan.healthcheck` (elke 5 min)
+  pingt `/healthz` dóór de tunnel (tunnel + web + DB in één check) en stuurt een Telegram-alert bij een
+  toestands-wisseling (🔴 down / ✅ herstel), met state-file-debounce tegen spam. Bewust **out-of-band**: leest de
+  bot-token + chat-id uit de M4-`.env` en praat rechtstreeks met de Telegram-API, zodat de alert ook werkt als
+  álle containers plat liggen (notify_ops heeft de web-container nodig; dit niet). Down→up→debounce getest.
+- **Bot-token geroteerd** (operator leverde een nieuwe): alleen in de M4-`.env` gezet (perms 600), gevalideerd
+  via `getMe`, de oude (nu dode) token uit de bestaande logs geredacteerd. Tokenwaarde staat nergens in de repo,
+  changelog of memory. `TELEGRAM_ADMIN_CHAT_ID` (niet-geheim) toegevoegd aan `.env` voor de out-of-band alert.
+
 ## [0.90.0] - 2026-06-28
 ### Added / Fixed — Pre-public-launch hardening (5-sporen-audit → blockers gedicht)
 Een brede pre-launch-audit (security/privacy/SEO/op-last/content) leverde 1 KILL + meerdere FAILs. Security was
