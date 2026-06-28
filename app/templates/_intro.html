@@ -1,14 +1,17 @@
 {# Cinematic intro voor first-time bezoekers — "Van leegte naar wereld".
-   Real-time generatief (canvas). Climax = een dichte particle-zwerm morpht tot
-   het wordmark 'dewereldvan.ai' (tekst dicht gesampled, font gegarandeerd
-   geladen), met additieve glow + motion-trails. Geluid etherisch & warm
-   (Web Audio, gesynthetiseerd → geen asset). Naadloze dissolve naar de homepage.
+   Act 1: een gloeiende 3D 'Wereld van AI' (Meshy-GLB, Three.js, eigen kosmisch
+   materiaal) draait in het sterrenveld. Overgang: de knopen van de wereld worden
+   geprojecteerd naar 2D-particles die naar het wordmark 'dewereldvan.ai' morphen
+   (de wereld wórdt de woorden). Outro: de wordmark vliegt naar het nav-merk en de
+   homepage-hero bloeit mee op (dwv:intro-handoff). Geluid etherisch & warm
+   (Web Audio). Three.js lazy via CDN, ALLEEN voor de intro. Nette fallback naar
+   een 2D-only intro als WebGL/Three.js niet beschikbaar is.
 
-   Veilig: activeert ALLEEN bij ?intro=1 (preview) of window.DWV_INTRO_FIRST.
-   Toegankelijk: geluid pas ná de klik; prefers-reduced-motion → statisch
-   wordmark + welkom, geen motion/geluid; werkt onzichtbaar zonder JS. #}
+   Veilig: activeert alleen bij ?intro=1 of window.DWV_INTRO_FIRST. Toegankelijk:
+   geluid pas ná de klik; prefers-reduced-motion → statisch wordmark + welkom. #}
 <div id="dwv-intro" class="dwv-intro" hidden aria-hidden="true" role="dialog" aria-label="Welkom-intro">
-  <canvas id="dwv-intro-canvas" aria-hidden="true"></canvas>
+  <canvas id="dwv-intro-2d" aria-hidden="true"></canvas>
+  <canvas id="dwv-intro-3d" aria-hidden="true"></canvas>
   <div class="dwv-intro__enter" id="dwv-intro-enter">
     <div class="dwv-intro__eyebrow">dewereldvan.ai</div>
     <button type="button" class="dwv-intro__go" id="dwv-intro-go">✦ Betreed de wereld</button>
@@ -19,31 +22,103 @@
 
 <style>
   .dwv-intro{position:fixed;inset:0;z-index:9999;background:#04040e;
-    display:flex;align-items:center;justify-content:center;overflow:hidden;
-    transition:opacity 1s ease}
+    display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity 1s ease}
   .dwv-intro[hidden]{display:none}
   .dwv-intro.is-out{opacity:0;pointer-events:none}
-  #dwv-intro-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-  .dwv-intro__enter{position:relative;z-index:2;text-align:center;
-    transition:opacity .7s ease, transform .7s ease}
+  #dwv-intro-2d,#dwv-intro-3d{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #dwv-intro-3d{opacity:0;transition:opacity .2s linear;pointer-events:none}
+  .dwv-intro__enter{position:relative;z-index:3;text-align:center;transition:opacity .7s ease, transform .7s ease}
   .dwv-intro__enter.is-gone{opacity:0;transform:translateY(-10px);pointer-events:none}
-  .dwv-intro__eyebrow{font-family:"JetBrains Mono",monospace;font-size:.8rem;
-    letter-spacing:.34em;text-transform:uppercase;color:#9097c4;margin-bottom:1.5rem;opacity:.8}
+  .dwv-intro__eyebrow{font-family:"JetBrains Mono",monospace;font-size:.8rem;letter-spacing:.34em;
+    text-transform:uppercase;color:#9097c4;margin-bottom:1.5rem;opacity:.8}
   .dwv-intro__go{font-family:"Fraunces",Georgia,serif;font-size:1.5rem;color:#f4f1ff;
-    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);
-    border-radius:999px;padding:.9rem 2rem;cursor:pointer;
-    transition:box-shadow .45s ease, border-color .45s ease, background .45s ease}
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);border-radius:999px;
+    padding:.9rem 2rem;cursor:pointer;transition:box-shadow .45s ease, border-color .45s ease, background .45s ease}
   .dwv-intro__go:hover,.dwv-intro__go:focus-visible{border-color:rgba(246,205,134,.6);
     background:rgba(246,205,134,.07);box-shadow:0 0 34px 3px rgba(246,205,134,.2);outline:none}
-  .dwv-intro__skip{display:block;margin:1.2rem auto 0;background:none;border:none;
-    color:#9097c4;font-size:.85rem;cursor:pointer;opacity:.55;text-decoration:underline;text-underline-offset:3px}
+  .dwv-intro__skip{display:block;margin:1.2rem auto 0;background:none;border:none;color:#9097c4;
+    font-size:.85rem;cursor:pointer;opacity:.55;text-decoration:underline;text-underline-offset:3px}
   .dwv-intro__skip:hover{opacity:1}
-  .dwv-intro__welcome{position:absolute;z-index:2;left:50%;bottom:24%;transform:translateX(-50%);
+  .dwv-intro__welcome{position:absolute;z-index:3;left:50%;bottom:24%;transform:translateX(-50%);
     font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:1.25rem;color:#cdd2f0;
     letter-spacing:.01em;opacity:0;transition:opacity 1.4s ease;text-align:center;white-space:nowrap;
     text-shadow:0 0 24px rgba(80,110,220,.5)}
   .dwv-intro__welcome.is-in{opacity:.92}
 </style>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+  // 3D 'Wereld van AI' — eigen kosmisch materiaal op de Meshy-GLB. Exposeert een
+  // kleine API op window.__DWV3D__; de 2D-intro (classic script) stuurt 'm aan.
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+  var renderer, scene, camera, group, mesh = null, sampled = [];
+  var API = { ready:false, failed:false };
+
+  API.mount = function(canvas){
+    return new Promise(function(resolve){
+      try{
+        renderer = new THREE.WebGLRenderer({canvas:canvas, alpha:true, antialias:true});
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+        renderer.setSize(innerWidth, innerHeight, false);
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+        camera.position.set(0,0,4.4);
+        scene.add(new THREE.AmbientLight(0x3a44aa, 0.7));
+        var pg=new THREE.PointLight(0xf6cd86,2.4,60); pg.position.set(3.5,2.5,4); scene.add(pg);
+        var pb=new THREE.PointLight(0x3a6bff,2.2,60); pb.position.set(-3.5,-1.5,2); scene.add(pb);
+        group = new THREE.Group(); scene.add(group);
+        new GLTFLoader().load('/static/models/wereld-van-ai.glb?v={{ asset_ver }}', function(gltf){
+          var root = gltf.scene;
+          var box = new THREE.Box3().setFromObject(root);
+          var c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3());
+          var scale = 2.5/(Math.max(s.x,s.y,s.z)||1);
+          root.position.sub(c);
+          var wrap = new THREE.Group(); wrap.add(root); wrap.scale.setScalar(scale); group.add(wrap);
+          root.traverse(function(o){
+            if(!o.isMesh) return;
+            var geo = o.geometry;
+            o.material = new THREE.MeshStandardMaterial({color:0x121248, metalness:.45, roughness:.35, transparent:true, opacity:.26});
+            o.add(new THREE.LineSegments(new THREE.WireframeGeometry(geo),
+              new THREE.LineBasicMaterial({color:0xf6cd86, transparent:true, opacity:.65, blending:THREE.AdditiveBlending})));
+            o.add(new THREE.Points(geo,
+              new THREE.PointsMaterial({color:0xffe6b4, size:.035, transparent:true, opacity:.9, blending:THREE.AdditiveBlending, sizeAttenuation:true})));
+            if(!mesh){ mesh=o; var pos=geo.attributes.position, st=Math.max(1,Math.floor(pos.count/1400));
+              for(var i=0;i<pos.count;i+=st) sampled.push(new THREE.Vector3().fromBufferAttribute(pos,i)); }
+          });
+          API.ready = true; resolve();
+        }, undefined, function(){ API.failed=true; resolve(); });
+      }catch(e){ API.failed=true; resolve(); }
+    });
+  };
+  API.render = function(ms){
+    if(!renderer) return;
+    if(group){ group.rotation.y = ms*0.00026; group.rotation.x = Math.sin(ms*0.00018)*0.14; }
+    camera.position.x = Math.sin(ms*0.00014)*0.55; camera.position.y = Math.cos(ms*0.00011)*0.3; camera.lookAt(0,0,0);
+    renderer.render(scene,camera);
+  };
+  API.resize = function(){ if(renderer){ renderer.setSize(innerWidth,innerHeight,false); camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); } };
+  // Projecteer de wereld-knopen naar schermcoördinaten (device-px) — startposities
+  // voor de 2D-particles, zodat de wereld letterlijk in de letters uiteenvalt.
+  API.projectPoints = function(n){
+    var out=[]; if(!mesh||!camera) return out;
+    mesh.updateWorldMatrix(true,true);
+    var m=mesh.matrixWorld, dpr=Math.min(window.devicePixelRatio||1,2), v=new THREE.Vector3();
+    var step=Math.max(1, Math.floor(sampled.length/n));
+    for(var i=0;i<sampled.length && out.length<n;i+=step){
+      v.copy(sampled[i]).applyMatrix4(m).project(camera);
+      out.push([(v.x*0.5+0.5)*innerWidth*dpr, (-v.y*0.5+0.5)*innerHeight*dpr]);
+    }
+    return out;
+  };
+  window.__DWV3D__ = API;
+</script>
 
 <script>
 (function () {
@@ -51,334 +126,221 @@
   if (!root || root.dataset.bound) return;
   root.dataset.bound = '1';
 
-  var canvas = document.getElementById('dwv-intro-canvas');
+  var c2 = document.getElementById('dwv-intro-2d');
+  var c3 = document.getElementById('dwv-intro-3d');
   var enterUI = document.getElementById('dwv-intro-enter');
   var welcome = document.getElementById('dwv-intro-welcome');
   var goBtn = document.getElementById('dwv-intro-go');
   var skipBtn = document.getElementById('dwv-intro-skip');
-  var ctx = canvas.getContext('2d');
+  var ctx = c2.getContext('2d');
   var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-  var W, H, DPR, cx, cy, bg = [], flux = [], targets = [], raf = null, idleRaf = null;
-  var audio = null, running = false, t0 = 0, chimes = 0;
-  var outroStarted = false, brandPre = null;
+  var W,H,DPR,cx,cy, bg=[], flux=[], raf=null, idleRaf=null, audio=null;
+  var running=false, t0=0, chimes=0, use3d=false, seeded=false, outroStarted=false, brandPre=null;
 
   // tijdlijn (ms na de klik)
-  var IGNITE = 1700, STREAM = 4600, PULL = 6600, MORPH0 = 6600, MORPH1 = 9600, WELC = 9900, OUTRO = 10900, END = 12700;
+  var WORLDIN=1500, TRANS=4900, MORPH0=5100, MORPH1=8300, WELC=8600, OUTRO=9900, END=11800;
 
-  function seen() { return /(?:^|;\s*)dwv_intro_seen=1/.test(document.cookie); }
-  function setSeen() { document.cookie = 'dwv_intro_seen=1; path=/; max-age=31536000; samesite=lax'; }
+  function seen(){ return /(?:^|;\s*)dwv_intro_seen=1/.test(document.cookie); }
+  function setSeen(){ document.cookie='dwv_intro_seen=1; path=/; max-age=31536000; samesite=lax'; }
   function clamp01(v){ return v<0?0:v>1?1:v; }
-  function smooth(p){ p=clamp01(p); return p*p*(3-2*p); }                 // smoothstep
-  function smoother(p){ p=clamp01(p); return p*p*p*(p*(p*6-15)+10); }     // smootherstep
-  function rnd(a,b){ return a + Math.random()*(b-a); }
+  function smooth(p){ p=clamp01(p); return p*p*(3-2*p); }
+  function smoother(p){ p=clamp01(p); return p*p*p*(p*(p*6-15)+10); }
+  function rnd(a,b){ return a+Math.random()*(b-a); }
 
-  function resize(){
-    DPR = Math.min(window.devicePixelRatio || 1, 2);
-    W = canvas.width = Math.floor(innerWidth * DPR);
-    H = canvas.height = Math.floor(innerHeight * DPR);
-    cx = W/2; cy = H/2;
-  }
+  function resize(){ DPR=Math.min(window.devicePixelRatio||1,2);
+    W=c2.width=Math.floor(innerWidth*DPR); H=c2.height=Math.floor(innerHeight*DPR); cx=W/2; cy=H/2;
+    if(use3d && window.__DWV3D__) window.__DWV3D__.resize(); }
 
-  // achtergrond-sterren met parallax-diepte (blijven leven door de hele intro)
-  function seedBg(){
-    var n = Math.min(170, Math.floor(innerWidth*innerHeight/9000));
-    bg = Array.from({length:n}, function(){
-      var z = rnd(.2,1);
-      return { x:Math.random()*W, y:Math.random()*H, z:z,
-        r:(rnd(.5,1.5))*DPR*(.5+z*.7), tw:Math.random()*6.28,
-        vx:rnd(-.03,.03)*DPR*z, vy:rnd(-.03,.03)*DPR*z, gold:Math.random()<.08 };
-    });
-  }
+  function seedBg(){ var n=Math.min(170,Math.floor(innerWidth*innerHeight/9000));
+    bg=Array.from({length:n},function(){ var z=rnd(.2,1);
+      return {x:Math.random()*W,y:Math.random()*H,z:z,r:rnd(.5,1.5)*DPR*(.5+z*.7),tw:Math.random()*6.28,
+        vx:rnd(-.03,.03)*DPR*z,vy:rnd(-.03,.03)*DPR*z,gold:Math.random()<.08}; }); }
 
-  // wordmark → dichte particle-doelen (font gegarandeerd geladen, crisp gesampled)
   function buildTargets(){
-    return (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function(){
-      var off = document.createElement('canvas'); off.width = W; off.height = H;
-      var o = off.getContext('2d');
-      var text = 'dewereldvan.ai';
-      var fs = Math.min(W*0.135, H*0.28);
+    return (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){
+      var off=document.createElement('canvas'); off.width=W; off.height=H; var o=off.getContext('2d');
+      var text='dewereldvan.ai', fs=Math.min(W*0.135,H*0.28);
       o.textAlign='center'; o.textBaseline='middle'; o.fillStyle='#fff';
-      o.font = '600 '+fs+'px "Fraunces", Georgia, serif';
-      while (o.measureText(text).width > W*0.84 && fs > 12){ fs -= 3; o.font='600 '+fs+'px "Fraunces", Georgia, serif'; }
-      o.fillText(text, W/2, H*0.5);
-      var img = o.getImageData(0,0,W,H).data, pts = [];
-      var stride = Math.max(3, Math.round(3*DPR));
-      for (var y=0; y<H; y+=stride) for (var x=0; x<W; x+=stride){
-        if (img[(y*W+x)*4+3] > 130) pts.push([x+rnd(-1,1), y+rnd(-1,1)]);
-      }
-      // shuffle + cap voor performance
-      for (var i=pts.length-1;i>0;i--){ var j=(Math.random()*(i+1))|0, t=pts[i]; pts[i]=pts[j]; pts[j]=t; }
-      // Dichtere pool = scherpere letters. Wat lager op smalle/mobiele schermen
-      // (minder rekenwerk), ruim op desktop voor crisp wordmark.
-      var CAP = innerWidth < 760 ? 1600 : 3200;
-      if (pts.length > CAP){ var k=[], step=pts.length/CAP; for (var m=0;m<CAP;m++) k.push(pts[(m*step)|0]); pts=k; }
-      targets = pts;
-      // flux-particles: één per doel; starten verspreid, krijgen een per-particle delay
-      flux = pts.map(function(p){
-        var ang = Math.random()*6.28, rad = rnd(.3,1.1)*Math.max(W,H)*.5;
-        return {
-          x: cx+Math.cos(ang)*rad, y: cy+Math.sin(ang)*rad,
-          ox:0, oy:0, tx:p[0], ty:p[1],
-          // drift-baan vóór de morph (zachte orbit rond centrum)
-          ph: Math.random()*6.28, sp: rnd(.2,.6), orb: rnd(.08,.30)*Math.min(W,H),
-          delay: clamp01(p[0]/W)*0.45 + Math.random()*0.12,   // links→rechts onthullen
-          r: rnd(.9,1.7)*DPR, tw: Math.random()*6.28
-        };
-      });
-      flux.forEach(function(f){ f.ox=f.x; f.oy=f.y; });
+      o.font='600 '+fs+'px "Fraunces", Georgia, serif';
+      while(o.measureText(text).width>W*0.84 && fs>12){ fs-=3; o.font='600 '+fs+'px "Fraunces", Georgia, serif'; }
+      o.fillText(text,W/2,H*0.5);
+      var img=o.getImageData(0,0,W,H).data, pts=[], stride=Math.max(3,Math.round(3*DPR));
+      for(var y=0;y<H;y+=stride)for(var x=0;x<W;x+=stride){ if(img[(y*W+x)*4+3]>130) pts.push([x+rnd(-1,1),y+rnd(-1,1)]); }
+      for(var i=pts.length-1;i>0;i--){ var j=(Math.random()*(i+1))|0,tt=pts[i]; pts[i]=pts[j]; pts[j]=tt; }
+      var CAP=innerWidth<760?1600:3200;
+      if(pts.length>CAP){ var k=[],sp=pts.length/CAP; for(var m=0;m<CAP;m++)k.push(pts[(m*sp)|0]); pts=k; }
+      flux=pts.map(function(p){ return { ox:cx,oy:cy, tx:p[0], ty:p[1],
+        delay:clamp01(p[0]/W)*0.4+Math.random()*0.12, r:rnd(.9,1.7)*DPR, tw:Math.random()*6.28 }; });
     });
   }
 
-  function drawNebula(t){
-    var bloom = smooth((t-IGNITE)/(PULL-IGNITE)) * 0.55;
-    if (bloom<=0) return;
-    var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W,H)*0.62);
-    g.addColorStop(0, 'rgba(60,120,255,'+(bloom*0.42)+')');
-    g.addColorStop(.45,'rgba(96,52,168,'+(bloom*0.20)+')');
-    g.addColorStop(1, 'rgba(4,4,14,0)');
-    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  // Bij de overgang: startposities = de geprojecteerde wereld-knopen (de wereld
+  // valt uiteen in de particles). Geen 3D? Dan vanuit een cirkel rond het centrum.
+  function seedFromWorld(){
+    var pj = (use3d && window.__DWV3D__) ? window.__DWV3D__.projectPoints(flux.length) : [];
+    for(var i=0;i<flux.length;i++){
+      if(pj.length){ var p=pj[i%pj.length]; flux[i].ox=p[0]; flux[i].oy=p[1]; }
+      else { var a=Math.random()*6.28, rr=rnd(.05,.30)*Math.min(W,H); flux[i].ox=cx+Math.cos(a)*rr; flux[i].oy=cy+Math.sin(a)*rr; }
+    }
+    seeded=true;
   }
 
-  function camScale(t){
-    if (t < IGNITE) return 1.22 - 0.22*smooth(t/IGNITE);
-    if (t < PULL)   return 1.0;
-    if (t < MORPH1) return 1.0 - 0.26*smooth((t-PULL)/(MORPH1-PULL));
-    return 0.74;
-  }
+  function set3dOpacity(v){ c3.style.opacity = String(clamp01(v)); }
 
   function frame(now){
     var t = now - t0;
-    var scale = camScale(t);
     var morph = t>MORPH0 ? smoother((t-MORPH0)/(MORPH1-MORPH0)) : 0;
 
-    // trail-fade: minder fade tijdens beweging (mooie sporen), meer tijdens de
-    // morph zodat de letters stabiel/crisp staan
-    var fade = morph>0 ? 0.34 : 0.16;
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = 'rgba(4,4,14,'+fade+')';
-    ctx.fillRect(0,0,W,H);
+    // 3D act 1: render de wereld + fade 'm in/uit rond de overgang
+    if (use3d && window.__DWV3D__){
+      if (t < TRANS+1300){ window.__DWV3D__.render(now);
+        var a = t<WORLDIN ? smooth(t/WORLDIN) : (t<TRANS ? 1 : 1-smooth((t-TRANS)/1200));
+        set3dOpacity(a);
+      } else if (c3.style.opacity!=='0'){ set3dOpacity(0); }
+    }
 
-    drawNebula(t);
+    // overgang: knopen → particles
+    if (t>=TRANS && !seeded) seedFromWorld();
 
-    ctx.globalCompositeOperation = 'lighter';
+    // 2D-laag: trails (zachter tijdens beweging, harder tijdens morph voor crisp tekst)
+    var fade = morph>0?0.34:0.14;
+    ctx.globalCompositeOperation='source-over'; ctx.fillStyle='rgba(4,4,14,'+fade+')'; ctx.fillRect(0,0,W,H);
 
-    // achtergrond-sterren (parallax + twinkle), faden in tijdens ignite
-    var bgA = smooth(t/ (IGNITE*1.3));
-    for (var i=0;i<bg.length;i++){
-      var s=bg[i]; s.x+=s.vx; s.y+=s.vy;
-      if(s.x<0)s.x=W; if(s.x>W)s.x=0; if(s.y<0)s.y=H; if(s.y>H)s.y=0;
-      var px=cx+(s.x-cx)*scale, py=cy+(s.y-cy)*scale;
+    // nevel-gloed groeit rond de overgang
+    var neb = smooth((t-WORLDIN)/(TRANS-WORLDIN))*0.4;
+    if(neb>0){ var g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*.62);
+      g.addColorStop(0,'rgba(60,120,255,'+(neb*.4)+')'); g.addColorStop(.5,'rgba(96,52,168,'+(neb*.18)+')'); g.addColorStop(1,'rgba(4,4,14,0)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+
+    ctx.globalCompositeOperation='lighter';
+
+    // achtergrond-sterren (parallax + twinkle)
+    var bgA = smooth(t/(WORLDIN*1.2));
+    for(var i=0;i<bg.length;i++){ var s=bg[i]; s.x+=s.vx; s.y+=s.vy;
+      if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;
       var tw=.5+.5*Math.sin(now*.001+s.tw);
-      ctx.beginPath(); ctx.arc(px,py,s.r,0,6.2832);
-      ctx.fillStyle = (s.gold?'rgba(246,205,134,':'rgba(200,214,255,')+(bgA*tw*.55*(1-.4*morph))+')';
-      ctx.fill();
-    }
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.2832);
+      ctx.fillStyle=(s.gold?'rgba(246,205,134,':'rgba(200,214,255,')+(bgA*tw*.5)+')'; ctx.fill(); }
 
-    // verbindingslijnen rond het centrum tijdens de stream-fase
-    if (t>IGNITE && t<PULL+300){
-      var cp = smooth((t-IGNITE)/(STREAM-IGNITE));
-      var reach = 130*DPR*cp, lim = (reach*reach);
-      ctx.lineWidth = DPR*0.6;
-      for (var a=0; a<flux.length; a+=7){
-        var f=flux[a]; var fx=f.ox, fy=f.oy;
-        var dx0=fx-cx, dy0=fy-cy; if (dx0*dx0+dy0*dy0 > lim*4) continue;
-        for (var b=a+7; b<Math.min(flux.length,a+42); b+=7){
-          var g2=flux[b]; var dx=fx-g2.ox, dy=fy-g2.oy, d2=dx*dx+dy*dy;
-          if (d2<lim){ var o=(1-Math.sqrt(d2)/reach)*0.22*(1-morph);
-            ctx.strokeStyle='rgba(120,160,255,'+o+')';
-            ctx.beginPath();
-            ctx.moveTo(cx+(fx-cx)*scale, cy+(fy-cy)*scale);
-            ctx.lineTo(cx+(g2.ox-cx)*scale, cy+(g2.oy-cy)*scale);
-            ctx.stroke();
-          }
-        }
+    // particles: pas vanaf de overgang (ze ZIJN de uiteengevallen wereld)
+    if(seeded){
+      for(var k=0;k<flux.length;k++){ var f=flux[k];
+        var px,py;
+        if(outroStarted && brandPre){ var op=smoother((t-OUTRO)/1000);
+          px=f.tx+(brandPre.x-f.tx)*op; py=f.ty+(brandPre.y-f.ty)*op;
+          var oa=1-op*0.85, orr=1-0.5*op;
+        } else { var mp=smoother((morph-f.delay)/(1-f.delay));
+          px=f.ox+(f.tx-f.ox)*mp; py=f.oy+(f.ty-f.oy)*mp; var oa=1, orr=1, mpv=mp; }
+        var tw=.6+.4*Math.sin(now*.0014+f.tw);
+        var prog = outroStarted?1:smoother((morph-f.delay)/(1-f.delay));
+        var gold = prog>0.2;
+        var alpha=(gold?(0.55+0.45*prog):0.55)*tw*(oa||1);
+        var rr=f.r*(1-0.25*prog)*(orr||1);
+        ctx.beginPath(); ctx.arc(px,py,Math.max(.4,rr),0,6.2832);
+        ctx.fillStyle=(gold?'rgba(248,210,140,':'rgba(214,224,255,')+clamp01(alpha)+')'; ctx.fill();
       }
-      var want = Math.floor(cp*8);
-      while (audio && chimes<want){ audio.chime(chimes); chimes++; }
+      if(morph>0.6 && !outroStarted){ var gg=ctx.createRadialGradient(cx,cy,0,cx,cy,W*.42);
+        gg.addColorStop(0,'rgba(246,205,134,'+((morph-0.6)*.10)+')'); gg.addColorStop(1,'rgba(246,205,134,0)');
+        ctx.fillStyle=gg; ctx.fillRect(0,0,W,H); }
     }
 
-    // flux-particles: pre-morph zweven ze op een zachte orbit; tijdens de morph
-    // lerpen ze (per-particle gestaged) naar hun wordmark-doel
-    for (var k=0;k<flux.length;k++){
-      var f=flux[k];
-      // zwevende basispositie (orbit + drift), vóór de morph
-      var ox = f.ox + Math.cos(now*.0006*f.sp+f.ph)*f.orb*0.06;
-      var oy = f.oy + Math.sin(now*.0006*f.sp+f.ph)*f.orb*0.06;
-      var px, py, mp=0;
-      if (morph>0){
-        mp = smoother((morph - f.delay) / (1 - f.delay));
-        px = ox + (f.tx-ox)*mp; py = oy + (f.ty-oy)*mp;
-      } else { px=ox; py=oy; }
-      // OUTRO: de gevormde wordmark vliegt + krimpt naar het nav-merk (de morph
-      // naar de homepage — de titel wórdt het logo).
-      var outroP = 0;
-      if (outroStarted && brandPre){
-        outroP = smoother((t-OUTRO)/1000);
-        px = f.tx + (brandPre.x - f.tx)*outroP;
-        py = f.ty + (brandPre.y - f.ty)*outroP;
-      }
-      px = cx+(px-cx)*scale; py = cy+(py-cy)*scale;
+    ctx.globalCompositeOperation='source-over';
 
-      var appear = smooth((t-300)/(STREAM-300));
-      var tw = .6+.4*Math.sin(now*.0014+f.tw);
-      var gold = mp>0.25;
-      var alpha = appear*tw*(gold? (0.5+0.5*mp) : 0.5)*(1-outroP*0.85);
-      var rr = f.r*(1 - 0.25*mp)*(1 - 0.5*outroP);
-      ctx.beginPath(); ctx.arc(px,py,Math.max(.4,rr),0,6.2832);
-      if (gold){ ctx.fillStyle='rgba(248,210,140,'+clamp01(alpha)+')'; }
-      else { ctx.fillStyle='rgba(214,224,255,'+clamp01(alpha)+')'; }
-      ctx.fill();
-    }
+    if(audio){ var w=Math.floor(smooth(t/TRANS)*8); while(chimes<w){ audio.chime(chimes); chimes++; } }
+    if(t>WELC && t<OUTRO && !welcome.classList.contains('is-in')) welcome.classList.add('is-in');
+    if(t>TRANS && audio && !audio._w){ audio.whoosh(); audio._w=true; }
+    if(audio && morph>0 && !audio._swelled){ audio.swell(); audio._swelled=true; }
+    if(t>OUTRO && !outroStarted) startOutro();
 
-    // zachte goud-gloed over het wordmark op de climax (additief, subtiel)
-    if (morph>0.6){
-      var gg=ctx.createRadialGradient(cx,cy,0,cx,cy,W*0.42);
-      gg.addColorStop(0,'rgba(246,205,134,'+((morph-0.6)*0.10)+')');
-      gg.addColorStop(1,'rgba(246,205,134,0)');
-      ctx.fillStyle=gg; ctx.fillRect(0,0,W,H);
-    }
-
-    ctx.globalCompositeOperation = 'source-over';
-
-    if (t>WELC && t<OUTRO && !welcome.classList.contains('is-in')) welcome.classList.add('is-in');
-    if (t>PULL && audio && !audio._w){ audio.whoosh(); audio._w=true; }
-    if (audio && morph>0 && !audio._swelled){ audio.swell(); audio._swelled=true; }
-    if (t>OUTRO && !outroStarted){ startOutro(); }
-
-    if (t>=END){ teardown(); return; }
-    raf = requestAnimationFrame(frame);
+    if(t>=END){ teardown(); return; }
+    raf=requestAnimationFrame(frame);
   }
 
-  // De morph naar de homepage: bereken de nav-merk-positie, draag de reveal over
-  // (de hero bloeit mee op), en start de overlay-fade terwijl de wordmark erheen
-  // vliegt. brandPre staat in pre-scale-coördinaten (camScale is 0.74 na de morph).
   function startOutro(){
-    outroStarted = true;
-    setSeen();
-    if (audio) audio.stop();
-    var b = document.querySelector('.brand');
-    if (b){ var r=b.getBoundingClientRect();
-      var bx=(r.left+r.width*0.5)*DPR, by=(r.top+r.height*0.5)*DPR;
-      brandPre = { x: cx+(bx-cx)/0.74, y: cy+(by-cy)/0.74 };
-    } else { brandPre = { x: cx, y: -H*0.1 }; }
+    outroStarted=true; setSeen(); if(audio) audio.stop();
+    var b=document.querySelector('.brand');
+    if(b){ var r=b.getBoundingClientRect(); var bx=(r.left+r.width*.5)*DPR, by=(r.top+r.height*.5)*DPR;
+      brandPre={x:bx,y:by}; } else { brandPre={x:cx,y:-H*.1}; }
     welcome.classList.remove('is-in');
-    try { window.dispatchEvent(new CustomEvent('dwv:intro-handoff')); } catch(e){}
+    try{ window.dispatchEvent(new CustomEvent('dwv:intro-handoff')); }catch(e){}
     root.classList.add('is-out');
   }
 
-  function finish(){
-    if (audio) audio.stop();
-    setSeen();
-    // Ook bij skip/Esc/reduced-motion de reveal overdragen zodat de homepage
-    // meebloeit met de wegvloeiende overlay (nooit een verborgen hero).
-    try { window.dispatchEvent(new CustomEvent('dwv:intro-handoff')); } catch(e){}
-    root.classList.add('is-out');
-    setTimeout(teardown, 1050);
-  }
-  function teardown(){
-    if (raf) cancelAnimationFrame(raf); raf=null;
-    if (idleRaf) cancelAnimationFrame(idleRaf); idleRaf=null;
-    running=false; t0=0; outroStarted=false; brandPre=null;
-    root.hidden=true; root.setAttribute('aria-hidden','true');
-    window.removeEventListener('resize', resize);
-  }
+  function finish(){ if(audio) audio.stop(); setSeen();
+    try{ window.dispatchEvent(new CustomEvent('dwv:intro-handoff')); }catch(e){}
+    root.classList.add('is-out'); setTimeout(teardown,1050); }
+  function teardown(){ if(raf)cancelAnimationFrame(raf); raf=null; if(idleRaf)cancelAnimationFrame(idleRaf); idleRaf=null;
+    running=false; t0=0; seeded=false; outroStarted=false; brandPre=null;
+    try{ if(window.__DWV3D__&&window.__DWV3D__.dispose) window.__DWV3D__.dispose(); }catch(e){}
+    root.hidden=true; root.setAttribute('aria-hidden','true'); window.removeEventListener('resize',resize); }
+
+  function begin(){ enterUI.classList.add('is-gone');
+    try{ audio=makeAudio(); audio.start(); }catch(e){ audio=null; }
+    chimes=0; t0=performance.now(); raf=requestAnimationFrame(frame); }
 
   function startSequence(){
-    enterUI.classList.add('is-gone');
-    try { audio = makeAudio(); audio.start(); } catch(e){ audio=null; }
-    chimes=0; t0 = performance.now();
-    raf = requestAnimationFrame(frame);
+    // Probeer de 3D-wereld te mounten; lukt het binnen ~2.5s niet, dan 2D-fallback.
+    if(window.__DWV3D__ && !window.__DWV3D__.failed){
+      var done=false;
+      window.__DWV3D__.mount(c3).then(function(){ if(done)return; done=true; use3d=window.__DWV3D__.ready; begin(); });
+      setTimeout(function(){ if(done)return; done=true; use3d=window.__DWV3D__.ready; begin(); }, 2500);
+    } else { use3d=false; begin(); }
   }
 
-  function idle(){
-    ctx.globalCompositeOperation='source-over';
-    ctx.fillStyle='rgba(4,4,14,0.30)'; ctx.fillRect(0,0,W,H);
+  function idle(){ ctx.globalCompositeOperation='source-over'; ctx.fillStyle='rgba(4,4,14,.3)'; ctx.fillRect(0,0,W,H);
     ctx.globalCompositeOperation='lighter';
-    for (var i=0;i<bg.length;i++){ var s=bg[i]; s.x+=s.vx; s.y+=s.vy;
+    for(var i=0;i<bg.length;i++){ var s=bg[i]; s.x+=s.vx; s.y+=s.vy;
       if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;
-      var tw=.4+.4*Math.sin(performance.now()*.001+s.tw);
-      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.2832);
-      ctx.fillStyle=(s.gold?'rgba(246,205,134,':'rgba(200,214,255,')+(.5*tw)+')'; ctx.fill();
-    }
-    ctx.globalCompositeOperation='source-over';
-    if (!t0) idleRaf = requestAnimationFrame(idle);
+      var tw=.4+.4*Math.sin(performance.now()*.001+s.tw); ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.2832);
+      ctx.fillStyle=(s.gold?'rgba(246,205,134,':'rgba(200,214,255,')+(.5*tw)+')'; ctx.fill(); }
+    ctx.globalCompositeOperation='source-over'; if(!t0) idleRaf=requestAnimationFrame(idle); }
+
+  function drawStaticWordmark(){ ctx.fillStyle='#04040e'; ctx.fillRect(0,0,W,H); ctx.globalCompositeOperation='lighter';
+    for(var i=0;i<flux.length;i++){ var f=flux[i]; ctx.beginPath(); ctx.arc(f.tx,f.ty,1.3*DPR,0,6.2832);
+      ctx.fillStyle='rgba(248,210,140,.9)'; ctx.fill(); } ctx.globalCompositeOperation='source-over'; }
+
+  function show(){ if(running)return; running=true;
+    root.hidden=false; root.removeAttribute('aria-hidden'); root.classList.remove('is-out'); welcome.classList.remove('is-in');
+    resize(); seedBg(); window.addEventListener('resize',resize);
+    buildTargets().then(function(){ if(reduce){ enterUI.classList.add('is-gone'); welcome.classList.add('is-in'); drawStaticWordmark(); setTimeout(finish,3000); } });
+    if(reduce) return;
+    enterUI.classList.remove('is-gone'); if(!idleRaf) idle();
   }
 
-  function drawStaticWordmark(){
-    ctx.fillStyle='#04040e'; ctx.fillRect(0,0,W,H);
-    ctx.globalCompositeOperation='lighter';
-    for (var i=0;i<flux.length;i++){ var f=flux[i];
-      ctx.beginPath(); ctx.arc(f.tx,f.ty,1.3*DPR,0,6.2832);
-      ctx.fillStyle='rgba(248,210,140,.9)'; ctx.fill(); }
-    ctx.globalCompositeOperation='source-over';
-  }
-
-  function show(){
-    if (running) return; running = true;
-    root.hidden=false; root.removeAttribute('aria-hidden');
-    root.classList.remove('is-out'); welcome.classList.remove('is-in');
-    resize(); seedBg();
-    window.addEventListener('resize', resize);
-    buildTargets().then(function(){
-      if (reduce){
-        enterUI.classList.add('is-gone'); welcome.classList.add('is-in');
-        drawStaticWordmark(); setTimeout(finish, 3000);
-      }
-    });
-    if (reduce) return;
-    enterUI.classList.remove('is-gone');
-    if (!idleRaf) idle();
-  }
-
-  // --- Web Audio: etherisch & warm (gesynthetiseerd) ---
-  function makeAudio(){
-    var AC = window.AudioContext || window.webkitAudioContext; if(!AC) return null;
-    var ac = new AC();
-    var master = ac.createGain(); master.gain.value=0.0001; master.connect(ac.destination);
-    var conv = ac.createConvolver(); var len=ac.sampleRate*3, b=ac.createBuffer(2,len,ac.sampleRate);
-    for(var c=0;c<2;c++){var d=b.getChannelData(c);for(var i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6);}
-    conv.buffer=b; conv.connect(master);
-    var wet=ac.createGain(); wet.gain.value=0.6; wet.connect(conv);
-    var dry=ac.createGain(); dry.gain.value=0.7; dry.connect(master);
-    var lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=850; lp.Q.value=0.6; lp.connect(dry); lp.connect(wet);
-    var lfo=ac.createOscillator(); lfo.frequency.value=0.06; var lg=ac.createGain(); lg.gain.value=320; lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
-    var pad=ac.createGain(); pad.gain.value=0.0001; pad.connect(lp);
+  // --- Web Audio: etherisch & warm ---
+  function makeAudio(){ var AC=window.AudioContext||window.webkitAudioContext; if(!AC)return null; var ac=new AC();
+    var master=ac.createGain(); master.gain.value=.0001; master.connect(ac.destination);
+    var conv=ac.createConvolver(); var len=ac.sampleRate*3,b=ac.createBuffer(2,len,ac.sampleRate);
+    for(var ch=0;ch<2;ch++){var d=b.getChannelData(ch);for(var i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6);} conv.buffer=b; conv.connect(master);
+    var wet=ac.createGain(); wet.gain.value=.6; wet.connect(conv); var dry=ac.createGain(); dry.gain.value=.7; dry.connect(master);
+    var lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=850; lp.Q.value=.6; lp.connect(dry); lp.connect(wet);
+    var lfo=ac.createOscillator(); lfo.frequency.value=.06; var lg=ac.createGain(); lg.gain.value=320; lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
+    var pad=ac.createGain(); pad.gain.value=.0001; pad.connect(lp);
     [110,164.81,277.18,329.63].forEach(function(f,i){var o=ac.createOscillator();o.type='sine';o.frequency.value=f;o.detune.value=(i-1.5)*5;o.connect(pad);o.start();});
     var penta=[659.25,783.99,880,987.77,1174.66,1318.51,1567.98];
-    return {
-      _w:false,_swelled:false,
+    return { _w:false,_swelled:false,
       start:function(){ if(ac.state==='suspended')ac.resume();
         master.gain.setValueAtTime(.0001,ac.currentTime); master.gain.exponentialRampToValueAtTime(.9,ac.currentTime+2.4);
         pad.gain.setValueAtTime(.0001,ac.currentTime); pad.gain.exponentialRampToValueAtTime(.17,ac.currentTime+2.8); },
-      chime:function(i){ var o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;
-        o.type='sine'; o.frequency.value=penta[i%penta.length];
-        g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.2,n+.02); g.gain.exponentialRampToValueAtTime(.0001,n+2.0);
-        o.connect(g); g.connect(wet); g.connect(dry); o.start(n); o.stop(n+2.1); },
-      swell:function(){ var o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;
-        o.type='sine'; o.frequency.setValueAtTime(220,n); o.frequency.exponentialRampToValueAtTime(440,n+2.4);
-        g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.12,n+1.6); g.gain.exponentialRampToValueAtTime(.0001,n+3.2);
-        o.connect(g); g.connect(wet); g.connect(dry); o.start(n); o.stop(n+3.3); },
-      whoosh:function(){ var n=ac.currentTime,src=ac.createBufferSource();
-        var bb=ac.createBuffer(1,ac.sampleRate*1.3,ac.sampleRate),dd=bb.getChannelData(0);
-        for(var i=0;i<dd.length;i++)dd[i]=Math.random()*2-1; src.buffer=bb;
-        var bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=.8;
-        bp.frequency.setValueAtTime(280,n); bp.frequency.exponentialRampToValueAtTime(2400,n+1.1);
-        var g=ac.createGain(); g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.12,n+.3); g.gain.exponentialRampToValueAtTime(.0001,n+1.25);
-        src.connect(bp); bp.connect(g); g.connect(wet); src.start(n); src.stop(n+1.3); },
-      stop:function(){ try{ master.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.9); setTimeout(function(){ac.close();},1000);}catch(e){} }
-    };
+      chime:function(i){ var o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime; o.type='sine'; o.frequency.value=penta[i%penta.length];
+        g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.2,n+.02); g.gain.exponentialRampToValueAtTime(.0001,n+2); o.connect(g); g.connect(wet); g.connect(dry); o.start(n); o.stop(n+2.1); },
+      swell:function(){ var o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime; o.type='sine'; o.frequency.setValueAtTime(220,n); o.frequency.exponentialRampToValueAtTime(440,n+2.4);
+        g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.12,n+1.6); g.gain.exponentialRampToValueAtTime(.0001,n+3.2); o.connect(g); g.connect(wet); g.connect(dry); o.start(n); o.stop(n+3.3); },
+      whoosh:function(){ var n=ac.currentTime,src=ac.createBufferSource(); var bb=ac.createBuffer(1,ac.sampleRate*1.3,ac.sampleRate),dd=bb.getChannelData(0);
+        for(var i=0;i<dd.length;i++)dd[i]=Math.random()*2-1; src.buffer=bb; var bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=.8;
+        bp.frequency.setValueAtTime(280,n); bp.frequency.exponentialRampToValueAtTime(2400,n+1.1); var g=ac.createGain();
+        g.gain.setValueAtTime(.0001,n); g.gain.exponentialRampToValueAtTime(.12,n+.3); g.gain.exponentialRampToValueAtTime(.0001,n+1.25); src.connect(bp); bp.connect(g); g.connect(wet); src.start(n); src.stop(n+1.3); },
+      stop:function(){ try{ master.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+.9); setTimeout(function(){ac.close();},1000);}catch(e){} } };
   }
 
   goBtn.addEventListener('click', function(){ if(!t0){ if(idleRaf){cancelAnimationFrame(idleRaf);idleRaf=null;} startSequence(); } });
   skipBtn.addEventListener('click', finish);
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && running) finish(); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape'&&running) finish(); });
   window.addEventListener('dwv:intro-replay', function(){ teardown(); show(); });
 
-  var params = new URLSearchParams(location.search);
-  var willShow = params.has('intro') || ((window.DWV_INTRO_FIRST===true) && !seen());
-  // Vlag VÓÓR de canvas-director (die ná deze include draait): houd de hero-reveal
-  // vast tot de intro 'm overdraagt → de morph van intro naar homepage.
-  if (willShow) { window.__DWV_INTRO_PENDING__ = true; show(); }
+  var params=new URLSearchParams(location.search);
+  var willShow = params.has('intro') || ((window.DWV_INTRO_FIRST===true)&&!seen());
+  if(willShow){ window.__DWV_INTRO_PENDING__=true; show(); }
 })();
 </script>

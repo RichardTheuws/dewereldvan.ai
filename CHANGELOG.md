@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.94.0] - 2026-06-28
+### Added — 3D "Wereld van AI" als centerpiece van de intro (Meshy + Three.js)
+- Act 1 van de intro is nu een **echte 3D gloeiende AI-wereld**: een Meshy-gegenereerde lattice-globe van
+  verbonden knopen (`app/static/models/wereld-van-ai.glb`, 1.8MB), in Three.js gerenderd met een **eigen
+  kosmisch materiaal** (donker glas-kern + gouden additieve edges + gloeiende node-points), zacht roterend met
+  camera-drift in het sterrenveld. Three.js lazy via CDN (import-map), **alleen voor de intro** → nul op-last
+  buiten de intro.
+- **Overgang = de wereld wórdt de woorden**: bij de transitie worden de knopen van de 3D-wereld naar het scherm
+  geprojecteerd (`projectPoints`) en dáár ontstaan de 2D-particles, die naar het wordmark `dewereldvan.ai`
+  morphen → vervolgens naar het nav-merk vliegen terwijl de homepage-hero meebloeit (bestaande handoff).
+- **Nette fallback**: laadt WebGL/Three.js/GLB niet (of binnen 2.5s), dan speelt de 2D-only intro (particles uit
+  een cirkel → wordmark). Reduced-motion → statisch wordmark. Geverifieerd in browser: module + GLB laden,
+  WebGL rendert, 1423 knopen projecteren, geen console-errors.
+
 ## [0.93.0] - 2026-06-28
 ### Added — Intro → homepage morpht (geen dissolve meer)
 - De intro draagt nu echt óver i.p.v. weg te faden. Op het climax-moment **vliegt en krimpt de gevormde
