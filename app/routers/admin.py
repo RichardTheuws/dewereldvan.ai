@@ -13,12 +13,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.config import settings
 from app.db import get_db
 from app.deps import require_admin
-from app.models import Member, MemberStatus
+from app.models import Member, MemberStatus, Profile, Visibility
 from app.services import approval as approval_service
 from app.services import post_service, visitor_spend
 
@@ -52,6 +52,41 @@ def queue(
             "news_pending": news_pending,
         },
     )
+
+
+@router.get("/leden", response_class=HTMLResponse)
+def members_overview(
+    request: Request,
+    admin: Member = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Volledig ledenoverzicht (álle statussen) in één scanbaar beeld.
+
+    De queue toont alleen ``pending`` (de spam-zeef); auto-verwelkomde leden slaan
+    die over en waren tot nu nergens zichtbaar voor de operator. Dit overzicht toont
+    iedereen met status, rol, profiel-zichtbaarheid, aantal werk-items en laatst-
+    ingelogd. Read-only: de acties (welkom/spam/schorsen) blijven op ``/admin/queue``
+    zodat er één plek met side-effects is.
+    """
+    members = db.scalars(
+        select(Member)
+        .options(selectinload(Member.profile).selectinload(Profile.offerings))
+        .order_by(Member.created_at.desc())
+    ).all()
+    summary = {
+        "totaal": len(members),
+        "approved": sum(1 for m in members if m.status == MemberStatus.approved),
+        "pending": sum(1 for m in members if m.status == MemberStatus.pending),
+        "suspended": sum(1 for m in members if m.status == MemberStatus.suspended),
+        "rejected": sum(1 for m in members if m.status == MemberStatus.rejected),
+        "met_profiel": sum(1 for m in members if m.profile is not None),
+        "publiek": sum(
+            1
+            for m in members
+            if m.profile is not None and m.profile.visibility == Visibility.public
+        ),
+    }
+    return _render(request, "admin/leden.html", {"members": members, "summary": summary})
 
 
 def _visitor_ai_meter(db: Session) -> dict:

@@ -5,8 +5,14 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-28 · **Versie**: 0.97.0 · **Branch**: `main`
+**Laatste update**: 2026-06-28 · **Versie**: 0.98.0 · **Branch**: `main`
 
+> **0.98.0** — Admin-ledenoverzicht `/admin/leden` (admin-only, noindex): álle leden ongeacht status in één
+> scanbare tabel — naam/e-mail, status, rol (admin/founder), profiel-zichtbaarheid (openbaar/besloten/geen
+> profiel), werk-items, **laatst-ingelogd**, lid-sinds + statustelling. Read-only naast de queue (acties blijven
+> op `/admin/queue`). Lost de "ik zie Wouter wel maar Frank niet"-vraag op: geen bug, maar zichtbaarheids-setting
+> (`public` vs besloten `members`). Nav-link Aanmeldingen ↔ Leden.
+>
 > **0.97.0** — Telegram bij élk nieuw lid (ook auto-verwelkomde). De spam-triage welkomt echte mensen automatisch
 > → die slaan de admin-queue over, dus de operator zag ze nergens en kreeg geen ping (die vuurde alleen bij
 > `review`). `register_submit` seint nu bij elk nieuw lid via `notify_admins` (auto-welkom = info-melding,

@@ -3,6 +3,19 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.98.0] - 2026-06-28
+### Added — Admin-ledenoverzicht (`/admin/leden`): iedereen incl. status + laatst-ingelogd
+- **Aanleiding**: de admin-queue toont alleen `pending`; auto-verwelkomde leden slaan die over en waren nergens
+  in beeld. Plus een concrete vraag: "ik zie Wouter wel maar Frank niet" — dat bleek **geen bug** maar de
+  zichtbaarheids-setting (Wouter zette z'n profiel op `public`, Frank staat op `members`/besloten). Om dit soort
+  vragen direct zelf te kunnen beantwoorden is er nu een volledig overzicht.
+- **Nieuw**: `GET /admin/leden` (admin-only, noindex) toont **álle leden** ongeacht status in een scanbare,
+  kosmisch gestylede tabel: naam + e-mail, status-chip (welkom/in-de-wacht/geschorst/spam), rol (admin/founder-
+  badge), **profiel-zichtbaarheid** (openbaar/besloten/geen profiel), aantal werk-items, **laatst ingelogd** en
+  lid-sinds. Bovenaan een statustelling (totaal / welkom / met profiel / openbaar). Eager-loaded (geen N+1),
+  read-only — de side-effect-acties (welkom/spam/schorsen) blijven op `/admin/queue`. Nav-link toegevoegd tussen
+  Aanmeldingen ↔ Leden. Tests: lijst-inhoud + admin-gate (anon → login-redirect, gewoon lid → 403).
+
 ## [0.97.0] - 2026-06-28
 ### Added — Telegram-melding bij ELK nieuw lid (ook auto-verwelkomde)
 - **Aanleiding**: de spam-triage verwelkomt echte mensen automatisch (→ direct `approved`), waardoor die

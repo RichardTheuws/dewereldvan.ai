@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Admin ledenoverzicht — álle leden incl. status, rol, zichtbaarheid, werk-items
+   en laatst-ingelogd. Standalone cosmic-document (extendt base.html NIET), login-
+   gated + noindex. Read-only; de spam-acties leven op /admin/queue. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Leden — beheer · dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+  <style>
+    /* Scanbare admin-tabel — kosmische tokens, monospace data, horizontaal scrollbaar op smal scherm. */
+    .adm-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.015)}
+    .adm-tbl{width:100%;border-collapse:collapse;min-width:760px}
+    .adm-tbl th,.adm-tbl td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+    .adm-tbl thead th{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+    .adm-tbl tbody tr:last-child td{border-bottom:none}
+    .adm-tbl tbody tr:hover{background:rgba(255,255,255,.025)}
+    .adm-name{color:var(--text);font-weight:500;margin:0}
+    .adm-mail{color:var(--muted);font-size:.82rem;font-family:'JetBrains Mono',monospace;margin:2px 0 0}
+    .adm-num{font-family:'JetBrains Mono',monospace;color:var(--text)}
+    .adm-time{font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--muted)}
+    .adm-badge{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.04em;border-radius:100px;padding:3px 9px;border:1px solid var(--line);color:var(--muted)}
+    .adm-badge--gold{color:var(--gold);border-color:rgba(246,205,134,.45)}
+    .adm-summary{display:flex;flex-wrap:wrap;gap:10px}
+    .adm-stat{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:100px;padding:6px 13px}
+    .adm-stat b{color:var(--text);font-weight:600}
+  </style>
+</head>
+<body class="cosmic" hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+      <div class="links">
+        <a class="link" href="/admin/queue">Aanmeldingen</a>
+        <a class="link" href="/admin/nieuws">Nieuws</a>
+        <a class="link" href="/admin/feedback">Feedback</a>
+        <a class="link" href="/admin/roadmap">Roadmap</a>
+      </div>
+    </header>
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">Beheer</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Leden.</h1>
+        <p class="lede mt-5" style="max-width:56ch;--d:380ms" data-reveal>
+          Iedereen die zich meldde — ook de leden die de spam-zeef automatisch
+          binnenliet. Met status, rol, of hun profiel openbaar of besloten staat,
+          hoeveel werk ze tonen, en wanneer ze voor het laatst inlogden.
+        </p>
+      </section>
+
+      <section class="mt-8" data-reveal style="--d:440ms">
+        <div class="adm-summary">
+          <span class="adm-stat"><b>{{ summary.totaal }}</b> leden</span>
+          <span class="adm-stat"><b>{{ summary.approved }}</b> welkom</span>
+          {% if summary.pending %}<span class="adm-stat"><b>{{ summary.pending }}</b> in de wacht</span>{% endif %}
+          {% if summary.suspended %}<span class="adm-stat"><b>{{ summary.suspended }}</b> geschorst</span>{% endif %}
+          {% if summary.rejected %}<span class="adm-stat"><b>{{ summary.rejected }}</b> spam</span>{% endif %}
+          <span class="adm-stat"><b>{{ summary.met_profiel }}</b> met profiel</span>
+          <span class="adm-stat"><b>{{ summary.publiek }}</b> openbaar</span>
+        </div>
+      </section>
+
+      <section class="mt-8" data-reveal style="--d:520ms">
+        <div class="adm-scroll">
+          <table class="adm-tbl">
+            <thead>
+              <tr>
+                <th>Lid</th>
+                <th>Status</th>
+                <th>Rol</th>
+                <th>Profiel</th>
+                <th>Werk</th>
+                <th>Laatst ingelogd</th>
+                <th>Lid sinds</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for member in members %}
+              {% set p = member.profile %}
+              <tr>
+                <td>
+                  <p class="adm-name">{{ member.name }}{% if member.is_founder %} <span class="adm-badge adm-badge--gold" title="mede-oprichter">founder</span>{% endif %}</p>
+                  <p class="adm-mail">{{ member.email }}</p>
+                </td>
+                <td>
+                  <span class="chip
+                    {% if member.status.value == 'pending' %}chip--pending
+                    {% elif member.status.value == 'approved' %}chip--ok
+                    {% elif member.status.value == 'suspended' %}chip--muted
+                    {% else %}chip--warn{% endif %}">
+                    {% if member.status.value == 'pending' %}in de wacht
+                    {% elif member.status.value == 'approved' %}welkom
+                    {% elif member.status.value == 'suspended' %}geschorst
+                    {% elif member.status.value == 'rejected' %}spam
+                    {% else %}{{ member.status.value }}{% endif %}
+                  </span>
+                </td>
+                <td>
+                  {% if member.role.value == 'admin' %}<span class="adm-badge adm-badge--gold">admin</span>
+                  {% else %}<span class="adm-time">lid</span>{% endif %}
+                </td>
+                <td>
+                  {% if p is none %}<span class="chip chip--warn">geen profiel</span>
+                  {% elif p.visibility.value == 'public' %}<span class="chip chip--ok">openbaar</span>
+                  {% else %}<span class="chip chip--muted">besloten</span>{% endif %}
+                </td>
+                <td><span class="adm-num">{{ p.offerings|length if p else 0 }}</span></td>
+                <td><span class="adm-time">{{ member.last_login_at.strftime('%d-%m %H:%M') if member.last_login_at else '—' }}</span></td>
+                <td><span class="adm-time">{{ member.created_at.strftime('%d-%m-%Y') if member.created_at else '—' }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="muted mt-3" style="font-size:11.5px">Tijden in UTC. Read-only overzicht — welkom heten, spam markeren of schorsen doe je op <a class="link" href="/admin/queue">Aanmeldingen</a>.</p>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:600ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "_concierge.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

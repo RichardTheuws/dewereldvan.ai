@@ -104,6 +104,7 @@ MEMBER_ONLY = {
 # Admin-only: gewoon lid → 403.
 ADMIN_ONLY = {
     "/admin/queue",
+    "/admin/leden",
     "/admin/feedback",
     "/admin/nieuws",
     "/admin/agenda",
