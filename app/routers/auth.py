@@ -41,25 +41,40 @@ router = APIRouter(tags=["auth"])
 logger = logging.getLogger("dewereldvan.auth")
 
 
-def _notify_admins_new_registration(db: Session, member: Member) -> None:
-    """Sein de admins dat een aanmelding op een mens-blik wacht — via **Telegram**.
+def _notify_admins_new_registration(
+    db: Session, member: Member, *, auto_welcomed: bool
+) -> None:
+    """Sein de admins via **Telegram** dat er een nieuw lid is — bij ELK nieuw lid.
 
     Admin-communicatie loopt via Telegram, niet e-mail (operator-voorkeur). Best-
-    effort: faalt nooit hard, en de queue is sowieso de bron van waarheid (een admin
-    zonder gekoppelde Telegram ziet het wachtende lid daar). Alleen relevant bij een
-    ``review``-verdict; auto-welkom leden hoeven geen blik.
+    effort: faalt nooit hard. We seinen bij elke nieuwe registratie (operator-wens:
+    zicht op álle aanwas, ook de auto-verwelkomde — die verschijnen niet in de queue),
+    met een passende boodschap:
+    - ``auto_welcomed``: triage zag een echt mens → direct goedgekeurd. Melding ter
+      info met een link naar de ledengids; geen actie nodig.
+    - anders (``review``-twijfel): call-to-action naar de queue waar een mens beslist.
     """
-    queue_url = f"{settings.base_url.rstrip('/')}/admin/queue"
-    notification_service.notify_admins(
-        db,
-        notification_service.Notification(
+    base = settings.base_url.rstrip("/")
+    if auto_welcomed:
+        note = notification_service.Notification(
+            kind="admin_new_member",
+            title="Nieuw lid 🎉",
+            body=(
+                f"{member.name} ({member.email}) is automatisch verwelkomd "
+                "(triage: echt mens)."
+            ),
+            url=f"{base}/leden",
+            action_label="Naar de leden",
+        )
+    else:
+        note = notification_service.Notification(
             kind="admin_new_registration",
             title="Nieuwe aanmelding wacht op je",
             body=f"{member.name} ({member.email}) — even kijken of dit een echt mens is.",
-            url=queue_url,
+            url=f"{base}/admin/queue",
             action_label="Naar de queue",
-        ),
-    )
+        )
+    notification_service.notify_admins(db, note)
 
 
 def _templates(request: Request):
@@ -146,10 +161,11 @@ def register_submit(
             except approval_service.IllegalTransition:
                 pass  # niet pending (race) → laat staan, geen auto-welkom
     db.commit()
-    # Alleen admins porren (via Telegram) als een mens nog moet kijken (niet bij
-    # auto-welkom). Na de commit zodat het lid echt bestaat als de push uitgaat.
-    if result.created and not auto_welcomed:
-        _notify_admins_new_registration(db, result.member)
+    # Sein de admins (via Telegram) bij ELK nieuw lid — auto-verwelkomd of in review.
+    # Auto-welkom slaat de queue over, dus zonder deze ping zou de operator die aanwas
+    # nergens zien. Na de commit zodat het lid echt bestaat als de push uitgaat.
+    if result.created:
+        _notify_admins_new_registration(db, result.member, auto_welcomed=auto_welcomed)
     return _render(
         request,
         "auth/register_done.html",

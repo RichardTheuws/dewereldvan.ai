@@ -163,6 +163,53 @@ def test_register_auto_welcomes_genuine(client, engine, monkeypatch):
         assert m.triage_note == "Lijkt een echt mens"
 
 
+def test_register_notifies_admins_on_every_new_member(client, engine, monkeypatch):
+    """Operator-wens: een admin-Telegram bij ELK nieuw lid — auto-welkom én review.
+
+    Auto-verwelkomde leden slaan de queue over, dus zonder deze ping zou de operator
+    die aanwas nergens zien. We vangen de notify-helper af en bewijzen dat hij in
+    beide paden vuurt, met de juiste ``auto_welcomed``-vlag.
+    """
+    from app.routers import auth
+
+    calls: list[bool] = []
+    monkeypatch.setattr(
+        auth, "_notify_admins_new_registration",
+        lambda db, member, *, auto_welcomed: calls.append(auto_welcomed),
+    )
+
+    # 1) WELKOM → ping met auto_welcomed=True
+    monkeypatch.setattr(
+        auth.triage_service, "assess_registration",
+        lambda name, email: TriageVerdict("welcome", "echt mens"),
+    )
+    r1 = client.post(
+        "/register",
+        data={"name": "Welkom Mens", "email": "welkom@example.com", "csrf_token": _csrf(client)},
+    )
+    assert r1.status_code == 200
+
+    # 2) BEKIJK → ping met auto_welcomed=False
+    monkeypatch.setattr(
+        auth.triage_service, "assess_registration",
+        lambda name, email: TriageVerdict("review", "twijfel"),
+    )
+    r2 = client.post(
+        "/register",
+        data={"name": "Review Mens", "email": "review@example.com", "csrf_token": _csrf(client)},
+    )
+    assert r2.status_code == 200
+
+    assert calls == [True, False]
+
+    # Een idempotente herhaling (zelfde e-mail, geen nieuw lid) seint NIET.
+    client.post(
+        "/register",
+        data={"name": "Welkom Mens", "email": "welkom@example.com", "csrf_token": _csrf(client)},
+    )
+    assert calls == [True, False]  # ongewijzigd
+
+
 def test_register_review_keeps_pending(client, engine, monkeypatch):
     """BEKIJK-verdict → lid blijft pending (mens beslist), met de reden in de queue."""
     from app.routers import auth

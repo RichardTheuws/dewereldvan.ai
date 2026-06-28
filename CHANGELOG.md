@@ -3,6 +3,27 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.97.0] - 2026-06-28
+### Added — Telegram-melding bij ELK nieuw lid (ook auto-verwelkomde)
+- **Aanleiding**: de spam-triage verwelkomt echte mensen automatisch (→ direct `approved`), waardoor die
+  aanmeldingen de admin-queue overslaan. Gevolg: nieuwe leden verschenen **nergens** voor de operator — niet in
+  de queue (alleen `pending`) én geen Telegram (die ping vuurde alleen bij een `review`-verdict). De operator was
+  dus blind voor de meeste aanwas.
+- **Fix**: `register_submit` seint nu bij **elk** nieuw lid via `notify_admins`, met een passende boodschap:
+  auto-verwelkomd → "Nieuw lid 🎉 … automatisch verwelkomd" (info, link naar `/leden`); review-twijfel →
+  "Nieuwe aanmelding wacht op je" (call-to-action naar de queue). Idempotente herhalingen (zelfde e-mail, geen
+  nieuw lid) seinen niet. Best-effort: een Telegram-fout laat registratie nooit stranden. Test toegevoegd die
+  beide paden + de idempotente no-op dekt.
+
+### Verified — worden nieuwe aanmeldingen overal correct getoond? (PASS)
+- Audit van de weergave-poorten n.a.v. de launch: **PASS, met één product-observatie**. Nieuwe leden worden
+  correct aangemaakt/goedgekeurd; de publieke showcase (`/leden`), de levende graaf en de "nieuw deze week"-teller
+  delen één poort (`visibility=public` + `approved`) → consistent, geen mismatch. Besloten (`members`-default)
+  profielen surfacen wél voor ingelogde leden via matchmaking/discovery (`_approved_profiles` incl. members-only).
+- **Observatie (geen bug)**: van de 19 approved leden zijn er maar 3 `public`; 4 hebben nog géén profiel. De
+  publieke showcase oogt daardoor dun. Inherent aan de privacy-default (besloten) + nog-niet-gebouwde profielen,
+  niet aan de weergave-logica. De nieuwe Telegram-ping geeft de operator nu wél zicht op deze aanwas.
+
 ## [0.96.3] - 2026-06-28
 ### Fixed — "lid worden" gaf internal server error (500) bij dubbel-submit
 - Op lanceerdag meldde een lid (Bart) dat "lid worden" een internal server error gaf. Productielog: `POST /register`

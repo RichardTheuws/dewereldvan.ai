@@ -5,8 +5,16 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-28 · **Versie**: 0.96.3 · **Branch**: `main`
+**Laatste update**: 2026-06-28 · **Versie**: 0.97.0 · **Branch**: `main`
 
+> **0.97.0** — Telegram bij élk nieuw lid (ook auto-verwelkomde). De spam-triage welkomt echte mensen automatisch
+> → die slaan de admin-queue over, dus de operator zag ze nergens en kreeg geen ping (die vuurde alleen bij
+> `review`). `register_submit` seint nu bij elk nieuw lid via `notify_admins` (auto-welkom = info-melding,
+> twijfel = call-to-action naar de queue); idempotente herhalingen seinen niet. Tevens een weergave-audit:
+> nieuwe aanmeldingen worden overal correct getoond (PASS) — publieke showcase/graaf/teller delen één poort
+> (`public`+`approved`), besloten profielen surfacen voor leden via matchmaking. Observatie: 3/19 leden `public`,
+> 4 zonder profiel → showcase oogt dun (privacy-default, geen weergave-bug).
+>
 > **0.96.3** — Lanceerdag-fix: "lid worden" gaf een 500 (`UniqueViolation` op `ix_member_email`) bij
 > dubbel-submit — de idempotente bestaat-check en de INSERT waren niet atomair (TOCTOU-race). `register_member`
 > draait de INSERT nu in een savepoint en handelt de race idempotent af (`created=False`, geen 500). Conftest
