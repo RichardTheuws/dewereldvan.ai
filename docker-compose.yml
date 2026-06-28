@@ -46,7 +46,12 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     logging: *default-logging
-    command: tunnel --no-autoupdate run
+    # --protocol http2: forceer TCP-transport i.p.v. QUIC. De kernel-UDP-buffer in de
+    # Docker-Desktop-VM is te klein (cloudflared logt "failed to sufficiently increase
+    # receive buffer size", krijgt 416 KiB i.p.v. 7168 KiB) → QUIC wordt instabiel onder
+    # bursts en dropt periodiek alle tunnelverbindingen ("no recent network activity"),
+    # ~15-20s 502 per keer. HTTP/2 over TCP omzeilt het UDP-buffer-probleem volledig.
+    command: tunnel --no-autoupdate --protocol http2 run
     environment:
       TUNNEL_TOKEN: ${TUNNEL_TOKEN}   # OPERATOR SUPPLIES — do NOT invent. Empty in repo.
     depends_on:

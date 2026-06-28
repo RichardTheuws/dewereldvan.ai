@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.98.1] - 2026-06-28
+### Fixed — Terugkerende 502 Bad Gateway: cloudflared van QUIC → HTTP/2
+- **Symptoom**: bezoekers kregen af en toe een Cloudflare 502 (host=error), terwijl de web-container de hele tijd
+  healthy was en 200's serveerde. Niet de app — de **cloudflared-tunnel** verloor periodiek de verbinding met
+  Cloudflare's edge.
+- **Root cause**: cloudflared logt bij startup `failed to sufficiently increase receive buffer size (was: 208 kiB,
+  wanted: 7168 kiB, got: 416 kiB)`. De kernel-UDP-buffer in de Docker-Desktop-VM is te klein → **QUIC** wordt
+  instabiel onder bursts en dropt ~15-20s álle 4 tunnelverbindingen (`timeout: no recent network activity`) →
+  502 in dat venster. Bevestigd terugkerend: drops om 06:48, 09:41 en 16:45 UTC.
+- **Fix**: `command: tunnel --no-autoupdate --protocol http2 run` — forceer TCP-transport i.p.v. QUIC, wat het
+  UDP-buffer-probleem volledig omzeilt. Alternatief (kernel-UDP-buffer vergroten) verworpen: onbetrouwbaar binnen
+  Docker Desktop op macOS. Geverifieerd: cloudflared registreert nu alle 4 verbindingen op `protocol=http2`, geen
+  buffer-warning, 15/15 externe healthz-checks 200. Volledig reversibel (verwijder de flag → terug naar QUIC).
+
 ## [0.98.0] - 2026-06-28
 ### Added — Admin-ledenoverzicht (`/admin/leden`): iedereen incl. status + laatst-ingelogd
 - **Aanleiding**: de admin-queue toont alleen `pending`; auto-verwelkomde leden slaan die over en waren nergens

@@ -5,8 +5,13 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-28 · **Versie**: 0.98.0 · **Branch**: `main`
+**Laatste update**: 2026-06-28 · **Versie**: 0.98.1 · **Branch**: `main`
 
+> **0.98.1** — Terugkerende 502's opgelost: cloudflared-tunnel van QUIC → **HTTP/2** (`--protocol http2`). De
+> kernel-UDP-buffer in de Docker-Desktop-VM is te klein (cloudflared-warning) → QUIC dropte periodiek alle
+> tunnelverbindingen (`no recent network activity`, ~15-20s 502). HTTP/2 over TCP omzeilt dit. App was nooit
+> de oorzaak (web bleef healthy). Geverifieerd: `protocol=http2`, 15/15 externe checks 200.
+>
 > **0.98.0** — Admin-ledenoverzicht `/admin/leden` (admin-only, noindex): álle leden ongeacht status in één
 > scanbare tabel — naam/e-mail, status, rol (admin/founder), profiel-zichtbaarheid (openbaar/besloten/geen
 > profiel), werk-items, **laatst-ingelogd**, lid-sinds + statustelling. Read-only naast de queue (acties blijven
