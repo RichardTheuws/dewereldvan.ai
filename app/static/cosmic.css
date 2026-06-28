@@ -176,6 +176,27 @@
   color: var(--gold);
 }
 
+/* Algemene tekstlink (overal, niet alleen in .c-head). Zonder deze viel een
+   `a.link` buiten een header/footer terug op de browser-default (blauw +
+   onderstreept) — niet onze identiteit. Goud-accent, subtiele underline. */
+.cosmic a.link {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(246, 205, 134, 0.28);
+  padding-bottom: 1px;
+  transition: color 0.25s, border-color 0.25s;
+}
+.cosmic a.link:hover {
+  color: #ffe2a8;
+  border-bottom-color: rgba(246, 205, 134, 0.7);
+}
+/* Vangnet: een class-loze anchor mag nooit het default-blauw krijgen. */
+.cosmic a:not([class]) {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ---- hoofdnav (cnav) — herbruikbaar, vervangt de ad-hoc .c-head-headers ----
    Erft de .c-head-typografie (mono 12.5px). Niet sticky/geen backdrop-filter
    (GPU-duur op zwakke devices). Mobiel: CSS-only flex-wrap, geen hamburger. */
@@ -673,7 +694,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 96px;
+  max-width: 150px;
 }
 .cosmic .home-star:hover .home-star__dot,
 .cosmic .home-star:focus-visible .home-star__dot {

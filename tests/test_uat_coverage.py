@@ -116,6 +116,7 @@ INFRA = {
     "/openapi.json",
     "/robots.txt",
     "/sitemap.xml",
+    "/favicon.ico",
 }
 # Token-gated: zonder geldig token een nette 4xx (geen 5xx).
 TOKEN_ROUTES = {

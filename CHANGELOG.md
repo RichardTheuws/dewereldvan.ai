@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.95.1] - 2026-06-28
+### Fixed — Ongestylede links (default-blauw) + favicon-404 + naam-truncatie
+- **Links**: `a.link` was alleen binnen `.c-head` (footer/header) gestyled → overal elders (home-CTA's,
+  "Bekijk de makers", "Bekijk alle makers →", roadmap/agenda/nieuws/projecten/ideeën, ~64 plekken) viel 'ie
+  terug op browser-**default-blauw + onderstreept**. Algemene `.cosmic a.link` toegevoegd (goud-accent, subtiele
+  underline) + vangnet `.cosmic a:not([class])` zodat een class-loze anchor nooit meer default-blauw krijgt.
+  Browser-geverifieerd: home + roadmap nu goud, **nul blauwe anchors**.
+- **favicon-404**: browsers vragen `/favicon.ico` (root) → 404 op élke pagina (console-error). Route toegevoegd
+  (`seo.py`) die 301-redirect naar `/static/favicon.ico`. (Edge-cache van de oude 404 heelt zichzelf op TTL.)
+- **Naam-truncatie**: home-constellatie-labels knipten af op 96px ("Richard Theu…") → `max-width` naar 150px.
+
 ## [0.95.0] - 2026-06-28
 ### Changed — Intro: openings-uitzoom, warp-overgang, vloeiende audio (regie-noten verwerkt)
 - **Opening**: de wereld vult nu het frame bij de start (gouden wireframe-lattice-globe) en **zoomt vloeiend,

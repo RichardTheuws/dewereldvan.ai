@@ -13,7 +13,7 @@ uit ``seo_service`` (settings.base_url).
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -31,6 +31,13 @@ def privacy(request: Request) -> HTMLResponse:
         "privacy.html",
         {"canonical": seo_service.canonical_url("/privacy")},
     )
+
+
+@router.get("/favicon.ico", include_in_schema=False)
+def favicon() -> RedirectResponse:
+    """Browsers vragen standaard ``/favicon.ico`` op (root) → zonder dit een 404 op
+    élke pagina. Verwijs naar het echte static-bestand (permanent, cachebaar)."""
+    return RedirectResponse(url="/static/favicon.ico", status_code=301)
 
 
 @router.get("/sitemap.xml")
