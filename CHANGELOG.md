@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.98.2] - 2026-06-28
+### Fixed — Nieuws-/agenda-kaart: badges staken buiten de kaart (slordig)
+- Op `/nieuws` (en agenda) stond de badge-rij van een kaart als `display:flex; justify-content:space-between`
+  **zonder** `flex-wrap`, terwijl de badges `white-space:nowrap` zijn. Op smalle 3-koloms kaarten passen
+  "gedeeld" + "gevonden door dewereldvan" niet samen op één regel → de tweede badge stak **buiten de kaartrand**.
+- Fix (CSS): `.news-card__head`/`.event-card__head` krijgen `flex-wrap: wrap` (badges breken netjes naar een
+  tweede regel binnen de kaart i.p.v. te overflowen) en `gap: 8px 10px`. De datum (`news-card__date` /
+  `event-card__when`) blijft rechts uitgelijnd via `margin-left:auto` nu de rij links uitlijnt. Cache-busting via
+  `?v={{ asset_ver }}` zorgt dat de verse CSS direct serveert.
+
 ## [0.98.1] - 2026-06-28
 ### Fixed — Terugkerende 502 Bad Gateway: cloudflared van QUIC → HTTP/2
 - **Symptoom**: bezoekers kregen af en toe een Cloudflare 502 (host=error), terwijl de web-container de hele tijd

@@ -3817,8 +3817,12 @@ a.roadmap-item__origin:focus-visible {
 .cosmic .news-card__head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  /* Badges mogen WRAPPEN i.p.v. buiten de kaart steken: op smalle 3-koloms
+     kaarten passen "gedeeld" + "gevonden door dewereldvan" (beide nowrap) niet
+     samen op één regel. flex-wrap breekt ze netjes naar een tweede regel binnen
+     de kaart i.p.v. te overflowen. */
+  flex-wrap: wrap;
+  gap: 8px 10px;
 }
 
 .cosmic .event-card__title,
@@ -3888,6 +3892,8 @@ a.roadmap-item__origin:focus-visible {
   color: var(--gold);
   letter-spacing: 0.02em;
   white-space: nowrap;
+  /* Rechts uitgelijnd nu de head-rij links uitlijnt (flex-wrap i.p.v. space-between). */
+  margin-left: auto;
 }
 .cosmic .event-card__meta {
   display: flex;
@@ -4095,6 +4101,8 @@ a.roadmap-item__origin:focus-visible {
   font-size: 11px;
   color: var(--muted);
   white-space: nowrap;
+  /* Houd de datum rechts uitgelijnd nu de head-rij links uitlijnt (flex-wrap). */
+  margin-left: auto;
 }
 .cosmic .news-card__source {
   font-size: 0.82rem;
