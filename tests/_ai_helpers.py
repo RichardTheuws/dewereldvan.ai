@@ -22,6 +22,8 @@ class FakeImageGenerator:
     """
 
     URL = "https://img.test/cover.png"
+    # Variant-URLs moeten een vertrouwde fal-host hebben (cover_service-validatie).
+    VARIANT_URL = "https://v3b.fal.media/files/test/variant-{i}.png"
 
     def __init__(self, *, fail: bool = False) -> None:
         self.prompts: list[str] = []
@@ -32,6 +34,14 @@ class FakeImageGenerator:
         if self.fail:
             return GeneratedImage(url=None)
         return GeneratedImage(url=self.URL)
+
+    def generate_many(self, prompt: str, count: int) -> list[GeneratedImage]:
+        self.prompts.append(prompt)
+        if self.fail:
+            return []
+        return [
+            GeneratedImage(url=self.VARIANT_URL.format(i=i)) for i in range(count)
+        ]
 
 
 # --- Anthropic mocking helpers -----------------------------------------------

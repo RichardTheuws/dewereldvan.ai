@@ -1,0 +1,81 @@
+{# Hero-studio — lid-controle over de cover, binnen de kosmische stijl. Swapped
+   into #cover. Chips + intentie sturen de art-director; varianten verschijnen in
+   #cover-varianten; een gekozen variant landt in de DB; "Hou deze vast" beschermt
+   'm tegen de automatiek. Geen rauwe prompt — alleen gecureerde keuzes. #}
+<div class="cover-studio" data-reveal style="--d:60ms">
+  <div class="cover mb-3">
+    {% if profile.cover_image_url %}
+    <img src="{{ profile.cover_image_url }}" alt="Cover">
+    {% endif %}
+  </div>
+  {% if pick_error %}
+  <p class="text-sm" style="color:#ffd5d5">{{ pick_error }}</p>
+  {% endif %}
+
+  <div class="cover-studio__head">
+    <span class="profile-builder__eyebrow"><span aria-hidden="true">✦</span> hero-studio</span>
+    <span class="cover-studio__head-actions">
+      <button class="btn btn--ghost" type="button"
+              hx-post="/profiel/ai/cover/vastzetten"
+              hx-target="#cover" hx-swap="innerHTML" hx-disabled-elt="this">
+        {% if profile.cover_locked %}🔒 Vastgezet — ontgrendel{% else %}Hou deze vast{% endif %}
+      </button>
+      <button class="btn btn--ghost" type="button"
+              hx-get="/profiel/ai/cover/kaart"
+              hx-target="#cover" hx-swap="innerHTML">
+        Sluiten
+      </button>
+    </span>
+  </div>
+
+  <p class="muted text-sm cover-studio__lead">
+    Kies een sfeer en laat een paar varianten verschijnen. Je kiest er één — of je
+    houdt je huidige beeld. Alles blijft binnen de stijl van de site.
+  </p>
+
+  <form class="cover-studio__steer"
+        hx-post="/profiel/ai/cover/varianten"
+        hx-target="#cover-varianten" hx-swap="innerHTML"
+        hx-disabled-elt="find button[type=submit]">
+
+    <div class="cover-steer__group">
+      <span class="cover-steer__label">Accent</span>
+      <label class="disc-chip"><input type="radio" name="accent" value="" checked> vrij</label>
+      {% for opt in steer_options.accent %}
+      <label class="disc-chip"><input type="radio" name="accent" value="{{ opt }}"> {{ opt }}</label>
+      {% endfor %}
+    </div>
+
+    <div class="cover-steer__group">
+      <span class="cover-steer__label">Energie</span>
+      <label class="disc-chip"><input type="radio" name="energie" value="" checked> vrij</label>
+      {% for opt in steer_options.energie %}
+      <label class="disc-chip"><input type="radio" name="energie" value="{{ opt }}"> {{ opt }}</label>
+      {% endfor %}
+    </div>
+
+    {% if motief_options %}
+    <div class="cover-steer__group">
+      <span class="cover-steer__label">Nadruk</span>
+      <label class="disc-chip"><input type="radio" name="motief" value="" checked> vrij</label>
+      {% for opt in motief_options %}
+      <label class="disc-chip"><input type="radio" name="motief" value="{{ opt }}"> {{ opt }}</label>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="cover-steer__group cover-steer__group--intentie">
+      <label class="cover-steer__label" for="cover-intentie">Waar wil je dat dit beeld over gaat? <span class="muted">(optioneel)</span></label>
+      <input id="cover-intentie" type="text" name="intentie" maxlength="120"
+             class="cover-steer__input"
+             placeholder="bijv. rust, samenwerking, de zee…" autocomplete="off">
+    </div>
+
+    <div class="cover-steer__go">
+      <button class="btn" type="submit">Toon varianten <span aria-hidden="true">✦</span></button>
+      <span class="htmx-indicator muted text-sm cover-steer__busy">✦ de varianten verschijnen…</span>
+    </div>
+  </form>
+
+  <div id="cover-varianten" class="cover-varianten mt-4" aria-live="polite"></div>
+</div>

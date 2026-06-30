@@ -593,6 +593,195 @@ def test_cover_failure_is_graceful(route_engine, SessionTest, seed, monkeypatch)
 
 
 # --------------------------------------------------------------------------- #
+# Hero-studio (lid-controle over de cover)                                     #
+# --------------------------------------------------------------------------- #
+def _profile_of(SessionTest, member_id):
+    from app.models import Member
+    from app.services.profile_service import get_or_create_profile
+
+    s = SessionTest()
+    member = s.get(Member, member_id)
+    profile = get_or_create_profile(s, member)
+    s.commit()
+    return s, profile
+
+
+def test_cover_studio_opens(make_client, seed):
+    client = make_client(seed["approved"])
+    resp = client.get("/profiel/ai/cover/studio")
+    assert resp.status_code == 200
+    assert 'hx-post="/profiel/ai/cover/varianten"' in resp.text
+    assert 'name="accent"' in resp.text
+    assert 'name="intentie"' in resp.text
+
+
+def test_cover_variants_returns_grid_and_records(make_client, seed, SessionTest):
+    from app.models import AuditAction, AuditLog
+    from sqlalchemy import func, select
+
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/cover/varianten",
+        data={"accent": "cyaan", "energie": "serene", "intentie": "de zee"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    # FakeImageGenerator.generate_many → vertrouwde fal-host-URLs + kies-knoppen.
+    assert "v3b.fal.media" in resp.text
+    assert "Kies deze" in resp.text
+
+    s = SessionTest()
+    try:
+        n = s.scalar(
+            select(func.count())
+            .select_from(AuditLog)
+            .where(AuditLog.action == AuditAction.cover_generated)
+        )
+        assert n == 1  # één rij per klik (niet per beeld)
+    finally:
+        s.close()
+
+
+def test_cover_pick_trusted_sets_cover(make_client, seed, SessionTest):
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+    url = "https://v3b.fal.media/files/test/chosen.png"
+    resp = client.post(
+        "/profiel/ai/cover/kies",
+        data={"url": url},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    s, profile = _profile_of(SessionTest, seed["approved"])
+    try:
+        assert profile.cover_image_url == url
+    finally:
+        s.close()
+
+
+def test_cover_pick_untrusted_is_rejected(make_client, seed, SessionTest):
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/cover/kies",
+        data={"url": "https://evil.example.com/x.png"},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    assert "kon niet gekozen worden" in resp.text
+    s, profile = _profile_of(SessionTest, seed["approved"])
+    try:
+        assert profile.cover_image_url is None
+    finally:
+        s.close()
+
+
+def test_cover_lock_toggles(make_client, seed, SessionTest):
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/cover/vastzetten", headers={"X-CSRF-Token": token}
+    )
+    assert resp.status_code == 200
+    s, profile = _profile_of(SessionTest, seed["approved"])
+    try:
+        assert profile.cover_locked is True
+    finally:
+        s.close()
+    # Nogmaals = ontgrendelen.
+    resp = client.post(
+        "/profiel/ai/cover/vastzetten", headers={"X-CSRF-Token": token}
+    )
+    s, profile = _profile_of(SessionTest, seed["approved"])
+    try:
+        assert profile.cover_locked is False
+    finally:
+        s.close()
+
+
+def test_locked_cover_not_overwritten_by_auto(make_client, seed, SessionTest):
+    # Zet een cover + lock, dan vuurt de automatiek /cover → mag NIET overschrijven.
+    s, profile = _profile_of(SessionTest, seed["approved"])
+    profile.cover_image_url = "https://v3b.fal.media/files/test/kept.png"
+    profile.cover_locked = True
+    s.commit()
+    s.close()
+
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+    resp = client.post("/profiel/ai/cover", headers={"X-CSRF-Token": token})
+    assert resp.status_code == 200
+
+    s, profile = _profile_of(SessionTest, seed["approved"])
+    try:
+        assert profile.cover_image_url == "https://v3b.fal.media/files/test/kept.png"
+    finally:
+        s.close()
+
+
+def test_cover_variants_backend_off(route_engine, SessionTest, seed):
+    """Noop-backend (geen FAL_KEY) → eerlijke 'covers staan uit'-staat."""
+    from app.ai import NoopImageGenerator
+    from app.db import get_db
+    from app.deps import current_member, image_generator
+    from app.main import app
+    from app.models import Member
+    from fastapi import Depends
+    from sqlalchemy.orm import Session
+
+    def _override_get_db():
+        db = SessionTest()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    def _override_current_member(db: Session = Depends(get_db)):
+        return db.get(Member, seed["approved"])
+
+    app.dependency_overrides[get_db] = _override_get_db
+    app.dependency_overrides[current_member] = _override_current_member
+    app.dependency_overrides[image_generator] = lambda: NoopImageGenerator()
+    try:
+        client = TestClient(app, base_url="https://testserver")
+        token = _csrf(client)
+        resp = client.post(
+            "/profiel/ai/cover/varianten", headers={"X-CSRF-Token": token}
+        )
+        assert resp.status_code == 200
+        assert "staan nu even uit" in resp.text
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_cover_variants_rate_limited(make_client, seed, SessionTest):
+    from app.config import settings
+    from app.models import AuditAction, AuditLog
+
+    s = SessionTest()
+    for _ in range(settings.rate_limit_ai_enrich_per_hour):
+        s.add(
+            AuditLog(
+                action=AuditAction.cover_generated,
+                actor_member_id=seed["approved"],
+                target_member_id=seed["approved"],
+                detail="cover_generated",
+            )
+        )
+    s.commit()
+    s.close()
+
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/cover/varianten", headers={"X-CSRF-Token": token}
+    )
+    assert resp.status_code == 200
+    assert "maximum aantal sfeerbeelden" in resp.text
+
+
+# --------------------------------------------------------------------------- #
 # POST /publiceren -> 303 + turns cleared                                      #
 # --------------------------------------------------------------------------- #
 def test_publish_members_redirects_and_clears_turns(

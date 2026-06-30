@@ -1,0 +1,30 @@
+{# Variant-constellatie — resultaat van /profiel/ai/cover/varianten. Swapped into
+   #cover-varianten. Elke variant is transient (alleen deze URL); pas een gekozen
+   variant landt in de DB via /profiel/ai/cover/kies (target #cover). #}
+{% if backend_off %}
+  <p class="muted text-sm">
+    Sfeerbeelden staan nu even uit. Je profiel werkt prima met de kosmische
+    achtergrond — je kunt later varianten genereren.
+  </p>
+{% elif rate_limited %}
+  <p class="text-sm" style="color:#ffd5d5">
+    Je hebt voor nu het maximum aantal sfeerbeelden gemaakt. Probeer het over een
+    uurtje nog eens — je huidige beeld blijft gewoon staan.
+  </p>
+{% elif cover_error %}
+  <p class="text-sm" style="color:#ffd5d5">{{ cover_error }}</p>
+{% elif variants %}
+  <div class="cover-variants">
+    {% for url in variants %}
+    <figure class="cover-variant">
+      <img src="{{ url }}" alt="Cover-variant {{ loop.index }}" loading="lazy">
+      <form class="cover-variant__pick"
+            hx-post="/profiel/ai/cover/kies"
+            hx-target="#cover" hx-swap="innerHTML">
+        <input type="hidden" name="url" value="{{ url }}">
+        <button class="btn btn--ghost" type="submit">Kies deze</button>
+      </form>
+    </figure>
+    {% endfor %}
+  </div>
+{% endif %}

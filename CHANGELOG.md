@@ -3,6 +3,29 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.99.0] - 2026-06-30
+### Added — Hero-studio: lid-controle over de cover, mét verwondering
+- De cover (hero-beeld) had één hendel: een blinde "Nieuwe cover"-knop die het vorige beeld weggooide. Een lid kon
+  niet sturen. Nu een **hero-studio**: gecureerde keuzes binnen de kosmische stijl (`_COVER_STYLE`) — nooit een
+  rauw prompt-veld — zodat identiteit + graceful-fail gegarandeerd blijven en de magie behouden blijft.
+  PRD: `docs/PRD-hero-studio.md`.
+- **Constellatie van varianten**: `ImageGenerator.generate_many(prompt, count)` (fal.ai `num_images`, geklemd op
+  4) levert 3–4 covers tegelijk; het lid kiest er één. `FalImageGenerator`/`NoopImageGenerator` faalt gracieus
+  (lege lijst bij elke fout / backend uit).
+- **Sfeer-chips + intentie**: `cover_art_service.CoverSteer` (accent: violet/cyaan/aurora/ember · energie:
+  serene↔elektrisch · motief uit eigen tags) wordt deterministisch ná de metafoor toegevoegd (werkt óók in
+  fallback); de optionele intentie-regel (≤120 tekens) gaat als extra brief naar de art-director (alleen bij AI-aan).
+- **Vastzetten**: nieuw `profile.cover_locked` (migratie `0034`) — een vastgezette cover wordt nooit door de
+  AUTOMATIEK (auto-cover na materialisatie) overschreven; een expliciete lid-generatie negeert de lock bewust.
+- **Routes** (member-only): `GET …/cover/studio` + `…/cover/kaart`, `POST …/cover/varianten` (rate-limited per
+  klik via `cover_service`, hergebruikt `rate_limit_ai_enrich_per_hour`), `…/cover/kies` (accepteert alleen een
+  vertrouwde fal-host-URL — `cover_service.is_trusted_cover_url`), `…/cover/vastzetten`.
+- **UI**: `ai/_cover.html` herwerkt tot compacte kaart + studio-ingang; nieuwe `ai/_cover_studio.html` +
+  `ai/_cover_varianten.html`; kosmische studio-styling in `cosmic.css` (chips hergebruiken `.disc-chip`).
+- **Tests**: `generate_many` (succes/clamp/graceful), steer (suffix in grounded + fallback, intentie in brief),
+  trusted-URL-validatie + rate-limit, en de volledige studio-routeketen (varianten/kies/lock/backend-off/
+  rate-limited/lock-beschermt-auto). Suite groen (1134 passed).
+
 ## [0.98.2] - 2026-06-28
 ### Fixed — Nieuws-/agenda-kaart: badges staken buiten de kaart (slordig)
 - Op `/nieuws` (en agenda) stond de badge-rij van een kaart als `display:flex; justify-content:space-between`

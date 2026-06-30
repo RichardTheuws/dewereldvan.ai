@@ -97,3 +97,52 @@ def test_build_prompt_falls_back_on_error(db, make_member, make_profile, monkeyp
     prompt = ca.build_prompt(profile, client=_Boom())
     assert "cosmic nebula" in prompt
     assert "Evoking:" not in prompt
+
+
+# --- Lid-sturing (hero-studio) ------------------------------------------------
+def test_steer_suffix_appended_in_grounded_prompt(db, make_member, make_profile, monkeypatch):
+    monkeypatch.setattr(
+        "app.services.cover_art_service.settings.ai_enrich_enabled", True
+    )
+    profile = _profile(db, make_member, make_profile, headline="Voice-agents")
+    steer = ca.CoverSteer(accent="cyaan", energie="serene", motief="zorg")
+    prompt = ca.build_prompt(profile, client=FakeClient(), steer=steer)
+    assert "Evoking: soundwaves dissolving into a constellation" in prompt
+    # Deterministische chip-uitbreiding na de metafoor.
+    assert "luminous cyan accent" in prompt
+    assert "serene" in prompt
+    assert "emphasising the motif of zorg" in prompt
+
+
+def test_steer_suffix_works_in_fallback(db, make_member, make_profile, monkeypatch):
+    # AI uit → fallback, maar de chips moeten alsnog sturen (deterministisch).
+    monkeypatch.setattr(
+        "app.services.cover_art_service.settings.ai_enrich_enabled", False
+    )
+    profile = _profile(db, make_member, make_profile, headline="Iets")
+    steer = ca.CoverSteer(accent="ember")
+    prompt = ca.build_prompt(profile, client=FakeClient(), steer=steer)
+    assert "cosmic nebula" in prompt
+    assert "ember-gold" in prompt
+
+
+def test_steer_intentie_feeds_the_brief(db, make_member, make_profile, monkeypatch):
+    monkeypatch.setattr(
+        "app.services.cover_art_service.settings.ai_enrich_enabled", True
+    )
+    profile = _profile(db, make_member, make_profile, headline="Iets")
+    client = FakeClient()
+    steer = ca.CoverSteer(intentie="rust en de zee")
+    ca.build_prompt(profile, client=client, steer=steer)
+    sent = client.messages.calls[0]["messages"][0]["content"]
+    assert "rust en de zee" in sent
+
+
+def test_steer_none_is_unchanged_behaviour(db, make_member, make_profile, monkeypatch):
+    monkeypatch.setattr(
+        "app.services.cover_art_service.settings.ai_enrich_enabled", True
+    )
+    profile = _profile(db, make_member, make_profile, headline="Iets")
+    # Zonder steer = exact het oude gedrag (geen suffix).
+    prompt = ca.build_prompt(profile, client=FakeClient())
+    assert prompt.rstrip().endswith("constellation")

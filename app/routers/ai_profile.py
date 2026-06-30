@@ -45,7 +45,7 @@ from fastapi.responses import (
 from markupsafe import escape
 from sqlalchemy.orm import Session
 
-from app.ai import ImageGenerator
+from app.ai import ImageGenerator, NoopImageGenerator
 from app.config import settings
 from app.db import get_db
 from app.deps import image_generator, require_member
@@ -62,6 +62,7 @@ from app.schemas.ai_profile import AcceptForm, ChatMessageForm
 from app.services import (
     ai_conversation,
     cover_art_service,
+    cover_service,
     offering_slug,
     photo_service,
     profile_link_service,
@@ -532,6 +533,23 @@ def make_draft(
 # --------------------------------------------------------------------------- #
 
 
+def _cover_ctx(request: Request, profile: Profile, **extra) -> dict:
+    """Context voor het cover-kaartfragment (preview + studio-ingang)."""
+    return {"request": request, "profile": profile, **extra}
+
+
+def _studio_ctx(request: Request, profile: Profile, **extra) -> dict:
+    """Context voor het hero-studio-paneel (chips + intentie + varianten)."""
+    return {
+        "request": request,
+        "profile": profile,
+        "steer_options": cover_art_service.steer_options(),
+        # Eigen tags als motief-keuzes (geen vrije invoer — gecureerd).
+        "motief_options": [t.name for t in profile.tags][:8],
+        **extra,
+    }
+
+
 @router.post("/profiel/ai/cover", response_class=HTMLResponse)
 def generate_cover(
     request: Request,
@@ -539,8 +557,15 @@ def generate_cover(
     db: Session = Depends(get_db),
     generator: ImageGenerator = Depends(image_generator),
 ) -> HTMLResponse:
-    """Genereer een cover op basis van de profiel-essentie (faalt gracieus)."""
+    """Auto-cover: één sfeerbeeld uit de profiel-essentie (faalt gracieus).
+
+    Dit is de AUTOMATIEK (vuurt één keer na materialisatie). Een vastgezette
+    cover (``cover_locked``) wordt nooit door de automatiek overschreven — het lid
+    stuurt zelf via de hero-studio.
+    """
     profile = profile_service.get_or_create_profile(db, member)
+    if profile.cover_locked:
+        return _render(request, "ai/_cover.html", _cover_ctx(request, profile))
     # Gegronde art-director: vertaal de essentie van dít profiel naar een concrete
     # visuele metafoor in de kosmische stijl (valt terug op de deterministische
     # cover_prompt bij AI-uit/fout). Zo reflecteert het sfeerbeeld de pagina écht.
@@ -565,8 +590,146 @@ def generate_cover(
     return _render(
         request,
         "ai/_cover.html",
-        {"profile": profile, "cover_error": cover_error},
+        _cover_ctx(request, profile, cover_error=cover_error),
     )
+
+
+@router.get("/profiel/ai/cover/kaart", response_class=HTMLResponse)
+def cover_card(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """De compacte cover-kaart (studio gesloten)."""
+    profile = profile_service.get_or_create_profile(db, member)
+    return _render(request, "ai/_cover.html", _cover_ctx(request, profile))
+
+
+@router.get("/profiel/ai/cover/studio", response_class=HTMLResponse)
+def cover_studio(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Open het hero-studio-paneel (chips + intentie + varianten + vastzetten)."""
+    profile = profile_service.get_or_create_profile(db, member)
+    return _render(request, "ai/_cover_studio.html", _studio_ctx(request, profile))
+
+
+@router.post("/profiel/ai/cover/varianten", response_class=HTMLResponse)
+def cover_variants(
+    request: Request,
+    accent: str = Form(""),
+    energie: str = Form(""),
+    motief: str = Form(""),
+    intentie: str = Form(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+    generator: ImageGenerator = Depends(image_generator),
+) -> HTMLResponse:
+    """Genereer een constellatie van cover-varianten met optionele lid-sturing.
+
+    Transient: alleen de gerenderde URLs leven in het antwoord; pas een gekozen
+    variant landt in de DB. Negeert ``cover_locked`` bewust (expliciete maker-actie).
+    """
+    profile = profile_service.get_or_create_profile(db, member)
+    selected = {
+        "accent": accent or None,
+        "energie": energie or None,
+        "motief": motief or None,
+        "intentie": (intentie or "").strip()[: cover_art_service._INTENTIE_MAX] or None,
+    }
+
+    # Backend uit (geen FAL_KEY) → eerlijke "covers staan uit"-staat, geen lege kaders.
+    if isinstance(generator, NoopImageGenerator):
+        return _render(
+            request,
+            "ai/_cover_varianten.html",
+            _studio_ctx(request, profile, variants=[], selected=selected, backend_off=True),
+        )
+
+    try:
+        cover_service.check_cover_rate_limit(db, member.id)
+    except cover_service.CoverRateLimited:
+        return _render(
+            request,
+            "ai/_cover_varianten.html",
+            _studio_ctx(
+                request,
+                profile,
+                variants=[],
+                selected=selected,
+                rate_limited=True,
+            ),
+        )
+
+    steer = cover_art_service.CoverSteer(
+        accent=selected["accent"],
+        energie=selected["energie"],
+        motief=selected["motief"],
+        intentie=selected["intentie"],
+    )
+    prompt = cover_art_service.build_prompt(profile, steer=steer)
+    try:
+        images = generator.generate_many(prompt, cover_service.VARIANT_COUNT)
+    except Exception:  # noqa: BLE001 — varianten zijn optioneel; nooit de flow breken
+        logger.exception("Cover-varianten faalden voor member %s", member.id)
+        images = []
+    variants = [im.url for im in images if getattr(im, "url", None)]
+
+    # Eén audit-/rate-limit-rij per klik (niet per beeld), alleen bij een echte poging.
+    cover_service.record_cover_generation(db, member.id)
+    db.commit()
+    db.refresh(profile)
+
+    return _render(
+        request,
+        "ai/_cover_varianten.html",
+        _studio_ctx(
+            request,
+            profile,
+            variants=variants,
+            selected=selected,
+            cover_error=None if variants else (
+                "De varianten konden nu niet gemaakt worden. Probeer het zo nog eens."
+            ),
+        ),
+    )
+
+
+@router.post("/profiel/ai/cover/kies", response_class=HTMLResponse)
+def cover_pick(
+    request: Request,
+    url: str = Form(""),
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Kies een variant als cover. Accepteert alleen een vertrouwde fal-URL."""
+    profile = profile_service.get_or_create_profile(db, member)
+    if cover_service.is_trusted_cover_url(url):
+        profile.cover_image_url = url.strip()
+        db.commit()
+        db.refresh(profile)
+        pick_error = None
+    else:
+        pick_error = "Die afbeelding kon niet gekozen worden. Genereer er gerust een nieuwe."
+    return _render(
+        request, "ai/_cover_studio.html", _studio_ctx(request, profile, pick_error=pick_error)
+    )
+
+
+@router.post("/profiel/ai/cover/vastzetten", response_class=HTMLResponse)
+def cover_lock(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Toggle ``cover_locked`` — beschermt de gekozen cover tegen de automatiek."""
+    profile = profile_service.get_or_create_profile(db, member)
+    profile.cover_locked = not profile.cover_locked
+    db.commit()
+    db.refresh(profile)
+    return _render(request, "ai/_cover_studio.html", _studio_ctx(request, profile))
 
 
 # --------------------------------------------------------------------------- #
@@ -1007,6 +1170,7 @@ def restart(
     profile.ai_enriched = False
     profile.ai_source_text = None
     profile.cover_image_url = None
+    profile.cover_locked = False
     db.commit()
     return RedirectResponse(
         url="/profiel/ai/bouwen", status_code=status.HTTP_303_SEE_OTHER

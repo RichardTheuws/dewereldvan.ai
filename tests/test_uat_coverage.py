@@ -98,6 +98,8 @@ MEMBER_ONLY = {
     "/profiel/ai/rol/{role_id}",
     "/profiel/ai/rol/{role_id}/bewerken",
     "/profiel/ai/ontdek/resultaat",
+    "/profiel/ai/cover/kaart",
+    "/profiel/ai/cover/studio",
     "/concierge/profielbouw",
     "/intro/nieuw",
 }

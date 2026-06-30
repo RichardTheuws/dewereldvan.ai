@@ -12,3 +12,10 @@ from app.ai.base import GeneratedImage
 class NoopImageGenerator:
     def generate(self, prompt: str) -> GeneratedImage:  # noqa: ARG002 - interface
         return GeneratedImage(url=None)
+
+    def generate_many(
+        self, prompt: str, count: int
+    ) -> list[GeneratedImage]:  # noqa: ARG002 - interface
+        # Geen FAL_KEY/backend → geen beelden. Lege lijst zodat de hero-studio
+        # de "covers staan uit"-staat toont i.p.v. lege kaders.
+        return []

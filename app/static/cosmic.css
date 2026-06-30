@@ -991,6 +991,110 @@
   background: linear-gradient(180deg, transparent 30%, rgba(4, 4, 14, 0.85) 100%);
 }
 
+/* ---- hero-studio (lid-controle over de cover) ---- */
+.cosmic .cover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.cosmic .cover-lock-flag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+.cosmic .cover-studio__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.cosmic .cover-studio__head-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.cosmic .cover-studio__lead {
+  margin: 8px 0 16px;
+}
+.cosmic .cover-studio__steer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cosmic .cover-steer__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+.cosmic .cover-steer__label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: 4px;
+}
+.cosmic .cover-steer__group--intentie {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+.cosmic .cover-steer__input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+}
+.cosmic .cover-steer__input:focus {
+  outline: 2px solid rgba(63, 210, 255, 0.5);
+  outline-offset: 1px;
+  border-color: rgba(63, 210, 255, 0.45);
+}
+.cosmic .cover-steer__go {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.cosmic .cover-variants {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+.cosmic .cover-variant {
+  position: relative;
+  margin: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  aspect-ratio: 16 / 9;
+  background:
+    radial-gradient(80% 120% at 20% 0%, rgba(109, 93, 252, 0.3), transparent 60%),
+    var(--indigo);
+}
+.cosmic .cover-variant img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cosmic .cover-variant__pick {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background: linear-gradient(180deg, transparent, rgba(4, 4, 14, 0.85));
+}
+
 /* ---- galerij-grid (kind='gallery') — een raster van gehotlinkte portfolio-beelden ---- */
 .cosmic .gallery-grid {
   display: grid;

@@ -5,8 +5,17 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-28 · **Versie**: 0.98.1 · **Branch**: `main`
+**Laatste update**: 2026-06-30 · **Versie**: 0.99.0 · **Branch**: `main`
 
+> **0.99.0** — **Hero-studio**: lid krijgt echte controle over de cover (hero-beeld), binnen de kosmische stijl.
+> I.p.v. één blinde re-roll nu: 3–4 **varianten** tegelijk (`generate_many`/fal `num_images`), **sfeer-chips**
+> (accent/energie/motief, `CoverSteer`) + één zachte **intentie-regel** die de art-director stuurt, en
+> **vastzetten** (`profile.cover_locked`, migratie `0034`) zodat de automatiek de gekozen cover met rust laat.
+> Routes onder `…/cover/{studio,kaart,varianten,kies,vastzetten}`; varianten rate-limited per klik
+> (`cover_service`, hergebruikt `rate_limit_ai_enrich_per_hour`), kies accepteert alleen een vertrouwde fal-URL.
+> Géén rauw prompt-veld — alleen gecureerde keuzes. PRD: `docs/PRD-hero-studio.md`. Suite groen (1134 passed).
+> **FAL_KEY op M4 geroteerd** (oude week af → covers stonden stil); nieuwe key gevalideerd + alleen in M4-`.env`.
+>
 > **0.98.1** — Terugkerende 502's opgelost: cloudflared-tunnel van QUIC → **HTTP/2** (`--protocol http2`). De
 > kernel-UDP-buffer in de Docker-Desktop-VM is te klein (cloudflared-warning) → QUIC dropte periodiek alle
 > tunnelverbindingen (`no recent network activity`, ~15-20s 502). HTTP/2 over TCP omzeilt dit. App was nooit

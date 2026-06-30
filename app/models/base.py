@@ -82,6 +82,10 @@ class AuditAction(str, enum.Enum):
     # Tool-review-note-moderatie (doc 03 §4.3, Fase C): admin verbergt een
     # mens-naast-AI-aanvulling. VARCHAR-enum → additieve waarde, geen migratie nodig.
     tool_note_hidden = "tool_note_hidden"
+    # Hero-studio: een lid genereert cover-varianten. Grondslag voor de per-lid
+    # uur-rate-limit (telt per klik, niet per beeld). VARCHAR-enum → additieve
+    # waarde, geen migratie nodig.
+    cover_generated = "cover_generated"
 
 
 class ProfileEmphasis(str, enum.Enum):

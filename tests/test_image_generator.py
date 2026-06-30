@@ -88,6 +88,67 @@ def test_fal_non_string_url_is_graceful(monkeypatch):
     assert FalImageGenerator("k").generate("x") == GeneratedImage(url=None)
 
 
+# --- generate_many (hero-studio) ----------------------------------------------
+def test_fal_generate_many_returns_all_urls(monkeypatch):
+    captured = {}
+
+    def _fake_post(url, *, json, headers, timeout):
+        captured["json"] = json
+        return _FakeResponse(
+            200,
+            {"images": [{"url": "https://cdn.fal/a.png"}, {"url": "https://cdn.fal/b.png"}]},
+        )
+
+    monkeypatch.setattr(httpx, "post", _fake_post)
+    out = FalImageGenerator("k").generate_many("kosmos", 2)
+    assert out == [
+        GeneratedImage(url="https://cdn.fal/a.png"),
+        GeneratedImage(url="https://cdn.fal/b.png"),
+    ]
+    assert captured["json"]["num_images"] == 2
+
+
+def test_fal_generate_many_clamps_count(monkeypatch):
+    captured = {}
+
+    def _fake_post(url, *, json, headers, timeout):
+        captured["json"] = json
+        return _FakeResponse(200, {"images": []})
+
+    monkeypatch.setattr(httpx, "post", _fake_post)
+    FalImageGenerator("k").generate_many("x", 99)
+    assert captured["json"]["num_images"] == 4  # geklemd op _MAX_VARIANTS
+
+
+def test_fal_generate_many_skips_bad_items(monkeypatch):
+    monkeypatch.setattr(
+        httpx,
+        "post",
+        lambda *a, **k: _FakeResponse(
+            200, {"images": [{"url": "https://ok/1.png"}, {"url": None}, {"nope": 1}]}
+        ),
+    )
+    out = FalImageGenerator("k").generate_many("x", 3)
+    assert out == [GeneratedImage(url="https://ok/1.png")]
+
+
+def test_fal_generate_many_network_error_is_empty(monkeypatch):
+    def _boom(*a, **k):
+        raise httpx.ConnectError("down")
+
+    monkeypatch.setattr(httpx, "post", _boom)
+    assert FalImageGenerator("k").generate_many("x", 4) == []
+
+
+def test_fal_generate_many_non_2xx_is_empty(monkeypatch):
+    monkeypatch.setattr(httpx, "post", lambda *a, **k: _FakeResponse(429, None))
+    assert FalImageGenerator("k").generate_many("x", 4) == []
+
+
+def test_noop_generate_many_is_empty():
+    assert NoopImageGenerator().generate_many("x", 4) == []
+
+
 # --- Noop backend --------------------------------------------------------------
 def test_noop_generate_always_none():
     assert NoopImageGenerator().generate("anything") == GeneratedImage(url=None)
