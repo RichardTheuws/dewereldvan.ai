@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-30 · **Versie**: 0.99.2 · **Branch**: `main`
+**Laatste update**: 2026-06-30 · **Versie**: 0.99.3 · **Branch**: `main`
 
+> **0.99.3** — Profielfoto-upload verfijnd: de bulky dashed-box weg; sterren-ring blijft centraal, eronder een
+> glas-pill "✦ Wijzig foto" + kleine hint. Slepen laat de ring oplichten. Geldt op bouwen/edit/concierge.
+>
 > **0.99.2** — Cover-hero + hero-studio nu bovenaan de levende profielvorm (`ai/_live_form.html`), net als het
 > publieke profiel → de cinematische bouwpagina (`/profiel/ai/bouwen`) krijgt eindelijk een sfeerbeeld (was kaal).
 > Concierge-duplicaat verwijderd (één gedeelde `#cover`). Bediening verfraaid: glas-pills óver de hero-band i.p.v.

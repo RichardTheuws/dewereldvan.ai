@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.99.3] - 2026-06-30
+### Changed — Verfijnde profielfoto-upload (geen bulky dashed-box meer)
+- De foto-upload toonde een grote, utilitaire gestreepte "Sleep je foto hierheen"-box naast de avatar — dat botste
+  met de nieuwe hero-band. Herontworpen (`profiles/_photo_upload.html`): de **sterren-ring blijft het hart**, met
+  eronder een **glas-pill "✦ Wijzig foto"** (zelfde taal als de cover-bediening) + een kleine, rustige hint.
+- Slepen mag over het hele veld → de **ring gloeit op** als druppel-doel (i.p.v. een dashed kader). Klikken op de
+  ring of de pill opent de kiezer (klik op "Foto verwijderen" binnen de ring is uitgezonderd). Toetsenbord +
+  drag-drop + client-side resize blijven werken; de server blijft de echte poort.
+- Geldt op alle surfaces waar de foto-upload leeft (bouwen/edit/concierge). Oude `.photo-upload__zone/__drop/__spark/
+  __label/__hint`-CSS verwijderd.
+
 ## [0.99.2] - 2026-06-30
 ### Changed — Cover-hero op de cinematische bouwpagina + verfraaide bediening
 - De bouwpagina (`/profiel/ai/bouwen`) had géén hero/cover, terwijl het publieke profiel er wél een heeft → de

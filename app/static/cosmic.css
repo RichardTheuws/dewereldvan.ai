@@ -1833,47 +1833,48 @@
 .cosmic .photo-ring__msg--ok { color: var(--gold); }
 .cosmic .photo-ring__remove button { font-size: 0.82rem; cursor: pointer; background: none; border: none; }
 
+/* Verfijnde upload: de sterren-ring is het hart, eronder een glas-pill "Wijzig
+   foto" + een kleine hint. Slepen gloeit de ring op (geen bulky dashed-box meer). */
 .cosmic .photo-upload {
-  display: flex;
-  gap: 24px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.cosmic .photo-upload__drop { flex: 1 1 280px; }
-.cosmic .photo-upload__zone {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
   text-align: center;
-  padding: 26px 22px;
-  border: 1.5px dashed rgba(63, 210, 255, 0.3);
-  border-radius: 18px;
-  background: radial-gradient(90% 120% at 50% 0%, rgba(63, 210, 255, 0.07), transparent 60%);
+  padding: 6px;
+  border-radius: 20px;
+  transition: box-shadow 0.3s;
+}
+.cosmic .photo-upload__form { margin: 0; }
+.cosmic .photo-upload__ring {
   cursor: pointer;
-  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+  border-radius: 50%;
+  transition: transform 0.2s;
 }
-.cosmic .photo-upload__zone:hover,
-.cosmic .photo-upload__zone:focus-visible,
-.cosmic .photo-upload__zone.is-over {
-  outline: none;
-  border-color: rgba(63, 210, 255, 0.7);
-  background: rgba(63, 210, 255, 0.08);
-  box-shadow: 0 0 0 4px rgba(63, 210, 255, 0.12), inset 0 0 30px rgba(63, 210, 255, 0.08);
+.cosmic .photo-upload__ring:hover { transform: translateY(-1px); }
+.cosmic .photo-upload__ring:focus-visible {
+  outline: 2px solid rgba(63, 210, 255, 0.6);
+  outline-offset: 6px;
+  border-radius: 50%;
 }
-.cosmic .photo-upload__spark {
-  font-size: 1.4rem;
-  color: var(--gold);
-  text-shadow: 0 0 16px var(--gold);
+.cosmic .photo-upload__meta {
+  font-size: 0.74rem;
+  color: var(--muted);
+  max-width: 28ch;
+  line-height: 1.45;
 }
-.cosmic .photo-upload__label {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12.5px;
-  letter-spacing: 0.04em;
-  color: var(--text);
+.cosmic .photo-upload__progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.cosmic .photo-upload__hint { font-size: 0.78rem; color: var(--muted); }
-.cosmic .photo-upload__progress { display: flex; align-items: center; margin-top: 12px; }
+/* Sleep-over: de ring gloeit op als druppel-doel (de pill verklapt 't al). */
+.cosmic .photo-upload.is-over .photo-ring {
+  box-shadow:
+    0 0 0 2px rgba(63, 210, 255, 0.75),
+    0 0 44px -4px rgba(63, 210, 255, 0.7),
+    0 0 80px -8px rgba(177, 92, 255, 0.6);
+}
 
 /* =========================================================================
    Emphasis-keuze (L1) — 3 kosmische opties

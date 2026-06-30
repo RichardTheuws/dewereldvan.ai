@@ -1,34 +1,35 @@
-{# Magische profielfoto-upload: drag-drop op een kosmisch veld, de foto
-   materialiseert in een sterren-ring. Verwacht `profile` + `photo`
-   (photo_service.photo_or_initials). POST → /profiel/foto (multipart, CSRF via
-   hx-headers op de cosmic <body>); server hervalideert/herresizet altijd.
+{# Profielfoto-upload, verfijnd: de sterren-ring blijft het hart; eronder een
+   glas-pill "Wijzig foto" (zelfde taal als de cover-bediening) + een kleine hint.
+   Slepen mag overal op het veld — dan gloeit de ring op als druppel-doel. Verwacht
+   `profile` + `photo`. POST → /profiel/foto (multipart, CSRF via hx-headers op de
+   cosmic <body>); de server hervalideert/herresizet altijd.
 
-   Client-side (progressive enhancement): live preview + canvas-resize naar
-   ≤1024px JPEG vóór upload (UX/bandbreedte). Zonder JS werkt de gewone
-   file-input nog steeds (de server is de echte poort). #}
-<div class="photo-upload" data-photo-upload>
-  <div class="photo-upload__ring">
+   Client-side (progressive enhancement): live resize naar ≤1024px JPEG vóór upload.
+   Zonder JS werkt de gewone file-input nog (de server is de echte poort). De
+   verwijder-knop leeft in #photo-ring (apart form, geen geneste forms). #}
+<div class="photo-upload" data-photo-upload data-drop-area>
+  <div class="photo-upload__ring" data-zone>
     {% include "profiles/_photo_ring.html" %}
   </div>
 
-  <form class="photo-upload__drop"
+  <form class="photo-upload__form"
         data-drop
         hx-post="/profiel/foto"
         hx-target="#photo-ring"
         hx-swap="outerHTML"
         hx-encoding="multipart/form-data"
         hx-trigger="change from:find input[type=file], drop-upload">
-    <label class="photo-upload__zone" data-zone tabindex="0">
-      <span class="photo-upload__spark" aria-hidden="true">✦</span>
-      <span class="photo-upload__label">Sleep je foto hierheen</span>
-      <span class="photo-upload__hint">of klik om te kiezen · JPEG, PNG of WEBP · max 6 MB</span>
-      <input type="file" name="file" accept="image/jpeg,image/png,image/webp" hidden data-file>
-    </label>
-    <div class="photo-upload__progress" data-progress hidden>
-      <span class="typing"><span></span><span></span><span></span></span>
-      <span class="muted" style="margin-left:10px">Materialiseren…</span>
-    </div>
+    <input type="file" name="file" accept="image/jpeg,image/png,image/webp" hidden data-file>
+    <button class="cover-pill cover-pill--primary photo-upload__change" type="button" data-pick>
+      <span aria-hidden="true">✦</span> Wijzig foto
+    </button>
   </form>
+
+  <p class="photo-upload__meta">Sleep een foto op je avatar of klik · JPEG, PNG of WEBP · max 6 MB</p>
+  <div class="photo-upload__progress" data-progress hidden>
+    <span class="typing"><span></span><span></span><span></span></span>
+    <span class="muted" style="margin-left:10px">Materialiseren…</span>
+  </div>
 </div>
 
 <script>
@@ -38,24 +39,35 @@
   root.dataset.bound = '1';
 
   var form = root.querySelector('[data-drop]');
-  var zone = root.querySelector('[data-zone]');
+  var dropArea = root;                       // slepen mag over het hele veld
+  var ring = root.querySelector('[data-zone]');
+  var pick = root.querySelector('[data-pick]');
   var input = root.querySelector('[data-file]');
   var progress = root.querySelector('[data-progress]');
-  var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-  // Keyboard: Enter/Space on the zone opens the picker.
-  zone.addEventListener('keydown', function (e) {
+  // Klik op de pill (of op de ring) opent de bestandskiezer — maar niet wanneer
+  // je op de "Foto verwijderen"-knop binnen de ring klikt (eigen form).
+  pick.addEventListener('click', function () { input.click(); });
+  ring.addEventListener('click', function (e) {
+    if (e.target.closest('.photo-ring__remove')) return;
+    input.click();
+  });
+  ring.setAttribute('role', 'button');
+  ring.setAttribute('tabindex', '0');
+  ring.setAttribute('aria-label', 'Profielfoto wijzigen');
+  ring.addEventListener('keydown', function (e) {
+    if (e.target.closest('.photo-ring__remove')) return;
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
   });
 
-  // Drag-and-drop onto the cosmic field.
+  // Drag-and-drop op het kosmische veld → de ring gloeit als druppel-doel.
   ['dragenter', 'dragover'].forEach(function (ev) {
-    form.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('is-over'); });
+    dropArea.addEventListener(ev, function (e) { e.preventDefault(); dropArea.classList.add('is-over'); });
   });
   ['dragleave', 'dragend', 'drop'].forEach(function (ev) {
-    form.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.remove('is-over'); });
+    dropArea.addEventListener(ev, function (e) { e.preventDefault(); dropArea.classList.remove('is-over'); });
   });
-  form.addEventListener('drop', function (e) {
+  dropArea.addEventListener('drop', function (e) {
     var files = e.dataTransfer && e.dataTransfer.files;
     if (files && files.length) handleFile(files[0]);
   });
@@ -63,17 +75,12 @@
     if (input.files && input.files.length) handleFile(input.files[0]);
   });
 
-  function showProgress(on) {
-    if (progress) progress.hidden = !on;
-  }
+  function showProgress(on) { if (progress) progress.hidden = !on; }
 
   // Client-side resize to a ≤1024px JPEG to save bandwidth; the server still
   // re-validates + re-resizes + strips EXIF (the real gate).
   function handleFile(file) {
-    if (!/^image\//.test(file.type)) {
-      // Let the server return the friendly error.
-      submitRaw(file); return;
-    }
+    if (!/^image\//.test(file.type)) { submitRaw(file); return; }
     showProgress(true);
     var img = new Image();
     var url = URL.createObjectURL(file);
@@ -88,12 +95,9 @@
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         canvas.toBlob(function (blob) {
           if (!blob) { submitRaw(file); return; }
-          var out = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
-          submitBlob(out);
+          submitBlob(new File([blob], 'photo.jpg', { type: 'image/jpeg' }));
         }, 'image/jpeg', 0.88);
-      } catch (err) {
-        submitRaw(file);
-      }
+      } catch (err) { submitRaw(file); }
     };
     img.onerror = function () { URL.revokeObjectURL(url); submitRaw(file); };
     img.src = url;
@@ -104,14 +108,9 @@
     dt.items.add(file);
     input.files = dt.files;
   }
-
   function submitBlob(file) { setFiles(file); fire(); }
   function submitRaw(file) { showProgress(true); setFiles(file); fire(); }
-
-  function fire() {
-    // Trigger the htmx custom event so the form POSTs the (resized) file.
-    form.dispatchEvent(new CustomEvent('drop-upload'));
-  }
+  function fire() { form.dispatchEvent(new CustomEvent('drop-upload')); }
 
   // Hide the spinner once htmx swaps the ring back in.
   document.body.addEventListener('htmx:afterSwap', function (e) {
