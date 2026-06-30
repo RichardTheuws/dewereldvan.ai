@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.99.1] - 2026-06-30
+### Fixed — Hero-studio onbereikbaar vanaf de profiel-edit-pagina
+- De hero-studio (v0.99.0) leefde alleen op het concierge-canvas (agent-shell); op `/profiel/bewerken` — de
+  plek waar een lid z'n profiel beheert — was er geen ingang om de hero/cover aan te passen. Daardoor leek de
+  feature afwezig.
+- Fix: nieuwe **"Sfeerbeeld"-sectie** op `/profiel/bewerken`, direct na de profielfoto, met dezelfde
+  `ai/_cover.html`-kaart (`<div id="cover">`) → compacte preview + "Open de hero-studio". De edit-pagina laadt al
+  htmx + CSRF (body-`hx-headers`), dus varianten/kiezen/vastzetten werken er 1:1. Test in `test_forms_cosmic`
+  dwingt de ingang af (`#cover` + `hx-get="/profiel/ai/cover/studio"`).
+- Infra-nota: CI is in deze sessie gerepareerd (was structureel rood) — zie memory `dewereldvan-deploy`.
+
 ## [0.99.0] - 2026-06-30
 ### Added — Hero-studio: lid-controle over de cover, mét verwondering
 - De cover (hero-beeld) had één hendel: een blinde "Nieuwe cover"-knop die het vorige beeld weggooide. Een lid kon

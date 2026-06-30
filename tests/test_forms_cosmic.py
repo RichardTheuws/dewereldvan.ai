@@ -115,6 +115,9 @@ def test_edit_page_is_cosmic_with_htmx_hooks_intact(make_client, seed):
     assert 'hx-post="/profiel/need"' in body
     assert 'hx-post="/profiel/zichtbaarheid"' in body
     assert 'action="/profiel/bewerken"' in body
+    # Hero/sfeerbeeld-sectie: de cover-studio is bereikbaar vanaf de edit-pagina.
+    assert 'id="cover"' in body
+    assert 'hx-get="/profiel/ai/cover/studio"' in body
 
 
 # --------------------------------------------------------------------------- #

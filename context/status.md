@@ -5,8 +5,12 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-30 · **Versie**: 0.99.0 · **Branch**: `main`
+**Laatste update**: 2026-06-30 · **Versie**: 0.99.1 · **Branch**: `main`
 
+> **0.99.1** — Hero-studio bereikbaar gemaakt vanaf `/profiel/bewerken` (stond eerst alleen op het concierge-canvas):
+> nieuwe "Sfeerbeeld"-sectie na de profielfoto met de `ai/_cover.html`-kaart → "Open de hero-studio". Edit-pagina
+> had al htmx+CSRF, dus de studio werkt er 1:1. CI deze sessie gerepareerd (was structureel rood, twee oorzaken).
+>
 > **0.99.0** — **Hero-studio**: lid krijgt echte controle over de cover (hero-beeld), binnen de kosmische stijl.
 > I.p.v. één blinde re-roll nu: 3–4 **varianten** tegelijk (`generate_many`/fal `num_images`), **sfeer-chips**
 > (accent/energie/motief, `CoverSteer`) + één zachte **intentie-regel** die de art-director stuurt, en
