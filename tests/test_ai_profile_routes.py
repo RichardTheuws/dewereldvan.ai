@@ -156,6 +156,9 @@ def test_build_page_approved_member_ok(make_client, seed):
     # Eén kosmische look + materialisatie-host (geen tweede stijl).
     assert 'id="materialisatie"' in resp.text
     assert 'hx-ext="sse"' in resp.text
+    # De cover-hero + hero-studio-ingang staan nu óók op de cinematische bouwpagina.
+    assert 'id="cover"' in resp.text
+    assert 'hx-get="/profiel/ai/cover/studio"' in resp.text
 
 
 # --------------------------------------------------------------------------- #

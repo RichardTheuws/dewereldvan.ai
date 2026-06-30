@@ -9,6 +9,14 @@
    (AI-afgeleide velden dragen de "klopt het?"-marker). #}
 <div id="profielvorm">
 
+  {# ---- Cover hero + studio (spiegelt profiles/view.html; hier bewerkbaar) ----
+     Bovenaan, net als het publieke profiel. Levert tegelijk de #cover-haak waar de
+     auto-cover (na materialisatie) op aangrijpt — dus de cinematische bouwpagina
+     krijgt nu óók een sfeerbeeld. #}
+  <section class="mt-2" data-reveal style="--d:120ms">
+    <div id="cover">{% include "ai/_cover.html" %}</div>
+  </section>
+
   {# ---- Identity (foto-hero + naam + kopregel + tags) ---- #}
   <section class="profile-identity mt-2" data-reveal style="--d:140ms">
     <div class="profile-identity__photo" id="photo-slot">

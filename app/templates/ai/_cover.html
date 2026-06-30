@@ -1,35 +1,39 @@
-{# Compacte cover-kaart: preview + ingang naar de hero-studio. Swapped into
-   #cover. De cover is optioneel en faalt gracieus (cover_error).
+{# Cover-hero + ingang naar de hero-studio. Swapped into #cover. De bediening
+   ligt als glas-pills óver de hero-band (sociale-profiel-patroon) i.p.v. kale
+   knoppen eronder. De cover is optioneel en faalt gracieus (cover_error).
 
    De auto-cover (na materialisatie) klikt de #cover-knop hieronder; daarom blijft
    een button[hx-post="/profiel/ai/cover"] aanwezig zolang de cover NIET vastgezet
    is. Vastgezet (cover_locked) → de automatiek laat de cover met rust. #}
-<div class="cover mb-3">
-  {% if profile.cover_image_url %}
-  <img src="{{ profile.cover_image_url }}" alt="Cover">
-  {% endif %}
+<div class="cover-hero">
+  <div class="cover">
+    {% if profile.cover_image_url %}
+    <img src="{{ profile.cover_image_url }}" alt="Cover">
+    {% endif %}
+  </div>
+  <div class="cover-hero__actions">
+    {% if not profile.cover_locked %}
+    <button class="cover-pill"
+            hx-post="/profiel/ai/cover"
+            hx-target="#cover"
+            hx-swap="innerHTML"
+            hx-disabled-elt="this">
+      <span aria-hidden="true">✦</span>
+      {% if profile.cover_image_url %}Nieuw beeld{% else %}Genereer beeld{% endif %}
+    </button>
+    {% endif %}
+    <button class="cover-pill cover-pill--primary" type="button"
+            hx-get="/profiel/ai/cover/studio"
+            hx-target="#cover"
+            hx-swap="innerHTML"
+            hx-disabled-elt="this">
+      <span aria-hidden="true">✦</span> Hero-studio
+    </button>
+    {% if profile.cover_locked %}
+    <span class="cover-pill cover-pill--flag" title="Je hebt deze cover vastgezet">🔒 vastgezet</span>
+    {% endif %}
+  </div>
 </div>
 {% if cover_error %}
-<p class="text-sm" style="color:#ffd5d5">{{ cover_error }}</p>
+<p class="text-sm mt-3" style="color:#ffd5d5">{{ cover_error }}</p>
 {% endif %}
-<div class="cover-actions">
-  {% if not profile.cover_locked %}
-  <button class="btn btn--ghost"
-          hx-post="/profiel/ai/cover"
-          hx-target="#cover"
-          hx-swap="innerHTML"
-          hx-disabled-elt="this">
-    {% if profile.cover_image_url %}Nieuw sfeerbeeld{% else %}Genereer sfeerbeeld{% endif %}
-  </button>
-  {% endif %}
-  <button class="btn btn--ghost" type="button"
-          hx-get="/profiel/ai/cover/studio"
-          hx-target="#cover"
-          hx-swap="innerHTML"
-          hx-disabled-elt="this">
-    Open de hero-studio <span aria-hidden="true">✦</span>
-  </button>
-  {% if profile.cover_locked %}
-  <span class="cover-lock-flag" title="Je hebt deze cover vastgezet">🔒 vastgezet</span>
-  {% endif %}
-</div>

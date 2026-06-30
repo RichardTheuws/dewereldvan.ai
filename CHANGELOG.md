@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.99.2] - 2026-06-30
+### Changed — Cover-hero op de cinematische bouwpagina + verfraaide bediening
+- De bouwpagina (`/profiel/ai/bouwen`) had géén hero/cover, terwijl het publieke profiel er wél een heeft → de
+  compositie oogde kaler dan de echte weergave. De **cover-hero + hero-studio staan nu bovenaan de levende
+  profielvorm** (`ai/_live_form.html`), exact zoals `profiles/view.html` (cover → identity → secties). Daarmee:
+  (1) de hero-studio zit nu óók in de cinematische flow, (2) de auto-cover na materialisatie grijpt aan op de
+  nieuwe `#cover`-haak, dus de bouwpagina krijgt automatisch een sfeerbeeld.
+- De aparte cover-blok op het concierge-canvas (`concierge/_profile_builder.html`) is verwijderd — de gedeelde
+  profielvorm levert 'm nu (voorkomt dubbele `#cover`-id op die surface).
+- **Verfraaiing**: de cover-bediening (`ai/_cover.html`) ligt nu als **glas-pills** over de hero-band
+  (sociale-profiel-patroon) i.p.v. kale knoppen eronder — "Hero-studio" als gouden accent-pill, "Nieuw beeld" en
+  een "🔒 vastgezet"-indicator; de bestaande scrim houdt ze leesbaar. Geldt op alle drie de surfaces (bouwen,
+  edit, concierge).
+
 ## [0.99.1] - 2026-06-30
 ### Fixed — Hero-studio onbereikbaar vanaf de profiel-edit-pagina
 - De hero-studio (v0.99.0) leefde alleen op het concierge-canvas (agent-shell); op `/profiel/bewerken` — de

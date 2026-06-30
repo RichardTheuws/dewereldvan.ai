@@ -992,16 +992,71 @@
 }
 
 /* ---- hero-studio (lid-controle over de cover) ---- */
-.cosmic .cover-actions {
+/* De cover-band met de bediening als glas-pills eroverheen (sociale-profiel-look).
+   De .cover::after-scrim onderaan houdt de pills leesbaar op elk beeld. */
+.cosmic .cover-hero {
+  position: relative;
+}
+.cosmic .cover-hero__actions {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  z-index: 2;
 }
-.cosmic .cover-lock-flag {
+.cosmic .cover-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(8, 8, 22, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--text);
   font-family: "JetBrains Mono", monospace;
   font-size: 12px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+.cosmic .cover-pill:hover {
+  border-color: rgba(63, 210, 255, 0.55);
+  background: rgba(12, 12, 30, 0.7);
+  transform: translateY(-1px);
+}
+.cosmic .cover-pill[disabled] {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+.cosmic .cover-pill--primary {
+  border-color: rgba(247, 209, 138, 0.5);
+  color: #f7d18a;
+}
+.cosmic .cover-pill--primary:hover {
+  border-color: rgba(247, 209, 138, 0.85);
+  background: rgba(247, 209, 138, 0.12);
+}
+.cosmic .cover-pill--flag {
+  cursor: default;
   color: var(--muted);
+  background: rgba(8, 8, 22, 0.6);
+}
+@media (max-width: 560px) {
+  .cosmic .cover-hero__actions {
+    right: 10px;
+    bottom: 10px;
+    gap: 6px;
+  }
+  .cosmic .cover-pill {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
 }
 .cosmic .cover-studio__head {
   display: flex;
