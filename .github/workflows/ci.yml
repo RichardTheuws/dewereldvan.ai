@@ -27,7 +27,11 @@ jobs:
           --health-retries 5
 
     env:
-      SECRET_KEY: ci-secret-key-deterministic-0123456789abcdef
+      # MOET exact de waarde zijn die de test-harnas verwacht: meerdere suites
+      # (o.a. test_concierge_routes) tekenen een sessie-cookie met deze constante
+      # en de app valideert 'm met SECRET_KEY. Een afwijkende waarde → ongeldige
+      # cookies → founder/nav-tests falen (conftest.setdefault verliest als CI 'm zet).
+      SECRET_KEY: test-secret-key-deterministic-0123456789abcdef
       EMAIL_BACKEND: console
 
     steps:
