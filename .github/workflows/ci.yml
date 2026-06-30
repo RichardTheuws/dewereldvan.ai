@@ -44,7 +44,10 @@ jobs:
           pip install pytest
 
       - name: Snelle suite (SQLite, create_all)
-        run: pytest -q
+        # tests/e2e (browser-UAT) vereist playwright + een live server en draait
+        # in een eigen workflow (e2e.yml). Hier overslaan zodat de collectie niet
+        # faalt op de ontbrekende playwright-dependency.
+        run: pytest -q --ignore=tests/e2e
 
       - name: Postgres-pariteit (migraties + smoke-CRUD tegen echte Postgres)
         env:
