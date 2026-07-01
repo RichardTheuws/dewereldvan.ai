@@ -176,6 +176,39 @@ def save_logo(raw: bytes, tool_id: int) -> str | None:
     return f"{settings.upload_url_prefix}/{name}"
 
 
+def validate_video_upload(content_type: str, size: int, raw: bytes) -> None:
+    """Pre-checks voor een hero-video: type + grootte + MP4-magic-byte.
+
+    Raise ``UploadError`` bij een niet-toegestaan mimetype, leeg/te groot bestand
+    of ontbrekende ``ftyp``-box. Content-Type is spoofbaar → de magic-byte-check
+    (ISO-BMFF ``ftyp`` op bytes 4:8) is de echte poort. We transcoden niet.
+    """
+    ctype = (content_type or "").split(";", 1)[0].strip().lower()
+    if ctype not in settings.allowed_video_type_set:
+        raise UploadError("Alleen MP4-video's zijn toegestaan.")
+    if size <= 0:
+        raise UploadError("Het bestand is leeg.")
+    if size > settings.max_video_bytes:
+        mb = settings.max_video_bytes // (1024 * 1024)
+        raise UploadError(f"De video is te groot (max {mb} MB).")
+    if len(raw) < 12 or raw[4:8] != b"ftyp":
+        raise UploadError("Dit lijkt geen geldige MP4-video.")
+
+
+def save_cover_video(raw: bytes, member_id: int) -> str:
+    """Schrijf een geverifieerde hero-video weg; retourneer het serveer-pad.
+
+    Anders dan de beeld-helpers: geen transcode — de mp4 wordt as-is bewaard onder
+    een willekeurige, traversal-veilige naam (``cover-<id>-<hex>.mp4``). De caller
+    valideert eerst met ``validate_video_upload``.
+    """
+    name = f"cover-{member_id}-{secrets.token_hex(8)}.mp4"
+    path = _abs_path(name)  # anti-traversal-guard
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(raw)
+    return f"{settings.upload_url_prefix}/{name}"
+
+
 def delete_photo(photo_url: str | None) -> None:
     """Verwijder het bestand achter ``photo_url`` (idempotent, AVG).
 

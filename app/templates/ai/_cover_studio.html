@@ -4,9 +4,7 @@
    'm tegen de automatiek. Geen rauwe prompt — alleen gecureerde keuzes. #}
 <div class="cover-studio" data-reveal style="--d:60ms">
   <div class="cover mb-3">
-    {% if profile.cover_image_url %}
-    <img src="{{ profile.cover_image_url }}" alt="Cover">
-    {% endif %}
+    {% include "profiles/_cover_media.html" %}
   </div>
   {% if pick_error %}
   <p class="text-sm" style="color:#ffd5d5">{{ pick_error }}</p>
@@ -78,4 +76,40 @@
   </form>
 
   <div id="cover-varianten" class="cover-varianten mt-4" aria-live="polite"></div>
+
+  {# ---- Video als hero (voorrang op het beeld) ---- #}
+  <div class="cover-videohero mt-8">
+    <span class="cover-steer__label">Of: een video als hero</span>
+    {% if profile.cover_video_url %}
+    <p class="muted text-sm cover-videohero__note">
+      Er staat nu een video als hero — die heeft voorrang op het beeld. Speelt gedempt in een
+      loop; bezoekers kunnen zelf het geluid aanzetten.
+    </p>
+    <button class="cover-pill" type="button"
+            hx-post="/profiel/ai/cover/video/verwijderen"
+            hx-target="#cover" hx-swap="innerHTML" hx-disabled-elt="this">
+      Videohero verwijderen
+    </button>
+    {% else %}
+    <p class="muted text-sm cover-videohero__note">
+      Upload een korte mp4 (16:9 werkt het mooist, tot 64 MB). Speelt gedempt in een loop —
+      met een subtiele knop om het geluid aan te zetten.
+    </p>
+    {% endif %}
+    <form class="cover-videohero__form"
+          hx-post="/profiel/ai/cover/video"
+          hx-target="#cover" hx-swap="innerHTML"
+          hx-encoding="multipart/form-data"
+          hx-disabled-elt="find label">
+      <label class="cover-pill cover-pill--primary cover-videohero__pick">
+        <span aria-hidden="true">✦</span> {% if profile.cover_video_url %}Vervang video…{% else %}Kies een video…{% endif %}
+        <input type="file" name="video" accept="video/mp4" hidden
+               onchange="if(this.files.length)this.form.requestSubmit()">
+      </label>
+      <span class="htmx-indicator muted text-sm cover-videohero__busy">✦ je video wordt geplaatst…</span>
+    </form>
+    {% if video_error %}
+    <p class="text-sm mt-2" style="color:#ffd5d5">{{ video_error }}</p>
+    {% endif %}
+  </div>
 </div>

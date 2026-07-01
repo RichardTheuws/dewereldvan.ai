@@ -44,6 +44,8 @@ from fastapi.responses import (
 )
 from markupsafe import escape
 from sqlalchemy.orm import Session
+from starlette.datastructures import UploadFile
+from starlette.formparsers import MultiPartException
 
 from app.ai import ImageGenerator, NoopImageGenerator
 from app.config import settings
@@ -729,6 +731,71 @@ def cover_lock(
     profile.cover_locked = not profile.cover_locked
     db.commit()
     db.refresh(profile)
+    return _render(request, "ai/_cover_studio.html", _studio_ctx(request, profile))
+
+
+@router.post("/profiel/ai/cover/video", response_class=HTMLResponse)
+async def cover_video_upload(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Upload een mp4 als hero-video (voorrang op het cover-beeld). Faalt netjes.
+
+    Eigen multipart-parse met ``max_video_bytes`` zodat de video-cap (niet
+    Starlette's 1 MB-default) de grens is; te groot → dezelfde vriendelijke fout.
+    De server hervalideert type/grootte + MP4-magic-byte (``validate_video_upload``).
+    """
+    profile = profile_service.get_or_create_profile(db, member)
+
+    def _err(msg: str, code: int = 400) -> HTMLResponse:
+        return _render(
+            request, "ai/_cover_studio.html",
+            _studio_ctx(request, profile, video_error=msg), status_code=code,
+        )
+
+    try:
+        form = await request.form(max_part_size=settings.max_video_bytes)
+    except MultiPartException:
+        mb = settings.max_video_bytes // (1024 * 1024)
+        return _err(f"De video is te groot. Kies er een tot {mb} MB.")
+
+    file = form.get("video")
+    if not isinstance(file, UploadFile):
+        return _err("Geen video ontvangen. Probeer opnieuw.")
+    raw = await file.read()
+
+    try:
+        photo_service.validate_video_upload(
+            file.content_type or "", len(raw), raw
+        )
+        new_url = photo_service.save_cover_video(raw, member.id)
+    except photo_service.UploadError as exc:
+        return _err(str(exc))
+
+    old = profile.cover_video_url
+    profile.cover_video_url = new_url
+    db.commit()
+    db.refresh(profile)
+    if old and old != new_url:
+        photo_service.delete_photo(old)  # generieke UPLOAD_DIR-wis (geen wees-mp4)
+    return _render(request, "ai/_cover_studio.html", _studio_ctx(request, profile))
+
+
+@router.post("/profiel/ai/cover/video/verwijderen", response_class=HTMLResponse)
+def cover_video_remove(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Verwijder de hero-video → terug naar het cover-beeld (of nevel)."""
+    profile = profile_service.get_or_create_profile(db, member)
+    old = profile.cover_video_url
+    if old:
+        profile.cover_video_url = None
+        db.commit()
+        db.refresh(profile)
+        photo_service.delete_photo(old)
     return _render(request, "ai/_cover_studio.html", _studio_ctx(request, profile))
 
 

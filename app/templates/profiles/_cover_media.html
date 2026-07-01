@@ -1,0 +1,31 @@
+{# Hero-media, één bron van waarheid: video (voorrang) → beeld → nevel. Muted
+   autoplay-loop is browser-veilig; een subtiele unmute-pill maakt audio bereikbaar.
+   Wordt binnen een `.cover`-element geïnclude. Verwacht `profile`. #}
+{% if profile.cover_video_url %}
+<video class="cover__video" autoplay muted loop playsinline preload="metadata"
+       {% if profile.cover_image_url %}poster="{{ profile.cover_image_url | safe_url }}"{% endif %}
+       data-cover-video>
+  <source src="{{ profile.cover_video_url | safe_url }}" type="video/mp4">
+</video>
+<button class="cover-mute" type="button" data-cover-mute aria-label="Geluid aan of uit">
+  <span class="cover-mute__icon" aria-hidden="true">🔇</span>
+</button>
+<script>
+(function () {
+  if (window.__coverMuteBound) return;
+  window.__coverMuteBound = true;
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-cover-mute]');
+    if (!btn) return;
+    var vid = btn.parentElement.querySelector('[data-cover-video]');
+    if (!vid) return;
+    vid.muted = !vid.muted;
+    if (!vid.muted) { vid.play().catch(function () {}); }
+    var icon = btn.querySelector('.cover-mute__icon');
+    if (icon) icon.textContent = vid.muted ? '🔇' : '🔊';
+  });
+})();
+</script>
+{% elif profile.cover_image_url %}
+<img src="{{ profile.cover_image_url | safe_url }}" alt="">
+{% endif %}

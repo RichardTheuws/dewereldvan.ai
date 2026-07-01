@@ -63,6 +63,9 @@ class Profile(Base, TimestampMixin):
     # AI-native profielbouw (F1-F3). All additive; default to "no AI build yet".
     headline: Mapped[str | None] = mapped_column(String(200), nullable=True)
     cover_image_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    # Video-hero (mp4 onder UPLOAD_DIR, geserveerd via /uploads). Heeft VOORRANG op
+    # cover_image_url in de hero-render (video → beeld → nevel). Optioneel.
+    cover_video_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     # Hero-studio: het lid heeft deze cover vastgezet ("Hou deze"). Beschermt 'm
     # tegen de AUTOMATIEK (auto-cover na materialisatie / her-verrijking); een
     # expliciete lid-generatie in de studio negeert de lock bewust.

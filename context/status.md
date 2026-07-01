@@ -5,8 +5,14 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-06-30 · **Versie**: 0.99.3 · **Branch**: `main`
+**Laatste update**: 2026-07-01 · **Versie**: 0.100.0 · **Branch**: `main`
 
+> **0.100.0** — **Video in de hero**: een lid kan een mp4 als hero zetten (voorrang op het beeld). Gehost onder
+> `UPLOAD_DIR` (Range-streaming via `/uploads`), veld `Profile.cover_video_url` (migr. `0035`). Gedeeld fragment
+> `profiles/_cover_media.html` rendert video→beeld→nevel overal; `<video autoplay muted loop playsinline>` + poster +
+> unmute-pill. Studio: mp4 uploaden/verwijderen (`…/cover/video`). Validatie = type + 64 MB-cap + MP4-magic-byte.
+> PRD: `docs/PRD-hero-video.md`.
+>
 > **0.99.3** — Profielfoto-upload verfijnd: de bulky dashed-box weg; sterren-ring blijft centraal, eronder een
 > glas-pill "✦ Wijzig foto" + kleine hint. Slepen laat de ring oplichten. Geldt op bouwen/edit/concierge.
 >

@@ -7,9 +7,7 @@
    is. Vastgezet (cover_locked) → de automatiek laat de cover met rust. #}
 <div class="cover-hero">
   <div class="cover">
-    {% if profile.cover_image_url %}
-    <img src="{{ profile.cover_image_url }}" alt="Cover">
-    {% endif %}
+    {% include "profiles/_cover_media.html" %}
   </div>
   <div class="cover-hero__actions">
     {% if not profile.cover_locked %}

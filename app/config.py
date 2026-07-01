@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     allowed_image_types: str = "image/jpeg,image/png,image/webp"
     photo_output_px: int = 512  # vierkante crop-zijde (ronde weergave via CSS)
     rate_limit_photo_per_hour: int = 12  # per lid
+    # Video-hero (mp4): eigen, ruimere cap dan beeld; type-allowlist + magic-byte.
+    max_video_bytes: int = 64 * 1024 * 1024  # 64 MB hard cap voor hero-video
+    allowed_video_types: str = "video/mp4"
 
     # --- Ervaring-laag (E1-E4): feedback, ideeenbus, roadmap ---
     # Anti-spam per ingelogd lid in een glijdend uur-venster (rij-tel-patroon,
@@ -129,6 +132,14 @@ class Settings(BaseSettings):
         return {
             t.strip().lower()
             for t in self.allowed_image_types.split(",")
+            if t.strip()
+        }
+
+    @property
+    def allowed_video_type_set(self) -> set[str]:
+        return {
+            t.strip().lower()
+            for t in self.allowed_video_types.split(",")
             if t.strip()
         }
 

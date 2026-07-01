@@ -56,12 +56,9 @@
 
     <main class="flex-1 pb-20">
 
-      {# ---- Cover hero ---- #}
+      {# ---- Cover hero (video → beeld → nevel) ---- #}
       <section class="cover mt-2" data-reveal style="--d:140ms">
-        {% set _cover = profile.cover_image_url | safe_url %}
-        {% if _cover %}
-        <img src="{{ _cover }}" alt="">
-        {% endif %}
+        {% include "profiles/_cover_media.html" %}
       </section>
 
       {# ---- Identity (foto-hero + emphasis) ---- #}

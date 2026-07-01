@@ -28,11 +28,13 @@ from app.storage.photos import (
     UploadError,
     delete_photo,
     process_image,
+    save_cover_video,
     save_logo,
     save_photo,
     save_screenshot,
     storage_name,
     validate_upload,
+    validate_video_upload,
 )
 
 __all__ = [
@@ -40,10 +42,12 @@ __all__ = [
     "UploadError",
     "PhotoRateLimited",
     "validate_upload",
+    "validate_video_upload",
     "process_image",
     "save_photo",
     "save_screenshot",
     "save_logo",
+    "save_cover_video",
     "delete_photo",
     "storage_name",
     "store_member_photo",

@@ -241,3 +241,38 @@ def test_fallback_initials_when_nothing(db, make_member, make_profile):
     out = photo_service.photo_or_initials(profile)
     assert out["kind"] == "initials"
     assert out["initials"] == "NB"
+
+
+# --------------------------------------------------------------------------- #
+# Video-hero (mp4) — validatie + opslag                                        #
+# --------------------------------------------------------------------------- #
+_MP4 = b"\x00\x00\x00\x18ftypmp42isom" + b"\x00" * 40
+
+
+def test_validate_video_ok():
+    photos.validate_video_upload("video/mp4", len(_MP4), _MP4)  # geen exception
+
+
+def test_validate_video_rejects_wrong_type():
+    with pytest.raises(photos.UploadError):
+        photos.validate_video_upload("video/quicktime", len(_MP4), _MP4)
+
+
+def test_validate_video_rejects_missing_ftyp():
+    bad = b"\x00" * 40
+    with pytest.raises(photos.UploadError):
+        photos.validate_video_upload("video/mp4", len(bad), bad)
+
+
+def test_validate_video_rejects_too_large():
+    big = settings.max_video_bytes + 1
+    with pytest.raises(photos.UploadError):
+        photos.validate_video_upload("video/mp4", big, _MP4)
+
+
+def test_save_cover_video_writes_and_returns_url():
+    url = photos.save_cover_video(_MP4, member_id=99)
+    assert url.endswith(".mp4") and url.startswith(settings.upload_url_prefix)
+    # Bestand staat er echt (in de wegwerp-UPLOAD_DIR).
+    name = url.rsplit("/", 1)[-1]
+    assert (photos.UPLOAD_DIR / name).read_bytes() == _MP4

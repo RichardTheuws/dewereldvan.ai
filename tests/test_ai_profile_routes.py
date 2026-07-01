@@ -785,6 +785,67 @@ def test_cover_variants_rate_limited(make_client, seed, SessionTest):
 
 
 # --------------------------------------------------------------------------- #
+# Video-hero (mp4 upload → cover_video_url, voorrang op het beeld)             #
+# --------------------------------------------------------------------------- #
+# Minimale, geldige MP4-magic: 'ftyp'-box op bytes 4:8 (ISO-BMFF).
+_FAKE_MP4 = b"\x00\x00\x00\x18ftypmp42isom" + b"\x00" * 40
+
+
+def test_cover_video_upload_sets_url_and_renders_video(make_client, seed, SessionTest):
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/cover/video",
+        files={"video": ("anthem.mp4", _FAKE_MP4, "video/mp4")},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    # De studio herrendert met een <video>-hero.
+    assert "data-cover-video" in resp.text
+    s, profile = _profile_of(SessionTest, seed["approved"])
+    try:
+        assert profile.cover_video_url and profile.cover_video_url.endswith(".mp4")
+    finally:
+        s.close()
+
+
+def test_cover_video_rejects_non_mp4(make_client, seed, SessionTest):
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/cover/video",
+        files={"video": ("nep.mp4", b"not a video at all", "video/mp4")},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 400
+    assert "geen geldige mp4" in resp.text.lower()
+    s, profile = _profile_of(SessionTest, seed["approved"])
+    try:
+        assert profile.cover_video_url is None
+    finally:
+        s.close()
+
+
+def test_cover_video_remove_clears(make_client, seed, SessionTest):
+    client = make_client(seed["approved"])
+    token = _csrf(client)
+    client.post(
+        "/profiel/ai/cover/video",
+        files={"video": ("anthem.mp4", _FAKE_MP4, "video/mp4")},
+        headers={"X-CSRF-Token": token},
+    )
+    resp = client.post(
+        "/profiel/ai/cover/video/verwijderen", headers={"X-CSRF-Token": token}
+    )
+    assert resp.status_code == 200
+    s, profile = _profile_of(SessionTest, seed["approved"])
+    try:
+        assert profile.cover_video_url is None
+    finally:
+        s.close()
+
+
+# --------------------------------------------------------------------------- #
 # POST /publiceren -> 303 + turns cleared                                      #
 # --------------------------------------------------------------------------- #
 def test_publish_members_redirects_and_clears_turns(

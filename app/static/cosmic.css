@@ -977,12 +977,37 @@
     radial-gradient(80% 120% at 90% 100%, rgba(177, 92, 255, 0.3), transparent 60%),
     var(--indigo);
 }
-.cosmic .cover img {
+.cosmic .cover img,
+.cosmic .cover__video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+/* Unmute-pill op een video-hero (de anthem heeft audio) — glas, linksonder. */
+.cosmic .cover-mute {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(8, 8, 22, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-size: 15px;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+.cosmic .cover-mute:hover {
+  border-color: rgba(63, 210, 255, 0.55);
+  transform: translateY(-1px);
 }
 .cosmic .cover::after {
   content: "";
@@ -1149,6 +1174,24 @@
   padding: 10px;
   background: linear-gradient(180deg, transparent, rgba(4, 4, 14, 0.85));
 }
+/* Video-als-hero-sectie in de studio */
+.cosmic .cover-videohero {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.cosmic .cover-videohero__note { margin: 2px 0 4px; max-width: 60ch; }
+.cosmic .cover-videohero__form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.cosmic .cover-videohero__pick { cursor: pointer; }
 
 /* ---- galerij-grid (kind='gallery') — een raster van gehotlinkte portfolio-beelden ---- */
 .cosmic .gallery-grid {

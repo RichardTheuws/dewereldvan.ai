@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.100.0] - 2026-07-01
+### Added — Video in de hero
+- Een lid kan nu een **mp4-video als hero** zetten (naast het AI-beeld). Anders dan de beelden (hotlink fal, nul
+  opslag) wordt de video **gehost** onder `UPLOAD_DIR` en geserveerd via de bestaande `/uploads`-mount — Starlette's
+  `FileResponse` doet Range-requests, dus streaming/seek werkt. Nieuw veld `Profile.cover_video_url` (migratie `0035`).
+- **Hero-precedentie**: video → beeld → nevel. Eén gedeeld fragment `profiles/_cover_media.html` rendert de juiste
+  media op álle hero-plekken (publiek profiel, bouwpagina, edit, concierge). `<video autoplay muted loop playsinline>`
+  met het cover-beeld als `poster`; muted-autoplay is browser-veilig, en een subtiele **unmute-pill** maakt audio
+  bereikbaar (bv. voor een anthem met geluid).
+- **Bediening** in de hero-studio: "Of: een video als hero" → mp4 uploaden (auto-submit), en "Videohero verwijderen"
+  → terug naar het beeld. Routes `POST /profiel/ai/cover/video` + `…/video/verwijderen` (member-only).
+- **Validatie/opslag** (`photos.validate_video_upload` + `save_cover_video`): allowlist `video/mp4`, cap
+  `max_video_bytes` (64 MB), **MP4-magic-byte-check** (`ftyp`-box) als echte poort (Content-Type is spoofbaar); geen
+  transcode (mp4 as-is). Oude video wordt bij vervangen/verwijderen gewist (geen wees-bestanden, AVG).
+- Tests: validatie (type/grootte/magic-byte), opslag, en de volledige route-keten (upload → `<video>`-hero, non-mp4
+  afgewezen, verwijderen wist). Suite groen (1142 passed). PRD: `docs/PRD-hero-video.md`.
+
 ## [0.99.3] - 2026-06-30
 ### Changed — Verfijnde profielfoto-upload (geen bulky dashed-box meer)
 - De foto-upload toonde een grote, utilitaire gestreepte "Sleep je foto hierheen"-box naast de avatar — dat botste
