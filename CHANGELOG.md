@@ -3,6 +3,15 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.100.4] - 2026-07-02
+### Changed — Hero-video laadt pas bij klik (geen eager 42 MB-download meer)
+- Muted autoplay dwong het downloaden van de hele video af op élke profielweergave. Vervangen door **click-to-play**:
+  `<video preload="none">` met de cover-afbeelding als **poster** (lichtgewicht), plus een play-knop. De video laadt
+  én speelt pas bij een klik — die klik is meteen de gesture die audio ontgrendelt, dus 'ie speelt direct **mét
+  geluid** (de anthem). Speelt één keer; op einde komt de play-knop terug. Een mute-pill verschijnt tijdens het spelen.
+- Zo blijft de beeld-hero de default (snel, data-zuinig) en is de video een bewuste keuze van de bezoeker — met
+  faststart-mp4 + progressive streaming (Range) laadt 'ie bij klik vlot op moderne verbindingen.
+
 ## [0.100.3] - 2026-07-02
 ### Changed — "Bekijk intro" start de intro direct (geen "Betreed de wereld"-scherm)
 - De knop opende eerst het enter-scherm ("Betreed de wereld"); een tweede klik was nodig om te starten. Omdat de

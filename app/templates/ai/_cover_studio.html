@@ -85,8 +85,8 @@
     {% endif %}
     {% if profile.cover_video_url %}
     <p class="muted text-sm cover-videohero__note">
-      Er staat nu een video als hero — die heeft voorrang op het beeld. Speelt gedempt één keer af;
-      bezoekers kunnen zelf het geluid aanzetten.
+      Er staat nu een video als hero — die heeft voorrang op het beeld. Bezoekers zien je cover-beeld
+      met een play-knop; de video laadt pas bij een klik en speelt dan mét geluid (bespaart data).
     </p>
     <button class="cover-pill" type="button"
             hx-post="/profiel/ai/cover/video/verwijderen"
@@ -95,8 +95,8 @@
     </button>
     {% else %}
     <p class="muted text-sm cover-videohero__note">
-      Upload een korte mp4 (16:9 werkt het mooist, tot 64 MB). Speelt gedempt één keer af —
-      met een subtiele knop om het geluid aan te zetten.
+      Upload een korte mp4 (16:9 werkt het mooist, tot 64 MB). Je cover-beeld blijft de poster;
+      de video laadt pas als een bezoeker op play klikt en speelt dan mét geluid.
     </p>
     {% endif %}
     <form class="cover-videohero__form"

@@ -1,28 +1,53 @@
-{# Hero-media, één bron van waarheid: video (voorrang) → beeld → nevel. Muted
-   autoplay (speelt één keer, GEEN loop); een subtiele unmute-pill maakt audio
-   bereikbaar. Wordt binnen een `.cover`-element geïnclude. Verwacht `profile`. #}
+{# Hero-media, één bron van waarheid: video (voorrang) → beeld → nevel.
+   De video wordt NIET vooraf geladen (preload="none"): de cover-afbeelding dient
+   als poster (lichtgewicht) en de video laadt+speelt pas bij een klik op play —
+   die klik is meteen de gesture die audio ontgrendelt (de anthem heeft geluid).
+   Speelt één keer (geen loop); op einde verschijnt de play-knop weer.
+   Wordt binnen een `.cover`-element geïnclude. Verwacht `profile`. #}
 {% if profile.cover_video_url %}
-<video class="cover__video" autoplay muted playsinline preload="metadata"
+<video class="cover__video" preload="none" playsinline
        {% if profile.cover_image_url %}poster="{{ profile.cover_image_url | safe_url }}"{% endif %}
        data-cover-video>
   <source src="{{ profile.cover_video_url | safe_url }}" type="video/mp4">
 </video>
-<button class="cover-mute" type="button" data-cover-mute aria-label="Geluid aan of uit">
-  <span class="cover-mute__icon" aria-hidden="true">🔇</span>
+<button class="cover__play" type="button" data-cover-play aria-label="Speel de video af">
+  <span class="cover__play-icon" aria-hidden="true">▶</span>
+</button>
+<button class="cover-mute" type="button" data-cover-mute aria-label="Geluid aan of uit" hidden>
+  <span class="cover-mute__icon" aria-hidden="true">🔊</span>
 </button>
 <script>
 (function () {
-  if (window.__coverMuteBound) return;
-  window.__coverMuteBound = true;
+  if (window.__coverVideoBound) return;
+  window.__coverVideoBound = true;
   document.addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-cover-mute]');
-    if (!btn) return;
-    var vid = btn.parentElement.querySelector('[data-cover-video]');
-    if (!vid) return;
-    vid.muted = !vid.muted;
-    if (!vid.muted) { vid.play().catch(function () {}); }
-    var icon = btn.querySelector('.cover-mute__icon');
-    if (icon) icon.textContent = vid.muted ? '🔇' : '🔊';
+    var playBtn = e.target.closest('[data-cover-play]');
+    if (playBtn) {
+      var cover = playBtn.parentElement;
+      var vid = cover.querySelector('[data-cover-video]');
+      var mute = cover.querySelector('[data-cover-mute]');
+      if (!vid) return;
+      vid.muted = false;                 // klik = gesture → geluid mag
+      playBtn.classList.add('is-loading');
+      vid.play().then(function () {
+        playBtn.hidden = true;
+        playBtn.classList.remove('is-loading');
+        if (mute) { mute.hidden = false; mute.querySelector('.cover-mute__icon').textContent = '🔊'; }
+      }).catch(function () { playBtn.classList.remove('is-loading'); });
+      vid.addEventListener('ended', function () {
+        playBtn.hidden = false;
+        if (mute) mute.hidden = true;
+      }, { once: true });
+      return;
+    }
+    var muteBtn = e.target.closest('[data-cover-mute]');
+    if (muteBtn) {
+      var v = muteBtn.parentElement.querySelector('[data-cover-video]');
+      if (!v) return;
+      v.muted = !v.muted;
+      var ic = muteBtn.querySelector('.cover-mute__icon');
+      if (ic) ic.textContent = v.muted ? '🔇' : '🔊';
+    }
   });
 })();
 </script>

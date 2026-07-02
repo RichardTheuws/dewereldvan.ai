@@ -985,7 +985,42 @@
   height: 100%;
   object-fit: cover;
 }
-/* Unmute-pill op een video-hero (de anthem heeft audio) — glas, linksonder. */
+/* Play-knop op een video-hero: de video laadt pas bij klik (preload=none), de
+   cover-afbeelding is de poster. Gecentreerde glas-cirkel met play-glyph. */
+.cosmic .cover__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(8, 8, 22, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.18s, border-color 0.2s, background 0.2s;
+  box-shadow: 0 0 40px -6px rgba(63, 210, 255, 0.5);
+}
+.cosmic .cover__play:hover {
+  transform: translate(-50%, -50%) scale(1.06);
+  border-color: rgba(63, 210, 255, 0.6);
+  background: rgba(12, 12, 30, 0.65);
+}
+.cosmic .cover__play-icon { font-size: 22px; margin-left: 3px; line-height: 1; }
+.cosmic .cover__play.is-loading { animation: cover-play-pulse 0.9s ease-in-out infinite; }
+@keyframes cover-play-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+/* Mute/unmute-pill terwijl de video speelt (de anthem heeft audio) — glas, linksonder. */
 .cosmic .cover-mute {
   position: absolute;
   left: 14px;
