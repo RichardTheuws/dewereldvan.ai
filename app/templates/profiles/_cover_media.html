@@ -28,16 +28,13 @@
       var mute = cover.querySelector('[data-cover-mute]');
       if (!vid) return;
       vid.muted = false;                 // klik = gesture → geluid mag
-      playBtn.classList.add('is-loading');
-      vid.play().then(function () {
-        playBtn.hidden = true;
-        playBtn.classList.remove('is-loading');
-        if (mute) { mute.hidden = false; mute.querySelector('.cover-mute__icon').textContent = '🔊'; }
-      }).catch(function () { playBtn.classList.remove('is-loading'); });
-      vid.addEventListener('ended', function () {
-        playBtn.hidden = false;
-        if (mute) mute.hidden = true;
-      }, { once: true });
+      // Verberg de play-knop meteen (optimistisch → responsief); toon de mute-pill.
+      playBtn.hidden = true;
+      if (mute) { mute.hidden = false; mute.querySelector('.cover-mute__icon').textContent = '🔊'; }
+      var restore = function () { playBtn.hidden = false; if (mute) mute.hidden = true; };
+      vid.addEventListener('ended', restore, { once: true });
+      var p = vid.play();
+      if (p && p.catch) p.catch(restore);  // alleen terug bij een echte afspeelfout
       return;
     }
     var muteBtn = e.target.closest('[data-cover-mute]');

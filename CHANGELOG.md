@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.100.5] - 2026-07-02
+### Fixed — Play-knop bleef zichtbaar tijdens het afspelen van de hero-video
+- De play-knop (en de mute-pill) verdwenen niet: `.cover__play`/`.cover-mute` hadden een expliciete
+  `display:inline-flex`, wat het HTML-`hidden`-attribuut (UA `[hidden]{display:none}`) overschreef → `hidden=true`
+  had visueel geen effect. Fix: `.cover__play[hidden]`/`.cover-mute[hidden] { display:none }` (hogere specificiteit).
+- Tevens de play-knop nu **optimistisch** verborgen bij de klik (niet pas als de `play()`-promise resolvet) → geen
+  knop meer over het bewegende beeld; keert alleen terug bij een echte afspeelfout of als de video is afgelopen.
+
 ## [0.100.4] - 2026-07-02
 ### Changed — Hero-video laadt pas bij klik (geen eager 42 MB-download meer)
 - Muted autoplay dwong het downloaden van de hele video af op élke profielweergave. Vervangen door **click-to-play**:

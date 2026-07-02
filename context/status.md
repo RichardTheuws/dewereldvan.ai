@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-02 · **Versie**: 0.100.4 · **Branch**: `main`
+**Laatste update**: 2026-07-02 · **Versie**: 0.100.5 · **Branch**: `main`
 
+> **0.100.5** — Fix: play-knop/mute-pill bleven zichtbaar tijdens het afspelen (`display:inline-flex` overschreef
+> `[hidden]`). CSS `[hidden]`-override + optimistisch verbergen bij klik.
+>
 > **0.100.4** — Hero-video laadt niet meer eager (autoplay → click-to-play): cover-beeld als poster + play-knop,
 > `preload="none"`; klik = gesture → laadt+speelt mét geluid. Data-zuinig; beeld-hero blijft de default.
 >

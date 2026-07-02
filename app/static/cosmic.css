@@ -1014,11 +1014,10 @@
   background: rgba(12, 12, 30, 0.65);
 }
 .cosmic .cover__play-icon { font-size: 22px; margin-left: 3px; line-height: 1; }
-.cosmic .cover__play.is-loading { animation: cover-play-pulse 0.9s ease-in-out infinite; }
-@keyframes cover-play-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
-}
+/* Het HTML-`hidden`-attribuut MOET de expliciete `display` verslaan (anders blijft
+   de knop/pill zichtbaar). Hogere specificiteit dan de basisregels → geen !important. */
+.cosmic .cover__play[hidden],
+.cosmic .cover-mute[hidden] { display: none; }
 
 /* Mute/unmute-pill terwijl de video speelt (de anthem heeft audio) — glas, linksonder. */
 .cosmic .cover-mute {
