@@ -5,8 +5,12 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-01 · **Versie**: 0.100.0 · **Branch**: `main`
+**Laatste update**: 2026-07-02 · **Versie**: 0.100.1 · **Branch**: `main`
 
+> **0.100.1** — Hero-video: nette "voltooid"-melding na uploaden/vervangen; speelt nu één keer (geen loop meer).
+> "Bekijk intro"-knop staat overal rechtsboven (nav ongated + fixed FAB op standalone pagina's) en speelt de intro
+> direct af (home: replay-event; elders: `/?intro=1`).
+>
 > **0.100.0** — **Video in de hero**: een lid kan een mp4 als hero zetten (voorrang op het beeld). Gehost onder
 > `UPLOAD_DIR` (Range-streaming via `/uploads`), veld `Profile.cover_video_url` (migr. `0035`). Gedeeld fragment
 > `profiles/_cover_media.html` rendert video→beeld→nevel overal; `<video autoplay muted loop playsinline>` + poster +

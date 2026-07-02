@@ -1192,6 +1192,48 @@
   margin: 0;
 }
 .cosmic .cover-videohero__pick { cursor: pointer; }
+.cosmic .cover-videohero__ok {
+  font-size: 0.82rem;
+  color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+/* Altijd-bereikbare "Bekijk intro"-FAB (alleen op pagina's zonder de nav-knop). */
+.cosmic .intro-fab {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 8, 22, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color 0.25s, border-color 0.25s, transform 0.15s;
+}
+.cosmic .intro-fab span { color: var(--gold); }
+.cosmic .intro-fab:hover,
+.cosmic .intro-fab:focus-visible {
+  color: var(--text);
+  border-color: rgba(246, 205, 134, 0.5);
+  transform: translateY(-1px);
+  outline: none;
+}
+@media (max-width: 640px) {
+  .cosmic .intro-fab { top: 10px; right: 10px; padding: 0.34rem 0.7rem; font-size: 0.72rem; }
+}
 
 /* ---- galerij-grid (kind='gallery') — een raster van gehotlinkte portfolio-beelden ---- */
 .cosmic .gallery-grid {

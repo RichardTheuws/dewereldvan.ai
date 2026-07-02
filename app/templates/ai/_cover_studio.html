@@ -80,10 +80,13 @@
   {# ---- Video als hero (voorrang op het beeld) ---- #}
   <div class="cover-videohero mt-8">
     <span class="cover-steer__label">Of: een video als hero</span>
+    {% if video_ok %}
+    <p class="cover-videohero__ok" role="status"><span aria-hidden="true">✓</span> {{ video_ok }}</p>
+    {% endif %}
     {% if profile.cover_video_url %}
     <p class="muted text-sm cover-videohero__note">
-      Er staat nu een video als hero — die heeft voorrang op het beeld. Speelt gedempt in een
-      loop; bezoekers kunnen zelf het geluid aanzetten.
+      Er staat nu een video als hero — die heeft voorrang op het beeld. Speelt gedempt één keer af;
+      bezoekers kunnen zelf het geluid aanzetten.
     </p>
     <button class="cover-pill" type="button"
             hx-post="/profiel/ai/cover/video/verwijderen"
@@ -92,7 +95,7 @@
     </button>
     {% else %}
     <p class="muted text-sm cover-videohero__note">
-      Upload een korte mp4 (16:9 werkt het mooist, tot 64 MB). Speelt gedempt in een loop —
+      Upload een korte mp4 (16:9 werkt het mooist, tot 64 MB). Speelt gedempt één keer af —
       met een subtiele knop om het geluid aan te zetten.
     </p>
     {% endif %}

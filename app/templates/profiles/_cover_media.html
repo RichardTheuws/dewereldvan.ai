@@ -1,8 +1,8 @@
 {# Hero-media, één bron van waarheid: video (voorrang) → beeld → nevel. Muted
-   autoplay-loop is browser-veilig; een subtiele unmute-pill maakt audio bereikbaar.
-   Wordt binnen een `.cover`-element geïnclude. Verwacht `profile`. #}
+   autoplay (speelt één keer, GEEN loop); een subtiele unmute-pill maakt audio
+   bereikbaar. Wordt binnen een `.cover`-element geïnclude. Verwacht `profile`. #}
 {% if profile.cover_video_url %}
-<video class="cover__video" autoplay muted loop playsinline preload="metadata"
+<video class="cover__video" autoplay muted playsinline preload="metadata"
        {% if profile.cover_image_url %}poster="{{ profile.cover_image_url | safe_url }}"{% endif %}
        data-cover-video>
   <source src="{{ profile.cover_video_url | safe_url }}" type="video/mp4">

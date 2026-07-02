@@ -1,3 +1,19 @@
+{# Altijd bereikbare "Bekijk intro"-knop rechtsboven. Op pagina's mét de hoofdnav
+   (_cosmic_nav) zit de knop al in de nav → dan verbergt deze FAB zich (geen dubbel).
+   Op standalone pagina's (eigen .c-head) is dit de enige ingang. Direct afspelen:
+   op de home leeft #dwv-intro → replay-event; elders → naar de home met ?intro=1. #}
+<button type="button" class="intro-fab" id="intro-fab" hidden
+        title="Bekijk de intro van de site opnieuw"
+        onclick="if(document.getElementById('dwv-intro')){window.dispatchEvent(new CustomEvent('dwv:intro-replay'))}else{location.href='/?intro=1'}">
+  <span aria-hidden="true">✦</span> Bekijk intro
+</button>
+<script>
+(function () {
+  var fab = document.getElementById('intro-fab');
+  if (fab && !document.querySelector('.cnav__replay')) fab.hidden = false;
+})();
+</script>
+
 {# Living constellation canvas + entrance choreography. Reused from the teaser.
    Honours prefers-reduced-motion (static single paint, no loop). Targets the
    #stars canvas and onthult [data-reveal]-elementen.

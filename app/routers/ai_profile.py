@@ -777,9 +777,13 @@ async def cover_video_upload(
     profile.cover_video_url = new_url
     db.commit()
     db.refresh(profile)
-    if old and old != new_url:
+    replaced = bool(old and old != new_url)
+    if replaced:
         photo_service.delete_photo(old)  # generieke UPLOAD_DIR-wis (geen wees-mp4)
-    return _render(request, "ai/_cover_studio.html", _studio_ctx(request, profile))
+    ok = "Je video is vervangen ✦" if replaced else "Je video staat nu op je hero ✦"
+    return _render(
+        request, "ai/_cover_studio.html", _studio_ctx(request, profile, video_ok=ok)
+    )
 
 
 @router.post("/profiel/ai/cover/video/verwijderen", response_class=HTMLResponse)
@@ -796,7 +800,11 @@ def cover_video_remove(
         db.commit()
         db.refresh(profile)
         photo_service.delete_photo(old)
-    return _render(request, "ai/_cover_studio.html", _studio_ctx(request, profile))
+    return _render(
+        request,
+        "ai/_cover_studio.html",
+        _studio_ctx(request, profile, video_ok="Je videohero is verwijderd." if old else None),
+    )
 
 
 # --------------------------------------------------------------------------- #

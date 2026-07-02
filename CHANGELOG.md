@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.100.1] - 2026-07-02
+### Changed / Added — Hero-video-feedback, geen loop, en een "Bekijk intro"-knop
+- **Video-upload bevestigt nu netjes**: na uploaden/vervangen toont de hero-studio "Je video staat nu op je hero ✦"
+  / "Je video is vervangen ✦" (en "Je videohero is verwijderd." bij wissen) — de routes geven een `video_ok`-flag mee.
+- **Hero-video speelt niet meer in een loop** (op verzoek): muted autoplay, maar één keer — `loop` verwijderd uit
+  `profiles/_cover_media.html`; copy aangepast ("speelt gedempt één keer af").
+- **"Bekijk intro" altijd rechtsboven**: de replay-knop is niet meer home-only. In de hoofdnav (`_cosmic_nav`) staat
+  'ie ongated rechtsboven; op standalone pagina's (eigen `.c-head`) verschijnt een fixed FAB via `ai/_cosmic_canvas.html`
+  (verbergt zich als de nav-knop al aanwezig is → geen dubbel). Direct afspelen: op de home leeft `#dwv-intro` →
+  replay-event; elders → navigeren naar `/?intro=1` (intro speelt bij aankomst).
+
 ## [0.100.0] - 2026-07-01
 ### Added — Video in de hero
 - Een lid kan nu een **mp4-video als hero** zetten (naast het AI-beeld). Anders dan de beelden (hotlink fal, nul
