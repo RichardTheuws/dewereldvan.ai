@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-02 · **Versie**: 0.100.2 · **Branch**: `main`
+**Laatste update**: 2026-07-02 · **Versie**: 0.100.3 · **Branch**: `main`
 
+> **0.100.3** — "Bekijk intro" start de intro direct (geen "Betreed de wereld"-scherm); de knopklik is zelf de
+> audio-gesture. `playDirect()` in `_intro.html`, gekoppeld aan replay + `?intro=`. First-time-auto houdt de gate.
+>
 > **0.100.2** — Fix: "Bekijk intro" werkte niet voor ingelogde leden (de shell `concierge/_canvas.html` miste de
 > intro-machinerie). `_intro.html` nu óók op het canvas (alleen op verzoek) → replay werkt overal.
 >

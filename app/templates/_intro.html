@@ -401,13 +401,25 @@
       stop:function(){ this.fadeOut(1100); } };
   }
 
+  // Direct starten (geen "Betreed de wereld"-gate): de aanroeper is een expliciete
+  // user-gesture (de "Bekijk intro"-knop), dus audio mag meteen. We verbergen het
+  // enter-scherm in dezelfde tick als show() 'm toont → geen flits.
+  function playDirect(){ teardown(); show(); if(reduce) return; enterUI.classList.add('is-gone'); if(!t0){ if(idleRaf){cancelAnimationFrame(idleRaf);idleRaf=null;} startSequence(); } }
+
   goBtn.addEventListener('click', function(){ if(!t0){ if(idleRaf){cancelAnimationFrame(idleRaf);idleRaf=null;} startSequence(); } });
   skipBtn.addEventListener('click', finish);
   document.addEventListener('keydown', function(e){ if(e.key==='Escape'&&running) finish(); });
-  window.addEventListener('dwv:intro-replay', function(){ teardown(); show(); });
+  // "Bekijk intro"-knop → direct starten (geen enter-scherm).
+  window.addEventListener('dwv:intro-replay', function(){ playDirect(); });
 
   var params=new URLSearchParams(location.search);
   var willShow = params.has('intro') || ((window.DWV_INTRO_FIRST===true)&&!seen());
-  if(willShow){ window.__DWV_INTRO_PENDING__=true; show(); }
+  if(willShow){
+    window.__DWV_INTRO_PENDING__=true;
+    // ?intro=… = een expliciet verzoek (bv. de knop op een andere pagina) → direct
+    // starten. De first-time-auto-intro (DWV_INTRO_FIRST) houdt wél de enter-gate,
+    // zodat een verse bezoeker de audio bewust met één klik ontgrendelt.
+    if(params.has('intro')){ playDirect(); } else { show(); }
+  }
 })();
 </script>

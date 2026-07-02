@@ -3,6 +3,15 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.100.3] - 2026-07-02
+### Changed — "Bekijk intro" start de intro direct (geen "Betreed de wereld"-scherm)
+- De knop opende eerst het enter-scherm ("Betreed de wereld"); een tweede klik was nodig om te starten. Omdat de
+  knopklik zélf al de user-gesture is (die audio ontgrendelt), start de intro nu **direct**: nieuwe `playDirect()`
+  in `_intro.html` verbergt het enter-scherm in dezelfde tick als `show()` (geen flits) en roept `startSequence()`.
+- Gekoppeld aan `dwv:intro-replay` (in-place op home/canvas) én aan `?intro=…` (de knop op standalone pagina's
+  navigeert daarheen). De **first-time-auto-intro** (`DWV_INTRO_FIRST`) houdt bewust wél het enter-scherm, zodat een
+  verse bezoeker de audio met één klik ontgrendelt.
+
 ## [0.100.2] - 2026-07-02
 ### Fixed — "Bekijk intro" werkte niet voor ingelogde leden
 - Voor een ingelogd, goedgekeurd lid serveert `/` de agent-shell (`concierge/_canvas.html`), niet `index.html` —
