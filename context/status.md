@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-02 · **Versie**: 0.100.1 · **Branch**: `main`
+**Laatste update**: 2026-07-02 · **Versie**: 0.100.2 · **Branch**: `main`
 
+> **0.100.2** — Fix: "Bekijk intro" werkte niet voor ingelogde leden (de shell `concierge/_canvas.html` miste de
+> intro-machinerie). `_intro.html` nu óók op het canvas (alleen op verzoek) → replay werkt overal.
+>
 > **0.100.1** — Hero-video: nette "voltooid"-melding na uploaden/vervangen; speelt nu één keer (geen loop meer).
 > "Bekijk intro"-knop staat overal rechtsboven (nav ongated + fixed FAB op standalone pagina's) en speelt de intro
 > direct af (home: replay-event; elders: `/?intro=1`).

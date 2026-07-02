@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.100.2] - 2026-07-02
+### Fixed — "Bekijk intro" werkte niet voor ingelogde leden
+- Voor een ingelogd, goedgekeurd lid serveert `/` de agent-shell (`concierge/_canvas.html`), niet `index.html` —
+  en die shell had de intro-machinerie (`_intro.html`) niet. Daardoor deed "Bekijk intro" (→ `/?intro=1`) niets.
+- Fix: `_intro.html` wordt nu óók in `concierge/_canvas.html` geïnclude (zonder `DWV_INTRO_FIRST`, dus toont alleen
+  op verzoek). Nu leeft `#dwv-intro` op de shell → de knop doet directe replay in-place; en `/?intro=1` speelt de
+  intro voor zowel ingelogde leden (canvas) als anon (index.html).
+
 ## [0.100.1] - 2026-07-02
 ### Changed / Added — Hero-video-feedback, geen loop, en een "Bekijk intro"-knop
 - **Video-upload bevestigt nu netjes**: na uploaden/vervangen toont de hero-studio "Je video staat nu op je hero ✦"

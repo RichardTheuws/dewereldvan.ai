@@ -121,6 +121,10 @@
   {% set concierge_host_owned = true %}
   {% include "_concierge.html" %}
   {% include "ai/_cosmic_canvas.html" %}
+  {# Intro-machinerie zodat een ingelogd lid de intro kan (her)afspelen vanaf de
+     shell — toont ALLEEN op verzoek (?intro=1 of de "Bekijk intro"-knop); geen
+     DWV_INTRO_FIRST hier, dus nooit ongevraagd. #}
+  {% include "_intro.html" %}
 
   <script>
     (function () {
