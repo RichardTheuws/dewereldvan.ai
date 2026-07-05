@@ -4388,6 +4388,35 @@ a.roadmap-item__origin:focus-visible {
   color: var(--muted);
   font-style: italic;
 }
+/* Herkomst-chip: de vindplaats (bron of domein) als een schone mono-regel met
+   een zacht cyaan ↗ — leest als "hier vandaan", niet als een kale koplink. */
+.cosmic .news-card__origin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.cosmic .news-card__origin-glyph {
+  color: var(--cyan);
+  opacity: 0.75;
+  font-size: 12px;
+  line-height: 1;
+}
+/* Attributie naar de graaf-knoop: de naam is een edge naar het profiel. */
+.cosmic .news-card__by-link {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(63, 210, 255, 0.4);
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+.cosmic .news-card__by-link:hover {
+  color: var(--cyan);
+  border-bottom-color: var(--cyan);
+}
 /* De gegronde graaf-verbinding ("raakt <tool>") leest als een edge, niet als een
    gewone bronregel: mono-cyaan label + de chips krijgen een zachte cyaan gloed. */
 .cosmic .news-card__source[data-connection] {

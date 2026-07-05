@@ -3,6 +3,19 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.102.0] - 2026-07-05
+### Changed — Footprint-nieuws (Frank Oonk, Wouter Dammers e.a.) mooier geïndexeerd & weergegeven
+- Discovery-gecrystalliseerde footprint-items (LinkedIn/Instagram/spreker-/interview-links, gekoppeld aan een lid)
+  hadden geen `source` → ze renderden als kale koplinks in de nieuwsfeed. Nu:
+  - **Herkomst-chip**: elke kaart toont de bron of — bij ontbreken — het **domein** uit de URL (`linkedin.com`,
+    `oost.nl`, `bnr.nl`, …) als een schone mono-chip met zacht cyaan ↗. Nieuwe display-filter
+    `post_service.link_domain` (geen externe fetch/favicon — privacy + lage op-last).
+  - **Attributie linkt naar de graaf-knoop**: "gedeeld door X" wordt **rol-correct** ("geschreven door" / "met" /
+    "over" / "van") en de naam linkt naar `/leden/{slug}` wanneer dat profiel **openbaar** is (besloten → naam zonder
+    link). Zo wordt een footprint-item een edge naar het profiel i.p.v. een losse kop.
+- `_visible` laadt `added_by` + diens `profile` nu eager (`selectinload`) → geen N+1 bij het renderen van de lijst.
+- Tests: `link_domain`-unit + render-tests (domein-chip zichtbaar; openbaar profiel gelinkt, besloten niet).
+
 ## [0.101.1] - 2026-07-05
 ### Fixed — Nieuws-curatie gaf soms een lege briefing (run-to-run-variantie)
 - Live-diagnose bevestigde dat de v0.101.0-prompt precies de gewenste brede shortlist oplevert (9 gevarieerde items:

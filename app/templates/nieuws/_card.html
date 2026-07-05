@@ -9,7 +9,22 @@
   "vermeld": "uitgelicht",
   "gedeeld": "gedeeld",
 } %}
+{# Rol-correcte attributie: het lid is niet altijd de "deler" — bij 'vermeld' is
+   het de persoon óver wie het gaat, bij 'geschreven' de auteur. #}
+{% set role_prepositions = {
+  "geschreven": "geschreven door",
+  "geinterviewd": "met",
+  "vermeld": "over",
+  "gedeeld": "van",
+} %}
 {% set is_curated = post.source_kind and post.source_kind.value == "ai_curated" %}
+{# Herkomst-chip: expliciete bron, anders het domein uit de URL (footprint-items
+   hebben vaak geen bron → anders kale koplink). Puur weergave. #}
+{% set origin = post.source or (post.url | link_domain) %}
+{# Attributie linkt naar de graaf-knoop (profiel) als dat openbaar is. #}
+{% set by = post.added_by %}
+{% set by_profile = by.profile if by else none %}
+{% set by_public = by_profile and by_profile.visibility.value == "public" %}
 {# Detectie-op-weergave: match de getoonde tool-namen tegen ai_take/titel. Pure
    weergave-logica — geen persistente link (YAGNI, doc 02 §4). #}
 {% set _hay = ((post.ai_take or "") ~ " " ~ (post.title or "")) | lower %}
@@ -32,7 +47,9 @@
     <a class="text-link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">{{ post.title }}</a>
   </h3>
 
-  {% if post.source %}<div class="news-card__source">{{ post.source }}</div>{% endif %}
+  {% if origin %}
+  <div class="news-card__origin"><span class="news-card__origin-glyph" aria-hidden="true">↗</span>{{ origin }}</div>
+  {% endif %}
 
   {% if post.ai_take %}
   <p class="news-card__text" data-ai-take><strong>Waarom dit ertoe doet:</strong> {{ post.ai_take }}</p>
@@ -46,7 +63,12 @@
   {% endif %}
 
   <div class="news-card__foot">
-    {% if post.added_by %}<span class="news-card__by">gedeeld door {{ post.added_by.name }}</span>{% endif %}
+    {% if by %}
+    <span class="news-card__by">
+      {{ role_prepositions.get(role, "van") }}
+      {% if by_public %}<a class="news-card__by-link" href="/leden/{{ by_profile.slug }}">{{ by.name }}</a>{% else %}{{ by.name }}{% endif %}
+    </span>
+    {% endif %}
     <a class="news-card__link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">lezen ↗</a>
   </div>
 

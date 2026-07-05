@@ -19,7 +19,7 @@ from datetime import date, datetime, timedelta
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.config import settings
 from app.models import (
@@ -58,6 +58,7 @@ __all__ = [
     "iso_week_anchor",
     "relatieve_tijd",
     "nl_datum",
+    "link_domain",
     "NewsBriefing",
 ]
 
@@ -65,6 +66,26 @@ _DUTCH_MONTHS = [
     "", "jan", "feb", "mrt", "apr", "mei", "jun",
     "jul", "aug", "sep", "okt", "nov", "dec",
 ]
+
+
+def link_domain(url: str | None) -> str:
+    """Het schone domein van een URL voor een herkomst-chip (``linkedin.com``,
+    ``oost.nl``, ``bnr.nl``). ``www.``/``m.`` weg, lowercase. Geen scheme, geen
+    pad — puur de vindplaats. Faalt veilig naar ``''`` (dan toont de kaart niets).
+    Puur weergave: geen externe fetch, geen favicon-hotlink (privacy/op-last)."""
+    if not url:
+        return ""
+    try:
+        host = urlsplit(url.strip()).netloc.lower()
+    except ValueError:
+        return ""
+    # netloc kan ``user@host:port`` bevatten — houd alleen de host.
+    host = host.rsplit("@", 1)[-1].split(":", 1)[0]
+    for prefix in ("www.", "m.", "nl."):
+        if host.startswith(prefix):
+            host = host[len(prefix):]
+            break
+    return host
 
 
 def relatieve_tijd(value: datetime | None, *, now: datetime | None = None) -> str:
@@ -210,10 +231,16 @@ def _visible(db: Session, kind: PostKind) -> list[Post]:
     (``pending_review``) en geweigerde items (``rejected``) komen hier NOOIT door —
     niet op /nieuws, niet in de briefing-strip. Events staan default op ``live``,
     dus deze filter wijzigt het agenda-gedrag niet."""
-    stmt = select(Post).where(
-        Post.kind == kind,
-        Post.hidden.is_(False),
-        Post.review_state == PostReviewState.live,
+    stmt = (
+        select(Post)
+        .where(
+            Post.kind == kind,
+            Post.hidden.is_(False),
+            Post.review_state == PostReviewState.live,
+        )
+        # De kaart toont een naar-profiel-gelinkte attributie → laad
+        # ``added_by`` + diens ``profile`` eager (voorkomt N+1 bij render).
+        .options(selectinload(Post.added_by).selectinload(Member.profile))
     )
     return list(db.scalars(stmt).all())
 

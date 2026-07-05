@@ -5,8 +5,15 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-05 · **Versie**: 0.101.1 · **Branch**: `main`
+**Laatste update**: 2026-07-05 · **Versie**: 0.102.0 · **Branch**: `main`
 
+> **0.102.0** — **Footprint-nieuws mooier geïndexeerd + weergegeven.** Discovery-footprint-items (LinkedIn/Instagram/
+> spreker-/interview-links van leden als `kind=nieuws`) misten een `source` → kale koplinks. Nu: **herkomst-chip**
+> (bron of domein uit de URL via nieuwe filter `post_service.link_domain`, geen favicon/externe fetch) + **rol-correcte
+> attributie die naar de graaf-knoop `/leden/{slug}` linkt** als het profiel openbaar is (besloten → naam zonder link).
+> `_visible` laadt `added_by.profile` nu eager (geen N+1). Dit lost meteen de eerder gesignaleerde "footprint vervuilt
+> de feed"-observatie op: niet weren, maar netjes indexeren. Tests groen (1151 passed).
+>
 > **0.101.1** — Fix nieuws-curatie: het model gaf soms een lege briefing (variantie). Live-diagnose bevestigde dat de
 > nieuwe prompt 9 brede items oplevert (frontier-releases, open-weights, NL-beleid mét nieuw feit, NL-events), maar een
 > tweede run gaf 0. Fix: bail-out-framing in de prompt verzacht + **retry-on-empty** in de job (max 1 herkansing;

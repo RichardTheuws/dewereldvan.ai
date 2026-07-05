@@ -127,6 +127,7 @@ templates = Jinja2Templates(
 templates.env.filters["safe_url"] = safe_url
 templates.env.filters["relatieve_tijd"] = post_service.relatieve_tijd
 templates.env.filters["nl_datum"] = post_service.nl_datum
+templates.env.filters["link_domain"] = post_service.link_domain
 
 # Cache-bust voor statische assets (cosmic.css): de mtime van het bestand als
 # query-param. Verandert alleen als de CSS wijzigt → een nieuwe deploy serveert

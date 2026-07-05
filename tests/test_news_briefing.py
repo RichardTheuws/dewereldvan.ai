@@ -563,6 +563,87 @@ def test_seed_prompt_dedup_forbids_same_story(db):
     assert "beide sporen" in seed
 
 
+def test_link_domain_extracts_clean_host():
+    d = post_service.link_domain
+    assert d("https://nl.linkedin.com/in/frankoonk") == "linkedin.com"
+    assert d("https://www.oost.nl/nieuws/326166/x") == "oost.nl"
+    assert d("https://www.instagram.com/frankoonk/") == "instagram.com"
+    assert d("https://www.bnr.nl/podcast/cryptocast/10485656/234-b") == "bnr.nl"
+    assert d("") == ""
+    assert d(None) == ""
+    assert d("not-a-url") == ""  # geen netloc → leeg (kaart toont niets)
+
+
+def _footprint_post(s, *, member_id, url, title, role):
+    from app.models import NewsRole, Post, PostKind, PostReviewState, PostSourceKind
+
+    s.add(
+        Post(
+            kind=PostKind.nieuws,
+            title=title,
+            url=url,
+            added_by_id=member_id,
+            role=NewsRole(role),
+            source_kind=PostSourceKind.member,
+            review_state=PostReviewState.live,
+        )
+    )
+
+
+def _member_with_profile(s, *, email, name, slug, visibility):
+    from app.models import Member, Profile, Visibility
+
+    m = Member(email=email, name=name, status=MemberStatus.approved,
+               role=MemberRole.member)
+    s.add(m)
+    s.flush()
+    s.add(Profile(member_id=m.id, slug=slug, display_name=name,
+                  visibility=Visibility(visibility)))
+    return m
+
+
+def test_news_card_shows_origin_and_links_public_member(make_client, SessionTest):
+    """Footprint-item zonder ``source`` toont nu het domein als herkomst-chip, en
+    de attributie linkt naar de graaf-knoop (openbaar profiel)."""
+    s = SessionTest()
+    m = _member_with_profile(
+        s, email="frank@example.com", name="Frank Oonk",
+        slug="frank-oonk", visibility="public",
+    )
+    _footprint_post(
+        s, member_id=m.id, url="https://www.instagram.com/frankoonk/",
+        title="Frank Oonk op Instagram", role="gedeeld",
+    )
+    s.commit()
+    s.close()
+
+    resp = make_client(None).get("/nieuws")  # anon
+    assert resp.status_code == 200
+    assert "instagram.com" in resp.text  # herkomst-chip (domein uit URL)
+    assert "/leden/frank-oonk" in resp.text  # attributie → profiel (graaf-knoop)
+
+
+def test_news_card_does_not_link_members_only_profile(make_client, SessionTest):
+    """Een besloten profiel wordt NIET publiek gelinkt — naam wel, link niet."""
+    s = SessionTest()
+    m = _member_with_profile(
+        s, email="wouter@example.com", name="Wouter Dammers",
+        slug="wouter-dammers", visibility="members",
+    )
+    _footprint_post(
+        s, member_id=m.id, url="https://eve.law/arbiters/wouter-dammers/",
+        title="Wouter Dammers - Eve.law (arbiter)", role="gedeeld",
+    )
+    s.commit()
+    s.close()
+
+    resp = make_client(None).get("/nieuws")
+    assert resp.status_code == 200
+    assert "Wouter Dammers" in resp.text  # naam zichtbaar
+    assert "eve.law" in resp.text  # domein-chip
+    assert "/leden/wouter-dammers" not in resp.text  # besloten → geen publieke link
+
+
 def test_group_context_returns_names_with_real_rows(db):
     """Regressie: _group_context las ``t.name`` op een ``select(Tag.name)`` (al
     strings) → crashte zodra er échte tags/tools waren (lege test-DB miste 't).
