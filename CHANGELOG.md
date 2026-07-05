@@ -3,6 +3,27 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.101.0] - 2026-07-05
+### Changed — Nieuws-curatie: breder, gevarieerder, geen broken record meer
+- **Diagnose (prod-DB):** 5 van de 8 gecureerde nieuwsitems waren dezelfde EU AI Act/regulering-story over 3 weken;
+  de laatste run leverde maar 2 items — allebei AI Act. Twee oorzaken: (1) dedup was **exact-URL-only** → dezelfde
+  story bij een andere uitgever = andere URL → glipte erdoor; (2) de redactionele toets was te smal + te schuchter
+  (regulering als eerste IN-categorie, internationale AI-ontwikkelingen expliciet uitgesloten, "liever 6 dan 40",
+  geen recency- of diversiteits-eis).
+- **Twee sporen** in `news_curation_service.SYSTEM_PROMPT`: spoor 1 = NL/BE-beleid mét concreet nieuw feit + leden +
+  NL/BE-tools/events (prioriteit); spoor 2 = de belangrijkste wereldwijde AI-ontwikkelingen die een vakgenoot moet
+  kennen (grote model-/tool-releases, onderzoek met bouwgevolgen), op **significantie** gefilterd — geen aggregator-ruis.
+- **Thematische spreiding + no-repeat-story:** max ~2 items per thema; een lopend verhaal (AI Act) mag alleen terug
+  bij een concreet nieuw feit. De dedup-context in `_seed_prompt` verbiedt nu óók een ander artikel over hetzelfde
+  verhaal. **Recency:** focus op de laatste 1–2 weken. Streefdoel 8–12 gevarieerde items (`MAX_CANDIDATES` 12→15).
+  Drempel (`RELEVANCE_THRESHOLD` 70) ongewijzigd — de bredere IN-set levert de extra items zonder de kwaliteitspoort
+  te verlagen.
+- **URL-normalisatie bij persist** (`post_service._normalize_news_url`): strip tracking-params (utm_*, fbclid, gclid,
+  mc_*, …), fragment en trailing slash, zodat bijna-identieke links tóch deduppen. Toegepast in `create_curated_news`
+  en in de "nieuw?"-telling van de job (`_existing_news_id`).
+- Tests: URL-normalisatie + dedup over tracking-varianten + regressie-guards op de twee sporen/diversiteit/recency in
+  de prompt. Volledige suite groen.
+
 ## [0.100.5] - 2026-07-02
 ### Fixed — Play-knop bleef zichtbaar tijdens het afspelen van de hero-video
 - De play-knop (en de mute-pill) verdwenen niet: `.cover__play`/`.cover-mute` hadden een expliciete

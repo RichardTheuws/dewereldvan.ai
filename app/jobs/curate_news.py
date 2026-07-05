@@ -34,8 +34,9 @@ logger = logging.getLogger("curate_news")
 
 def _existing_news_id(db, url: str) -> int | None:
     """De id van een al bestaand nieuws-item op deze URL (voor dedup-telling), of
-    None. Spiegelt de idempotentie-poort in ``create_curated_news``."""
-    clean = (url or "").strip()[:500]
+    None. Spiegelt de idempotentie-poort in ``create_curated_news`` — inclusief de
+    URL-normalisatie, anders telt een dedup-hit onterecht als 'nieuw'."""
+    clean = post_service._normalize_news_url(url)[:500]
     if not clean:
         return None
     return db.scalar(

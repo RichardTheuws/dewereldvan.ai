@@ -5,8 +5,17 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-02 · **Versie**: 0.100.5 · **Branch**: `main`
+**Laatste update**: 2026-07-05 · **Versie**: 0.101.0 · **Branch**: `main`
 
+> **0.101.0** — **Nieuws-curatie breder + geen broken record.** Prod-diagnose: 5/8 gecureerde items waren dezelfde
+> EU AI Act-story over 3 weken; laatste run maar 2 items (allebei AI Act). Fix: (1) **twee sporen** in de prompt —
+> NL/BE-beleid+leden+NL/BE-tools/events (prioriteit) én de belangrijkste wereldwijde AI-ontwikkelingen (op
+> significantie); (2) **thematische spreiding** (max ~2/thema) + **no-repeat-story** (lopend verhaal alleen terug bij
+> nieuw feit) + **recency** (laatste 1–2 weken); (3) streefdoel 8–12 items (`MAX_CANDIDATES` 12→15), drempel 70 blijft;
+> (4) **URL-normalisatie** bij persist (`_normalize_news_url`: strip tracking-params/fragment/trailing-slash) zodat
+> bijna-identieke links deduppen. Tests groen. **NB apart pad, nog te doen:** 15 discovery-footprint-links (LinkedIn/
+> Instagram-profielen) staan als `kind=nieuws, source_kind=member` in de feed en vervuilen 'm — weren/herclassificeren.
+>
 > **0.100.5** — Fix: play-knop/mute-pill bleven zichtbaar tijdens het afspelen (`display:inline-flex` overschreef
 > `[hidden]`). CSS `[hidden]`-override + optimistisch verbergen bij klik.
 >

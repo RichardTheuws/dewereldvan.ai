@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -318,6 +319,47 @@ def list_pending_review(db: Session) -> list[Post]:
     )
 
 
+# Tracking-parameters die niets aan de identiteit van een artikel toevoegen —
+# strippen zodat dezelfde URL met/zonder campagne-tags als één item dedupt.
+_TRACKING_PARAMS: frozenset[str] = frozenset(
+    {
+        "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+        "utm_id", "utm_name", "utm_reader", "utm_social", "utm_brand",
+        "fbclid", "gclid", "dclid", "gbraid", "wbraid", "msclkid", "yclid",
+        "mc_cid", "mc_eid", "igshid", "vero_id", "ref", "ref_src", "ref_url",
+        "cmpid", "campaign_id", "spm", "_hsenc", "_hsmi", "hsCtaTracking",
+        "s_kwcid", "ic_id", "trk", "trkCampaign",
+    }
+)
+
+
+def _normalize_news_url(url: str) -> str:
+    """Canoniseer een nieuws-URL voor dedup: strip fragment + tracking-params en
+    een enkele trailing slash op het pad. Scheme/host blijven onaangeroerd (geen
+    http↔https of www-gok — dat zou echte links kunnen breken). Faalt veilig:
+    bij een niet-parsebare URL geeft het de gestripte input terug."""
+    raw = (url or "").strip()
+    if not raw:
+        return ""
+    try:
+        parts = urlsplit(raw)
+    except ValueError:
+        return raw
+    if not parts.scheme or not parts.netloc:
+        return raw  # geen absolute URL — laat met rust (poort dropt 'm later)
+    kept = [
+        (k, v)
+        for k, v in parse_qsl(parts.query, keep_blank_values=True)
+        if k.lower() not in _TRACKING_PARAMS
+    ]
+    path = parts.path
+    if len(path) > 1 and path.endswith("/"):
+        path = path.rstrip("/")
+    return urlunsplit(
+        (parts.scheme, parts.netloc, path, urlencode(kept), "")
+    )
+
+
 def create_curated_news(
     db: Session,
     *,
@@ -337,8 +379,9 @@ def create_curated_news(
 
     Idempotent op ``url``: een herhaalde curatie-run (zelfde artikel) maakt GEEN
     duplicaat — het bestaande nieuws-item (in welke staat dan ook) wordt
-    teruggegeven. De job flusht/commit zelf."""
-    clean_url = (url or "").strip()[:500]
+    teruggegeven. URL's worden genormaliseerd (tracking-params/fragment/trailing
+    slash weg) zodat bijna-identieke links tóch deduppen. De job flusht/commit zelf."""
+    clean_url = _normalize_news_url(url)[:500]
     if clean_url:
         existing = db.scalar(
             select(Post).where(

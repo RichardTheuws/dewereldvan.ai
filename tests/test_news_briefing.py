@@ -142,6 +142,38 @@ def test_curated_news_idempotent_on_url(db):
     assert len(rows) == 1
 
 
+def test_normalize_news_url_strips_tracking_and_slash():
+    n = post_service._normalize_news_url
+    # Tracking-params + fragment weg; overige query blijft.
+    assert (
+        n("https://ex.example/a?utm_source=x&id=7&fbclid=abc#top")
+        == "https://ex.example/a?id=7"
+    )
+    # Trailing slash op het pad weg; root-slash blijft.
+    assert n("https://ex.example/a/") == "https://ex.example/a"
+    assert n("https://ex.example/") == "https://ex.example/"
+    # Niet-absolute of lege input faalt veilig.
+    assert n("") == ""
+    assert n("not-a-url") == "not-a-url"
+
+
+def test_curated_news_dedups_across_tracking_variants(db):
+    """Dezelfde story bij dezelfde uitgever, alleen met campagne-tags, mag geen
+    tweede rij worden — de URL-normalisatie vangt de bijna-duplicaat."""
+    a = post_service.create_curated_news(
+        db, title="Story", url="https://uitgever.example/artikel",
+        ai_take="why", ai_relevance=80,
+    )
+    b = post_service.create_curated_news(
+        db, title="Story (via nieuwsbrief)",
+        url="https://uitgever.example/artikel?utm_source=nb&utm_medium=email",
+        ai_take="why2", ai_relevance=90,
+    )
+    assert a.id == b.id  # genormaliseerd → één item
+    # De opgeslagen URL is de gestripte, canonieke vorm.
+    assert a.url == "https://uitgever.example/artikel"
+
+
 # --------------------------------------------------------------------------- #
 # Review-transities: approve -> live, reject -> rejected (+ AuditLog)          #
 # --------------------------------------------------------------------------- #
@@ -427,6 +459,31 @@ def test_admin_reject_via_htmx(make_client, seed, SessionTest):
     refreshed = s2.get(post_service.Post, cand_id)
     assert refreshed.review_state == PostReviewState.rejected
     s2.close()
+
+
+def test_prompt_covers_two_tracks_diversity_and_recency():
+    """Regressie-guard op de bredere redactionele intentie: de curator moet twee
+    sporen vullen (NL/BE + wereldwijd), thematisch spreiden en op recente items
+    mikken — de fix tegen 'dun + steeds dezelfde AI-Act-story'."""
+    sys = news_curation_service.SYSTEM_PROMPT.lower()
+    assert "spoor 1" in sys and "spoor 2" in sys
+    assert "diversiteit" in sys
+    assert "1–2 weken" in sys or "1-2 weken" in sys
+    # Max ~2 per thema staat expliciet als rem op de broken-record.
+    assert "per thema" in sys
+
+
+def test_seed_prompt_dedup_forbids_same_story(db):
+    """De dedup-context verbiedt niet alleen exacte URL's maar óók een ander
+    artikel over hetzelfde verhaal — de kern van de anti-herhaling."""
+    post_service.create_curated_news(
+        db, title="EU AI Act uitleg", url="https://a.example/aiact",
+        ai_take="why", ai_relevance=80,
+    )
+    db.flush()
+    seed = news_curation_service._seed_prompt(db).lower()
+    assert "hetzelfde verhaal" in seed
+    assert "beide sporen" in seed
 
 
 def test_group_context_returns_names_with_real_rows(db):
