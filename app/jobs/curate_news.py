@@ -78,6 +78,12 @@ def main() -> int:
     created = 0
     with SessionLocal() as db:
         candidates = news_curation_service.curate(db)
+        # Retry-on-empty: het model haakt soms af met een lege lijst terwijl er wél
+        # nieuws is (run-to-run-variantie). Op een web vol AI-nieuws is een lege
+        # briefing vrijwel altijd een misser, geen deugd → één herkansing.
+        if not candidates:
+            logger.info("curate_news: lege eerste run — één herkansing.")
+            candidates = news_curation_service.curate(db)
         week = post_service.iso_week_anchor(naive_utc(utcnow()))
         for c in candidates:
             pre_id = _existing_news_id(db, c.url)

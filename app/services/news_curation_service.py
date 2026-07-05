@@ -118,9 +118,11 @@ SYSTEM_PROMPT: str = (
     "relevantie-score 0-100, en — als het item een tool of een lid uit de "
     "meegegeven groeps-context raakt — de herkende naam. Wees STRENG met de score: "
     f"alleen items met score ≥ {RELEVANCE_THRESHOLD} horen op de shortlist.\n\n"
-    "Roep aan het eind ÉÉN keer record_news_item aan met de lijst voorstellen "
-    "(leeg als je niets sterks vond — een lege briefing is beter dan ruis). "
-    "Nederlands."
+    "Doorzoek ECHT beide sporen voordat je afrondt — een web vol AI-nieuws levert "
+    "vrijwel altijd meerdere sterke items op; een lege briefing hoort de "
+    "uitzondering te zijn, niet de makkelijke uitweg. Roep aan het eind ÉÉN keer "
+    "record_news_item aan met de lijst voorstellen (alleen echt leeg als je na "
+    "grondig zoeken niets vond dat de toets haalt). Nederlands."
 )
 
 # Eigen tool: de gestructureerde uitvoer. We lezen ``block.input`` (een dict);

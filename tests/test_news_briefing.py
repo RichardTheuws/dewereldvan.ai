@@ -461,6 +461,83 @@ def test_admin_reject_via_htmx(make_client, seed, SessionTest):
     s2.close()
 
 
+def _job_with_fake_session(db, monkeypatch):
+    """Bekabel de curate_news-job zodat main() de rollback-geïsoleerde ``db``
+    gebruikt zonder echt te committen (anders lekt/breekt de isolatie), met
+    Telegram-notify uit. Geeft de job-module terug."""
+    import contextlib
+
+    from app.jobs import curate_news as job
+
+    monkeypatch.setattr(job.settings, "ai_enrich_enabled", True)
+    monkeypatch.setattr(job, "_notify_admins", lambda *a, **k: None)
+
+    @contextlib.contextmanager
+    def fake_session():
+        real_commit = db.commit
+        db.commit = db.flush  # no-op commit → test-isolatie blijft intact
+        try:
+            yield db
+        finally:
+            db.commit = real_commit
+
+    monkeypatch.setattr(job, "SessionLocal", fake_session)
+    return job
+
+
+def test_curate_news_job_retries_on_empty_then_persists(db, monkeypatch):
+    """Regressie: het model gaf soms een lege lijst terwijl er wél nieuws was. De
+    job doet één herkansing en persisteert de kandidaat van de tweede run."""
+    from app.models import Post, PostKind
+
+    job = _job_with_fake_session(db, monkeypatch)
+    calls = {"n": 0}
+
+    def fake_curate(_db, **kw):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return []  # eerste run haakt af
+        return [
+            news_curation_service.NewsCandidate(
+                title="Herkansing-hit", url="https://retry.example/win",
+                ai_take="waarom", ai_relevance=85,
+            )
+        ]
+
+    monkeypatch.setattr(job.news_curation_service, "curate", fake_curate)
+
+    created = job.main()
+    assert calls["n"] == 2  # leeg → precies één herkansing
+    assert created == 1
+    row = db.scalar(
+        select(Post).where(
+            Post.kind == PostKind.nieuws, Post.url == "https://retry.example/win"
+        )
+    )
+    assert row is not None and row.review_state == PostReviewState.pending_review
+
+
+def test_curate_news_job_no_retry_when_first_run_has_items(db, monkeypatch):
+    """Geen dubbele web-search-kosten: een eerste run met items retryt niet."""
+    job = _job_with_fake_session(db, monkeypatch)
+    calls = {"n": 0}
+
+    def fake_curate(_db, **kw):
+        calls["n"] += 1
+        return [
+            news_curation_service.NewsCandidate(
+                title="Direct raak", url="https://direct.example/a",
+                ai_take="waarom", ai_relevance=85,
+            )
+        ]
+
+    monkeypatch.setattr(job.news_curation_service, "curate", fake_curate)
+
+    created = job.main()
+    assert calls["n"] == 1  # geen herkansing nodig
+    assert created == 1
+
+
 def test_prompt_covers_two_tracks_diversity_and_recency():
     """Regressie-guard op de bredere redactionele intentie: de curator moet twee
     sporen vullen (NL/BE + wereldwijd), thematisch spreiden en op recente items

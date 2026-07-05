@@ -5,8 +5,13 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-05 · **Versie**: 0.101.0 · **Branch**: `main`
+**Laatste update**: 2026-07-05 · **Versie**: 0.101.1 · **Branch**: `main`
 
+> **0.101.1** — Fix nieuws-curatie: het model gaf soms een lege briefing (variantie). Live-diagnose bevestigde dat de
+> nieuwe prompt 9 brede items oplevert (frontier-releases, open-weights, NL-beleid mét nieuw feit, NL-events), maar een
+> tweede run gaf 0. Fix: bail-out-framing in de prompt verzacht + **retry-on-empty** in de job (max 1 herkansing;
+> eerste run mét items retryt niet). Tests dekken beide paden.
+>
 > **0.101.0** — **Nieuws-curatie breder + geen broken record.** Prod-diagnose: 5/8 gecureerde items waren dezelfde
 > EU AI Act-story over 3 weken; laatste run maar 2 items (allebei AI Act). Fix: (1) **twee sporen** in de prompt —
 > NL/BE-beleid+leden+NL/BE-tools/events (prioriteit) én de belangrijkste wereldwijde AI-ontwikkelingen (op

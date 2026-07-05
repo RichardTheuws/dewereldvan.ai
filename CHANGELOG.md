@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.101.1] - 2026-07-05
+### Fixed — Nieuws-curatie gaf soms een lege briefing (run-to-run-variantie)
+- Live-diagnose bevestigde dat de v0.101.0-prompt precies de gewenste brede shortlist oplevert (9 gevarieerde items:
+  frontier-releases, open-weights, NL-beleid mét nieuw feit, NL-events/-bedrijven), **maar** een tweede run leverde
+  0 items — het model haakte af met een lege lijst. Oorzaak: de prompt gaf expliciet toestemming ("leeg is beter dan
+  ruis") die het model soms als makkelijke uitweg nam.
+- **Prompt**: bail-out-framing verzacht — doorzoek écht beide sporen; een lege briefing is de uitzondering, niet de
+  makkelijke uitweg (zonder de kwaliteitsdrempel te verlagen).
+- **Job**: **retry-on-empty** in `curate_news.main` — een lege eerste run krijgt precies één herkansing voordat de job
+  opgeeft. Een eerste run mét items retryt niet (geen dubbele web-search-kosten). Tests dekken beide paden.
+
 ## [0.101.0] - 2026-07-05
 ### Changed — Nieuws-curatie: breder, gevarieerder, geen broken record meer
 - **Diagnose (prod-DB):** 5 van de 8 gecureerde nieuwsitems waren dezelfde EU AI Act/regulering-story over 3 weken;
