@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-08 · **Versie**: 0.102.2 · **Branch**: `main`
+**Laatste update**: 2026-07-08 · **Versie**: 0.102.3 · **Branch**: `main`
 
+> **0.102.3** — Vervolg intro-fix: `Set-Cookie` gestript op `/static` (blokkeerde edge-caching) + CF-cache-rule
+> `/static/*` (edge-TTL 30d) aangemaakt via de API. GLB komt nu van de edge i.p.v. 14–60s door de tunnel.
+>
 > **0.102.2** — **Fix: de 3D-wereld-act van de intro werd in productie door niemand gezien.** Twee gestapelde
 > bugs (ontdekt bij het opnemen van video-studio-clips): (1) `?intro=1`/"Bekijk intro" startte vóór het
 > Three.js-module-script evalueerde → altijd 2D-lite; fix = autostart op DOMContentLoaded. (2) De 1.8MB-GLB

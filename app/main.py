@@ -219,6 +219,11 @@ def create_app() -> FastAPI:
             response.headers.setdefault(
                 "Cache-Control", "public, max-age=31536000, immutable"
             )
+            # SessionMiddleware plakt op elk antwoord een sessie-cookie; op
+            # statics blokkeert Set-Cookie edge-caching en is hij zinloos
+            # (sessies ontstaan op HTML-pagina's).
+            if "set-cookie" in response.headers:
+                del response.headers["set-cookie"]
         return response
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")

@@ -32,6 +32,13 @@ def test_intro_glb_carries_immutable_cache_control():
     assert resp.headers.get("cache-control") == _IMMUTABLE
 
 
+def test_static_response_carries_no_session_cookie():
+    # Set-Cookie op statics blokkeert edge-caching en is functioneel zinloos.
+    resp = _client().get("/static/cosmic.css")
+    assert resp.status_code == 200
+    assert "set-cookie" not in resp.headers
+
+
 def test_dynamic_route_not_cache_locked():
     resp = _client().get("/healthz")
     assert resp.status_code == 200

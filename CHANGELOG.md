@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.102.3] - 2026-07-08
+### Fixed — statics edge-cachebaar gemaakt (vervolg 0.102.2)
+- `Set-Cookie` (SessionMiddleware) wordt op `/static`-antwoorden gestript — sessies ontstaan op
+  HTML-pagina's; op statics blokkeert de cookie edge-caching. Test toegevoegd.
+- **CF-cache-rule aangemaakt** (zone-ruleset `http_request_cache_settings`): cache `/static/*` aan
+  de edge, TTL 30 dagen override, browser-TTL respecteert origin (`immutable` uit 0.102.2).
+
 ## [0.102.2] - 2026-07-08
 ### Fixed — De 3D-wereld-act van de intro werd in productie door NIEMAND gezien (2 gestapelde bugs)
 - Ontdekt tijdens het opnemen van intro/outro-clips voor de video-studio: elke bezoeker kreeg de
