@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-08 · **Versie**: 0.102.3 · **Branch**: `main`
+**Laatste update**: 2026-07-08 · **Versie**: 0.102.4 · **Branch**: `main`
 
+> **0.102.4** — Video-huisstijl: `docs/VIDEO-STYLEGUIDE.md` + vaste bumpers in `assets/video/` (intro-warp /
+> intro-kort / outro, opgenomen van de echte 3D-intro). Klaar om feature-demo's voor de homepage te monteren.
+>
 > **0.102.3** — Vervolg intro-fix: `Set-Cookie` gestript op `/static` (blokkeerde edge-caching) + CF-cache-rule
 > `/static/*` (edge-TTL 30d) aangemaakt via de API. GLB komt nu van de edge i.p.v. 14–60s door de tunnel.
 >

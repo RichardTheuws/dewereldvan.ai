@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.102.4] - 2026-07-08
+### Docs — video-huisstijl + vaste intro/outro-bumpers
+- `docs/VIDEO-STYLEGUIDE.md`: merk-DNA (kleuren/typografie uit de kosmische stijl), titelkaart-
+  regels, montage/audio-richtlijnen en het recept voor homepage-feature-demo's.
+- `assets/video/`: `intro-warp.mp4` (10,2s — 3D-wereld → wordmark → warp-flits, cut-op-wit),
+  `intro-kort.mp4` (3,3s) en `outro.mp4` (2,9s — wordmark lost omgekeerd op in particles),
+  opgenomen van de echte site-intro (Playwright, 1080p30). Herproductie-recept in de gids.
+
 ## [0.102.3] - 2026-07-08
 ### Fixed — statics edge-cachebaar gemaakt (vervolg 0.102.2)
 - `Set-Cookie` (SessionMiddleware) wordt op `/static`-antwoorden gestript — sessies ontstaan op
