@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.102.1] - 2026-07-08
+### Docs — PRD "Maker-podium & scene-gids" (DRAFT)
+- Analyse van de virale "animated 3D websites"-tutorial (Viktor Oddy): de look is géén WebGL maar
+  AI-video-assets (beeldpersonalisatie + motion-transfer, bv. Seedance) + **scroll-scrubbing**
+  (`video.currentTime` aan scrollpositie) + grote typografie.
+- Nieuw `docs/PRD-maker-podium.md`: (1) **scene-gids** met kopieerbare prompts + concierge-nudge
+  `scene_guide`; (2) **cover-stand** `beeld|film|scene` met scroll-scrub op de bestaande hero-video-
+  upload; (3) creatieve **sandboxed embeds** (click-to-activate). AUGMENT van cover/nudges/embed-
+  allowlist; expressie binnen één kosmische look (geen vrije styling). Wacht op goedkeuring.
+
 ## [0.102.0] - 2026-07-05
 ### Changed — Footprint-nieuws (Frank Oonk, Wouter Dammers e.a.) mooier geïndexeerd & weergegeven
 - Discovery-gecrystalliseerde footprint-items (LinkedIn/Instagram/spreker-/interview-links, gekoppeld aan een lid)

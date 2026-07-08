@@ -5,8 +5,14 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-05 · **Versie**: 0.102.0 · **Branch**: `main`
+**Laatste update**: 2026-07-08 · **Versie**: 0.102.1 · **Branch**: `main`
 
+> **0.102.1** — **PRD "Maker-podium & scene-gids" (DRAFT, wacht op goedkeuring).** Uit analyse van de virale
+> "animated 3D websites"-tutorial: de look = AI-video-assets (motion-transfer) + scroll-scrub + typografie, geen
+> WebGL. PRD in drie fasen: scene-gids met kopieerbare prompts + nudge `scene_guide` → cover-stand
+> `beeld|film|scene` (scroll-scrub op bestaande hero-video-upload, migratie `cover_mode`) → creatieve sandboxed
+> embeds (click-to-activate). Zie `docs/PRD-maker-podium.md`.
+>
 > **0.102.0** — **Footprint-nieuws mooier geïndexeerd + weergegeven.** Discovery-footprint-items (LinkedIn/Instagram/
 > spreker-/interview-links van leden als `kind=nieuws`) misten een `source` → kale koplinks. Nu: **herkomst-chip**
 > (bron of domein uit de URL via nieuwe filter `post_service.link_domain`, geen favicon/externe fetch) + **rol-correcte

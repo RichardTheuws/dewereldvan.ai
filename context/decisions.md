@@ -6,6 +6,28 @@ Elke beslissing bevat: **Context** (waarom kiezen), **Beslissing** (wat), **Alte
 
 ---
 
+## [2026-07-08] Maker-expressie via scene, niet via vrije styling (PRD maker-podium)
+
+**Context**: de virale "animated 3D websites"-workflow (AI-video-assets + scroll-scrub, geen WebGL) is
+door onze doelgroep zelf uitvoerbaar; Richard wil dat het portfolio aansluit bij de maker en dat we
+leden de prompts/tools tonen. Tegelijk is de styleguide hard: één kosmische look, geen tweede.
+
+**Beslissing**: expressie loopt via een **begrensd maker-podium** — de cover krijgt een derde stand
+(`scene`: scroll-gescrubde AI-video op de bestaande hero-video-upload) en een publieke **scene-gids**
+met kopieerbare prompts leert leden de pipeline; later sandboxed embeds (click-to-activate) voor echt
+interactief werk. PRD: `docs/PRD-maker-podium.md` (DRAFT).
+
+**Alternatieven**:
+- Vrije profiel-styling (fonts/kleuren/layouts): afgewezen — breekt "geen tweede look" en wordt een
+  moderatie- en veiligheidsput.
+- Three.js/WebGL + JS-buildpipeline: afgewezen — het effect kan zonder; blijvende op-last.
+- Niets doen: afgewezen — generiek portfolio voor een makers-doelgroep is een gemiste kernbelofte.
+
+**Gevolgen**: hergebruik van cover-video-upload, reveal-motor, nudge- en embed-allowlist-patronen
+(AUGMENT); scrub-JS en `cover_mode`-migratie zijn het enige netto-nieuwe; anon blijft nul-AI-kosten.
+
+---
+
 ## [2026-06-22] Launch: apex `dewereldvan.ai` serveert het platform + wachtlijst-omzetting
 
 **Context**: de pivot (A→D + showcase inc. 1-4 + discovery-op-discipline) is compleet; het platform is
