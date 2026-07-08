@@ -249,6 +249,24 @@ def select_nudge(
                     action="navigate:/profiel/ai/bouwen",
                 )
 
+    # --- 2b. Scene-gids: wél werk om te tonen, nog een statische cover. ---
+    #     (PRD maker-podium fase 1 — de gids leert de AI-pipeline; puur SQL/ORM.)
+    if (
+        viewer.profile is not None
+        and "scene_gids" not in dismissed
+        and viewer.profile.offerings
+        and not viewer.profile.cover_video_url
+    ):
+        return Nudge(
+            kind="scene_gids",
+            message=(
+                "Je profiel kan een levende scene krijgen — maak er met AI één "
+                "die bij je werk past. De gids laat in vier stappen zien hoe."
+            ),
+            action_label="open de gids",
+            action="navigate:/gids/scene",
+        )
+
     # --- 3. Nieuwe makers sinds vorig bezoek. ---
     if "nieuwe_makers" not in dismissed:
         nudge = _maybe_new_members_nudge(db, last_seen)

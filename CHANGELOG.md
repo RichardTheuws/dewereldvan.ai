@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.103.0] - 2026-07-08
+### Added — Scene-gids "Maak je eigen scene" (PRD maker-podium, fase 1)
+- **`/gids/scene`** (publiek + indexeerbaar, volledig statisch — nul AI-kosten, ook anoniem):
+  leert in vier stappen de AI-pipeline referentie → beeld personaliseren → motion-transfer →
+  hero-video, met **kopieerbare prompt-kaarten** (beeld-prompt, video-prompt, ffmpeg-keyframe-tip)
+  in de kosmische stijl. Router `app/routers/gids.py`, template `gids/scene.html`.
+- **Concierge-nudge `scene_gids`**: lid mét werk-item(s) maar zonder hero-video krijgt de gids
+  aangeboden (pure SQL/ORM, na profiel_bijna_af, dismiss-persistentie zoals bestaande nudges).
+- **Hero-studio** linkt naar de gids ("Nog geen video die past?").
+- Tests: `tests/test_scene_gids.py` (render + promptkaarten, nudge aan/uit/dismiss/geen-werk,
+  studio-link); route geclassificeerd in de zelf-groeiende UAT (`PUBLIC_INDEXABLE`).
+
 ## [0.102.4] - 2026-07-08
 ### Docs — video-huisstijl + vaste intro/outro-bumpers
 - `docs/VIDEO-STYLEGUIDE.md`: merk-DNA (kleuren/typografie uit de kosmische stijl), titelkaart-

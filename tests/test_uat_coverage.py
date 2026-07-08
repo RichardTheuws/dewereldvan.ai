@@ -64,6 +64,8 @@ PUBLIC_INDEXABLE = {
     "/nieuws",
     # Levende roadmap is publiek + indexeerbaar (transparantie = waardepropositie).
     "/roadmap",
+    # Scene-gids: publiek + indexeerbaar (leert de AI-pipeline; statisch, nul AI-kosten).
+    "/gids/scene",
     # Privacyverklaring: publiek + indexeerbaar (AVG/ePrivacy, vindbaar via footer).
     "/privacy",
 }

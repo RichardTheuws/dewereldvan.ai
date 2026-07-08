@@ -5,8 +5,13 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-08 · **Versie**: 0.102.4 · **Branch**: `main`
+**Laatste update**: 2026-07-08 · **Versie**: 0.103.0 · **Branch**: `main`
 
+> **0.103.0** — **Scene-gids live (PRD maker-podium fase 1).** `/gids/scene`: publieke, statische gids die de
+> AI-pipeline (referentie → beeld → motion-transfer → hero-video) leert met kopieerbare prompt-kaarten; nudge
+> `scene_gids` voor leden met werk maar zonder video; hero-studio linkt ernaar. Fase 2 (cover-stand `scene` +
+> scroll-scrub) is de volgende stap uit `docs/PRD-maker-podium.md`.
+>
 > **0.102.4** — Video-huisstijl: `docs/VIDEO-STYLEGUIDE.md` + vaste bumpers in `assets/video/` (intro-warp /
 > intro-kort / outro, opgenomen van de echte 3D-intro). Klaar om feature-demo's voor de homepage te monteren.
 >
