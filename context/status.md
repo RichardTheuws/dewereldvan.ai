@@ -5,8 +5,14 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-08 · **Versie**: 0.102.1 · **Branch**: `main`
+**Laatste update**: 2026-07-08 · **Versie**: 0.102.2 · **Branch**: `main`
 
+> **0.102.2** — **Fix: de 3D-wereld-act van de intro werd in productie door niemand gezien.** Twee gestapelde
+> bugs (ontdekt bij het opnemen van video-studio-clips): (1) `?intro=1`/"Bekijk intro" startte vóór het
+> Three.js-module-script evalueerde → altijd 2D-lite; fix = autostart op DOMContentLoaded. (2) De 1.8MB-GLB
+> ging ongecachet door de tunnel (14–60s) en haalde de 2.5s-mount-gate nooit; fix = Cache-Control-middleware op
+> `/static` + mount-prewarm bij de enter-gate + CF-cache-rule voor `/static/*`. Tests: `test_static_cache.py`.
+>
 > **0.102.1** — **PRD "Maker-podium & scene-gids" (DRAFT, wacht op goedkeuring).** Uit analyse van de virale
 > "animated 3D websites"-tutorial: de look = AI-video-assets (motion-transfer) + scroll-scrub + typografie, geen
 > WebGL. PRD in drie fasen: scene-gids met kopieerbare prompts + nudge `scene_guide` → cover-stand

@@ -207,6 +207,20 @@ def create_app() -> FastAPI:
     # is visible to the session/CSRF layers.
     app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
+    # /static is immutable-cachebaar: alle asset-links busten al met
+    # ?v={{ asset_ver }} (file-mtime). Zonder expliciete Cache-Control cachet
+    # Cloudflare alleen zijn default-extensies (css/js/beelden) en ging bv. de
+    # intro-GLB (1.8MB) voor élke bezoeker opnieuw door de tunnel (14-60s) —
+    # waardoor de 3D-act zijn 2.5s-mount-gate nooit haalde.
+    @app.middleware("http")
+    async def _static_cache(request, call_next):  # pragma: no cover - dun laagje
+        response = await call_next(request)
+        if request.url.path.startswith("/static/") and response.status_code == 200:
+            response.headers.setdefault(
+                "Cache-Control", "public, max-age=31536000, immutable"
+            )
+        return response
+
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
     # Profielfoto's (L1) worden door de app vanaf het /app/data-volume geserveerd

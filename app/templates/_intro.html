@@ -73,7 +73,10 @@
   }
 
   API.mount = function(canvas){
-    return new Promise(function(resolve){
+    // Idempotent: show() pre-warmt de mount al vóór de klik (GLB-download start
+    // dan meteen); startSequence() krijgt daarna dezelfde promise terug.
+    if(API._mountP) return API._mountP;
+    API._mountP = new Promise(function(resolve){
       try{
         renderer = new THREE.WebGLRenderer({canvas:canvas, alpha:true, antialias:true});
         renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -105,6 +108,7 @@
         }, undefined, function(){ API.failed=true; resolve(); });
       }catch(e){ API.failed=true; resolve(); }
     });
+    return API._mountP;
   };
   var _rotY = 0, _lastMs = null;
   // camDist = camera-afstand (voor de openings-uitzoom), spin = rotatie/drift-factor
@@ -359,6 +363,10 @@
     buildTargets().then(function(){ if(reduce){ enterUI.classList.add('is-gone'); welcome.classList.add('is-in'); drawStaticWordmark(); setTimeout(finish,3000); } });
     if(reduce) return;
     enterUI.classList.remove('is-gone'); if(!idleRaf) idle();
+    // Pre-warm de 3D-wereld terwijl de enter-gate op de klik wacht: mount (incl.
+    // GLB-download) is idempotent, dus de 2.5s-gate ná de klik hoeft alleen nog
+    // het restant af te wachten i.p.v. de hele download.
+    if(innerWidth >= 760 && window.__DWV3D__ && !window.__DWV3D__.failed) window.__DWV3D__.mount(c3);
   }
 
   // --- Web Audio: etherisch & warm ---
@@ -419,7 +427,12 @@
     // ?intro=… = een expliciet verzoek (bv. de knop op een andere pagina) → direct
     // starten. De first-time-auto-intro (DWV_INTRO_FIRST) houdt wél de enter-gate,
     // zodat een verse bezoeker de audio bewust met één klik ontgrendelt.
-    if(params.has('intro')){ playDirect(); } else { show(); }
+    // Start pas ná DOMContentLoaded: dit classic script draait al tijdens het
+    // parsen, vóór het type="module"-script evalueert — direct starten zag dus
+    // nooit window.__DWV3D__ en ?intro=1 kreeg altijd de 2D-lite-intro.
+    var autostart = function(){ if(params.has('intro')){ playDirect(); } else { show(); } };
+    if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', autostart); }
+    else { autostart(); }
   }
 })();
 </script>

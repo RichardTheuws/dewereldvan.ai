@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.102.2] - 2026-07-08
+### Fixed — De 3D-wereld-act van de intro werd in productie door NIEMAND gezien (2 gestapelde bugs)
+- Ontdekt tijdens het opnemen van intro/outro-clips voor de video-studio: elke bezoeker kreeg de
+  2D-lite-fallback, nooit de Meshy/Three.js-wereld (v0.94.0).
+- **Bug 1 — module-race bij `?intro=1`**: `playDirect()` draaide al tijdens het parsen (classic
+  script), vóór het `type="module"`-script `window.__DWV3D__` zette → "Bekijk intro" koos altijd
+  lite. Fix: autostart wacht op `DOMContentLoaded` (module-scripts evalueren dáárvoor).
+- **Bug 2 — GLB haalde de mount-gate nooit**: de 1.8MB-GLB ging ongecachet door de tunnel
+  (`cf-cache-status: DYNAMIC`, 14–60s) terwijl de gate 2.5s is. Fix drieledig: (a) `Cache-Control:
+  public, max-age=31536000, immutable` op `/static` (middleware; alle links busten al met
+  `?v=asset_ver`); (b) mount is idempotent (`_mountP`-memo) en wordt **pre-warmed** in `show()` —
+  de GLB-download loopt al terwijl de first-time-bezoeker naar de enter-gate kijkt; (c) CF-cache-
+  rule voor `/static/*` zodat óók niet-default-extensies (.glb) aan de edge cachen.
+- Tests: `tests/test_static_cache.py` (immutable op css+glb, dynamisch niet cache-locked).
+
 ## [0.102.1] - 2026-07-08
 ### Docs — PRD "Maker-podium & scene-gids" (DRAFT)
 - Analyse van de virale "animated 3D websites"-tutorial (Viktor Oddy): de look is géén WebGL maar
