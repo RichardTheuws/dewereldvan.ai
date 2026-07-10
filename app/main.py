@@ -49,6 +49,7 @@ from app.routers import (
     profiles,
     projects,
     roadmap,
+    samen,
     seo,
     tools,
 )
@@ -271,6 +272,7 @@ def create_app() -> FastAPI:
     app.include_router(roadmap.router)
     app.include_router(gids.router)
     app.include_router(posts.router)
+    app.include_router(samen.router)
     app.include_router(connections.router)
     app.include_router(notifications.router)
     app.include_router(connect.router)

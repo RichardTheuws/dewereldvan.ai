@@ -16,6 +16,8 @@ from app.models.base import (
     EventAttendanceRole,
     EventCategory,
     EventFrequency,
+    GatheringState,
+    GatheringVoteChoice,
     IdeaStatus,
     MatchStatus,
     MemberRole,
@@ -36,6 +38,12 @@ from app.models.connection import Connection
 from app.models.discovery_run import DiscoveryRun
 from app.models.event_attendance import EventAttendance
 from app.models.feedback import Feedback
+from app.models.gathering import (
+    Gathering,
+    GatheringDate,
+    GatheringInvite,
+    GatheringVote,
+)
 from app.models.group_invite import GroupInvite
 from app.models.idea import Idea
 from app.models.idea_vote import IdeaVote
@@ -74,6 +82,8 @@ __all__ = [
     "EventCategory",
     "EventFrequency",
     "EventAttendanceRole",
+    "GatheringState",
+    "GatheringVoteChoice",
     "NewsRole",
     "MatchStatus",
     "ConnectionStatus",
@@ -105,6 +115,10 @@ __all__ = [
     "PersonalToken",
     "DiscoveryRun",
     "EventAttendance",
+    "Gathering",
+    "GatheringDate",
+    "GatheringVote",
+    "GatheringInvite",
     "MemberChannel",
     "NotificationPref",
 ]

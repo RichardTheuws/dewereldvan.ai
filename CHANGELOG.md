@@ -3,6 +3,26 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.104.0] - 2026-07-10
+### Added — Samenkomen: de datumprikker (PRD-samenkomen, fase 1)
+- **`/samen`** (besloten, login-gated, noindex): een lid prikt een handvol kandidaat-datums
+  ("Samenkomen"); leden stemmen per datum **ja/misschien/nee** (htmx-swap, kosmische constellatie —
+  elke datum een ster, de koploper gloeit goud). **De winnende datum klapt samen tot een gewoon
+  agenda-event** (`Post` kind=event) met de ja-stemmers als RSVP (`EventAttendance`) — nul nieuwe
+  event-infra downstream. Routes `/samen`, `/samen/nieuw`, `/samen/{id}` + `/stem` `/kies`
+  `/annuleer` `/nodig` (`app/routers/samen.py`).
+- **Auto-selectie van geïnteresseerden** via de bestaande interesse-graaf (`graph_service` /
+  gedeelde tags-tools) — géén locatie in fase 1. De maker ziet "wie wil hier graag bij zijn?" en
+  nodigt in één klik uit via het bestaande intro-pad (intro→accept→e-mail; geen DM-inbox).
+- **Concierge-ingang**: nieuwe draft-tool `draft_gathering` (agent stelt het kader voor, lid prikt
+  zelf de datums) + `_draft_gathering.html`; footer-fallback krijgt "Samenkomen".
+- **Model**: `Gathering`/`GatheringDate`/`GatheringVote`/`GatheringInvite` (migratie `0036_gathering`);
+  stemmen is race-veilig idempotent (uniek per datum+lid, savepoint-herstel — recept
+  `idea_service.vote`). Service `app/services/gathering_service.py`.
+- Tests: `tests/test_gathering.py` (create-dedup/cap/verleden, stem-idempotentie + race, tally +
+  koploper/gelijkspel, resolve→event+RSVP, cancel, auto-selectie, auth-poort, volledige route-flow).
+  Browser-geverifieerd (aanmaken → stemmen → samenklappen → agenda-event).
+
 ## [0.103.1] - 2026-07-10
 ### Docs — PRD "Samenkomen" (datumprikker + Dichtbij) — DRAFT
 - **`docs/PRD-samenkomen.md`** (DRAFT, wacht op goedkeuring): datumprikker als concierge-act

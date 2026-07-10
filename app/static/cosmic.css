@@ -5073,3 +5073,93 @@ a.roadmap-item__origin:focus-visible {
   .cosmic-working__nebula { animation: none; }
   .cosmic-working__core { animation: cw-core 3s ease-in-out infinite; }
 }
+
+/* --------------------------------------------------------------------------- *
+ * Samenkomen — de datumprikker als constellatie (PRD-samenkomen fase 1).
+ * Elke kandidaat-datum is een ster; hoe meer 'ik kan'-stemmen, hoe feller de
+ * gloed (--glow telt de ja-stemmen). Hergebruikt .rsvp-btn/.btn/.chip.
+ * --------------------------------------------------------------------------- */
+.cosmic .datprik-list { display: flex; flex-direction: column; gap: 10px; }
+.cosmic .datprik-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02); text-decoration: none; color: inherit;
+  transition: border-color .2s ease, transform .2s ease, background .2s ease;
+}
+.cosmic .datprik-row:hover {
+  border-color: rgba(122, 226, 245, 0.4);
+  background: rgba(122, 226, 245, 0.04); transform: translateY(-1px);
+}
+.cosmic .datprik-row__main { flex: 1; min-width: 0; }
+.cosmic .datprik-row__title { font-weight: 500; }
+.cosmic .datprik-row__meta { color: var(--muted); font-size: 13px; margin-top: 3px; }
+.cosmic .datprik-row__go { color: var(--cyan); font-size: 18px; }
+
+.cosmic .datprik-sub { display: flex; flex-wrap: wrap; gap: 8px; }
+.cosmic .datprik-hint { font-size: 13px; margin-top: 8px; max-width: 56ch; }
+
+/* De constellatie */
+.cosmic .datprik-constellation { display: flex; flex-direction: column; gap: 14px; }
+.cosmic .datprik-star {
+  position: relative;
+  padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px;
+  background:
+    radial-gradient(120% 140% at 12% 0%,
+      rgba(122, 226, 245, calc(0.02 + 0.05 * min(var(--glow, 0), 6))),
+      rgba(255, 255, 255, 0.015));
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+.cosmic .datprik-star--leader {
+  border-color: rgba(240, 200, 120, 0.55);
+  box-shadow: 0 0 0 1px rgba(240, 200, 120, 0.15), 0 8px 40px rgba(240, 200, 120, 0.08);
+}
+.cosmic .datprik-star__when { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; }
+.cosmic .datprik-star__rel {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  text-transform: uppercase; letter-spacing: .08em; color: var(--cyan);
+}
+.cosmic .datprik-star__date { font-size: 17px; font-weight: 500; }
+.cosmic .datprik-star__crown {
+  font-size: 11px; color: var(--gold); border: 1px solid rgba(240, 200, 120, 0.4);
+  border-radius: 999px; padding: 1px 9px; letter-spacing: .02em;
+}
+.cosmic .datprik-star__tally { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.cosmic .datprik-tally {
+  font-size: 12px; padding: 2px 10px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--muted);
+}
+.cosmic .datprik-tally--yes { color: var(--gold); border-color: rgba(240, 200, 120, 0.35); }
+.cosmic .datprik-tally--maybe { color: var(--cyan); border-color: rgba(122, 226, 245, 0.3); }
+.cosmic .datprik-vote { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.cosmic .datprik-star__pick { margin-top: 12px; }
+
+.cosmic .datprik-banner {
+  padding: 12px 16px; border-radius: 12px; border: 1px solid var(--line);
+  color: var(--muted); font-size: 14px; margin-bottom: 6px;
+}
+.cosmic .datprik-banner--done {
+  border-color: rgba(240, 200, 120, 0.4); color: var(--ink);
+  background: rgba(240, 200, 120, 0.05);
+}
+.cosmic .datprik-banner__spark { color: var(--gold); margin-right: 6px; }
+
+/* Datum-invoer op het startformulier */
+.cosmic .datprik-dates__input { display: block; width: 100%; margin-top: 8px; }
+
+/* Auto-selectie: makers die hier graag bij willen zijn */
+.cosmic .datprik-suggest { display: flex; flex-direction: column; gap: 10px; }
+.cosmic .datprik-suggest__row {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px;
+}
+.cosmic .datprik-suggest__row--done {
+  border-color: rgba(240, 200, 120, 0.4); background: rgba(240, 200, 120, 0.05);
+  color: var(--muted); font-size: 14px;
+}
+.cosmic .datprik-suggest__who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cosmic .datprik-suggest__why { font-size: 12px; color: var(--muted); }
+.cosmic .datprik-suggest__spark { color: var(--gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmic .datprik-row, .cosmic .datprik-star { transition: none; }
+}

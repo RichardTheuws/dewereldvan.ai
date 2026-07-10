@@ -294,6 +294,7 @@ _DRAFT_TEMPLATES = {
     "need": "concierge/_draft_need.html",
     "idea": "concierge/_draft_idea.html",
     "event": "concierge/_draft_event.html",  # agenda-event (Fase 2)
+    "gathering": "concierge/_draft_gathering.html",  # datumprikker (Samenkomen)
     "nieuws": "concierge/_draft_news.html",  # nieuwsartikel (Fase 2)
     "field": "concierge/_draft_field.html",  # profiel-tekstveld (Fase 2.2)
 }

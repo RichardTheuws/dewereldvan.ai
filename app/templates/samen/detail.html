@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Eén datumprikker (besloten, login-gated, noindex): de constellatie + (voor de
+   maker) de auto-selectie van makers die hier graag bij willen zijn. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = g.title ~ " — Samenkomen" %}
+  {% set seo_desc = "Prik samen een moment." %}
+  {% include "_seo_head.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    {% include "_cosmic_nav.html" %}
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <a class="text-link" href="/samen">← Alle prikkers</a>
+        <div class="eyebrow mt-5" data-reveal style="--d:160ms">Prik een moment</div>
+        <h1 class="headline mt-4" data-reveal="materialize" style="--d:240ms">{{ g.title }}</h1>
+        {% if g.description %}
+        <p class="lede mt-5" style="max-width:56ch;--d:340ms" data-reveal>{{ g.description }}</p>
+        {% endif %}
+        <div class="datprik-sub mt-4" data-reveal style="--d:400ms">
+          {% if g.location_hint %}<span class="chip chip--muted">{{ g.location_hint }}</span>{% endif %}
+          {% if g.interest %}<span class="chip chip--muted">voor makers van {{ g.interest }}</span>{% endif %}
+        </div>
+      </section>
+
+      <section class="mt-9" data-reveal style="--d:480ms">
+        {% include "samen/_constellation.html" %}
+      </section>
+
+      {% if is_creator and g.state.value == 'open' %}
+      <section class="mt-12" data-reveal>
+        <h2 class="section-title">Wie wil hier graag bij zijn?</h2>
+        {% if suggested %}
+        <p class="datprik-hint muted">Makers die met hetzelfde bezig zijn. Eén tik stuurt een korte kennismaking — daarna kunnen jullie e-mailen.</p>
+        <div class="datprik-suggest mt-5">
+          {% for s in suggested %}
+          <div class="datprik-suggest__row" id="suggest-{{ s.profile.member_id }}">
+            <div class="datprik-suggest__who">
+              <a class="text-link" href="/leden/{{ s.profile.slug }}">{{ s.profile.display_name }}</a>
+              <span class="datprik-suggest__why">{{ s.reason }}</span>
+            </div>
+            <form hx-post="/samen/{{ g.id }}/nodig"
+                  hx-target="#suggest-{{ s.profile.member_id }}"
+                  hx-swap="outerHTML">
+              <input type="hidden" name="naar" value="{{ s.profile.slug }}">
+              <button type="submit" class="btn btn--sm">Nodig uit</button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="datprik-hint muted">Nog niemand gevonden die hier precies bij past — de prikker staat open, iedereen die 'm ziet kan meestemmen.</p>
+        {% endif %}
+
+        <form method="post" action="/samen/{{ g.id }}/annuleer" class="mt-9"
+              onsubmit="return confirm('Deze prikker afblazen?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="btn btn--ghost btn--sm">Prikker afblazen</button>
+        </form>
+      </section>
+      {% endif %}
+    </main>
+
+    {% include "concierge/_footer_fallback.html" ignore missing %}
+  </div>
+  {% include "_concierge.html" ignore missing %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

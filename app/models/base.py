@@ -250,3 +250,25 @@ class ConnectionStatus(str, enum.Enum):
     pending = "pending"
     accepted = "accepted"
     declined = "declined"
+
+
+class GatheringState(str, enum.Enum):
+    """Staat van een datumprikker ("Samenkomen"). De maker prikt kandidaat-datums,
+    leden stemmen; ``open`` = stemmen loopt, ``resolved`` = een datum won en is
+    samengeklapt tot een agenda-event, ``cancelled`` = de maker blies 'm af. Langste
+    waarde 'cancelled' = 9 → de SQLEnum (native_enum=False) maakt er VARCHAR(9) van."""
+
+    open = "open"
+    resolved = "resolved"
+    cancelled = "cancelled"
+
+
+class GatheringVoteChoice(str, enum.Enum):
+    """Stem van een lid op één kandidaat-datum. Eén stem per (datum-optie, lid);
+    her-stemmen = update. ``yes`` telt als 'ik kan', ``maybe`` als reserve, ``no``
+    als expliciet 'niet'. Langste waarde 'maybe' = 5 → de SQLEnum (native_enum=False)
+    maakt er VARCHAR(5) van."""
+
+    yes = "yes"
+    maybe = "maybe"
+    no = "no"

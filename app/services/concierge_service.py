@@ -93,6 +93,10 @@ SYSTEM_PROMPT: str = (
     "'ik maak …' → draft_offering. 'ik zoek …' / 'ik ben op zoek naar …' → "
     "draft_need. 'idee: …' / 'ik heb een idee …' → draft_idea. 'zet een meetup "
     "in de agenda …' / 'voeg een event toe …' → draft_event (title + frequency). "
+    "'ik wil een keer afspreken …' / 'zullen we samenkomen …' / 'ik wil een borrel/"
+    "meetup organiseren …' → draft_gathering (een datumprikker: title + eventueel "
+    "description, location, interest = het onderwerp waar het om draait bv. "
+    "'voice-agents'). Het lid prikt zelf de kandidaat-datums. "
     "'ik schreef een artikel …' / 'ik werd geïnterviewd …' / 'deel dit nieuws …' "
     "→ draft_news (title + url). 'verander mijn "
     "kopregel naar …' → draft_field (field=headline). 'pas mijn bio aan …' / "
@@ -169,6 +173,9 @@ DRAFT_REGISTRY: dict[str, set[str]] = {
     },
     # POST /nieuws (NewsForm) — een artikel/interview voor het nieuws.
     "nieuws": {"title", "url", "role", "source", "published_at", "description"},
+    # POST /samen (de datumprikker) — het lid prikt zelf de kandidaat-datums; de
+    # agent stelt alleen het kader voor (waarvoor, waar, voor wie).
+    "gathering": {"title", "description", "location", "interest"},
 }
 
 # Profiel-tekstvelden die de agent mag voorstellen te WIJZIGEN (Fase 2.2). Bewust
@@ -347,6 +354,26 @@ TOOLS: list[dict] = [
                 "cadence_note": {"type": "string"},
                 "url": {"type": "string"},
                 "description": {"type": "string"},
+            },
+        },
+    },
+    {
+        "name": "draft_gathering",
+        "description": (
+            "Stel een datumprikker ('Samenkomen') voor het lid voor — om in het echt "
+            "af te spreken. Vul title (waarvoor komen we samen) in, en eventueel "
+            "description, location (waar/online) en interest (het onderwerp waar het "
+            "om draait, bv. 'voice-agents' — daarmee zoek ik straks makers om uit te "
+            "nodigen). Het lid prikt ZELF de kandidaat-datums en bevestigt. SCHRIJF "
+            "NIETS; stel alleen het kader voor."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "description": {"type": "string"},
+                "location": {"type": "string"},
+                "interest": {"type": "string"},
             },
         },
     },
@@ -660,6 +687,8 @@ def run_tool(
         return tool_draft("idea", args), []
     if name == "draft_event":
         return tool_draft("event", args), []
+    if name == "draft_gathering":
+        return tool_draft("gathering", args), []
     if name == "draft_news":
         return tool_draft("nieuws", args), []
     if name == "draft_field":

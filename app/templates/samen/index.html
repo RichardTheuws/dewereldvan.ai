@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Samenkomen — overzicht van open datumprikkers (besloten, login-gated, noindex). #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Samenkomen — dewereldvan.ai" %}
+  {% set seo_desc = "Prik samen een moment en kom in het echt bij elkaar." %}
+  {% include "_seo_head.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    {% include "_cosmic_nav.html" %}
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">In het echt, samen</div>
+        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Samenkomen.</h1>
+        <p class="lede mt-5" style="max-width:56ch;--d:380ms" data-reveal>
+          Wil je een keer afspreken? Prik een paar avonden, laat anderen kiezen wat
+          past — en de winnende datum wordt vanzelf een echte afspraak in de agenda.
+        </p>
+        <div class="mt-8" data-reveal style="--d:460ms">
+          <a class="btn" href="/samen/nieuw">Start een prikker</a>
+        </div>
+      </section>
+
+      <section class="mt-12" data-reveal style="--d:540ms">
+        {% if gatherings %}
+        <div class="datprik-list">
+          {% for g in gatherings %}
+          {% set t = tallies[g.id] %}
+          <a class="datprik-row" href="/samen/{{ g.id }}">
+            <div class="datprik-row__main">
+              <div class="datprik-row__title">{{ g.title }}</div>
+              <div class="datprik-row__meta">
+                {{ g.dates|length }} {% if g.dates|length == 1 %}datum{% else %}datums{% endif %}
+                {% if g.location_hint %}· {{ g.location_hint }}{% endif %}
+                {% if t.has_votes %}· {{ t.voter_count }} {% if t.voter_count == 1 %}stem{% else %}stemmen{% endif %}{% endif %}
+              </div>
+            </div>
+            <span class="datprik-row__go" aria-hidden="true">→</span>
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="constellation-empty">
+          <span class="constellation-empty__spark" aria-hidden="true">✦</span>
+          <p>Er loopt nog geen prikker. Wees de eerste die iets voorstelt.</p>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+
+    {% include "concierge/_footer_fallback.html" ignore missing %}
+  </div>
+  {% include "_concierge.html" ignore missing %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

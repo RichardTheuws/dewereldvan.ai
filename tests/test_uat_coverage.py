@@ -104,6 +104,9 @@ MEMBER_ONLY = {
     "/profiel/ai/cover/studio",
     "/concierge/profielbouw",
     "/intro/nieuw",
+    "/samen",
+    "/samen/nieuw",
+    "/samen/{gathering_id}",
 }
 # Admin-only: gewoon lid → 403.
 ADMIN_ONLY = {

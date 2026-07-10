@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Start een datumprikker (besloten, login-gated, noindex). Gewone, heldere taal;
+   kosmisch beeld. Werkt zonder JS (drie datumvelden staan er al); met JS kun je
+   er meer bijprikken. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Start een prikker — dewereldvan.ai" %}
+  {% set seo_desc = "Prik een paar momenten en laat anderen kiezen." %}
+  {% include "_seo_head.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+</head>
+<body class="cosmic" data-reveal-scroll hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    {% include "_cosmic_nav.html" %}
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">Prik een moment</div>
+        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Wanneer komen we samen?</h1>
+        <p class="lede mt-5" style="max-width:54ch;--d:360ms" data-reveal>
+          Geef je samenkomst een naam, prik een paar momenten en laat de rest kiezen.
+        </p>
+      </section>
+
+      {% if error %}
+      <p class="notice notice--error mt-6" role="alert" data-reveal>{{ error }}</p>
+      {% endif %}
+
+      <section class="mt-8" data-reveal style="--d:440ms">
+        <form method="post" action="/samen" class="idea-form datprik-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+          <div>
+            <label class="field-label" for="dp-title">Waarvoor komen we samen?</label>
+            <input id="dp-title" type="text" name="title" maxlength="200" required
+                   placeholder="Borrel voor makers van voice-agents"
+                   value="{{ form.title if form and form.title else '' }}">
+          </div>
+
+          <div class="mt-4">
+            <label class="field-label" for="dp-desc">Iets meer uitleg <span class="muted">(optioneel)</span></label>
+            <textarea id="dp-desc" name="description" rows="3" maxlength="4000"
+                      placeholder="Waar draait het om, wat gaan we doen?">{{ form.description if form and form.description else '' }}</textarea>
+          </div>
+
+          <div class="event-form__grid mt-4">
+            <div>
+              <label class="field-label" for="dp-loc">Waar? <span class="muted">(optioneel)</span></label>
+              <input id="dp-loc" type="text" name="location_hint" maxlength="200"
+                     placeholder="Ergens in Utrecht, of online"
+                     value="{{ form.location_hint if form and form.location_hint else '' }}">
+            </div>
+            <div>
+              <label class="field-label" for="dp-int">Voor wie? <span class="muted">(optioneel)</span></label>
+              <input id="dp-int" type="text" name="interest" maxlength="120"
+                     placeholder="voice-agents"
+                     value="{{ form.interest if form and form.interest else '' }}">
+            </div>
+          </div>
+          <p class="datprik-hint muted">Vul je een onderwerp in, dan zoek ik straks makers die daar ook mee bezig zijn — om uit te nodigen.</p>
+
+          <fieldset class="datprik-dates mt-6">
+            <legend class="field-label">Welke momenten stel je voor?</legend>
+            <div id="datprik-date-inputs">
+              {% for i in range(3) %}
+              <input class="datprik-dates__input" type="datetime-local" name="datum">
+              {% endfor %}
+            </div>
+            <button type="button" class="btn btn--ghost btn--sm mt-3" id="datprik-add">+ nog een moment</button>
+          </fieldset>
+
+          <div class="mt-6">
+            <button type="submit" class="btn">Zet de prikker klaar</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    {% include "concierge/_footer_fallback.html" ignore missing %}
+  </div>
+
+  <script>
+    (function () {
+      var add = document.getElementById('datprik-add');
+      var box = document.getElementById('datprik-date-inputs');
+      if (!add || !box) return;
+      var MAX = 8;
+      add.addEventListener('click', function () {
+        if (box.querySelectorAll('input').length >= MAX) { add.disabled = true; return; }
+        var el = document.createElement('input');
+        el.className = 'field__input datprik-dates__input';
+        el.type = 'datetime-local';
+        el.name = 'datum';
+        box.appendChild(el);
+        el.focus();
+        if (box.querySelectorAll('input').length >= MAX) add.disabled = true;
+      });
+    })();
+  </script>
+  {% include "_concierge.html" ignore missing %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

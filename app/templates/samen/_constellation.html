@@ -1,0 +1,65 @@
+{# De constellatie: elke kandidaat-datum is een ster die feller wordt naarmate meer
+   mensen 'ik kan' stemmen. Swap-target #constellation-{id} na een stem. De maker ziet
+   per datum een 'kies deze'-knop; de koploper(s) lichten op. CSRF erft via body-hx-headers. #}
+<div id="constellation-{{ g.id }}" class="datprik-constellation">
+  {% if g.state.value == 'resolved' %}
+  <div class="datprik-banner datprik-banner--done">
+    <span class="datprik-banner__spark" aria-hidden="true">✦</span>
+    Er is een datum gekozen — deze samenkomst staat nu in de
+    <a class="text-link" href="/agenda">agenda</a>.
+  </div>
+  {% elif g.state.value == 'cancelled' %}
+  <div class="datprik-banner datprik-banner--off">Deze prikker is afgeblazen.</div>
+  {% endif %}
+
+  {% for dt in tally.dates %}
+  {% set d = dt.date %}
+  {% set is_leader = d.id in tally.leader_date_ids %}
+  <div class="datprik-star{% if is_leader %} datprik-star--leader{% endif %}"
+       style="--glow: {{ dt.yes }};">
+    <div class="datprik-star__when">
+      <span class="datprik-star__rel">{{ d.starts_at | relatieve_tijd }}</span>
+      <span class="datprik-star__date">
+        <time datetime="{{ d.starts_at.isoformat() }}">
+          {{ d.starts_at | nl_datum }} · {{ '%02d:%02d' % (d.starts_at.hour, d.starts_at.minute) }}
+        </time>
+      </span>
+      {% if is_leader and tally.has_votes %}
+      <span class="datprik-star__crown" title="Meeste 'ik kan'">{% if tally.is_tie %}gedeeld koploper{% else %}koploper{% endif %}</span>
+      {% endif %}
+    </div>
+
+    <div class="datprik-star__tally" aria-label="Stemmen">
+      <span class="datprik-tally datprik-tally--yes">{{ dt.yes }} kan</span>
+      {% if dt.maybe %}<span class="datprik-tally datprik-tally--maybe">{{ dt.maybe }} misschien</span>{% endif %}
+      {% if dt.no %}<span class="datprik-tally datprik-tally--no">{{ dt.no }} niet</span>{% endif %}
+    </div>
+
+    {% if member and g.state.value == 'open' %}
+    <div class="datprik-vote" role="group" aria-label="Kun jij op dit moment?">
+      {% for val, label in [('yes', 'Ik kan'), ('maybe', 'Misschien'), ('no', 'Niet')] %}
+      <button type="button"
+              class="rsvp-btn{% if dt.viewer_choice == val %} rsvp-btn--on{% endif %}"
+              aria-pressed="{{ 'true' if dt.viewer_choice == val else 'false' }}"
+              hx-post="/samen/{{ g.id }}/stem"
+              hx-vals='{"date_id": "{{ d.id }}", "choice": "{{ val }}"}'
+              hx-target="#constellation-{{ g.id }}"
+              hx-swap="outerHTML">{{ label }}</button>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if is_creator and g.state.value == 'open' %}
+    <form method="post" action="/samen/{{ g.id }}/kies" class="datprik-star__pick">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="date_id" value="{{ d.id }}">
+      <button type="submit" class="btn btn--sm btn--ghost">Kies deze datum</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  {% if not member and g.state.value == 'open' %}
+  <a class="event-rsvp__join text-link" href="/register">Word lid om mee te prikken</a>
+  {% endif %}
+</div>

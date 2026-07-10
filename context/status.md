@@ -249,10 +249,14 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
   in de M4-`.env` (2026-06-21) → het pad is nu live binnen de €50/wk-cap.
 
 ## Open taken
-- [ ] **Samenkomen — datumprikker (PRD `docs/PRD-samenkomen.md`, DRAFT, wacht op goedkeuring)**: fase 1 =
-      `Gathering`/`GatheringDate`/`GatheringVote` in de concierge, auto-selectie via interesse-graaf, winnende
-      datum klapt samen tot agenda-event; contact lichter via de agent. Fase 2 = "Dichtbij" (grof+opt-in
-      locatie). Beleid vastgelegd (2026-07-10): grof+opt-in locatie, contact-lichter-via-agent (geen DM).
+- [x] **Samenkomen — datumprikker (fase 1, v0.104.0)**: `Gathering`/`GatheringDate`/`GatheringVote`/
+      `GatheringInvite` (migratie 0036), `/samen`-routes + kosmische constellatie (stemmen ja/misschien/nee,
+      koploper gloeit), winnende datum **klapt samen tot agenda-event** met ja-stemmers als RSVP. Auto-selectie
+      via interesse-graaf (`graph_service`), één-klik-intro (geen DM). Concierge-tool `draft_gathering`.
+      Browser-geverifieerd end-to-end. PRD: `docs/PRD-samenkomen.md`.
+- [ ] **Samenkomen — fase 2 "Dichtbij"**: grof+opt-in locatie (postcode-gebied/gemeente, nooit exact adres),
+      on-platform PC2→coördinaat + haversine, afstandsband bovenop de interesse-graaf. Beleid vastgelegd
+      (2026-07-10): grof+opt-in. Degradeert netjes (lid zonder locatie doet volwaardig mee).
 - [ ] **VOLGENDE SESSIE — execution-ready plan**: agenda categorieën + RSVP (aanwezig/organiserend/spreker) +
       AI-curatie. Volledig uitgewerkt (modellen, routes, te hergebruiken patronen) in
       `.claude/plans/agenda-categorieen-rsvp-curatie.md` → direct bouwen, geen verkenning nodig. Bron-seed voor

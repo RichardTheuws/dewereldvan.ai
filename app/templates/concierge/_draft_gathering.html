@@ -1,0 +1,44 @@
+{# Schrijf-surface: voorgestelde datumprikker ("Samenkomen"). De agent stelt het
+   kader voor; het lid prikt zélf de kandidaat-datums. Post naar het BESTAANDE
+   endpoint (POST /samen); bij succes navigeert htmx (HX-Redirect) naar de verse
+   prikker. "laat maar" sluit zonder op te slaan. CSRF erft via body-hx-headers. #}
+<form class="concierge-draft"
+      hx-post="/samen"
+      hx-target="closest .surface-card"
+      hx-swap="outerHTML">
+  <div class="concierge-draft__head">
+    <span aria-hidden="true">✦</span> Een moment om samen te komen — prik een paar avonden, dan kiest de rest.
+  </div>
+
+  <span class="field-label">Waarvoor komen we samen?</span>
+  <input name="title" class="concierge-draft__field" maxlength="200" required
+         aria-label="Waarvoor" value="{{ fields.title | default('') }}">
+
+  <span class="field-label">Waar? <span class="muted">(optioneel)</span></span>
+  <input name="location_hint" class="concierge-draft__field" maxlength="200"
+         aria-label="Waar" value="{{ fields.location | default('') }}"
+         placeholder="Ergens in Utrecht, of online">
+
+  <span class="field-label">Voor wie? <span class="muted">(onderwerp, optioneel)</span></span>
+  <input name="interest" class="concierge-draft__field" maxlength="120"
+         aria-label="Voor wie" value="{{ fields.interest | default('') }}"
+         placeholder="voice-agents">
+
+  <span class="field-label">Welke momenten stel je voor?</span>
+  <div id="cg-dates">
+    {% for i in range(3) %}
+    <input class="concierge-draft__field datprik-dates__input" type="datetime-local"
+           name="datum" aria-label="Kandidaat-datum {{ i + 1 }}">
+    {% endfor %}
+  </div>
+  <button type="button" class="btn btn--ghost btn--sm mt-3"
+          onclick="var b=document.getElementById('cg-dates');if(b.querySelectorAll('input').length<8){var e=document.createElement('input');e.className='concierge-draft__field datprik-dates__input';e.type='datetime-local';e.name='datum';b.appendChild(e);e.focus();}">+ nog een moment</button>
+
+  <input type="hidden" name="description" value="{{ fields.description | default('') }}">
+
+  <div class="concierge-draft__actions">
+    <button type="submit" class="btn">✦ Zet de prikker klaar</button>
+    <button type="button" class="btn btn--ghost btn--sm"
+            onclick="this.closest('.surface-card').remove()">laat maar</button>
+  </div>
+</form>
