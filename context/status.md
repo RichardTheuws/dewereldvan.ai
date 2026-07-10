@@ -249,6 +249,10 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
   in de M4-`.env` (2026-06-21) → het pad is nu live binnen de €50/wk-cap.
 
 ## Open taken
+- [ ] **Samenkomen — datumprikker (PRD `docs/PRD-samenkomen.md`, DRAFT, wacht op goedkeuring)**: fase 1 =
+      `Gathering`/`GatheringDate`/`GatheringVote` in de concierge, auto-selectie via interesse-graaf, winnende
+      datum klapt samen tot agenda-event; contact lichter via de agent. Fase 2 = "Dichtbij" (grof+opt-in
+      locatie). Beleid vastgelegd (2026-07-10): grof+opt-in locatie, contact-lichter-via-agent (geen DM).
 - [ ] **VOLGENDE SESSIE — execution-ready plan**: agenda categorieën + RSVP (aanwezig/organiserend/spreker) +
       AI-curatie. Volledig uitgewerkt (modellen, routes, te hergebruiken patronen) in
       `.claude/plans/agenda-categorieen-rsvp-curatie.md` → direct bouwen, geen verkenning nodig. Bron-seed voor

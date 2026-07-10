@@ -6,6 +6,37 @@ Elke beslissing bevat: **Context** (waarom kiezen), **Beslissing** (wat), **Alte
 
 ---
 
+## [2026-07-10] Samenkomen via de agent — interesse-graaf eerst, locatie grof+opt-in (PRD samenkomen)
+
+**Context**: leden willen makkelijker contact, meer van elkaars werk zien, en fysiek samenkomen —
+o.a. via een "absurd toffe datumprikker" met eventueel auto-selectie van geïnteresseerden binnen
+50 km. Codebase-audit (2026-07-10): de agent-shell (Concierge), de interesse-graaf (`graph_service`,
+gedeelde tools/tags), agenda+RSVP+curatie, de race-veilige `idea_service.vote()`-savepoint en de
+htmx-RSVP-strip bestaan al; er is géén datumprikker, géén per-lid locatie, géén geo-lib.
+
+**Beslissing**: één module **"Samenkomen"** in twee fasen, in de concierge (geen losse pagina).
+(1) Datumprikker als concierge-act: `Gathering`/`GatheringDate`/`GatheringVote` (upsert-per-lid+datum,
+savepoint-race-veilig), auto-selectie via de **interesse-graaf** (nul locatie nodig), en de winnende
+datum **klapt samen tot een gewoon agenda-event** (`Post` + `EventAttendance`) → nul nieuwe
+event-infra downstream. (2) "Dichtbij": **grof + opt-in** locatie (postcode-gebied/gemeente, nóóit
+exact adres, default uit), on-platform PC2→coördinaat-tabel + haversine (geen externe geocoding),
+afstand in banden. Contact wordt **lichter via de agent** (intro→accept→e-mail blijft; de Concierge
+kauwt de intro voor en verstuurt in één klik) — **geen DM-inbox**. PRD: `docs/PRD-samenkomen.md` (DRAFT).
+
+**Alternatieven**:
+- Geo-first (50 km als kern): afgewezen — geblokkeerd op privacy-beleid en zonder samenkomst-oppervlak
+  betekenisloos; de interesse-graaf levert "auto-selectie" al zonder locatie.
+- Volwaardige DM/chat-inbox: afgewezen — structurele moderatie- en op-last botst met het
+  lage-op-last-mandaat; intro→accept + agent-bemiddeling geeft "makkelijk contact" zonder inbox.
+- Losse Doodle-achtige datumprikker-pagina: afgewezen — kaal formulier = regressie per ervaringsmandaat;
+  moet in de concierge leven en oplossen in het echte event-model.
+- Exact-adres/straat-locatie of externe geocoding-service: afgewezen — onnodige PII/AVG-last; grof
+  PC2-middelpunt in-repo volstaat voor "~40 km".
+
+**Gevolgen**: fase 1 is niet-geblokkeerd en bouwt volledig op bestaande patronen; fase 2 vergt één
+migratie + opt-in-veld en degradeert netjes (leden zonder locatie doen volwaardig mee via de graaf).
+Locatie erft de bestaande zichtbaarheids-poort; besloten profielen nooit op afstand vindbaar.
+
 ## [2026-07-08] Maker-expressie via scene, niet via vrije styling (PRD maker-podium)
 
 **Context**: de virale "animated 3D websites"-workflow (AI-video-assets + scroll-scrub, geen WebGL) is

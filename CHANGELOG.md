@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.103.1] - 2026-07-10
+### Docs — PRD "Samenkomen" (datumprikker + Dichtbij) — DRAFT
+- **`docs/PRD-samenkomen.md`** (DRAFT, wacht op goedkeuring): datumprikker als concierge-act
+  (`Gathering`/`GatheringDate`/`GatheringVote`, savepoint-race-veilig), auto-selectie via de
+  interesse-graaf (`graph_service`, nul locatie nodig), winnende datum klapt samen tot een gewoon
+  agenda-event (nul nieuwe event-infra). Fase 2 "Dichtbij": **grof + opt-in** locatie
+  (postcode-gebied/gemeente, nooit exact adres), on-platform PC2→coördinaat + haversine. Contact
+  **lichter via de agent** (intro→accept→e-mail blijft; agent kauwt voor en verstuurt) — geen DM-inbox.
+- Beslissing vastgelegd in `context/decisions.md` (2026-07-10); open taak in `context/status.md`.
+
 ## [0.103.0] - 2026-07-08
 ### Added — Scene-gids "Maak je eigen scene" (PRD maker-podium, fase 1)
 - **`/gids/scene`** (publiek + indexeerbaar, volledig statisch — nul AI-kosten, ook anoniem):
