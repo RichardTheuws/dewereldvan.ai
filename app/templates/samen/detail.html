@@ -46,13 +46,17 @@
       <section class="mt-12" data-reveal>
         <h2 class="section-title">Wie wil hier graag bij zijn?</h2>
         {% if suggested %}
-        <p class="datprik-hint muted">Makers die met hetzelfde bezig zijn. Eén tik stuurt een korte kennismaking — daarna kunnen jullie e-mailen.</p>
+        <p class="datprik-hint muted">Makers die met hetzelfde bezig zijn. Eén tik stuurt een korte kennismaking — daarna kunnen jullie e-mailen.
+          {% if not creator_has_area %}<a class="text-link" href="/profiel/dichtbij">Zet je gebied aan</a> om te zien wie dichtbij is.{% endif %}
+        </p>
         <div class="datprik-suggest mt-5">
           {% for s in suggested %}
           <div class="datprik-suggest__row" id="suggest-{{ s.profile.member_id }}">
             <div class="datprik-suggest__who">
               <a class="text-link" href="/leden/{{ s.profile.slug }}">{{ s.profile.display_name }}</a>
-              <span class="datprik-suggest__why">{{ s.reason }}</span>
+              <span class="datprik-suggest__why">
+                {{ s.reason }}{% if s.distance_band %} · <span class="datprik-suggest__near">{{ s.distance_band }}</span>{% endif %}
+              </span>
             </div>
             <form hx-post="/samen/{{ g.id }}/nodig"
                   hx-target="#suggest-{{ s.profile.member_id }}"

@@ -37,6 +37,12 @@ kauwt de intro voor en verstuurt in één klik) — **geen DM-inbox**. PRD: `doc
 migratie + opt-in-veld en degradeert netjes (leden zonder locatie doen volwaardig mee via de graaf).
 Locatie erft de bestaande zichtbaarheids-poort; besloten profielen nooit op afstand vindbaar.
 
+**Update (2026-07-10, fase 1 = v0.104.0, fase 2 = v0.105.0, beide LIVE):** beide fasen gebouwd,
+getest, browser-geverifieerd en gedeployed. **LEARNING (geodata-pad)**: de in-repo PC2→coördinaat-tabel
+staat in `app/geodata/`, **NIET** `app/data/` — dat laatste pad wordt in productie door het
+`outbox:/app/data`-named-volume overschaduwd, dus een daar gebakken bestand is er runtime niet. Elke
+read-only in-repo dataset hoort buiten `/app/data`.
+
 ## [2026-07-08] Maker-expressie via scene, niet via vrije styling (PRD maker-podium)
 
 **Context**: de virale "animated 3D websites"-workflow (AI-video-assets + scroll-scrub, geen WebGL) is

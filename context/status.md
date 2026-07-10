@@ -254,9 +254,12 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
       koploper gloeit), winnende datum **klapt samen tot agenda-event** met ja-stemmers als RSVP. Auto-selectie
       via interesse-graaf (`graph_service`), één-klik-intro (geen DM). Concierge-tool `draft_gathering`.
       Browser-geverifieerd end-to-end. PRD: `docs/PRD-samenkomen.md`.
-- [ ] **Samenkomen — fase 2 "Dichtbij"**: grof+opt-in locatie (postcode-gebied/gemeente, nooit exact adres),
-      on-platform PC2→coördinaat + haversine, afstandsband bovenop de interesse-graaf. Beleid vastgelegd
-      (2026-07-10): grof+opt-in. Degradeert netjes (lid zonder locatie doet volwaardig mee).
+- [x] **Samenkomen — fase 2 "Dichtbij" (v0.105.0)**: opt-in grof postcode-gebied op `/profiel/dichtbij`
+      (kolommen `area_*` op profile, migratie 0037; nooit exact adres), on-platform PC2→coördinaat-tabel
+      (`app/geodata/pc2_centroids.json`) + haversine, afstandsband ("<25 km"/"~25–50 km") + nabij-eerst op de
+      auto-selectie. Degradeert netjes. Browser-geverifieerd. `geo_service`/`location_service`.
+- [ ] **Samenkomen — fase 3 (optioneel/later)**: cover_mode + scroll-scrub op de prikker; "nieuw werk deze
+      week"-lint in de concierge (§3.3 PRD); concierge `draft_gathering` via een live agent-turn valideren.
 - [ ] **VOLGENDE SESSIE — execution-ready plan**: agenda categorieën + RSVP (aanwezig/organiserend/spreker) +
       AI-curatie. Volledig uitgewerkt (modellen, routes, te hergebruiken patronen) in
       `.claude/plans/agenda-categorieen-rsvp-curatie.md` → direct bouwen, geen verkenning nodig. Bron-seed voor

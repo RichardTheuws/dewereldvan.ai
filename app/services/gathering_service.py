@@ -38,7 +38,13 @@ from app.models import (
     Visibility,
 )
 from app.security import naive_utc, utcnow
-from app.services import attendance_service, graph_service, members_service, post_service
+from app.services import (
+    attendance_service,
+    geo_service,
+    graph_service,
+    members_service,
+    post_service,
+)
 
 __all__ = [
     "GatheringRateLimited",
@@ -373,10 +379,15 @@ def cancel(db: Session, *, gathering: Gathering) -> Gathering:
 
 @dataclass(frozen=True)
 class SuggestedMaker:
-    """Eén voorgestelde deelnemer + de eerlijke grond van het voorstel."""
+    """Eén voorgestelde deelnemer + de eerlijke grond van het voorstel.
+
+    ``distance_band`` is een grove afstandsband ("<25 km"/"~25–50 km") als zowel de
+    maker als de kandidaat een opt-in-gebied heeft en ze dichtbij zijn ("Dichtbij",
+    fase 2) — anders ``None`` (dan telt puur de interesse-graaf)."""
 
     profile: Profile
     reason: str
+    distance_band: str | None = None
 
 
 def _profiles_matching_interest(db: Session, interest: str) -> list[Profile]:
@@ -429,7 +440,55 @@ def suggest_interested(
                 if rm.profile.member_id in exclude:
                     continue
                 out.append(SuggestedMaker(profile=rm.profile, reason=rm.shared_label))
+
+    # "Dichtbij" (fase 2): heeft de maker een opt-in-gebied, verrijk dan de suggestie
+    # met een grove afstandsband en zet nabije makers vooraan. Degradeert netjes:
+    # zonder maker-locatie of zonder kandidaat-locatie blijft de interesse-graaf leidend.
+    out = _annotate_distance(db, gathering, out)
     return out[:limit]
+
+
+def _annotate_distance(
+    db: Session, gathering: Gathering, makers: list[SuggestedMaker]
+) -> list[SuggestedMaker]:
+    """Voeg een grove afstandsband toe (maker↔kandidaat, haversine) en sorteer
+    nabij-eerst. Raakt de volgorde niet aan als de maker geen gebied heeft."""
+    origin = _creator_area(db, gathering)
+    if origin is None:
+        return makers
+    o_lat, o_lng = origin
+
+    annotated: list[tuple[float, SuggestedMaker]] = []
+    for m in makers:
+        p = m.profile
+        km: float | None = None
+        b: str | None = None
+        if p.area_lat is not None and p.area_lng is not None:
+            km = geo_service.haversine_km(o_lat, o_lng, p.area_lat, p.area_lng)
+            b = geo_service.band(km)
+        annotated.append(
+            (km if km is not None else float("inf"),
+             SuggestedMaker(profile=p, reason=m.reason, distance_band=b))
+        )
+    # Nabije makers (mét band) eerst, op afstand oplopend; de rest houdt z'n volgorde.
+    annotated_sorted = sorted(
+        enumerate(annotated),
+        key=lambda t: (t[1][1].distance_band is None, t[1][0], t[0]),
+    )
+    return [sm for _, (_, sm) in annotated_sorted]
+
+
+def _creator_area(db: Session, gathering: Gathering) -> tuple[float, float] | None:
+    """Het middelpunt van het opt-in-gebied van de maker (elke zichtbaarheid), of
+    ``None`` als de maker geen locatie heeft aangezet."""
+    if gathering.creator_member_id is None:
+        return None
+    prof = db.scalar(
+        select(Profile).where(Profile.member_id == gathering.creator_member_id)
+    )
+    if prof is None or prof.area_lat is None or prof.area_lng is None:
+        return None
+    return (prof.area_lat, prof.area_lng)
 
 
 def _creator_profile(db: Session, gathering: Gathering) -> Profile | None:

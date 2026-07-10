@@ -33,7 +33,12 @@ from app.models import (
     Profile,
     Visibility,
 )
-from app.services import connection_service, gathering_service, notification_service
+from app.services import (
+    connection_service,
+    gathering_service,
+    location_service,
+    notification_service,
+)
 
 router = APIRouter(tags=["samen"])
 
@@ -168,6 +173,7 @@ def _detail_context(db: Session, gathering: Gathering, member: Member) -> dict:
     # Auto-selectie tonen we alleen aan de maker van een open prikker.
     if is_creator and gathering.state == GatheringState.open:
         ctx["suggested"] = gathering_service.suggest_interested(db, gathering)
+        ctx["creator_has_area"] = location_service.has_area(member.profile)
     return ctx
 
 

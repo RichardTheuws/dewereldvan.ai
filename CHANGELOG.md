@@ -3,6 +3,23 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.105.0] - 2026-07-10
+### Added — Samenkomen: "Dichtbij" — grof + opt-in locatie (PRD-samenkomen, fase 2)
+- **`/profiel/dichtbij`** (besloten, opt-in): een lid zet optioneel z'n **grove postcode-gebied** aan
+  (alleen de eerste 2 cijfers → gebied + middelpunt; **nooit een exact adres**) en wist het met één klik.
+  Router `app/routers/dichtbij.py`, panel `dichtbij/*`.
+- **Afstandsband op de auto-selectie**: bij een samenkomst krijgen makers die óók een gebied hebben een
+  grove band ("<25 km" / "~25–50 km") bovenop de interesse-graaf, en nabije makers staan vooraan.
+  Degradeert netjes — zonder maker- of kandidaat-locatie blijft de interesse-graaf leidend
+  (`gathering_service.suggest_interested` + `_annotate_distance`).
+- **On-platform, nul externe geocoding**: in-repo PC2→coördinaat-tabel (`app/geodata/pc2_centroids.json`,
+  bewust NIET onder `app/data` — dat pad wordt door het `outbox`-volume overschaduwd) + haversine in pure
+  Python. Services `geo_service.py` + `location_service.py`. Kolommen `area_code/area_label/area_lat/area_lng`
+  op `profile` (migratie `0037`, nullable, index op `area_code`); verdwijnen mee met het profiel (AVG).
+- Tests: `tests/test_dichtbij.py` (postcode→gebied-reductie, haversine + banden, set/wis, afstands-annotatie
+  + nabij-eerst, degradatie zonder locatie, auth-poort + route-flow). Browser-geverifieerd (gebied zetten →
+  prikker → "<25 km" op de nabije maker, nabij-eerst).
+
 ## [0.104.0] - 2026-07-10
 ### Added — Samenkomen: de datumprikker (PRD-samenkomen, fase 1)
 - **`/samen`** (besloten, login-gated, noindex): een lid prikt een handvol kandidaat-datums

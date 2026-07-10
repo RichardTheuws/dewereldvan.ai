@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# "Dichtbij" — opt-in grof locatie-gebied (besloten, login-gated, noindex). #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Dichtbij — dewereldvan.ai" %}
+  {% set seo_desc = "Laat makers in de buurt weten dat je er bent — grof en optioneel." %}
+  {% include "_seo_head.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    {% include "_cosmic_nav.html" %}
+
+    <main class="flex-1 pb-24">
+      <section class="mt-6">
+        <div class="eyebrow" data-reveal style="--d:160ms">Optioneel · grof · privé</div>
+        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Dichtbij.</h1>
+        <p class="lede mt-5" style="max-width:56ch;--d:380ms" data-reveal>
+          Zet je globale gebied aan en dan stel ik bij een samenkomst makers uit de
+          buurt voor. We bewaren alleen je <strong>postcode-gebied</strong> — nooit je
+          adres — en je zet het met één klik weer uit.
+        </p>
+      </section>
+
+      <section class="mt-9" data-reveal style="--d:480ms">
+        {% include "dichtbij/_panel.html" %}
+      </section>
+    </main>
+
+    {% include "concierge/_footer_fallback.html" ignore missing %}
+  </div>
+  {% include "_concierge.html" ignore missing %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

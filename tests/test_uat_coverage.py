@@ -107,6 +107,7 @@ MEMBER_ONLY = {
     "/samen",
     "/samen/nieuw",
     "/samen/{gathering_id}",
+    "/profiel/dichtbij",
 }
 # Admin-only: gewoon lid → 403.
 ADMIN_ONLY = {

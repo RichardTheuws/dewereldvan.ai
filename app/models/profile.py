@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -82,6 +82,16 @@ class Profile(Base, TimestampMixin):
     # samenwerkingen). Signaleert beschikbaarheid (los van offerings "wat ik maak" en
     # needs "wat ik zoek"); voedt de publieke beacons + de /leden-discovery-filter.
     open_to: Mapped[list[str] | None] = mapped_column(JSON_LIST, nullable=True)
+
+    # "Dichtbij" (PRD-samenkomen fase 2) — grof + opt-in locatie. GEEN exact adres:
+    # alleen het 2-cijferige postcode-gebied (``area_code``, bv. "35") + een
+    # weergavenaam (``area_label``, bv. "Utrecht e.o.") + het afgeleide middelpunt
+    # (``area_lat``/``area_lng`` uit de in-repo PC2-tabel — geen externe geocoding).
+    # Default leeg (opt-in). Verdwijnt mee met het profiel (CASCADE op member) = AVG.
+    area_code: Mapped[str | None] = mapped_column(String(2), nullable=True, index=True)
+    area_label: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    area_lat: Mapped[float | None] = mapped_column(Float, nullable=True)
+    area_lng: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     member: Mapped[Member] = relationship(back_populates="profile")
     offerings: Mapped[list[Offering]] = relationship(

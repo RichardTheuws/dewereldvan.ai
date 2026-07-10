@@ -5163,3 +5163,17 @@ a.roadmap-item__origin:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .cosmic .datprik-row, .cosmic .datprik-star { transition: none; }
 }
+
+/* Dichtbij — opt-in grof locatie-gebied (PRD-samenkomen fase 2) */
+.cosmic .dichtbij-panel {
+  padding: 20px 22px; border: 1px solid var(--line); border-radius: 16px;
+  background: rgba(255, 255, 255, 0.015); max-width: 44ch;
+}
+.cosmic .dichtbij-panel__current { display: flex; flex-direction: column; gap: 4px; }
+.cosmic .dichtbij-panel__eyebrow {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  text-transform: uppercase; letter-spacing: .08em; color: var(--cyan);
+}
+.cosmic .dichtbij-panel__area { font-size: 19px; font-weight: 500; }
+.cosmic .dichtbij-panel__note { font-size: 12px; color: var(--muted); }
+.cosmic .datprik-suggest__near { color: var(--cyan); }
