@@ -3,6 +3,15 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.105.1] - 2026-07-10
+### Docs — Feature-demo video's "Samenkomen" (16:9 + 9:16)
+- **`assets/video/samenkomen-demo.mp4`** (16:9, 1080p30, ~31s) + **`samenkomen-demo-9x16.mp4`**
+  (9:16 mobiel, native verticale capture) — demonstreren fase 1 (datumprikker → constellatie met
+  oplichtende koploper → agenda-event + RSVP → auto-selectie) en fase 2 ("Dichtbij", <25 km, nabij-eerst).
+  Gemaakt met de video-studio-skill volgens `docs/VIDEO-STYLEGUIDE.md`: echte UI-captures, branded
+  intro/outro-bumpers, Fraunces/JBMono-titelkaarten, kosmische huisstijl, muziek + titels (geen VO),
+  audio −16 LUFS. Poster: de koploper-glow-money-shot.
+
 ## [0.105.0] - 2026-07-10
 ### Added — Samenkomen: "Dichtbij" — grof + opt-in locatie (PRD-samenkomen, fase 2)
 - **`/profiel/dichtbij`** (besloten, opt-in): een lid zet optioneel z'n **grove postcode-gebied** aan
