@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.105.2] - 2026-07-11
+### Docs — PRD sectie-niveau zichtbaarheid ("Openbaar, maar alleen wat ik kies") — DRAFT
+- **`docs/PRD-zichtbaarheid-secties.md`** (DRAFT, wacht op goedkeuring): vult het gat dat een lid nu
+  niet "publiek aanwezig, maar alleen met specifieke info" kan zijn. Aanpak: géén derde `Visibility`-
+  waarde, maar één veld `Profile.public_sections` (JSON) dat bij `public` bepaalt welke blokken (bio /
+  wat ik maak / wat ik zoek / open_to) een **bezoeker** ziet; naam+discipline+foto = altijd-zichtbare
+  basiskaart; leden zien altijd alles. Legacy `None` = volledig publiek (nul regressie). Poort blijft
+  één bron (`visibility.py`) incl. **anti-lek** op de discovery-filters + meta/sitemap. Sectie-niveau
+  gekozen (2026-07-11) boven per-veld (op-last) en boven een derde enum-waarde.
+
 ## [0.105.1] - 2026-07-10
 ### Docs — Feature-demo video's "Samenkomen" (16:9 + 9:16)
 - **`assets/video/samenkomen-demo.mp4`** (16:9, 1080p30, ~31s) + **`samenkomen-demo-9x16.mp4`**

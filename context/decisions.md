@@ -6,6 +6,28 @@ Elke beslissing bevat: **Context** (waarom kiezen), **Beslissing** (wat), **Alte
 
 ---
 
+## [2026-07-11] Sectie-niveau zichtbaarheid via `public_sections`, geen derde enum-waarde (PRD zichtbaarheid-secties)
+
+**Context**: "Alleen leden" (default) dekt al "helemaal niet in het publieke deel". Wat ontbrak: publiek
+aanwezig zijn met alleen specifieke info. Vraag van leden die wél vindbaar willen zijn maar niet alles
+willen tonen. Granulariteit gekozen: **sectie-niveau** (2026-07-11).
+
+**Beslissing**: houd de binaire `Visibility` (members/public) en voeg **één veld** `Profile.public_sections`
+(JSON) toe dat bij `public` bepaalt welke blokken (bio/makes/needs/open_to) een **bezoeker** ziet.
+Naam+discipline+foto = altijd-publieke basiskaart; leden zien altijd alles. `None` = volledig publiek
+(legacy, nul regressie). Poort blijft één bron (`visibility.py`), inclusief anti-lek op discovery-filters +
+meta/sitemap. PRD: `docs/PRD-zichtbaarheid-secties.md` (DRAFT).
+
+**Alternatieven**:
+- Derde `Visibility`-enum-waarde ("beperkt"): afgewezen — `public` + `public_sections` is simpeler en
+  raakt de bestaande poort niet.
+- Per-item/per-veld slotjes: afgewezen — UX-explosie + op-last, botst met lage-op-last-mandaat.
+- Vast "visitekaartje" (naam+discipline+foto, rest besloten): afgewezen — lid kan niet kiezen wélke info.
+
+**Gevolgen**: de discovery-query wordt kijker-bewust (bezoeker matcht alleen op publieke blokken) —
+het subtielste stuk; discipline (grove categorie) blijft basiskaart óók als offering-details besloten zijn.
+Consent-tekst spiegelt de aangevinkte blokken.
+
 ## [2026-07-10] Samenkomen via de agent — interesse-graaf eerst, locatie grof+opt-in (PRD samenkomen)
 
 **Context**: leden willen makkelijker contact, meer van elkaars werk zien, en fysiek samenkomen —
