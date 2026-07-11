@@ -1,7 +1,7 @@
-{# Publiceer-dok. Zichtbaarheid + sectie-keuze + AVG-consent + knop. Delegeert naar
-   de bestaande zichtbaarheidsflow (POST /profiel/ai/publiceren). Bij ConsentRequired
-   swapt de route dit blok terug met `error`. Nooit auto-publiceren — bewuste stap.
-   Sectie-niveau: bij 'Openbaar' kies je wat een BEZOEKER ziet; leden zien altijd alles. #}
+{# Publiceer-dok. Eén duidelijke keuze: sta je op de openbare site of alleen zichtbaar
+   voor leden? Bij 'Ja' kies je per blok wat een BEZOEKER ziet; leden zien altijd alles.
+   Delegeert naar POST /profiel/ai/publiceren; bij ConsentRequired swapt de route dit
+   blok terug met `error`. Nooit auto-publiceren — bewuste stap. #}
 {% set ps = profile.public_sections %}
 {% macro sec(slug, label) %}
   <label class="flex items-center gap-3 text-sm">
@@ -14,27 +14,28 @@
   {% if error %}
   <div class="bubble bubble--refusal mb-4">{{ error }}</div>
   {% endif %}
-  <form class="space-y-4" action="/profiel/ai/publiceren" method="post"
+  <form class="vis-form space-y-4" action="/profiel/ai/publiceren" method="post"
         hx-post="/profiel/ai/publiceren"
         hx-target="#publiceren" hx-swap="outerHTML">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="section-title">Publiceren</div>
-    <p class="lede text-sm max-w-lg">
-      Kies wie je profiel mag zien. <strong>Alleen leden</strong> = besloten, alleen zichtbaar
-      binnen de community. <strong>Openbaar</strong> = zichtbaar en vindbaar in zoekmachines.
-    </p>
     <a class="link" href="/profiel/voorbeeld" target="_blank" rel="noopener">Bekijk eerst als bezoeker →</a>
     <div>
-      <label class="field-label" for="pub-visibility">Zichtbaarheid</label>
+      <label class="field-label" for="pub-visibility">Sta je op de openbare site?</label>
       <select id="pub-visibility" name="visibility">
-        <option value="members" {% if profile.visibility.value == 'members' %}selected{% endif %}>Alleen leden</option>
-        <option value="public" {% if profile.visibility.value == 'public' %}selected{% endif %}>Openbaar</option>
+        <option value="members" {% if profile.visibility.value == 'members' %}selected{% endif %}>Nee — alleen leden (niet op de openbare site)</option>
+        <option value="public" {% if profile.visibility.value == 'public' %}selected{% endif %}>Ja — openbaar en vindbaar</option>
       </select>
     </div>
 
-    {# Sectie-keuze — geldt bij 'Openbaar'. Naam + discipline + foto zijn altijd zichtbaar. #}
-    <fieldset class="publish-sections">
-      <legend class="field-label">Bij Openbaar — wat zien bezoekers?</legend>
+    <p class="vis-members-note text-sm muted">
+      Je profiel staat dan <strong>niet</strong> op de openbare site en is niet vindbaar in
+      zoekmachines — alleen ingelogde leden zien het.
+    </p>
+
+    {# Sectie-keuze — alleen relevant bij 'Ja'. Naam + discipline + foto zijn altijd zichtbaar. #}
+    <fieldset class="vis-sections">
+      <legend class="field-label">Wat zien bezoekers?</legend>
       <p class="text-sm muted" style="margin:2px 0 8px">
         Je naam, discipline en foto zijn altijd zichtbaar. Kies wat je verder toont —
         <strong>leden in de community zien altijd je volledige profiel.</strong>
@@ -45,7 +46,7 @@
       {{ sec('open_to', 'Waar ik voor opensta') }}
     </fieldset>
 
-    <label class="flex items-start gap-3 text-sm muted">
+    <label class="vis-consent flex items-start gap-3 text-sm muted">
       <input type="checkbox" name="consent" value="on" style="width:auto;margin-top:4px"
              {% if profile.consented_public_at %}checked{% endif %}>
       <span>
@@ -54,6 +55,22 @@
         om openbaar te zetten.
       </span>
     </label>
-    <button class="btn" type="submit">Publiceer mijn profiel</button>
+    <button class="btn" type="submit">Opslaan</button>
   </form>
+  <script>
+    (function () {
+      var form = document.currentScript.previousElementSibling;
+      var sel = form.querySelector('#pub-visibility');
+      var note = form.querySelector('.vis-members-note');
+      var secs = form.querySelector('.vis-sections');
+      var consent = form.querySelector('.vis-consent');
+      function sync() {
+        var pub = sel.value === 'public';
+        note.style.display = pub ? 'none' : '';
+        secs.style.display = pub ? '' : 'none';
+        consent.style.display = pub ? '' : 'none';
+      }
+      sel.addEventListener('change', sync); sync();
+    })();
+  </script>
 </div>

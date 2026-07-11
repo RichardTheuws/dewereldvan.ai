@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="nl">
-{# "Dichtbij" — opt-in grof locatie-gebied (besloten, login-gated, noindex). #}
+{# "Dichtbij" — opt-in grof locatie-gebied (besloten, login-gated, noindex).
+   Kosmische diepte: links het verhaal + het ringen-motief (jij in het midden,
+   makers eromheen), rechts de opt-in in een verhoogde glas-kaart. #}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,22 +22,51 @@
   {% include "profiles/_cosmic_bg.html" %}
   {% include "_preview_banner.html" %}
 
-  <div class="wrap wrap--narrow">
+  <div class="wrap">
     {% include "_cosmic_nav.html" %}
 
     <main class="flex-1 pb-24">
-      <section class="mt-6">
-        <div class="eyebrow" data-reveal style="--d:160ms">Optioneel · grof · privé</div>
-        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Dichtbij.</h1>
-        <p class="lede mt-5" style="max-width:56ch;--d:380ms" data-reveal>
-          Zet je globale gebied aan en dan stel ik bij een samenkomst makers uit de
-          buurt voor. We bewaren alleen je <strong>postcode-gebied</strong> — nooit je
-          adres — en je zet het met één klik weer uit.
-        </p>
-      </section>
+      <section class="compose mt-8">
 
-      <section class="mt-9" data-reveal style="--d:480ms">
-        {% include "dichtbij/_panel.html" %}
+        {# ---- Verhaal-kolom ---- #}
+        <div class="compose__intro">
+          <div class="eyebrow" data-reveal style="--d:180ms">Optioneel · grof · privé</div>
+          <h1 class="headline mt-5" data-reveal="materialize" style="--d:280ms">Dichtbij.</h1>
+          <p class="lede mt-5" style="max-width:42ch;--d:400ms" data-reveal>
+            Zet je globale gebied aan en dan stel ik bij een samenkomst makers uit de
+            buurt voor. We bewaren alleen je <strong>postcode-gebied</strong> — nooit je
+            adres — en je zet het met één klik weer uit.
+          </p>
+
+          <div class="flow-steps" data-reveal style="--d:520ms">
+            <div class="flow-step"><span class="flow-step__num">✦</span>
+              <div><div class="flow-step__title">Alleen je gebied</div>
+              <div class="flow-step__desc">De eerste cijfers van je postcode — genoeg voor "~40 km", niet je adres.</div></div></div>
+            <div class="flow-step"><span class="flow-step__num">✦</span>
+              <div><div class="flow-step__title">Alleen bij een samenkomst</div>
+              <div class="flow-step__desc">Je gebied speelt alleen mee als iemand een prikker start — nergens anders.</div></div></div>
+          </div>
+
+          {# Ringen-motief: jij in het midden, makers dichtbij eromheen. #}
+          <div class="radiusmotif" data-reveal="drift" style="--d:640ms" aria-hidden="true">
+            <span class="radiusmotif__ring"></span>
+            <span class="radiusmotif__ring"></span>
+            <span class="radiusmotif__ring"></span>
+            <span class="radiusmotif__core"></span>
+            <span class="radiusmotif__dot" style="left:38%;top:30%"></span>
+            <span class="radiusmotif__dot" style="left:64%;top:56%"></span>
+            <span class="radiusmotif__dot" style="left:32%;top:66%"></span>
+          </div>
+        </div>
+
+        {# ---- Opt-in-kolom (verhoogde glas-kaart) ---- #}
+        <div class="form-card" data-reveal="materialize" style="--d:360ms">
+          <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+            <span>Je bepaalt dit zelf, en je kunt het altijd weer uitzetten. Leden zien nooit je exacte adres.</span>
+          </div>
+          {% include "dichtbij/_panel.html" %}
+        </div>
+
       </section>
     </main>
 

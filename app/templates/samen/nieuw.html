@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="nl">
-{# Start een datumprikker (besloten, login-gated, noindex). Gewone, heldere taal;
-   kosmisch beeld. Werkt zonder JS (drie datumvelden staan er al); met JS kun je
-   er meer bijprikken. #}
+{# Start een datumprikker (besloten, login-gated, noindex). Kosmische diepte:
+   asymmetrische compositie — links het verhaal + het sterrencluster-motief (datums
+   worden sterren), rechts het formulier in een verhoogde glas-kaart. #}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -21,40 +21,72 @@
   {% include "profiles/_cosmic_bg.html" %}
   {% include "_preview_banner.html" %}
 
-  <div class="wrap wrap--narrow">
+  <div class="wrap">
     {% include "_cosmic_nav.html" %}
 
     <main class="flex-1 pb-24">
-      <section class="mt-6">
-        <div class="eyebrow" data-reveal style="--d:160ms">Prik een moment</div>
-        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Wanneer komen we samen?</h1>
-        <p class="lede mt-5" style="max-width:54ch;--d:360ms" data-reveal>
-          Geef je samenkomst een naam, prik een paar momenten en laat de rest kiezen.
-        </p>
-      </section>
+      <section class="compose mt-8">
 
-      {% if error %}
-      <p class="notice notice--error mt-6" role="alert" data-reveal>{{ error }}</p>
-      {% endif %}
+        {# ---- Verhaal-kolom ---- #}
+        <div class="compose__intro">
+          <a class="text-link" href="/samen" data-reveal style="--d:120ms">← Alle prikkers</a>
+          <div class="eyebrow mt-5" data-reveal style="--d:200ms">Prik een moment</div>
+          <h1 class="headline mt-5" data-reveal="materialize" style="--d:300ms">Wanneer<br>komen we samen?</h1>
+          <p class="lede mt-5" style="max-width:42ch;--d:420ms" data-reveal>
+            Geef je samenkomst een naam, prik een paar momenten en laat de rest kiezen.
+            De datum die wint, wordt vanzelf een afspraak in de agenda.
+          </p>
 
-      <section class="mt-8" data-reveal style="--d:440ms">
-        <form method="post" action="/samen" class="idea-form datprik-form">
+          <div class="flow-steps" data-reveal style="--d:520ms">
+            <div class="flow-step"><span class="flow-step__num">1</span>
+              <div><div class="flow-step__title">Prik een paar momenten</div>
+              <div class="flow-step__desc">Een handvol avonden waar jij zou kunnen.</div></div></div>
+            <div class="flow-step"><span class="flow-step__num">2</span>
+              <div><div class="flow-step__title">De wereld stemt mee</div>
+              <div class="flow-step__desc">Leden kiezen ja, misschien of niet — de koploper licht op.</div></div></div>
+            <div class="flow-step"><span class="flow-step__num">3</span>
+              <div><div class="flow-step__title">Het staat in de agenda</div>
+              <div class="flow-step__desc">De winnende datum wordt een echte afspraak, mét aanmeldingen.</div></div></div>
+          </div>
+
+          {# Sterrencluster-motief: kandidaat-datums als sterren die verbinden. #}
+          <div class="starmotif" data-reveal="drift" style="--d:640ms" aria-hidden="true">
+            <svg viewBox="0 0 380 190">
+              <line class="starmotif__line" x1="60" y1="50" x2="150" y2="120"/>
+              <line class="starmotif__line" x1="150" y1="120" x2="250" y2="70"/>
+              <line class="starmotif__line" x1="250" y1="70" x2="320" y2="140"/>
+              <line class="starmotif__line" x1="60" y1="50" x2="250" y2="70"/>
+              <circle class="starmotif__star" cx="250" cy="70" r="6"/>
+              <circle class="starmotif__star--dim" cx="60" cy="50" r="4"/>
+              <circle class="starmotif__star--dim" cx="150" cy="120" r="4"/>
+              <circle class="starmotif__star--dim" cx="320" cy="140" r="4"/>
+            </svg>
+          </div>
+        </div>
+
+        {# ---- Formulier-kolom (verhoogde glas-kaart) ---- #}
+        <form method="post" action="/samen" class="form-card" data-reveal="materialize" style="--d:360ms">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+            <span>Vul in wat je kwijt wilt — alleen een naam en één moment zijn verplicht. De rest helpt anderen kiezen.</span>
+          </div>
 
-          <div>
+          {% if error %}<p class="notice notice--error" role="alert">{{ error }}</p>{% endif %}
+
+          <div class="form-field">
             <label class="field-label" for="dp-title">Waarvoor komen we samen?</label>
             <input id="dp-title" type="text" name="title" maxlength="200" required
                    placeholder="Borrel voor makers van voice-agents"
                    value="{{ form.title if form and form.title else '' }}">
           </div>
 
-          <div class="mt-4">
+          <div class="form-field">
             <label class="field-label" for="dp-desc">Iets meer uitleg <span class="muted">(optioneel)</span></label>
             <textarea id="dp-desc" name="description" rows="3" maxlength="4000"
                       placeholder="Waar draait het om, wat gaan we doen?">{{ form.description if form and form.description else '' }}</textarea>
           </div>
 
-          <div class="event-form__grid mt-4">
+          <div class="form-row">
             <div>
               <label class="field-label" for="dp-loc">Waar? <span class="muted">(optioneel)</span></label>
               <input id="dp-loc" type="text" name="location_hint" maxlength="200"
@@ -68,11 +100,11 @@
                      value="{{ form.interest if form and form.interest else '' }}">
             </div>
           </div>
-          <p class="datprik-hint muted">Vul je een onderwerp in, dan zoek ik straks makers die daar ook mee bezig zijn — om uit te nodigen.</p>
+          <p class="form-hint">Vul je een onderwerp in, dan zoek ik straks makers die daar ook mee bezig zijn — om uit te nodigen.</p>
 
-          <fieldset class="datprik-dates mt-6">
+          <fieldset class="form-field datprik-dates">
             <legend class="field-label">Welke momenten stel je voor?</legend>
-            <div id="datprik-date-inputs">
+            <div id="datprik-date-inputs" class="datprik-dates__list">
               {% for i in range(3) %}
               <input class="datprik-dates__input" type="datetime-local" name="datum">
               {% endfor %}
@@ -80,7 +112,7 @@
             <button type="button" class="btn btn--ghost btn--sm mt-3" id="datprik-add">+ nog een moment</button>
           </fieldset>
 
-          <div class="mt-6">
+          <div class="mt-7">
             <button type="submit" class="btn">Zet de prikker klaar</button>
           </div>
         </form>
@@ -95,16 +127,13 @@
       var add = document.getElementById('datprik-add');
       var box = document.getElementById('datprik-date-inputs');
       if (!add || !box) return;
-      var MAX = 8;
       add.addEventListener('click', function () {
-        if (box.querySelectorAll('input').length >= MAX) { add.disabled = true; return; }
+        if (box.querySelectorAll('input').length >= 8) { add.disabled = true; return; }
         var el = document.createElement('input');
-        el.className = 'field__input datprik-dates__input';
-        el.type = 'datetime-local';
-        el.name = 'datum';
-        box.appendChild(el);
-        el.focus();
-        if (box.querySelectorAll('input').length >= MAX) add.disabled = true;
+        el.className = 'datprik-dates__input';
+        el.type = 'datetime-local'; el.name = 'datum';
+        box.appendChild(el); el.focus();
+        if (box.querySelectorAll('input').length >= 8) add.disabled = true;
       });
     })();
   </script>

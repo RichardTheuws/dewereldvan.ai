@@ -5165,10 +5165,9 @@ a.roadmap-item__origin:focus-visible {
 }
 
 /* Dichtbij — opt-in grof locatie-gebied (PRD-samenkomen fase 2) */
-.cosmic .dichtbij-panel {
-  padding: 20px 22px; border: 1px solid var(--line); border-radius: 16px;
-  background: rgba(255, 255, 255, 0.015); max-width: 44ch;
-}
+/* Het paneel zit nu binnen een .form-card (die de kaart-look levert) → geen eigen
+ * omlijning meer; puur de inhoud (huidig gebied of het invoer-formulier). */
+.cosmic .dichtbij-panel { max-width: 44ch; }
 .cosmic .dichtbij-panel__current { display: flex; flex-direction: column; gap: 4px; }
 .cosmic .dichtbij-panel__eyebrow {
   font-family: 'JetBrains Mono', monospace; font-size: 11px;
@@ -5177,3 +5176,133 @@ a.roadmap-item__origin:focus-visible {
 .cosmic .dichtbij-panel__area { font-size: 19px; font-weight: 500; }
 .cosmic .dichtbij-panel__note { font-size: 12px; color: var(--muted); }
 .cosmic .datprik-suggest__near { color: var(--cyan); }
+
+/* --------------------------------------------------------------------------- *
+ * Kosmische compositie voor de nieuwe flows (Samenkomen / Dichtbij).
+ * Asymmetrische twee-koloms compositie + verhoogde glas-kaart i.p.v. een kale
+ * omlijnde box in lege ruimte (styleguide §1 compositie / §2 inputs).
+ * --------------------------------------------------------------------------- */
+.cosmic .compose {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  align-items: start;
+  margin-top: 12px;
+}
+@media (min-width: 920px) {
+  .cosmic .compose { grid-template-columns: 0.9fr 1.1fr; gap: 68px; }
+  .cosmic .compose__intro { position: sticky; top: 40px; }
+}
+.cosmic .compose__intro { position: relative; }
+
+/* Verhoogde glas-kaart die een formulier draagt (geen dunne outline). */
+.cosmic .form-card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(109, 93, 252, 0.07), rgba(4, 4, 14, 0)) ,
+    var(--card);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  padding: 30px 30px 34px;
+  box-shadow:
+    0 34px 90px -46px rgba(63, 210, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+.cosmic .form-card::before { /* gouden hairline bovenrand (spaarzaam accent) */
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(246, 205, 134, 0.55), transparent);
+}
+.cosmic .form-card::after { /* zachte violet-gloed rechtsboven — diepte, geen platte box */
+  content: ""; position: absolute; width: 360px; height: 360px; right: -130px; top: -140px;
+  background: radial-gradient(circle, rgba(109, 93, 252, 0.2), transparent 70%);
+  pointer-events: none;
+}
+.cosmic .form-card__lead {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.92rem; color: var(--muted); line-height: 1.55; margin-bottom: 20px;
+}
+.cosmic .form-card__lead .spark { color: var(--gold); flex: none; }
+.cosmic .form-field { margin-top: 18px; }
+.cosmic .form-field:first-of-type { margin-top: 0; }
+.cosmic .form-row { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 18px; }
+@media (min-width: 560px) { .cosmic .form-row { grid-template-columns: 1fr 1fr; } }
+.cosmic .form-hint { font-size: 0.85rem; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+/* "Zo werkt het" — kleine genummerde stappen in de intro-kolom (superslim/§4). */
+.cosmic .flow-steps { margin-top: 30px; display: flex; flex-direction: column; gap: 16px; }
+.cosmic .flow-step { display: flex; gap: 14px; align-items: flex-start; }
+.cosmic .flow-step__num {
+  flex: none; width: 30px; height: 30px; border-radius: 999px;
+  border: 1px solid rgba(246, 205, 134, 0.4); color: var(--gold);
+  display: grid; place-items: center; font-family: "JetBrains Mono", monospace;
+  font-size: 13px; margin-top: 1px;
+}
+.cosmic .flow-step__title { font-weight: 500; }
+.cosmic .flow-step__desc { font-size: 0.9rem; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+
+/* Sterrencluster-motief: de kandidaat-datums als sterren die verbinden — het
+ * concept van de prikker als beeld (handtekening-element, geen kale ruimte). */
+.cosmic .starmotif { position: relative; margin-top: 34px; height: 190px; max-width: 380px; }
+.cosmic .starmotif svg { width: 100%; height: 100%; overflow: visible; }
+.cosmic .starmotif__star { fill: var(--gold); filter: drop-shadow(0 0 6px rgba(246, 205, 134, 0.7)); }
+.cosmic .starmotif__star--dim { fill: #cdd6ff; filter: drop-shadow(0 0 4px rgba(122, 226, 245, 0.5)); opacity: 0.8; }
+.cosmic .starmotif__line { stroke: rgba(122, 226, 245, 0.35); stroke-width: 1; }
+@keyframes star-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.cosmic .starmotif__star, .cosmic .starmotif__star--dim { animation: star-pulse 4s ease-in-out infinite; }
+.cosmic .starmotif__star:nth-of-type(2) { animation-delay: 0.8s; }
+.cosmic .starmotif__star:nth-of-type(3) { animation-delay: 1.6s; }
+.cosmic .starmotif__star:nth-of-type(4) { animation-delay: 2.4s; }
+
+/* Concentrische "dichtbij"-ringen als motief voor de locatie-flow. */
+.cosmic .radiusmotif { position: relative; margin-top: 34px; height: 200px; max-width: 360px; display: grid; place-items: center; }
+.cosmic .radiusmotif__ring {
+  position: absolute; border: 1px solid rgba(122, 226, 245, 0.25); border-radius: 999px;
+  animation: ring-breathe 5s ease-in-out infinite;
+}
+.cosmic .radiusmotif__ring:nth-child(1) { width: 80px; height: 80px; }
+.cosmic .radiusmotif__ring:nth-child(2) { width: 150px; height: 150px; animation-delay: 0.6s; }
+.cosmic .radiusmotif__ring:nth-child(3) { width: 220px; height: 220px; animation-delay: 1.2s; border-color: rgba(122, 226, 245, 0.14); }
+.cosmic .radiusmotif__core { width: 12px; height: 12px; border-radius: 999px; background: var(--gold); box-shadow: 0 0 16px rgba(246, 205, 134, 0.8); z-index: 1; }
+.cosmic .radiusmotif__dot { position: absolute; width: 7px; height: 7px; border-radius: 999px; background: #cdd6ff; box-shadow: 0 0 8px rgba(122, 226, 245, 0.7); }
+@keyframes ring-breathe { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmic .starmotif__star, .cosmic .starmotif__star--dim,
+  .cosmic .radiusmotif__ring { animation: none; }
+}
+
+/* Samenkomen — overzicht: hero + prikker-kaarten */
+.cosmic .samen-hero { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: center; }
+@media (min-width: 860px) { .cosmic .samen-hero { grid-template-columns: 1.2fr 0.8fr; gap: 48px; } }
+.cosmic .samen-hero__motif { margin-top: 0; justify-self: end; height: 220px; width: 100%; }
+.cosmic .datprik-cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;
+}
+.cosmic .datprik-card {
+  position: relative; display: flex; flex-direction: column; gap: 8px;
+  padding: 22px 22px 18px; border: 1px solid var(--line); border-radius: 18px;
+  background: linear-gradient(180deg, rgba(109, 93, 252, 0.05), rgba(4, 4, 14, 0)), var(--card);
+  text-decoration: none; color: inherit; overflow: hidden;
+  transition: border-color .25s ease, transform .25s ease, box-shadow .35s ease;
+}
+.cosmic .datprik-card:hover {
+  border-color: rgba(63, 210, 255, 0.45); transform: translateY(-3px);
+  box-shadow: 0 18px 50px -24px rgba(63, 210, 255, 0.5);
+}
+.cosmic .datprik-card__spark { color: var(--gold); font-size: 13px; opacity: .8; }
+.cosmic .datprik-card__title { font-family: "Fraunces", serif; font-size: 1.25rem; font-weight: 500; line-height: 1.2; }
+.cosmic .datprik-card__meta { color: var(--muted); font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 4px; }
+.cosmic .datprik-card__foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line);
+}
+.cosmic .datprik-card__votes {
+  font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--gold);
+}
+.cosmic .datprik-card__votes--empty { color: var(--muted); }
+.cosmic .datprik-card__go { font-size: 0.9rem; color: var(--cyan); }
+@media (prefers-reduced-motion: reduce) { .cosmic .datprik-card { transition: none; } }

@@ -14,11 +14,12 @@ from __future__ import annotations
 import pytest
 from fastapi import Depends
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.models import Visibility
 from app.services import members_service, visibility as vis
-from tests._route_helpers import make_route_engine
+from tests._route_helpers import csrf_token, make_route_engine
 
 
 # --------------------------------------------------------------------------- #
@@ -213,3 +214,22 @@ def test_member_project_deeplink_visible(make_client, seed):
     resp = make_client(seed["watcher"]).get("/projecten/voicebot-studio")
     assert resp.status_code == 200
     assert "Voicebot Studio" in resp.text
+
+
+def test_edit_toggle_route_sets_sections(make_client, SessionTest, seed):
+    """De oude /profiel/zichtbaarheid-toggle legt nu óók de sectie-keuze vast (parity)."""
+    from app.models import Profile, Visibility
+
+    client = make_client(seed["maker"])
+    token = csrf_token(client, "/leden")
+    resp = client.post(
+        "/profiel/zichtbaarheid",
+        data={"visibility": "public", "consent": "on", "sections": ["makes", "needs"]},
+        headers={"X-CSRF-Token": token},
+    )
+    assert resp.status_code == 200
+    s = SessionTest()
+    p = s.scalar(select(Profile).where(Profile.slug == "vera-voice"))
+    assert p.visibility == Visibility.public
+    assert p.public_sections == ["makes", "needs"]  # gesaneerd + vaste volgorde
+    s.close()

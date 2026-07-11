@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import current_member, require_member
-from app.models import Member, Profile
+from app.models import Member, Profile, Visibility
 from app.schemas.profile import NeedForm, OfferingForm, ProfileForm, VisibilityForm
 from app.services import (
     account_deletion,
@@ -319,6 +319,7 @@ def change_visibility(
     request: Request,
     visibility: str = Form(""),
     consent: str = Form(""),
+    sections: list[str] = Form(default=[]),
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
@@ -339,6 +340,10 @@ def change_visibility(
         visibility_service.change_visibility(
             db, profile, data.visibility, actor=member, consent=data.consent
         )
+        # Sectie-niveau: leg bij openbaar vast welke blokken een bezoeker ziet
+        # (parity met het AI-publiceer-dok). Bij 'alleen leden' laten we de keuze staan.
+        if data.visibility == Visibility.public:
+            visibility_service.set_public_sections(db, profile, sections)
     except visibility_service.ConsentRequired:
         db.rollback()
         return _render(

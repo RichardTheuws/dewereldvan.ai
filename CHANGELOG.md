@@ -3,6 +3,29 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.106.2] - 2026-07-11
+### Changed — Kosmische-diepte-herontwerp van de Samenkomen/Dichtbij-flows (ervaringsmandaat)
+- De nieuwe schermen waren kale, links-uitgelijnde formulieren in lege ruimte — een regressie t.o.v.
+  de north-star (`docs/STYLEGUIDE.md`). Herontworpen naar **kosmische diepte**: asymmetrische
+  twee-koloms compositie (verhaal + verhoogde **glas-kaart** met gloed + gouden hairline i.p.v. dunne
+  outline), een **constellatie-/ringen-motief** dat het concept draagt (datums = sterren; jij +
+  makers dichtbij), een "zo werkt het"-hulp (superslim), en gechoreografeerde reveals.
+- `samen/nieuw.html`, `samen/index.html` (hero + prikker-kaarten + sterke lege staat),
+  `dichtbij/instellingen.html`; nieuwe herbruikbare CSS (`.compose`, `.form-card`, `.flow-steps`,
+  `.starmotif`, `.radiusmotif`, `.datprik-card`) in `cosmic.css`. Alles `prefers-reduced-motion`-safe,
+  responsive (stapelt op mobiel). Browser-geverifieerd op alle drie de schermen.
+
+## [0.106.1] - 2026-07-11
+### Changed — Zichtbaarheids-keuze verhelderd + parity op beide publiceer-paden
+- De keuze is nu één helder geheel: **"Sta je op de openbare site?" → Nee (alleen leden, niet op de
+  openbare site) / Ja (openbaar)**. "Nee" is een expliciete, duidelijke keuze met de uitleg dat je
+  profiel dan niet op de openbare site staat en niet vindbaar is; de sectie-opties + consent tonen
+  alleen bij "Ja" (JS-toggle, progressive — zonder JS staat alles zichtbaar). Zowel het AI-publiceer-dok
+  (`ai/_publish_panel.html`) als het profiel-bewerken-paneel (`profiles/edit.html`).
+- **Parity**: de toggle `/profiel/zichtbaarheid` (profiel-bewerken) legt nu óók de sectie-keuze vast
+  (`set_public_sections` bij openbaar) — beide publiceer-paden gedragen zich gelijk. Test
+  `test_edit_toggle_route_sets_sections`.
+
 ## [0.106.0] - 2026-07-11
 ### Added — Sectie-niveau zichtbaarheid ("Openbaar, maar alleen wat ik kies")
 - Een openbaar profiel kan nu **per blok** kiezen wat een **bezoeker** ziet (bio / wat ik maak /

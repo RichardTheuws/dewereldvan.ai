@@ -184,29 +184,74 @@
       <section class="card mt-8" id="zichtbaarheid" style="padding:24px;--d:680ms" data-reveal>
         <h2 class="section-title" style="margin-bottom:14px">Zichtbaarheid</h2>
         <p class="muted" style="margin:0 0 16px;font-size:0.95rem;line-height:1.5;max-width:54ch">
-          Kies of je profiel openbaar is (voor iedereen zichtbaar en vindbaar) of
-          alleen voor ingelogde leden. Twijfel je hoe het overkomt?
+          Sta je op de openbare site, of alleen zichtbaar voor ingelogde leden?
+          Twijfel je hoe het overkomt?
           <a class="link" href="/profiel/voorbeeld">Bekijk eerst als bezoeker →</a>
         </p>
-        <form style="display:flex;flex-direction:column;gap:16px;align-items:flex-start"
+        <form class="vis-form" style="display:flex;flex-direction:column;gap:16px;align-items:flex-start"
               hx-post="/profiel/zichtbaarheid"
               hx-target="#profiel-status"
               hx-swap="outerHTML">
-          <select name="visibility" style="max-width:280px">
-            <option value="members" {% if profile.visibility.value == "members" %}selected{% endif %}>Alleen leden</option>
-            <option value="public" {% if profile.visibility.value == "public" %}selected{% endif %}>Openbaar</option>
+          <label class="field-label" for="vis-select">Sta je op de openbare site?</label>
+          <select id="vis-select" name="visibility" style="max-width:340px">
+            <option value="members" {% if profile.visibility.value == "members" %}selected{% endif %}>Nee — alleen leden (niet op de openbare site)</option>
+            <option value="public" {% if profile.visibility.value == "public" %}selected{% endif %}>Ja — openbaar en vindbaar</option>
           </select>
-          <label style="display:flex;align-items:flex-start;gap:10px;color:var(--muted);font-size:0.95rem;line-height:1.5;max-width:54ch;cursor:pointer">
+
+          {# 'Nee' = helemaal niet op de openbare site. #}
+          <p class="vis-members-note muted" style="margin:0;font-size:0.9rem;line-height:1.5;max-width:54ch">
+            Je profiel staat dan <strong>niet</strong> op de openbare site en is niet vindbaar in
+            zoekmachines — alleen ingelogde leden zien het.
+          </p>
+
+          {# Sectie-niveau — alleen relevant bij 'Ja'. Naam + discipline + foto altijd zichtbaar. #}
+          {% set ps = profile.public_sections %}
+          <fieldset class="vis-sections" style="border:1px solid var(--line);border-radius:12px;padding:14px 16px;max-width:54ch;display:flex;flex-direction:column;gap:8px">
+            <legend class="muted" style="font-size:0.9rem;padding:0 6px">Wat zien bezoekers?</legend>
+            <span class="muted" style="font-size:0.88rem;line-height:1.5">
+              Je naam, discipline en foto zijn altijd zichtbaar. Kies wat je verder toont —
+              <strong>leden zien altijd je volledige profiel.</strong>
+            </span>
+            {% for slug, label in [("bio","Over jou"),("makes","Wat ik maak"),("needs","Wat ik zoek"),("open_to","Waar ik voor opensta")] %}
+            <label style="display:flex;align-items:center;gap:10px;font-size:0.95rem;cursor:pointer">
+              <input type="checkbox" name="sections" value="{{ slug }}"
+                     {% if ps is none or slug in ps %}checked{% endif %}
+                     style="flex:none;width:auto">
+              <span>{{ label }}</span>
+            </label>
+            {% endfor %}
+          </fieldset>
+
+          <label class="vis-consent" style="display:flex;align-items:flex-start;gap:10px;color:var(--muted);font-size:0.95rem;line-height:1.5;max-width:54ch;cursor:pointer">
             <input type="checkbox" name="consent" value="on"
                    {% if profile.consented_public_at %}checked{% endif %}
                    style="margin-top:3px;flex:none;width:auto">
             <span>
-              Ik geef toestemming om mijn profiel (naam, bio en wat ik maak/zoek)
-              openbaar en vindbaar te maken. Verplicht om openbaar te zetten.
+              Ik geef toestemming om de hierboven aangevinkte onderdelen van mijn profiel
+              (naam, discipline en foto altijd) openbaar en vindbaar te maken. Verplicht
+              om openbaar te zetten.
             </span>
           </label>
           <button type="submit" class="btn btn--ghost btn--sm">Opslaan</button>
         </form>
+        {# Toon de openbaar-opties alleen bij 'Ja'; bij 'Nee' de niet-op-de-site-uitleg.
+           Progressive enhancement: zonder JS staat alles zichtbaar (geen verlies). #}
+        <script>
+          (function () {
+            var form = document.currentScript.previousElementSibling;
+            var sel = form.querySelector('#vis-select');
+            var note = form.querySelector('.vis-members-note');
+            var secs = form.querySelector('.vis-sections');
+            var consent = form.querySelector('.vis-consent');
+            function sync() {
+              var pub = sel.value === 'public';
+              note.style.display = pub ? 'none' : '';
+              secs.style.display = pub ? '' : 'none';
+              consent.style.display = pub ? '' : 'none';
+            }
+            sel.addEventListener('change', sync); sync();
+          })();
+        </script>
       </section>
 
       {# --- Je data, jouw regie: volledige verwijdering (AVG, altijd bereikbaar) --- #}
