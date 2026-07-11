@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.106.4] - 2026-07-11
+### Fixed — Dubbel footer-menu op de Samenkomen/Dichtbij-pagina's
+- De vier nieuwe pagina's include'ten `concierge/_footer_fallback.html` **expliciet**, terwijl
+  `_concierge.html` dat voor een ingelogd lid al doet → twee menu's onderaan (+ dubbele
+  `#canvas-fallback-*` ids). Expliciete include verwijderd uit `samen/{index,nieuw,detail}.html`
+  en `dichtbij/instellingen.html`; `_concierge.html` levert de fallback nu als enige (het bedoelde
+  patroon). Ingelogd geverifieerd: exact 1 menu op alle vier de pagina's.
+
 ## [0.106.3] - 2026-07-11
 ### Changed — Craft-pass op de prikker-detailpagina (constellatie + auto-selectie)
 - North-star-audit van de resterende Samenkomen-schermen: de **datum-kaarten** (`.datprik-star`) waren
