@@ -35,7 +35,16 @@
   {% include "agenda/_rsvp.html" %}
 
   <div class="event-card__foot">
-    {% if post.added_by %}<span class="event-card__by">toegevoegd door {{ post.added_by.name }}</span>{% endif %}
+    {# Attributie volgt de profiel-zichtbaarheid (``can_view``): een bezoeker van een
+       besloten/geschorst lid ziet "een lid", geen naam — member-PII beweegt mee.
+       Een lid ziet altijd de naam (ook van een profiel-loos lid). #}
+    {% if post.added_by %}
+    {% set _by_profile = post.added_by.profile %}
+    {% set _viewer = member if member is defined else none %}
+    {% set _viewer_is_member = _viewer and _viewer.status.value == "approved" %}
+    {% set _by_named = _viewer_is_member or (_by_profile and can_view_profile(_by_profile, _viewer)) %}
+    <span class="event-card__by">toegevoegd door {% if _by_named %}{{ post.added_by.name }}{% else %}een lid{% endif %}</span>
+    {% endif %}
     {% if post.url %}<a class="event-card__link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">website ↗</a>{% endif %}
   </div>
 

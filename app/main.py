@@ -55,6 +55,7 @@ from app.routers import (
     tools,
 )
 from app.services import members_service, post_service, seo_service
+from app.services import visibility as visibility_service
 
 logging.basicConfig(level=logging.INFO)
 # httpx logt elke uitgaande request-URL op INFO — inclusief de Telegram-bot-URL mét
@@ -144,6 +145,12 @@ except OSError:
 templates.env.globals["asset_ver"] = _ASSET_VER
 # Contactadres voor de neutrale herstel-route (leeg = regel niet tonen).
 templates.env.globals["contact_email"] = settings.support_contact
+# Zichtbaarheid-poort voor de templates — ÉÉN bron (visibility.py), zodat
+# attributie/aggregatie van member-content dezelfde privacy volgt als het profiel:
+# ``can_view_profile`` = mag deze kijker het profiel zien; ``section_public`` = mag
+# de kijker dit sectie-blok (bio/makes/needs/open_to) zien.
+templates.env.globals["can_view_profile"] = visibility_service.can_view
+templates.env.globals["section_public"] = visibility_service.public_section_visible
 
 
 @contextlib.asynccontextmanager
@@ -322,6 +329,9 @@ def _register_core_routes(app: FastAPI) -> None:
                 "concierge/_canvas.html",
                 {
                     "member": member,
+                    # De kijker voor de sectie-poort in de constellatie (een lid
+                    # ziet alles; deze tak is altijd een goedgekeurd lid).
+                    "viewer": member,
                     "needs_profile": needs_profile,
                     "member_count": len(public_profiles),
                     "preview_stars": preview_stars,
@@ -344,6 +354,9 @@ def _register_core_routes(app: FastAPI) -> None:
                 "member_count": len(public_profiles),
                 "preview_stars": preview_stars,
                 "star_links": compute_graph_links(preview_stars),
+                # Publieke voordeur: de kijker is anoniem → de sectie-poort in de
+                # constellatie toont alleen publieke ``makes``-samenvattingen.
+                "viewer": None,
                 # Publieke voordeur: schone canonical/og:url (geen lege href="").
                 "canonical": seo_service.canonical_url("/"),
                 # Absolute basis voor og:image (publieke unfurl-kaart).

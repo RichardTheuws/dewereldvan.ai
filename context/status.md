@@ -5,8 +5,20 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-08 · **Versie**: 0.103.0 · **Branch**: `main`
+**Laatste update**: 2026-07-11 · **Versie**: 0.108.0 · **Branch**: `main`
 
+> **0.108.0** — **Member-gekoppelde content volgt nu overal de profiel-zichtbaarheid (anti-lek).** De primaire
+> poort (`can_view`) stond al op elke anon-surface; de fijnmazige lagen lekten nog. Dichtgezet, alles via
+> één bron (`visibility.py`): (1) **sitemap** gate't project-URLs op de `makes`-sectie (besloten `makes` →
+> geen project-URLs, persoon blijft indexeerbaar); (2) **homepage-constellatie** toont de `makes_summary`-
+> fallback alleen als die sectie publiek is voor de kijker; (3) **attributie op agenda/nieuws/RSVP** volgt
+> `can_view` — bezoeker van een besloten/geschorst lid ziet "een lid" (geen naam/link), een ingelogd lid
+> altijd de naam. Jinja-globals `can_view_profile`/`section_public`; `attendance_service` kijker-bewust.
+> Tests: sitemap-sectiepoort, RSVP-attributie, render-tests /nieuws+/agenda. **Ook**: Dichtbij-setting nu
+> vindbaar vanuit de AI-profielbouwer (link naast notificaties → `/profiel/bewerken#dichtbij`).
+> Route-render geverifieerd (200 + verwachte elementen); volledige suite groen. **Nog live browser-verifiëren
+> na deploy** (server-rendered, geen nieuwe JS).
+>
 > **0.103.0** — **Scene-gids live (PRD maker-podium fase 1).** `/gids/scene`: publieke, statische gids die de
 > AI-pipeline (referentie → beeld → motion-transfer → hero-video) leert met kopieerbare prompt-kaarten; nudge
 > `scene_gids` voor leden met werk maar zonder video; hero-studio linkt ernaar. Fase 2 (cover-stand `scene` +

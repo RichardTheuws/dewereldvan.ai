@@ -3,6 +3,35 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.108.0] - 2026-07-11
+### Fixed — Member-gekoppelde content volgt nu overal de profiel-zichtbaarheid (anti-lek)
+De primaire poort (`can_view`) stond al op elke anon-surface, maar de fijnmazige lagen lekten nog. Alles
+loopt nu via één bron (`visibility.py`); attributie/aggregatie van member-content beweegt mee met de
+zichtbaarheid van het lid zelf.
+- **Sitemap**: een publiek profiel dat *'wat ik maak'* besloten houdt (`makes` niet in `public_sections`)
+  kreeg tóch z'n project-URLs in `/sitemap.xml`. `seo_service.sitemap_entries` gate't de offerings nu op
+  `public_section_visible(profile, "makes", None)` — de persoon blijft indexeerbaar, z'n besloten projecten
+  niet (spiegelt de members-gate op `/projecten/{slug}`).
+- **Homepage-constellatie**: de `makes_summary`-fallback (als `headline` leeg is) werd ongegated aan een
+  bezoeker getoond. Nu alleen als de `makes`-sectie voor die kijker publiek is (`_constellation.html`;
+  `viewer` meegegeven vanuit de voordeur=anon en de lid-canvas=lid).
+- **Attributie op agenda/nieuws/RSVP**: de naam van een lid verscheen onvoorwaardelijk bij een publieke
+  bijdrage, en de profiel-link stond op alleen `visibility==public` (miste de `approved`-helft → een
+  geschorst lid met nog-`public` profiel lekte naam+link). Nu volgt de attributie **`can_view`**: een
+  bezoeker van een besloten/geschorst lid ziet een neutrale credit ("een lid", geen naam/link); een
+  ingelogd lid ziet altijd de naam (leden zien alles, ook van een profiel-loos lid).
+  Templates gebruiken de nieuwe Jinja-globals `can_view_profile` / `section_public` (= `visibility.py`);
+  `attendance_service._attendee` is kijker-bewust.
+- Tests: sitemap sectie-poort (besloten vs publieke `makes`), RSVP-attributie (anon → "een lid", lid → naam,
+  publiek → link), en render-tests op `/nieuws` + `/agenda` (naam van besloten lid lekt niet naar bezoeker,
+  wel zichtbaar voor een lid). Volledige suite groen.
+
+### Changed — Dichtbij vindbaar vanuit de profielbouwer
+- De Dichtbij-instelling leefde sinds v0.107.0 op `/profiel/bewerken#dichtbij`, maar de **AI-profielbouwer**
+  (`/profiel/ai/bouwen`, waar leden hun profiel maken) linkte er niet naar — alleen naar notificaties. Daardoor
+  was de setting onvindbaar vanuit de primaire ervaring. Nu staat er een discovery-link naast de
+  notificaties-link ("Woon je in NL of België? Zet je gebied aan voor makers dichtbij →").
+
 ## [0.107.0] - 2026-07-11
 ### Changed — Dichtbij naar profiel-settings + members-only-duidelijkheid + form-fixes
 - **Dichtbij is geen aparte pagina meer** (het is een profiel-instelling, geen bestemming): het opt-in-

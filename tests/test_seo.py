@@ -59,6 +59,41 @@ def test_sitemap_skips_offerings_without_slug(db, make_member, make_profile, mak
     assert not any("/projecten/" in loc for loc in locs)
 
 
+def test_sitemap_excludes_projects_when_makes_section_is_private(
+    db, make_member, make_profile, make_offering
+):
+    """Een publiek profiel dat 'wat ik maak' besloten houdt (``makes`` niet in
+    ``public_sections``): de persoon blijft in de sitemap, maar z'n project-URLs
+    lekken er niet in (spiegelt de members-gate op /projecten/{slug})."""
+    m = make_member(email="privmakes@example.com", name="Priv Makes")
+    p = make_profile(m, visibility=Visibility.public)
+    p.public_sections = ["bio"]  # 'makes' bewust NIET publiek
+    off = make_offering(p, title="Verborgen Project")
+    offering_slug.ensure_slug(db, off)
+    db.flush()
+
+    locs = {e.loc for e in seo_service.sitemap_entries(db)}
+    # De persoon (basiskaart) blijft indexeerbaar...
+    assert any(loc.endswith("/leden/" + p.slug) for loc in locs)
+    # ...maar het project van de besloten 'makes'-sectie niet.
+    assert not any(loc.endswith("/projecten/" + off.slug) for loc in locs)
+
+
+def test_sitemap_includes_projects_when_makes_section_public(
+    db, make_member, make_profile, make_offering
+):
+    """Controle-tak: staat 'makes' wél publiek, dan hoort het project er gewoon in."""
+    m = make_member(email="pubmakes@example.com", name="Pub Makes")
+    p = make_profile(m, visibility=Visibility.public)
+    p.public_sections = ["makes"]
+    off = make_offering(p, title="Zichtbaar Project")
+    offering_slug.ensure_slug(db, off)
+    db.flush()
+
+    locs = {e.loc for e in seo_service.sitemap_entries(db)}
+    assert any(loc.endswith("/projecten/" + off.slug) for loc in locs)
+
+
 # --------------------------------------------------------------------------- #
 # JSON-LD shapes                                                              #
 # --------------------------------------------------------------------------- #

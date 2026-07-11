@@ -21,10 +21,18 @@
 {# Herkomst-chip: expliciete bron, anders het domein uit de URL (footprint-items
    hebben vaak geen bron → anders kale koplink). Puur weergave. #}
 {% set origin = post.source or (post.url | link_domain) %}
-{# Attributie linkt naar de graaf-knoop (profiel) als dat openbaar is. #}
+{# Attributie volgt DEZELFDE poort als het profiel zelf (``can_view``): een kijker
+   die het profiel mag zien (publiek+approved, óf zelf een lid) krijgt naam + link
+   naar de graaf-knoop; een bezoeker van een besloten/geschorst lid krijgt een
+   neutrale credit ("een lid") — de member-naam lekt niet buiten z'n zichtbaarheid. #}
 {% set by = post.added_by %}
 {% set by_profile = by.profile if by else none %}
-{% set by_public = by_profile and by_profile.visibility.value == "public" %}
+{% set _viewer = member if member is defined else none %}
+{% set _viewer_is_member = _viewer and _viewer.status.value == "approved" %}
+{# Link naar de graaf-knoop alleen als de kijker het profiel mag zien; de naam
+   tonen we óók aan een lid zonder link (leden zien alles, ook profiel-loze leden). #}
+{% set by_linkable = by_profile and can_view_profile(by_profile, _viewer) %}
+{% set by_named = _viewer_is_member or by_linkable %}
 {# Detectie-op-weergave: match de getoonde tool-namen tegen ai_take/titel. Pure
    weergave-logica — geen persistente link (YAGNI, doc 02 §4). #}
 {% set _hay = ((post.ai_take or "") ~ " " ~ (post.title or "")) | lower %}
@@ -66,7 +74,7 @@
     {% if by %}
     <span class="news-card__by">
       {{ role_prepositions.get(role, "van") }}
-      {% if by_public %}<a class="news-card__by-link" href="/leden/{{ by_profile.slug }}">{{ by.name }}</a>{% else %}{{ by.name }}{% endif %}
+      {% if by_linkable %}<a class="news-card__by-link" href="/leden/{{ by_profile.slug }}">{{ by.name }}</a>{% elif by_named %}{{ by.name }}{% else %}een lid{% endif %}
     </span>
     {% endif %}
     <a class="news-card__link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">lezen ↗</a>

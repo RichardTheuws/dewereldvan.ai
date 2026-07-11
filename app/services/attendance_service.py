@@ -18,9 +18,10 @@ from app.models import (
     EventAttendance,
     EventAttendanceRole,
     Member,
+    MemberStatus,
     Post,
-    Visibility,
 )
+from app.services.visibility import can_view
 
 __all__ = [
     "Attendee",
@@ -104,19 +105,26 @@ def clear(db: Session, *, member: Member, post: Post) -> None:
 # --------------------------------------------------------------------------- #
 
 
-def _attendee(att: EventAttendance) -> Attendee:
-    """Naam (profiel-displaynaam → val terug op lid-naam) + slug als het profiel
-    publiek is (dan linkt de naam naar /leden/{slug})."""
+def _attendee(att: EventAttendance, viewer: Member | None) -> Attendee:
+    """Betrokkene voor de weergave, met de attributie achter dezelfde poort als het
+    profiel zelf (``can_view``): mag ``viewer`` het profiel niet zien (besloten of
+    een geschorste eigenaar, en de kijker is geen lid), dan krijgt die een neutrale
+    credit ("een lid") zonder naam of link — de member-PII beweegt mee met de
+    profiel-zichtbaarheid. Anders: naam (display → lid-naam) + slug voor de
+    graaf-knoop-link. Een lid ziet altijd de volledige attributie."""
     member = att.member
     profile = member.profile if member is not None else None
-    name = ""
-    if profile is not None and profile.display_name:
-        name = profile.display_name
-    elif member is not None:
-        name = member.name
-    slug = None
-    if profile is not None and profile.visibility == Visibility.public:
-        slug = profile.slug
+    viewer_is_member = viewer is not None and viewer.status == MemberStatus.approved
+    # Zichtbaar met een profiel: dezelfde poort als het profiel zelf (``can_view``);
+    # zonder profiel is er geen zichtbaarheids-setting → alleen leden (die alles
+    # zien) krijgen de naam, een bezoeker de neutrale credit.
+    visible = can_view(profile, viewer) if profile is not None else viewer_is_member
+    if not visible:
+        return Attendee(name="een lid", slug=None)
+    name = (profile.display_name if profile is not None else None) or (
+        member.name if member is not None else "een lid"
+    )
+    slug = profile.slug if profile is not None else None
     return Attendee(name=name, slug=slug)
 
 
@@ -142,10 +150,10 @@ def summaries(
             continue
         if r.role == EventAttendanceRole.organizing:
             s.organizing += 1
-            s.organizers.append(_attendee(r))
+            s.organizers.append(_attendee(r, viewer))
         elif r.role == EventAttendanceRole.speaking:
             s.speaking += 1
-            s.speakers.append(_attendee(r))
+            s.speakers.append(_attendee(r, viewer))
         else:  # attending
             s.attending += 1
         if viewer_id is not None and r.member_id == viewer_id:

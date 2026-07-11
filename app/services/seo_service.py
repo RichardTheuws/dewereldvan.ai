@@ -31,6 +31,7 @@ from app.models import (
     Profile,
     Visibility,
 )
+from app.services.visibility import public_section_visible
 
 __all__ = [
     "SitemapEntry",
@@ -231,6 +232,12 @@ def sitemap_entries(db: Session) -> list[SitemapEntry]:
                 lastmod=_lastmod(getattr(profile, "updated_at", None)),
             )
         )
+        # Sectie-poort: hield het lid 'wat ik maak' besloten (``makes`` niet in
+        # ``public_sections``), dan bestaan z'n projecten publiek niet — net als de
+        # projectdetailpagina die anon een members-gate geeft (projects.py). Anders
+        # lekt de sitemap de bestaande slugs van besloten-gehouden projecten.
+        if not public_section_visible(profile, "makes", None):
+            continue
         for off in sorted(profile.offerings, key=lambda o: o.position):
             if not off.slug:
                 continue

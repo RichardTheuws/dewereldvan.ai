@@ -216,6 +216,134 @@ def test_member_project_deeplink_visible(make_client, seed):
     assert "Voicebot Studio" in resp.text
 
 
+# --------------------------------------------------------------------------- #
+# ANTI-LEK: attributie op de publieke agenda/nieuws/RSVP volgt de              #
+# profiel-zichtbaarheid — de naam van een besloten lid lekt niet naar een      #
+# bezoeker, maar een lid ziet 'm wel (leden zien alles).                       #
+# --------------------------------------------------------------------------- #
+
+
+def _event_post(db):
+    from app.models import Post, PostKind, PostReviewState
+
+    post = Post(kind=PostKind.event, title="Meetup", review_state=PostReviewState.live)
+    db.add(post)
+    db.flush()
+    return post
+
+
+def test_rsvp_attribution_hidden_from_visitor_for_private_member(
+    db, make_member, make_profile
+):
+    from app.models import EventAttendanceRole
+    from app.services import attendance_service
+
+    priv = make_member(email="priv@example.com", name="Privé Lid")
+    make_profile(priv, visibility=Visibility.members)  # besloten profiel
+    post = _event_post(db)
+    attendance_service.set_role(
+        db, member=priv, post=post, role=EventAttendanceRole.speaking
+    )
+    db.flush()
+
+    # Bezoeker (anon): geen naam, geen link — alleen de neutrale credit.
+    anon = attendance_service.summary_for(db, post, viewer=None)
+    assert [a.name for a in anon.speakers] == ["een lid"]
+    assert anon.speakers[0].slug is None
+    # Lid-kijker: ziet de naam wél (leden zien alles).
+    lid = attendance_service.summary_for(db, post, viewer=priv)
+    assert [a.name for a in lid.speakers] == ["Privé Lid"]
+
+
+def test_rsvp_attribution_public_member_links_for_visitor(db, make_member, make_profile):
+    from app.models import EventAttendanceRole
+    from app.services import attendance_service
+
+    pub = make_member(email="pub2@example.com", name="Publiek Lid")
+    p = make_profile(pub, visibility=Visibility.public)
+    post = _event_post(db)
+    attendance_service.set_role(
+        db, member=pub, post=post, role=EventAttendanceRole.organizing
+    )
+    db.flush()
+
+    anon = attendance_service.summary_for(db, post, viewer=None)
+    assert [a.name for a in anon.organizers] == ["Publiek Lid"]
+    assert anon.organizers[0].slug == p.slug  # linkt naar de graaf-knoop
+
+
+@pytest.fixture
+def seed_attrib(SessionTest):
+    """Een besloten lid dat publiek nieuws + agenda plaatste en als organisator
+    RSVP'de, plus een bekijkend lid — om de attributie-poort op de kaarten te toetsen."""
+    from app.models import (
+        EventAttendance,
+        EventAttendanceRole,
+        Member,
+        MemberStatus,
+        Post,
+        PostKind,
+        PostReviewState,
+        Profile,
+    )
+
+    s = SessionTest()
+    secret = Member(
+        email="geheim@example.com", name="Geheim Lid", status=MemberStatus.approved
+    )
+    watcher = Member(
+        email="kijker@example.com", name="Kijkend Lid", status=MemberStatus.approved
+    )
+    s.add_all([secret, watcher]); s.flush()
+    s.add(Profile(
+        member_id=secret.id, slug="geheim-lid", display_name="Geheim Lid",
+        visibility=Visibility.members,  # besloten
+    ))
+    s.flush()
+    news = Post(
+        kind=PostKind.nieuws, title="Interessant artikel", url="https://example.com/a",
+        added_by_id=secret.id, review_state=PostReviewState.live,
+    )
+    event = Post(
+        kind=PostKind.event, title="Besloten-lid meetup",
+        added_by_id=secret.id, review_state=PostReviewState.live,
+    )
+    s.add_all([news, event]); s.flush()
+    s.add(EventAttendance(
+        post_id=event.id, member_id=secret.id, role=EventAttendanceRole.organizing
+    ))
+    s.commit()
+    ids = {"secret": secret.id, "watcher": watcher.id}
+    s.close()
+    return ids
+
+
+def test_news_attribution_hidden_from_visitor(make_client, seed_attrib):
+    resp = make_client(None).get("/nieuws")
+    assert resp.status_code == 200
+    assert "Geheim Lid" not in resp.text  # naam van een besloten lid lekt niet
+    assert "een lid" in resp.text          # neutrale credit i.p.v. de naam
+
+
+def test_news_attribution_visible_to_member(make_client, seed_attrib):
+    resp = make_client(seed_attrib["watcher"]).get("/nieuws")
+    assert resp.status_code == 200
+    assert "Geheim Lid" in resp.text  # een lid ziet de naam wel
+
+
+def test_agenda_attribution_and_rsvp_hidden_from_visitor(make_client, seed_attrib):
+    resp = make_client(None).get("/agenda")
+    assert resp.status_code == 200
+    assert "Geheim Lid" not in resp.text  # noch de "toegevoegd door", noch de RSVP-rol
+    assert "een lid" in resp.text
+
+
+def test_agenda_attribution_visible_to_member(make_client, seed_attrib):
+    resp = make_client(seed_attrib["watcher"]).get("/agenda")
+    assert resp.status_code == 200
+    assert "Geheim Lid" in resp.text
+
+
 def test_edit_toggle_route_sets_sections(make_client, SessionTest, seed):
     """De oude /profiel/zichtbaarheid-toggle legt nu óók de sectie-keuze vast (parity)."""
     from app.models import Profile, Visibility

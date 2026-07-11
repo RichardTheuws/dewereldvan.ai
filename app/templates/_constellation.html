@@ -33,8 +33,13 @@
       </span>
       {% if _is_new %}<span class="home-star__new" aria-hidden="true">nieuw</span>{% endif %}
       <span class="home-star__name">{{ p.display_name }}</span>
-      {% if p.headline or p.makes_summary %}
-      <span class="home-star__card" aria-hidden="true">{{ p.headline or p.makes_summary }}</span>
+      {# Headline hoort bij de altijd-publieke basiskaart; de ``makes_summary``-
+         fallback is een 'wat ik maak'-veld en mag alleen als die sectie voor deze
+         kijker publiek is (anon op een besloten-``makes``-profiel → geen lek). #}
+      {% set _viewer = viewer if viewer is defined else none %}
+      {% set _card = p.headline or (p.makes_summary if section_public(p, "makes", _viewer) else "") %}
+      {% if _card %}
+      <span class="home-star__card" aria-hidden="true">{{ _card }}</span>
       {% endif %}
     </a>
     {% endfor %}
