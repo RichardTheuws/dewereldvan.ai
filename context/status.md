@@ -5,8 +5,16 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-11 · **Versie**: 0.109.0 · **Branch**: `main`
+**Laatste update**: 2026-07-11 · **Versie**: 0.110.0 · **Branch**: `main`
 
+> **0.110.0** — **Footprint-presence: eigen aanwezigheid ≠ nieuws (durende feed-fix).** De footprint-classifier
+> onderscheidt nu de eigen aanwezigheid van een lid (social-profiel/bio-listing/eigen site) van dekking
+> (artikel/podcast/interview) en eigen werk (project). Nieuw type **`presence`** crystalliseert NIETS — geen
+> nieuws, geen Offering; auto-crystallisatie slaat 't over; de discovery-kaart toont het informatief zonder
+> koppel-knop. `social` vervallen → `presence` (legacy via `is_presence`). Poort zit bij de ingestie → geen
+> terugkerende handmatige curatie meer. PRD: `docs/PRD-footprint-presence.md` (optie A gebouwd; optie B = "Vind
+> me online"-strip als aparte vervolg-PRD). Tests groen (1236 passed). Deploy + browser-verificatie.
+>
 > **0.109.0** — **Nieuws van een besloten lid volgt nu óók de profiel-zichtbaarheid (footprint-lek).** De
 > live browsercheck van 0.108.0 toonde dat de attributie-byline wél geanonimiseerd was ("een lid"), maar
 > footprint-nieuwsitems het lid in hun **titel** identificeren ("Frank Oonk – LinkedIn-profiel", "Wouter
@@ -277,11 +285,13 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
       frankwatching/oost.nl/businesschoice) bleven. **Bevinding**: er is GEEN betrouwbaar automatisch onderscheid
       tussen "presence/bio-pagina van het lid" en "echt artikel" — zelfde URL-vorm (`eve.law/arbiters/x` vs
       `oost.nl/nieuws/x`), en de lek-items zijn zelfs `role=gedeeld`. URL-heuristiek vangt alleen LinkedIn/Instagram.
-- [ ] **DURENDE FIX (aanbevolen, nog te doen)**: de footprint-classifier (`footprint_service`, Opus+web_search)
-      moet "eigen presence/profiel/bio/directory-pagina van het lid" NIET als nieuws crystalliseren maar
-      afvangen (droppen of naar het profiel). Zonder dit keren presence-pagina's terug bij elke discovery-run
-      (handmatig verbergen schaalt niet). = ingestie-taxonomie-wijziging (prompt + `crystallize`-routing +
-      `undo`), PRD-waardig eigen blok. Anders blijft dit een terugkerende curatietaak.
+- [x] **DURENDE FIX GEBOUWD (v0.110.0, PRD-footprint-presence optie A)**: nieuw footprint-type `presence`
+      (eigen aanwezigheid: social-profiel/bio-listing/eigen site) crystalliseert NIETS — geen nieuws, geen
+      Offering; auto-crystallisatie slaat 't over; discovery-kaart toont het informatief zonder koppel-knop.
+      Classifier-prompt onderscheidt presence (identiteit) ⇄ media/talk/blog (dekking) ⇄ project. `social`
+      vervallen → `presence` (legacy via `is_presence`). Presence-pagina's keren dus niet meer terug in de
+      feed bij nieuwe discovery-runs. Tests: crystallize(presence/social) maakt niets. Deployed + browser-
+      geverifieerd. **Vervolg (optioneel, aparte PRD)**: presence → "Vind me online"-strip op het profiel (§3.3B).
 
 - [x] **Sectie-niveau zichtbaarheid (v0.106.0)**: openbaar profiel kiest per blok (bio/makes/needs/open_to)
       wat een bezoeker ziet; naam+discipline+foto = basiskaart, leden zien altijd alles. `Profile.public_sections`

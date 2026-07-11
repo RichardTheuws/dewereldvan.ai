@@ -1,6 +1,6 @@
 # PRD — Footprint-presence: eigen aanwezigheid ≠ nieuws
 
-**Status**: DRAFT — wacht op goedkeuring
+**Status**: GEBOUWD (optie A) — v0.110.0, 2026-07-11
 **Versie**: 0.1.0
 **Datum**: 2026-07-11
 **Raakt**: `app/services/footprint_service.py` (classifier + crystallize), discovery-flow

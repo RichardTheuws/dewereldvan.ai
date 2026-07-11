@@ -3,6 +3,26 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.110.0] - 2026-07-11
+### Added — Footprint-presence: eigen aanwezigheid ≠ nieuws (durende fix, PRD-footprint-presence optie A)
+De durende oplossing voor de feed-vervuiling: de footprint-classifier onderscheidt nu de **eigen
+aanwezigheid** van een lid (identiteit) van **content óver/dóór** het lid (dekking). Presence-pagina's
+komen niet meer in de nieuwsfeed — de poort zit bij de ingestie i.p.v. bij handmatige curatie achteraf.
+- **Taxonomie**: nieuw vondst-type **`presence`** (social-profiel, bio/directory-listing, eigen landings-/
+  bedrijfssite). `social` vervalt (een social-profiel ís presence); legacy `social` valt via `is_presence`
+  onder dezelfde poort. `VALID_TYPES` → `{project, presence, media, blog, talk, other}`.
+- **Classifier-prompt** (`footprint_service.SYSTEM_PROMPT`): expliciete beslisregel presence (identiteit) ⇄
+  media/talk/blog (dekking) ⇄ project (eigen product), met voorbeelden. `record_findings`-enum meegewijzigd.
+- **Crystallize-poort**: `presence` (én legacy `social`) crystalliseert NIETS — geen nieuws-`Post`, geen
+  `Offering`. Auto-crystallisatie slaat presence over; de discovery-kaart toont presence informatief
+  ("Je online aanwezigheid — hoort bij je profiel, niet in het nieuws") zonder koppel-knop; de
+  crystalliseer-route geeft voor presence een rustige uitleg i.p.v. een gekoppeld-kaart.
+- **Bestaande items**: geen automatische her-classificatie (geen betrouwbaar signaal op oude Posts) — de 7
+  eerder mens-verborgen presence-items blijven `hidden`. Vanaf nu voorkomt de classifier nieuwe.
+- Tests: `crystallize(presence)`/`(social)` maakt niets; de crystalliseer-route koppelt presence niet
+  (rustige uitleg, geen undo); bestaande project/media/blog-routing ongewijzigd. 1236 passed.
+- **Niet nu** (aparte vervolg-PRD): presence → `ProfileLink` "Vind me online"-strip op het profiel (§3.3B).
+
 ## [0.109.0] - 2026-07-11
 ### Fixed — Nieuws van een besloten lid volgt nu ook de profiel-zichtbaarheid (footprint-lek)
 Live browsercheck van v0.108.0 legde een dieper lek bloot: de attributie-*byline* was geanonimiseerd naar

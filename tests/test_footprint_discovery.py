@@ -528,6 +528,58 @@ def test_crystallize_unknown_type_falls_back_to_news(db, make_member, make_profi
     assert db.get(Post, res.id).role == NewsRole.gedeeld  # default-rol
 
 
+def test_crystallize_presence_creates_nothing(db, make_member, make_profile):
+    """Een eigen aanwezigheids-/profielpagina (presence) wordt GEEN nieuws en geen
+    Offering — het is identiteit, geen content (PRD-footprint-presence §3.3A)."""
+    from app.models import Offering, Post, PostKind
+    from sqlalchemy import func, select
+
+    member = make_member(name="Frank")
+    profile = make_profile(member, display_name="Frank")
+    before_news = db.scalar(select(func.count()).select_from(Post).where(Post.kind == PostKind.nieuws))
+
+    res = footprint_service.crystallize(
+        db, profile, member, title="Frank – LinkedIn-profiel",
+        url="https://nl.linkedin.com/in/frank", ftype="presence",
+    )
+
+    assert res.kind == "presence"
+    assert res.id == 0  # geen entiteit
+    assert db.scalar(select(func.count()).select_from(Post).where(Post.kind == PostKind.nieuws)) == before_news
+    assert db.scalar(select(func.count()).select_from(Offering)) == 0
+
+
+def test_crystallize_legacy_social_also_gated(db, make_member, make_profile):
+    """Legacy ``social`` (uit oude DiscoveryRun-resultaten) valt onder dezelfde
+    presence-poort → geen nieuws-Post."""
+    from app.models import Post, PostKind
+    from sqlalchemy import func, select
+
+    member = make_member(name="Insta")
+    profile = make_profile(member, display_name="Insta")
+    res = footprint_service.crystallize(
+        db, profile, member, title="Insta – Instagram",
+        url="https://instagram.com/insta/", ftype="social",
+    )
+    assert res.kind == "presence"
+    assert db.scalar(select(func.count()).select_from(Post).where(Post.kind == PostKind.nieuws)) == 0
+
+
+def test_presence_finding_crystallize_route_links_nothing(make_client, approved_id):
+    """Een presence-vondst in de crystalliseer-route koppelt niets en geeft de
+    rustige uitleg terug (geen 'gekoppeld'-kaart, geen undo)."""
+    client = make_client(approved_id)
+    csrf = _csrf(client)
+    resp = client.post(
+        "/profiel/ai/ontdek/crystalliseer",
+        data={"title": "LinkedIn", "url": "https://nl.linkedin.com/in/x", "type": "presence"},
+        headers={"X-CSRF-Token": csrf},
+    )
+    assert resp.status_code == 200
+    assert "je online aanwezigheid" in resp.text.lower()
+    assert "ongedaan" not in resp.text.lower()  # geen undo-kaart (er is niks gekoppeld)
+
+
 def test_undo_offering_removes_it(db, make_member, make_profile):
     from app.models import Offering
 

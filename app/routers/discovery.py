@@ -121,7 +121,12 @@ def _candidate_html(request: Request, finding: dict) -> str:
         "discovery/_candidate.html",
         {
             "finding": finding,
-            "auto": footprint_service.is_high_confidence(finding.get("confidence")),
+            # Presence-pagina's (eigen aanwezigheid) crystalliseren nooit — ook niet
+            # auto: ze horen niet in het nieuws (PRD-footprint-presence).
+            "auto": (
+                footprint_service.is_high_confidence(finding.get("confidence"))
+                and not footprint_service.is_presence(finding.get("type", ""))
+            ),
         },
     )
 
@@ -390,6 +395,19 @@ def crystallize_candidate(
         db, profile, member, title=title, url=clean_url, ftype=type
     )
     db.commit()
+    # Presence-pagina (eigen aanwezigheid): niet als nieuws gekoppeld — geen entiteit
+    # om undo op te tekenen; rustige uitleg i.p.v. de "gekoppeld"-kaart.
+    if result.kind == "presence":
+        return _render(
+            request,
+            "discovery/_done.html",
+            {
+                "message": (
+                    "Dit is je online aanwezigheid — die hoort bij je profiel, niet "
+                    "in het nieuws. Ik heb 'm niet als nieuws gekoppeld."
+                )
+            },
+        )
     # Een gekoppeld project pikt automatisch de screenshot+samenvatting op.
     if result.kind == "offering":
         project_enrich_service.trigger_async(result.id)

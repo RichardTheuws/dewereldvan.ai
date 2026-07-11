@@ -11,9 +11,12 @@
    Niets wordt gepersisteerd zonder de drempel óf de klik. CSRF reist mee via de
    hx-headers op <body>. #}
 {% set type_labels = {
-  "project": "project", "media": "media", "blog": "blog",
-  "talk": "talk", "social": "sociaal", "other": "overig"
+  "project": "project", "media": "media", "blog": "blog", "talk": "talk",
+  "presence": "online aanwezigheid", "social": "online aanwezigheid", "other": "overig"
 } %}
+{# Presence = de eigen aanwezigheids-/profielpagina van het lid → hoort bij het
+   profiel, niet in het nieuws (PRD-footprint-presence). Geen koppel-knop, geen auto. #}
+{% set is_presence = finding.type in ("presence", "social") %}
 <div class="surface-card ontdek-card field--materializing{% if auto %} ontdek-card--auto{% endif %}"
      {% if auto %}hx-post="/profiel/ai/ontdek/crystalliseer"
      hx-trigger="load delay:700ms" hx-target="closest .surface-card" hx-swap="outerHTML"{% endif %}>
@@ -36,7 +39,13 @@
       {{ finding.url | safe_url }}
     </a>
 
-    {% if auto %}
+    {% if is_presence %}
+    {# Eigen aanwezigheid: informatief, geen koppeling. Het hoort bij je profiel. #}
+    <p class="ontdek-card__ask muted">
+      <span class="ontdek-card__spark" aria-hidden="true">✦</span>
+      Je online aanwezigheid — die hoort bij je profiel, niet in het nieuws.
+    </p>
+    {% elif auto %}
     {# Hoge zekerheid: koppelt zichzelf. De regel hieronder is eerlijk — er gebeurt
        écht iets (de POST loopt); undo verschijnt zodra 'ie geland is. #}
     <p class="ontdek-card__settling muted" aria-live="polite">
