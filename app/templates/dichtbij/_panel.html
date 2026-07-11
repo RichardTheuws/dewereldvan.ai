@@ -1,10 +1,11 @@
 {# Opt-in-locatie-paneel (swap-target #dichtbij-panel). Grof gebied kiezen of wissen.
-   Gewone, heldere taal; nooit om een exact adres gevraagd. #}
+   Werkt uit ``profile`` zodat het zowel als htmx-swap (POST-routes) als ingebed in
+   de profiel-settings rendert. Gewone taal; nooit om een exact adres gevraagd. #}
 <div id="dichtbij-panel" class="dichtbij-panel">
-  {% if has_area %}
+  {% if profile and profile.area_lat is not none %}
   <div class="dichtbij-panel__current">
     <span class="dichtbij-panel__eyebrow">Je gebied</span>
-    <span class="dichtbij-panel__area">{{ area_label }}</span>
+    <span class="dichtbij-panel__area">{{ profile.area_label }}</span>
     <span class="dichtbij-panel__note">Alleen dit grove gebied is opgeslagen — geen adres.</span>
   </div>
   <form hx-post="/profiel/dichtbij/wis" hx-target="#dichtbij-panel" hx-swap="outerHTML" class="mt-4">
@@ -15,10 +16,10 @@
   <form hx-post="/profiel/dichtbij" hx-target="#dichtbij-panel" hx-swap="outerHTML">
     <label class="field-label" for="dichtbij-pc">Je postcode <span class="muted">(alleen de eerste cijfers tellen)</span></label>
     <input id="dichtbij-pc" name="postcode" maxlength="7" inputmode="numeric"
-           placeholder="bijv. 3511 of 35" autocomplete="off">
+           placeholder="bijv. 3511 of 35" autocomplete="off" style="max-width:280px">
     {% if error %}<p class="notice notice--error mt-3" role="alert">{{ error }}</p>{% endif %}
     <div class="mt-4">
-      <button type="submit" class="btn">Zet mijn gebied</button>
+      <button type="submit" class="btn btn--ghost btn--sm">Zet mijn gebied</button>
     </div>
   </form>
   {% endif %}

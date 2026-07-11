@@ -25,23 +25,13 @@ def _render(request: Request, name: str, ctx: dict | None = None, **kw) -> HTMLR
 
 
 def _panel_ctx(member: Member, *, error: str | None = None, saved: bool = False) -> dict:
-    profile = member.profile
-    return {
-        "area_label": profile.area_label if profile else None,
-        "has_area": location_service.has_area(profile),
-        "error": error,
-        "saved": saved,
-    }
+    # Het paneel rendert uit ``profile`` (self-sufficient), zodat het zowel als
+    # htmx-swap als ingebed in de profiel-settings werkt.
+    return {"profile": member.profile, "error": error, "saved": saved}
 
 
-@router.get("/profiel/dichtbij", response_class=HTMLResponse)
-def dichtbij_page(
-    request: Request,
-    member: Member = Depends(require_member),
-    db: Session = Depends(get_db),
-) -> HTMLResponse:
-    """De opt-in-locatie-instelling (grof gebied kiezen of wissen)."""
-    return _render(request, "dichtbij/instellingen.html", _panel_ctx(member))
+# NB: "Dichtbij" is géén aparte pagina (het is een profiel-instelling, geen bestemming) —
+# het paneel leeft in /profiel/bewerken. Alleen de mutatie-endpoints staan hier.
 
 
 @router.post("/profiel/dichtbij", response_class=HTMLResponse)

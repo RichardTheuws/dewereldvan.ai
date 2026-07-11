@@ -212,15 +212,16 @@ def make_client(route_engine, SessionTest):
     app.dependency_overrides.clear()
 
 
-def test_page_requires_login(make_client):
+def test_no_standalone_page(make_client):
+    # "Dichtbij" is geen aparte pagina meer — het leeft in /profiel/bewerken. Er is
+    # geen GET-route; alleen de mutatie-endpoints (POST) bestaan nog → GET = 405.
     resp = make_client(None).get("/profiel/dichtbij", follow_redirects=False)
-    assert resp.status_code == 303
-    assert resp.headers["location"].endswith("/login")
+    assert resp.status_code == 405
 
 
 def test_set_and_clear_area_flow(make_client, SessionTest, seed):
     client = make_client(seed["member"])
-    token = csrf_token(client, "/profiel/dichtbij")
+    token = csrf_token(client, "/leden")  # mint via een geldige GET (Dichtbij heeft geen pagina meer)
 
     ok = client.post("/profiel/dichtbij", data={"postcode": "3511 AB"},
                      headers={"X-CSRF-Token": token})

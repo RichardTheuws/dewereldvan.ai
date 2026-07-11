@@ -3,6 +3,22 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.107.0] - 2026-07-11
+### Changed — Dichtbij naar profiel-settings + members-only-duidelijkheid + form-fixes
+- **Dichtbij is geen aparte pagina meer** (het is een profiel-instelling, geen bestemming): het opt-in-
+  paneel leeft nu in **`/profiel/bewerken#dichtbij`** ("DICHTBIJ · OPTIONEEL · BESLOTEN"). De standalone
+  `GET /profiel/dichtbij` + `dichtbij/instellingen.html` zijn weg (GET → 405); de mutatie-endpoints
+  (POST set/wis) blijven. Footer-link + detail-hint wijzen naar de nieuwe plek. `_panel.html` rendert
+  nu self-sufficient uit `profile`.
+- **Members-only duidelijk gemaakt**: nieuwe besloten-note op alle Samenkomen-schermen —
+  "Besloten — alleen voor leden. Een prikker is niet zichtbaar voor bezoekers. Voor een openbare meetup:
+  de agenda." (`samen/_besloten_note.html`). De routes waren al `require_member`; nu is het ook zichtbaar.
+### Fixed — Slordigheden in het prikker-formulier
+- **Overlappende velden** (de "ovaal" bij naast-elkaar-inputs): `.cosmic input/textarea/select` misten
+  `box-sizing: border-box` → `width:100%` + padding liep over de grid-kolom heen. Nu border-box —
+  verbetert álle kosmische formulieren met naast-elkaar-velden.
+- **Kale fieldset-rand** (browser-default `2px groove`) rond de datum-invoer gereset naar een schone stack.
+
 ## [0.106.4] - 2026-07-11
 ### Fixed — Dubbel footer-menu op de Samenkomen/Dichtbij-pagina's
 - De vier nieuwe pagina's include'ten `concierge/_footer_fallback.html` **expliciet**, terwijl

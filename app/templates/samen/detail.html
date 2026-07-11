@@ -36,6 +36,7 @@
           {% if g.location_hint %}<span class="chip chip--muted">{{ g.location_hint }}</span>{% endif %}
           {% if g.interest %}<span class="chip chip--muted">voor makers van {{ g.interest }}</span>{% endif %}
         </div>
+        <div class="mt-5">{% set note_delay = '460ms' %}{% include "samen/_besloten_note.html" %}</div>
       </section>
 
       <section class="mt-9" data-reveal style="--d:480ms">
@@ -47,7 +48,7 @@
         <h2 class="section-title">Wie wil hier graag bij zijn?</h2>
         {% if suggested %}
         <p class="datprik-hint muted">Makers die met hetzelfde bezig zijn. Eén tik stuurt een korte kennismaking — daarna kunnen jullie e-mailen.
-          {% if not creator_has_area %}<a class="text-link" href="/profiel/dichtbij">Zet je gebied aan</a> om te zien wie dichtbij is.{% endif %}
+          {% if not creator_has_area %}<a class="text-link" href="/profiel/bewerken#dichtbij">Zet je gebied aan</a> om te zien wie dichtbij is.{% endif %}
         </p>
         <div class="datprik-suggest mt-5">
           {% for s in suggested %}

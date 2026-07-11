@@ -1494,6 +1494,7 @@
 .cosmic textarea,
 .cosmic select {
   width: 100%;
+  box-sizing: border-box; /* anders lopen width:100%-velden met padding over hun (grid-)kolom heen */
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -5155,8 +5156,12 @@ a.roadmap-item__origin:focus-visible {
 }
 .cosmic .datprik-banner__spark { color: var(--gold); margin-right: 6px; }
 
-/* Datum-invoer op het startformulier */
-.cosmic .datprik-dates__input { display: block; width: 100%; margin-top: 8px; }
+/* Datum-invoer op het startformulier — reset de browser-default fieldset-rand
+ * (2px groove) die kaal oogt tegen het kosmische glas; de legend is een field-label. */
+.cosmic fieldset.datprik-dates { border: 0; padding: 0; margin: 0; min-width: 0; }
+.cosmic fieldset.datprik-dates legend { padding: 0; }
+.cosmic .datprik-dates__list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.cosmic .datprik-dates__input { display: block; width: 100%; }
 
 /* Auto-selectie: makers die hier graag bij willen zijn */
 .cosmic .datprik-suggest { display: flex; flex-direction: column; gap: 10px; }
@@ -5324,3 +5329,13 @@ a.roadmap-item__origin:focus-visible {
 .cosmic .datprik-card__votes--empty { color: var(--muted); }
 .cosmic .datprik-card__go { font-size: 0.9rem; color: var(--cyan); }
 @media (prefers-reduced-motion: reduce) { .cosmic .datprik-card { transition: none; } }
+
+/* Besloten-note (Samenkomen = alleen-voor-leden, niet publiek zichtbaar) */
+.cosmic .member-note {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: nowrap;
+  font-size: 0.88rem; color: var(--muted); line-height: 1.55; max-width: 54ch;
+  border-left: 2px solid rgba(63, 210, 255, 0.4); padding: 4px 0 4px 14px;
+}
+.cosmic .member-note__glyph { color: var(--cyan); flex: none; }
+.cosmic .member-note strong { color: var(--text); font-weight: 500; }
+.cosmic .member-note em { font-style: normal; color: var(--gold); }
