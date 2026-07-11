@@ -271,6 +271,18 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
   in de M4-`.env` (2026-06-21) → het pad is nu live binnen de €50/wk-cap.
 
 ## Open taken
+- [x] **Footprint-presence-pagina's uit de nieuwsfeed** (2026-07-11, data-cleanup, geen code): 7 items
+      (LinkedIn/Instagram + bio-pagina's eve.law/legaldutch/heliview/cheeseinabox) mens-gecureerd verborgen
+      via `post_service.set_hidden` (AuditLog, actor Richard). Echte artikelen (BNR/Omroep Veldhoven/
+      frankwatching/oost.nl/businesschoice) bleven. **Bevinding**: er is GEEN betrouwbaar automatisch onderscheid
+      tussen "presence/bio-pagina van het lid" en "echt artikel" — zelfde URL-vorm (`eve.law/arbiters/x` vs
+      `oost.nl/nieuws/x`), en de lek-items zijn zelfs `role=gedeeld`. URL-heuristiek vangt alleen LinkedIn/Instagram.
+- [ ] **DURENDE FIX (aanbevolen, nog te doen)**: de footprint-classifier (`footprint_service`, Opus+web_search)
+      moet "eigen presence/profiel/bio/directory-pagina van het lid" NIET als nieuws crystalliseren maar
+      afvangen (droppen of naar het profiel). Zonder dit keren presence-pagina's terug bij elke discovery-run
+      (handmatig verbergen schaalt niet). = ingestie-taxonomie-wijziging (prompt + `crystallize`-routing +
+      `undo`), PRD-waardig eigen blok. Anders blijft dit een terugkerende curatietaak.
+
 - [x] **Sectie-niveau zichtbaarheid (v0.106.0)**: openbaar profiel kiest per blok (bio/makes/needs/open_to)
       wat een bezoeker ziet; naam+discipline+foto = basiskaart, leden zien altijd alles. `Profile.public_sections`
       (migratie 0038), poort in `visibility.py`, anti-lek op detail/kaart/discovery-filter/JSON-LD/project-deeplink.
