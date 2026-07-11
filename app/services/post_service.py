@@ -35,6 +35,7 @@ from app.models import (
     PostSourceKind,
 )
 from app.security import naive_utc, utcnow
+from app.services.visibility import can_view
 
 __all__ = [
     "PostRateLimited",
@@ -288,10 +289,31 @@ def category_options() -> list[tuple[str, str]]:
     return [(c.value, c.value.capitalize()) for c in EventCategory]
 
 
-def list_news(db: Session) -> list[Post]:
+def _author_hidden_for(post: Post, viewer: Member | None) -> bool:
+    """Of een nieuws-item verborgen moet worden voor ``viewer`` omdat de AUTEUR z'n
+    profiel niet openbaar toont.
+
+    Een nieuws-item is aan het lid gekoppelde content en volgt daarom diens
+    zichtbaarheid: footprint-items ("Frank Oonk – LinkedIn", een interview óver het
+    lid) dragen de identiteit van het lid in de titel, óók als de byline al naar
+    "een lid" is geanonimiseerd. Voor een bezoeker van een besloten/geschorst lid
+    horen die dus weg. AI-curatie (geen auteur) en profiel-loze leden (geen
+    zichtbaarheids-setting, geen identiteits-koppeling) blijven staan; een lid ziet
+    alles (``can_view`` geeft leden altijd True)."""
+    author = post.added_by
+    if author is None or author.profile is None:
+        return False
+    return not can_view(author.profile, viewer)
+
+
+def list_news(db: Session, *, viewer: Member | None = None) -> list[Post]:
     """Zichtbaar nieuws (alle weken samen), nieuwste publicatie eerst
-    (``published_at`` of ``created_at`` als terugval)."""
-    items = _visible(db, PostKind.nieuws)
+    (``published_at`` of ``created_at`` als terugval).
+
+    Kijker-bewust: nieuws van een besloten/geschorst lid valt weg voor een
+    bezoeker (``_author_hidden_for``) — de content volgt de profiel-zichtbaarheid.
+    Een lid (``viewer`` approved) ziet alles."""
+    items = [p for p in _visible(db, PostKind.nieuws) if not _author_hidden_for(p, viewer)]
     return sorted(
         items,
         key=lambda p: (_neg_dt(p.published_at or p.created_at), -p.id),
@@ -315,12 +337,15 @@ class NewsBriefing:
     archief: list[Post]
 
 
-def list_briefing(db: Session, *, now: datetime | None = None) -> NewsBriefing:
+def list_briefing(
+    db: Session, *, now: datetime | None = None, viewer: Member | None = None
+) -> NewsBriefing:
     """Splits het zichtbare nieuws in "Deze week" (``briefing_week`` == lopende
     ISO-week) en het archief (al het overige zichtbare nieuws). Beide nieuwste-
-    eerst gesorteerd (``published_at`` → ``created_at`` als terugval)."""
+    eerst gesorteerd (``published_at`` → ``created_at`` als terugval). ``viewer``
+    erft de auteur-zichtbaarheidspoort van ``list_news``."""
     this_week = iso_week_anchor(now or naive_utc(utcnow()))
-    items = list_news(db)  # al gesorteerd + alleen live/zichtbaar
+    items = list_news(db, viewer=viewer)  # gesorteerd, zichtbaar + auteur-gegate
     briefing = [p for p in items if p.briefing_week == this_week]
     archief = [p for p in items if p.briefing_week != this_week]
     return NewsBriefing(briefing_this_week=briefing, archief=archief)

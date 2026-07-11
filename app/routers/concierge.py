@@ -182,7 +182,7 @@ def _load_agenda(db: Session, params: dict, member_id, is_admin) -> tuple[str, d
 def _load_nieuws(db: Session, params: dict, member_id, is_admin) -> tuple[str, dict]:
     member = db.get(Member, member_id) if member_id is not None else None
     return "nieuws/_list.html", {
-        "items": post_service.list_news(db),
+        "items": post_service.list_news(db, viewer=member),
         "member": member,
         "is_admin": is_admin,
         "roles": list(NewsRole),

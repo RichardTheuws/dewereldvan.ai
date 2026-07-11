@@ -77,11 +77,12 @@ def _agenda_context(
 
 
 def _nieuws_context(db: Session, member: Member | None) -> dict:
-    briefing = post_service.list_briefing(db)
+    briefing = post_service.list_briefing(db, viewer=member)
     return {
         # ``items`` = het volledige (gesorteerde) archief incl. deze week — voor het
-        # bestaande lijst-fragment + de htmx-swap na plaatsen.
-        "items": post_service.list_news(db),
+        # bestaande lijst-fragment + de htmx-swap na plaatsen. Kijker-bewust: nieuws
+        # van een besloten lid valt weg voor een bezoeker (volgt profiel-zichtbaarheid).
+        "items": post_service.list_news(db, viewer=member),
         "briefing_this_week": briefing.briefing_this_week,
         "member": member,
         "is_admin": member is not None and _is_admin(member),

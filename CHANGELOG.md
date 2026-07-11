@@ -3,6 +3,25 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.109.0] - 2026-07-11
+### Fixed — Nieuws van een besloten lid volgt nu ook de profiel-zichtbaarheid (footprint-lek)
+Live browsercheck van v0.108.0 legde een dieper lek bloot: de attributie-*byline* was geanonimiseerd naar
+"een lid", maar footprint-nieuwsitems dragen de identiteit van het lid in hun **titel** ("Frank Oonk –
+LinkedIn-profiel", "Wouter Dammers - Eve.law") én linken naar diens socials — dus een besloten lid bleef
+via de publieke nieuwsfeed vindbaar. Footprint-items zijn niet van handmatig-gedeeld nieuws te onderscheiden
+in het schema (beide `source_kind=member`; de lek-items waren zelfs `role=gedeeld`), dus geen betrouwbare
+heuristiek — de juiste maat is de auteur-zichtbaarheid zelf.
+- **`post_service.list_news` / `list_briefing` zijn kijker-bewust**: een nieuws-item waarvan de auteur z'n
+  profiel niet openbaar toont (`can_view` faalt: besloten of geschorst) valt weg voor een **bezoeker**.
+  AI-curatie (geen auteur) en profiel-loze leden blijven staan; een **lid** ziet alles. Callers op `/nieuws`,
+  de briefing-strip en de concierge-nieuws-loader geven de kijker mee.
+- **Agenda bewust ONgewijzigd**: een event is publieke community-info (een echte meetup) en de byline/RSVP-naam
+  is al geanonimiseerd (v0.108.0) — dus events blijven zichtbaar voor bezoekers, alleen zonder de naam van een
+  besloten toevoeger.
+- Tests: nieuws van een besloten auteur verborgen voor bezoeker (titel + domein + link weg) maar zichtbaar
+  voor een lid; publiek-lid-nieuws blijft staan; agenda-event blijft publiek met geanonimiseerde attributie.
+  Bestaande test die de oude "naam-zonder-link"-byline borgde omgezet naar de nieuwe verberg-semantiek.
+
 ## [0.108.0] - 2026-07-11
 ### Fixed — Member-gekoppelde content volgt nu overal de profiel-zichtbaarheid (anti-lek)
 De primaire poort (`can_view`) stond al op elke anon-surface, maar de fijnmazige lagen lekten nog. Alles

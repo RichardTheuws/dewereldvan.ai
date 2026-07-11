@@ -5,8 +5,18 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-11 · **Versie**: 0.108.0 · **Branch**: `main`
+**Laatste update**: 2026-07-11 · **Versie**: 0.109.0 · **Branch**: `main`
 
+> **0.109.0** — **Nieuws van een besloten lid volgt nu óók de profiel-zichtbaarheid (footprint-lek).** De
+> live browsercheck van 0.108.0 toonde dat de attributie-byline wél geanonimiseerd was ("een lid"), maar
+> footprint-nieuwsitems het lid in hun **titel** identificeren ("Frank Oonk – LinkedIn-profiel", "Wouter
+> Dammers - Eve.law") + naar diens socials linken → besloten lid bleef via de feed vindbaar. Footprint is
+> niet van gedeeld nieuws te onderscheiden in het schema (beide `source_kind=member`, lek-items zelfs
+> `role=gedeeld`) → juiste maat = auteur-zichtbaarheid. `post_service.list_news`/`list_briefing` zijn nu
+> kijker-bewust: nieuws van een niet-openbaar-zichtbare auteur valt weg voor een **bezoeker** (AI-curatie +
+> profiel-loze leden blijven; een lid ziet alles). **Agenda bewust ongewijzigd** (echte meetup = publieke
+> info; byline al geanonimiseerd). Tests groen (1233 passed). Deploy + live herverificatie na commit.
+>
 > **0.108.0** — **Member-gekoppelde content volgt nu overal de profiel-zichtbaarheid (anti-lek).** De primaire
 > poort (`can_view`) stond al op elke anon-surface; de fijnmazige lagen lekten nog. Dichtgezet, alles via
 > één bron (`visibility.py`): (1) **sitemap** gate't project-URLs op de `makes`-sectie (besloten `makes` →

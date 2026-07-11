@@ -274,8 +274,10 @@ def test_rsvp_attribution_public_member_links_for_visitor(db, make_member, make_
 
 @pytest.fixture
 def seed_attrib(SessionTest):
-    """Een besloten lid dat publiek nieuws + agenda plaatste en als organisator
-    RSVP'de, plus een bekijkend lid — om de attributie-poort op de kaarten te toetsen."""
+    """Een besloten lid dat nieuws + agenda plaatste en als organisator RSVP'de,
+    een publiek lid met een nieuws-item, en een bekijkend lid — om (a) de
+    nieuws-auteur-poort (besloten nieuws valt weg voor bezoekers, ook de titel die
+    het lid identificeert) en (b) de attributie op de kaarten te toetsen."""
     from app.models import (
         EventAttendance,
         EventAttendanceRole,
@@ -291,50 +293,70 @@ def seed_attrib(SessionTest):
     secret = Member(
         email="geheim@example.com", name="Geheim Lid", status=MemberStatus.approved
     )
+    openlid = Member(
+        email="open@example.com", name="Open Lid", status=MemberStatus.approved
+    )
     watcher = Member(
         email="kijker@example.com", name="Kijkend Lid", status=MemberStatus.approved
     )
-    s.add_all([secret, watcher]); s.flush()
-    s.add(Profile(
-        member_id=secret.id, slug="geheim-lid", display_name="Geheim Lid",
-        visibility=Visibility.members,  # besloten
-    ))
+    s.add_all([secret, openlid, watcher]); s.flush()
+    s.add_all([
+        Profile(member_id=secret.id, slug="geheim-lid", display_name="Geheim Lid",
+                visibility=Visibility.members),  # besloten
+        Profile(member_id=openlid.id, slug="open-lid", display_name="Open Lid",
+                visibility=Visibility.public),
+    ])
     s.flush()
-    news = Post(
-        kind=PostKind.nieuws, title="Interessant artikel", url="https://example.com/a",
-        added_by_id=secret.id, review_state=PostReviewState.live,
+    # Footprint-achtig item dat het besloten lid in de titel identificeert.
+    secret_news = Post(
+        kind=PostKind.nieuws, title="Geheim Lid — LinkedIn-profiel",
+        url="https://example.com/geheim", added_by_id=secret.id,
+        review_state=PostReviewState.live,
+    )
+    open_news = Post(
+        kind=PostKind.nieuws, title="Publiek deelbaar artikel",
+        url="https://example.com/open", added_by_id=openlid.id,
+        review_state=PostReviewState.live,
     )
     event = Post(
         kind=PostKind.event, title="Besloten-lid meetup",
         added_by_id=secret.id, review_state=PostReviewState.live,
     )
-    s.add_all([news, event]); s.flush()
+    s.add_all([secret_news, open_news, event]); s.flush()
     s.add(EventAttendance(
         post_id=event.id, member_id=secret.id, role=EventAttendanceRole.organizing
     ))
     s.commit()
-    ids = {"secret": secret.id, "watcher": watcher.id}
+    ids = {"secret": secret.id, "open": openlid.id, "watcher": watcher.id}
     s.close()
     return ids
 
 
-def test_news_attribution_hidden_from_visitor(make_client, seed_attrib):
+def test_news_of_private_author_hidden_from_visitor(make_client, seed_attrib):
+    """Nieuws van een besloten lid valt volledig weg voor een bezoeker — inclusief
+    de titel die het lid identificeert. Nieuws van een publiek lid blijft staan."""
     resp = make_client(None).get("/nieuws")
     assert resp.status_code == 200
-    assert "Geheim Lid" not in resp.text  # naam van een besloten lid lekt niet
-    assert "een lid" in resp.text          # neutrale credit i.p.v. de naam
+    assert "Geheim Lid" not in resp.text            # noch titel, noch byline lekt
+    assert "Geheim Lid — LinkedIn" not in resp.text
+    assert "Publiek deelbaar artikel" in resp.text  # publiek lid blijft zichtbaar
 
 
-def test_news_attribution_visible_to_member(make_client, seed_attrib):
+def test_news_of_private_author_visible_to_member(make_client, seed_attrib):
+    """Een lid ziet alles — ook het nieuws van een besloten lid, met naam."""
     resp = make_client(seed_attrib["watcher"]).get("/nieuws")
     assert resp.status_code == 200
-    assert "Geheim Lid" in resp.text  # een lid ziet de naam wel
+    assert "Geheim Lid — LinkedIn" in resp.text
+    assert "Geheim Lid" in resp.text
 
 
-def test_agenda_attribution_and_rsvp_hidden_from_visitor(make_client, seed_attrib):
+def test_agenda_of_private_author_stays_public_but_attribution_gated(make_client, seed_attrib):
+    """Agenda-events blijven publiek (echte meetup = publieke info), maar de
+    attributie/RSVP-naam van een besloten lid is geanonimiseerd voor een bezoeker."""
     resp = make_client(None).get("/agenda")
     assert resp.status_code == 200
-    assert "Geheim Lid" not in resp.text  # noch de "toegevoegd door", noch de RSVP-rol
+    assert "Besloten-lid meetup" in resp.text  # het event zelf blijft zichtbaar
+    assert "Geheim Lid" not in resp.text        # naam (toegevoegd door / RSVP) niet
     assert "een lid" in resp.text
 
 

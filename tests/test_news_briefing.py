@@ -623,8 +623,12 @@ def test_news_card_shows_origin_and_links_public_member(make_client, SessionTest
     assert "/leden/frank-oonk" in resp.text  # attributie → profiel (graaf-knoop)
 
 
-def test_news_card_does_not_link_members_only_profile(make_client, SessionTest):
-    """Een besloten profiel wordt NIET publiek gelinkt — naam wel, link niet."""
+def test_footprint_news_of_private_member_hidden_from_visitor(make_client, SessionTest):
+    """Nieuws van een besloten lid — een footprint-item dat het lid in de titel
+    identificeert ("Wouter Dammers - Eve.law") — valt VOLLEDIG weg voor een
+    bezoeker: content volgt de profiel-zichtbaarheid. Een lid ziet het wel."""
+    from app.models import Member, MemberStatus
+
     s = SessionTest()
     m = _member_with_profile(
         s, email="wouter@example.com", name="Wouter Dammers",
@@ -634,14 +638,23 @@ def test_news_card_does_not_link_members_only_profile(make_client, SessionTest):
         s, member_id=m.id, url="https://eve.law/arbiters/wouter-dammers/",
         title="Wouter Dammers - Eve.law (arbiter)", role="gedeeld",
     )
-    s.commit()
+    watcher = Member(email="kijk@example.com", name="Kijkend Lid",
+                     status=MemberStatus.approved)
+    s.add(watcher); s.commit()
+    watcher_id = watcher.id
     s.close()
 
-    resp = make_client(None).get("/nieuws")
-    assert resp.status_code == 200
-    assert "Wouter Dammers" in resp.text  # naam zichtbaar
-    assert "eve.law" in resp.text  # domein-chip
-    assert "/leden/wouter-dammers" not in resp.text  # besloten → geen publieke link
+    # Bezoeker: niets van het besloten lid lekt (naam, domein-chip, noch link).
+    anon = make_client(None).get("/nieuws")
+    assert anon.status_code == 200
+    assert "Wouter Dammers" not in anon.text
+    assert "eve.law" not in anon.text
+    assert "/leden/wouter-dammers" not in anon.text
+
+    # Lid: ziet alles (leden zien elkaar volledig).
+    lid = make_client(watcher_id).get("/nieuws")
+    assert lid.status_code == 200
+    assert "Wouter Dammers" in lid.text
 
 
 def test_group_context_returns_names_with_real_rows(db):
