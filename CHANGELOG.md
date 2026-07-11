@@ -3,6 +3,15 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.106.3] - 2026-07-11
+### Changed — Craft-pass op de prikker-detailpagina (constellatie + auto-selectie)
+- North-star-audit van de resterende Samenkomen-schermen: de **datum-kaarten** (`.datprik-star`) waren
+  bij 0 stemmen vlakke boxen → nu glas-diepte + een **ster-marker** die het constellatie-concept draagt
+  (feller bij meer 'ik kan'-stemmen; de koploper ontbrandt goud). De **auto-selectie-rijen**
+  (`.datprik-suggest__row`) zijn nu verhoogde glas-kaarten met hover i.p.v. dunne outlines. Alleen
+  `cosmic.css`. Browser-geverifieerd. (Concierge-draft `draft_gathering` erft de bestaande canvas-look;
+  geen wijziging nodig.)
+
 ## [0.106.2] - 2026-07-11
 ### Changed — Kosmische-diepte-herontwerp van de Samenkomen/Dichtbij-flows (ervaringsmandaat)
 - De nieuwe schermen waren kale, links-uitgelijnde formulieren in lege ruimte — een regressie t.o.v.
