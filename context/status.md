@@ -249,6 +249,10 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
   in de M4-`.env` (2026-06-21) → het pad is nu live binnen de €50/wk-cap.
 
 ## Open taken
+- [x] **Sectie-niveau zichtbaarheid (v0.106.0)**: openbaar profiel kiest per blok (bio/makes/needs/open_to)
+      wat een bezoeker ziet; naam+discipline+foto = basiskaart, leden zien altijd alles. `Profile.public_sections`
+      (migratie 0038), poort in `visibility.py`, anti-lek op detail/kaart/discovery-filter/JSON-LD/project-deeplink.
+      Legacy `None` = volledig publiek (nul regressie). Browser-geverifieerd. PRD: `docs/PRD-zichtbaarheid-secties.md`.
 - [x] **Samenkomen — datumprikker (fase 1, v0.104.0)**: `Gathering`/`GatheringDate`/`GatheringVote`/
       `GatheringInvite` (migratie 0036), `/samen`-routes + kosmische constellatie (stemmen ja/misschien/nee,
       koploper gloeit), winnende datum **klapt samen tot agenda-event** met ja-stemmers als RSVP. Auto-selectie

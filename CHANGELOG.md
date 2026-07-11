@@ -3,6 +3,25 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.106.0] - 2026-07-11
+### Added — Sectie-niveau zichtbaarheid ("Openbaar, maar alleen wat ik kies")
+- Een openbaar profiel kan nu **per blok** kiezen wat een **bezoeker** ziet (bio / wat ik maak /
+  wat ik zoek / waar ik voor opensta) — naam+discipline+foto zijn de altijd-zichtbare basiskaart;
+  **leden zien altijd het volledige profiel**. "Alleen leden" (default) blijft volledig besloten +
+  noindex. Publiceer-dok `ai/_publish_panel.html` met schakelaars + consent.
+- **Model**: `Profile.public_sections` (JSON(B), migratie `0038`); `None` = volledig publiek
+  (legacy, **nul regressie**). Poort in `visibility.py` (één bron): `PUBLIC_SECTIONS`,
+  `public_section_visible`, `visible_sections`, `set_public_sections`.
+- **Anti-lek** (afgedwongen + getest): een besloten-gehouden blok lekt niet — niet op de
+  detailpagina (`profiles/view.html`), niet op de gids-kaart (`_member_star.html`), niet via een
+  discovery-filter (`list_public_profiles(for_visitor=…)` matcht bezoekers alleen op publieke
+  blokken), niet in JSON-LD/meta (`seo_service.jsonld_person(sections=…)` + `meta_desc`), en niet
+  via een los project-deep-link (`/projecten/{slug}` respecteert de `makes`-sectie).
+- Tests: `tests/test_visibility_sections.py` (poort, normalize/set, anti-lek-query, render bezoeker vs
+  lid, project-deep-link-gate). Browser-geverifieerd (uitgelogd ziet basiskaart, ingelogd ziet alles).
+- PRD: `docs/PRD-zichtbaarheid-secties.md` (LIVE). De tweede toggle `/profiel/zichtbaarheid` behoudt
+  bestaande `public_sections` (openbaar-zonder-keuze = volledig publiek, zoals voorheen).
+
 ## [0.105.2] - 2026-07-11
 ### Docs — PRD sectie-niveau zichtbaarheid ("Openbaar, maar alleen wat ik kies") — DRAFT
 - **`docs/PRD-zichtbaarheid-secties.md`** (DRAFT, wacht op goedkeuring): vult het gat dat een lid nu

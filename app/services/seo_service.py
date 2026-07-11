@@ -106,20 +106,30 @@ def _lastmod(value: datetime | None) -> str | None:
 # --- JSON-LD ---------------------------------------------------------------
 
 
-def jsonld_person(profile: Profile) -> dict:
+def jsonld_person(profile: Profile, *, sections: dict[str, bool] | None = None) -> dict:
     """schema.org ``Person`` voor een publiek profiel.
 
     ``image`` = absolute foto (geüpload of AI-cover), ``knowsAbout`` = tags,
     ``makesOffer`` = publieke projecten (met stabiele project-URL). Velden zonder
     waarde worden weggelaten zodat de JSON-LD schoon blijft.
+
+    ``sections`` (sectie-niveau zichtbaarheid): als meegegeven, worden blok-gebonden
+    velden weggelaten wanneer dat blok voor een bezoeker besloten is — de JSON-LD is
+    de publieke/crawler-representatie, dus een besloten blok mag hier niet uitlekken.
+    ``None`` = alles publiek (legacy/backwards-compatible).
     """
+
+    def _pub(name: str) -> bool:
+        return sections is None or sections.get(name, True)
+
     data: dict = {
         "@context": "https://schema.org",
         "@type": "Person",
         "name": profile.display_name,
         "url": _person_url(profile),
     }
-    description = profile.headline or profile.bio
+    # headline is basiskaart (altijd publiek); bio alleen als dat blok publiek is.
+    description = profile.headline or (profile.bio if _pub("bio") else None)
     if description:
         data["description"] = description
 
@@ -132,11 +142,12 @@ def jsonld_person(profile: Profile) -> dict:
         data["knowsAbout"] = tags
 
     offers = []
-    for off in getattr(profile, "offerings", []):
-        if not off.slug:
-            continue
-        item: dict = {"@type": "CreativeWork", "name": off.title, "url": _project_url(off)}
-        offers.append({"@type": "Offer", "itemOffered": item})
+    if _pub("makes"):
+        for off in getattr(profile, "offerings", []):
+            if not off.slug:
+                continue
+            item: dict = {"@type": "CreativeWork", "name": off.title, "url": _project_url(off)}
+            offers.append({"@type": "Offer", "itemOffered": item})
     if offers:
         data["makesOffer"] = offers
 

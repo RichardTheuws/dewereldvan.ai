@@ -68,6 +68,10 @@ def view_project(
     # publiek niet (verberg het bestaan → 404 / login zoals de profielpagina).
     if profile is None or not visibility_service.can_view(profile, viewer):
         return _denied()
+    # Sectie-niveau: houdt de eigenaar 'wat ik maak' besloten voor bezoekers, dan mag
+    # een los project ook niet via z'n deep-link lekken (PRD-zichtbaarheid-secties §6.7).
+    if not visibility_service.public_section_visible(profile, "makes", viewer):
+        return _denied()
 
     # Lazy-on-view (universeel vangnet): mist dit project nog een screenshot of
     # samenvatting maar heeft het wél een link, start dan de verrijking in de

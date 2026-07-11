@@ -17,6 +17,8 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db import get_db
+from app.deps import current_member
+from app.models import Member, MemberStatus
 from app.services import (
     emphasis_service,
     graph_service,
@@ -24,6 +26,7 @@ from app.services import (
     openness_service,
     photo_service,
     seo_service,
+    visibility as visibility_service,
 )
 
 router = APIRouter(tags=["members"])
@@ -33,17 +36,19 @@ def _render(request: Request, name: str, ctx: dict | None = None, **kw) -> HTMLR
     return request.app.state.templates.TemplateResponse(request, name, ctx or {}, **kw)
 
 
-def _grid_context(profiles) -> dict:
+def _grid_context(profiles, viewer: Member | None) -> dict:
     """Gedeelde context voor zowel de hele pagina als het htmx-grid-fragment.
 
     Levert de helpers (``emphasis_class``/``photo_or_initials``) als callables
-    mee zodat de template geen logica hoeft te bevatten.
+    mee zodat de template geen logica hoeft te bevatten. ``section_visible`` gate't
+    blok-gebonden kaart-content (bv. het projectbeeld) voor een bezoeker.
     """
     return {
         "profiles": profiles,
         "emphasis_class": emphasis_service.emphasis_class,
         "photo_for": photo_service.photo_or_initials,
         "disciplines_for": members_service.derive_disciplines,
+        "section_visible": lambda p, s: visibility_service.public_section_visible(p, s, viewer),
     }
 
 
@@ -56,6 +61,7 @@ def members_index(
     tool: str = Query("", alias="tool"),
     discipline: str = Query("", alias="discipline"),
     open_to: str = Query("", alias="open_to"),
+    viewer: Member | None = Depends(current_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
     """De kosmische constellatie van publieke leden + server-side filter/zoek.
@@ -64,11 +70,14 @@ def members_index(
     terug; een gewone navigatie of deeplink met querystring krijgt de volledige,
     indexeerbare pagina (zodat een gedeelde gefilterde URL ook stand-alone werkt).
     """
+    # Een bezoeker (niet-ingelogd lid) matcht alleen op publieke blokken → een
+    # besloten-gehouden blok lekt niet via een filter (PRD-zichtbaarheid-secties).
+    is_member = viewer is not None and viewer.status == MemberStatus.approved
     profiles = members_service.list_public_profiles(
         db, tag=tag, maakt=maakt, zoekt=zoekt, tool=tool,
-        discipline=discipline, open_to=open_to,
+        discipline=discipline, open_to=open_to, for_visitor=not is_member,
     )
-    ctx = _grid_context(profiles)
+    ctx = _grid_context(profiles, viewer)
     ctx.update(
         {"tag": tag, "maakt": maakt, "zoekt": zoekt, "tool": tool,
          "discipline": discipline, "open_to": open_to}

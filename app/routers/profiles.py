@@ -425,12 +425,22 @@ def view_profile(
         db.commit()
 
     noindex = visibility_service.is_noindex(profile)
+    # Sectie-niveau zichtbaarheid: welke blokken deze kijker ziet (leden/eigenaar =
+    # alles; bezoeker = alleen publieke blokken). De meta/JSON-LD gebruiken de
+    # PUBLIEKE representatie (viewer=None) zodat een besloten blok ook via SEO niet lekt.
+    sections = visibility_service.visible_sections(profile, viewer)
+    public_view = visibility_service.visible_sections(profile, None)
+    meta_desc = profile.headline or (
+        profile.bio if public_view["bio"] else None
+    ) or profile.display_name
     return _render(
         request,
         "profiles/view.html",
         {
             "profile": profile,
             "noindex": noindex,
+            "sections": sections,
+            "meta_desc": meta_desc,
             "is_owner": viewer is not None and viewer.id == profile.member_id,
             # Gegronde graaf-buren (strict uit DB, nul AI): het profiel is een
             # knoop in de levende kaart, niet een plat CV. Herbruikt op /leden.
@@ -442,7 +452,7 @@ def view_profile(
             # Mens-naast-AI-correctiepad voor de tool-dossiers (doc 03 §4.3).
             **_tool_notes_context(db, profile, viewer),
             # JSON-LD + OG-beeld alleen voor publiek-indexeerbare profielen.
-            "jsonld": None if noindex else seo_service.jsonld_person(profile),
+            "jsonld": None if noindex else seo_service.jsonld_person(profile, sections=public_view),
             "og_image": (
                 None
                 if noindex

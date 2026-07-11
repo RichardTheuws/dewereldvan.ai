@@ -1,6 +1,15 @@
-{# Publiceer-dok. Zichtbaarheid + AVG-consent + knop. Delegeert naar de bestaande
-   zichtbaarheidsflow (POST /profiel/ai/publiceren). Bij ConsentRequired swapt de
-   route dit blok terug met `error`. Nooit auto-publiceren — bewuste stap. #}
+{# Publiceer-dok. Zichtbaarheid + sectie-keuze + AVG-consent + knop. Delegeert naar
+   de bestaande zichtbaarheidsflow (POST /profiel/ai/publiceren). Bij ConsentRequired
+   swapt de route dit blok terug met `error`. Nooit auto-publiceren — bewuste stap.
+   Sectie-niveau: bij 'Openbaar' kies je wat een BEZOEKER ziet; leden zien altijd alles. #}
+{% set ps = profile.public_sections %}
+{% macro sec(slug, label) %}
+  <label class="flex items-center gap-3 text-sm">
+    <input type="checkbox" name="sections" value="{{ slug }}" style="width:auto"
+           {% if ps is none or slug in ps %}checked{% endif %}>
+    <span>{{ label }}</span>
+  </label>
+{% endmacro %}
 <div id="publiceren" class="space-y-4">
   {% if error %}
   <div class="bubble bubble--refusal mb-4">{{ error }}</div>
@@ -11,11 +20,9 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="section-title">Publiceren</div>
     <p class="lede text-sm max-w-lg">
-      Kies wie je profiel mag zien. Openbaar betekent: voor iedereen zichtbaar en
-      vindbaar in zoekmachines.
+      Kies wie je profiel mag zien. <strong>Alleen leden</strong> = besloten, alleen zichtbaar
+      binnen de community. <strong>Openbaar</strong> = zichtbaar en vindbaar in zoekmachines.
     </p>
-    {# Zien hoe het eruitziet vóór de keuze — opent in een nieuw tabblad zodat de
-       live profielbouw hier niet verloren gaat. #}
     <a class="link" href="/profiel/voorbeeld" target="_blank" rel="noopener">Bekijk eerst als bezoeker →</a>
     <div>
       <label class="field-label" for="pub-visibility">Zichtbaarheid</label>
@@ -24,12 +31,27 @@
         <option value="public" {% if profile.visibility.value == 'public' %}selected{% endif %}>Openbaar</option>
       </select>
     </div>
+
+    {# Sectie-keuze — geldt bij 'Openbaar'. Naam + discipline + foto zijn altijd zichtbaar. #}
+    <fieldset class="publish-sections">
+      <legend class="field-label">Bij Openbaar — wat zien bezoekers?</legend>
+      <p class="text-sm muted" style="margin:2px 0 8px">
+        Je naam, discipline en foto zijn altijd zichtbaar. Kies wat je verder toont —
+        <strong>leden in de community zien altijd je volledige profiel.</strong>
+      </p>
+      {{ sec('bio', 'Over jou') }}
+      {{ sec('makes', 'Wat ik maak') }}
+      {{ sec('needs', 'Wat ik zoek') }}
+      {{ sec('open_to', 'Waar ik voor opensta') }}
+    </fieldset>
+
     <label class="flex items-start gap-3 text-sm muted">
       <input type="checkbox" name="consent" value="on" style="width:auto;margin-top:4px"
              {% if profile.consented_public_at %}checked{% endif %}>
       <span>
-        Ik geef toestemming om mijn profiel (naam, kopregel, bio en wat ik maak/zoek)
-        openbaar en vindbaar te maken. Verplicht om openbaar te zetten.
+        Ik geef toestemming om de hierboven aangevinkte onderdelen van mijn profiel
+        (mijn naam, discipline en foto altijd) openbaar en vindbaar te maken. Verplicht
+        om openbaar te zetten.
       </span>
     </label>
     <button class="btn" type="submit">Publiceer mijn profiel</button>

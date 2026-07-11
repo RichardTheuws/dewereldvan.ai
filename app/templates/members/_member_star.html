@@ -6,7 +6,10 @@
    plakken van de modifier-class. #}
 {% set photo = photo_for(profile) %}
 {% set ecls = emphasis_class(profile) %}
-{% set _first_project = profile.offerings[0] if profile.offerings else None %}
+{# 'Wat ik maak' kan voor een bezoeker besloten zijn → toon dan geen projectbeeld/
+   -titel op de kaart (val terug op de foto). Leden/eigenaar zien alles. #}
+{% set _show_makes = (section_visible(profile, 'makes') if section_visible else True) %}
+{% set _first_project = profile.offerings[0] if (_show_makes and profile.offerings) else None %}
 {% set _proj_img = (_first_project.image_url | safe_url) if _first_project else '' %}
 <a class="member-star {{ ecls }}" href="/leden/{{ profile.slug }}"
    data-reveal="drift" style="--d:{{ loop.index0 * 60 if loop is defined else 0 }}ms">

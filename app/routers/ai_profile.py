@@ -1186,14 +1186,17 @@ def publish(
     request: Request,
     visibility: str = Form("members"),
     consent: str = Form(""),
+    sections: list[str] = Form(default=[]),
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ):
     """Bevestig + publiceer. Delegeert naar de zichtbaarheidsflow (consent voor public).
 
     Zet zelf NOOIT ``visibility``; ``change_visibility`` dwingt consent af voor
-    ``public`` (AVG). Bij ``ConsentRequired`` swapt het publiceer-dok een melding.
-    Na succes: wis de conversatie + 303 naar de publieke profielpagina.
+    ``public`` (AVG). ``sections`` = de blokken die een BEZOEKER mag zien wanneer je
+    openbaar gaat (sectie-niveau zichtbaarheid); de basiskaart is altijd publiek.
+    Bij ``ConsentRequired`` swapt het publiceer-dok een melding. Na succes: wis de
+    conversatie + 303 naar de publieke profielpagina.
     """
     profile = profile_service.get_or_create_profile(db, member)
     AcceptForm(consent=bool(consent))
@@ -1205,6 +1208,10 @@ def publish(
         visibility_service.change_visibility(
             db, profile, target, actor=member, consent=bool(consent)
         )
+        # Leg de gekozen publieke blokken vast (alleen relevant bij openbaar; bij
+        # 'alleen leden' bewaren we de keuze voor een latere publicatie).
+        if target == Visibility.public:
+            visibility_service.set_public_sections(db, profile, sections)
     except visibility_service.ConsentRequired:
         db.rollback()
         return _render(

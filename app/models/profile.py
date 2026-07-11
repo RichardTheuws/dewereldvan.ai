@@ -93,6 +93,15 @@ class Profile(Base, TimestampMixin):
     area_lat: Mapped[float | None] = mapped_column(Float, nullable=True)
     area_lng: Mapped[float | None] = mapped_column(Float, nullable=True)
 
+    # Sectie-niveau zichtbaarheid (PRD-zichtbaarheid-secties). Bij ``visibility=public``
+    # bepaalt deze lijst WELKE blokken een BEZOEKER ziet: subset van
+    # ``visibility.PUBLIC_SECTIONS`` (bio/makes/needs/open_to). ``None`` = alle blokken
+    # publiek (legacy/backwards-compatible — bestaande openbare profielen ongewijzigd).
+    # De basiskaart (naam/discipline/foto/headline/tags/tools) is altijd publiek bij
+    # ``public``; leden zien altijd alles (de poort in ``visibility.py`` is één bron).
+    # Verdwijnt mee met het profiel (CASCADE op member) — AVG.
+    public_sections: Mapped[list[str] | None] = mapped_column(JSON_LIST, nullable=True)
+
     member: Mapped[Member] = relationship(back_populates="profile")
     offerings: Mapped[list[Offering]] = relationship(
         back_populates="profile", cascade="all, delete-orphan"

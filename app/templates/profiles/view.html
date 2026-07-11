@@ -18,8 +18,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# Sectie-niveau zichtbaarheid: welke blokken de kijker ziet (default = alles). #}
+  {% set sections = sections if sections is defined else {'bio': true, 'makes': true, 'needs': true, 'open_to': true} %}
   {% set seo_title = (profile.headline or profile.display_name) ~ " — dewereldvan.ai" %}
-  {% set seo_desc = profile.headline or profile.bio or profile.display_name %}
+  {% set seo_desc = meta_desc if meta_desc is defined else (profile.headline or profile.display_name) %}
   {% set og_type = "profile" %}
   {% include "_seo_head.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
@@ -220,21 +222,23 @@
 
       {# Emphasis stuurt de volgorde: projects → projecten naar voren; person/
          balanced → bio eerst. Alle blokken blijven aanwezig (geen content-verlies). #}
+      {# Blok-gebonden secties (bio/makes/needs/open_to) tonen we alleen als dit blok
+         voor de kijker publiek is; roles/tools/related horen bij de basis-identiteit. #}
       {% if ecls == "emphasis-projects" %}
-        {{ section_projects() }}
-        {{ section_open_to() }}
-        {{ section_bio() }}
+        {% if sections.makes %}{{ section_projects() }}{% endif %}
+        {% if sections.open_to %}{{ section_open_to() }}{% endif %}
+        {% if sections.bio %}{{ section_bio() }}{% endif %}
         {{ section_roles() }}
         {{ section_tools() }}
-        {{ section_seeking() }}
+        {% if sections.needs %}{{ section_seeking() }}{% endif %}
         {{ section_related() }}
       {% else %}
-        {{ section_open_to() }}
-        {{ section_bio() }}
+        {% if sections.open_to %}{{ section_open_to() }}{% endif %}
+        {% if sections.bio %}{{ section_bio() }}{% endif %}
         {{ section_roles() }}
-        {{ section_projects() }}
+        {% if sections.makes %}{{ section_projects() }}{% endif %}
         {{ section_tools() }}
-        {{ section_seeking() }}
+        {% if sections.needs %}{{ section_seeking() }}{% endif %}
         {{ section_related() }}
       {% endif %}
 

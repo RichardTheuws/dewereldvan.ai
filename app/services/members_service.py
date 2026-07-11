@@ -184,6 +184,17 @@ def _public_base():
     )
 
 
+def _section_public_clause(section: str):
+    """AND-clause: het blok ``section`` is voor een bezoeker zichtbaar op dit profiel —
+    legacy (``public_sections IS NULL`` = volledig publiek) óf het blok staat in de
+    gekozen set. Dialect-neutraal (cast→tekst→LIKE op de gequote slug; spiegelt de
+    open_to-filter). Voorkomt dat een besloten-gehouden blok via een filter uitlekt."""
+    return or_(
+        Profile.public_sections.is_(None),
+        cast(Profile.public_sections, String).ilike(f'%"{section}"%'),
+    )
+
+
 def list_public_profiles(
     db: Session,
     *,
@@ -193,6 +204,7 @@ def list_public_profiles(
     tool: str | None = None,
     discipline: str | None = None,
     open_to: str | None = None,
+    for_visitor: bool = False,
 ) -> list[Profile]:
     """Publieke, goedgekeurde profielen voor de constellatie, optioneel gefilterd.
 
@@ -200,6 +212,11 @@ def list_public_profiles(
     met AND. Resultaat is op ``display_name`` gesorteerd en eager-load't de
     relaties die de kaart-/detailtemplate nodig heeft (tags/offerings/needs/
     member) zodat de render geen N+1 doet.
+
+    ``for_visitor``: bij een NIET-lid (bezoeker) matchen de blok-gebonden filters
+    (``maakt``/``zoekt``/``open_to``) alleen profielen die dat blok publiek tonen —
+    zo lekt een besloten-gehouden blok niet via discovery (PRD-zichtbaarheid-secties).
+    Voor leden (default ``False``) telt alles: leden zien elk publiek profiel volledig.
     """
     stmt = _public_base()
 
@@ -225,6 +242,8 @@ def list_public_profiles(
                 offering_match.exists(),
             )
         )
+        if for_visitor:
+            stmt = stmt.where(_section_public_clause("makes"))
 
     zoekt_q = (zoekt or "").strip()
     if zoekt_q:
@@ -234,6 +253,8 @@ def list_public_profiles(
             Need.title.ilike(like),
         )
         stmt = stmt.where(need_match.exists())
+        if for_visitor:
+            stmt = stmt.where(_section_public_clause("needs"))
 
     tool_q = (tool or "").strip()
     if tool_q:
@@ -266,6 +287,8 @@ def list_public_profiles(
     open_to_q = (open_to or "").strip().lower()
     if open_to_q in _OPENNESS_SLUGS:
         stmt = stmt.where(cast(Profile.open_to, String).ilike(f'%"{open_to_q}"%'))
+        if for_visitor:
+            stmt = stmt.where(_section_public_clause("open_to"))
 
     stmt = (
         stmt.distinct()

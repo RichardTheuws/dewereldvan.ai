@@ -1,6 +1,6 @@
 # PRD — Sectie-niveau zichtbaarheid ("Openbaar, maar alleen wat ik kies")
 
-**Status**: DRAFT — wacht op goedkeuring
+**Status**: LIVE (v0.106.0, 2026-07-11)
 **Datum**: 2026-07-11
 **Relatie**: `app/services/visibility.py` (de zichtbaarheids-poort), `PRD-ledenpagina.md`,
 `PRD-open-showcase.md` (§3.3 gelaagde zichtbaarheid = standing, NIET veld-privacy — dit is nieuw),
