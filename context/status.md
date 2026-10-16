@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-10-16 · **Versie**: 0.115.0 · **Branch**: `main`
+**Laatste update**: 2026-10-16 · **Versie**: 0.115.1 · **Branch**: `main`
 
+> **0.115.1** — **Fix: MCP via dewereldvan.ai gaf "Invalid Host header"** (FastMCP stond alleen localhost toe;
+> bestond al, onopgemerkt want nooit een token gebruikt). Gevonden bij de live-check van de hub-deploy.
+>
 > **0.115.0** — **Hub fase 1 compleet in code: maandelijkse AI-steekproef (PRD hub §4.4b).** Claude + web-search
 > beantwoordt per openbaar profiel twee opdrachtgever-vragen; deterministisch gemeten of het lid genoemd wordt
 > en of dewereldvan.ai als bron verschijnt. 1e van de maand, idempotent, begrensd. Migratie 0041.

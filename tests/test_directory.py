@@ -262,3 +262,31 @@ def test_sitemap_has_only_filled_guides(client):
 
 def test_llms_txt_links_guides(client):
     assert "/gids/trainers" in client.get("/llms.txt").text
+
+
+def test_mcp_allows_public_hostnames(monkeypatch):
+    """Regressie (2026-10-16): FastMCP stond alleen localhost toe → elke MCP-call via
+    dewereldvan.ai gaf "Invalid Host header"."""
+    import app.mcp_server as mcp
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "base_url", "https://dewereldvan.ai")
+    sec = mcp._transport_security()
+    assert {"dewereldvan.ai", "app.dewereldvan.ai", "www.dewereldvan.ai"} <= set(sec.allowed_hosts)
+    assert "https://dewereldvan.ai" in sec.allowed_origins
+
+
+def test_mcp_initialize_over_http_without_token(route_db, monkeypatch):
+    import app.mcp_server as mcp
+    from app.main import app
+
+    monkeypatch.setattr(mcp, "SessionLocal", route_db)
+    with TestClient(app, base_url="http://testserver") as c:
+        resp = c.post(
+            "/mcp/",
+            headers={"Accept": "application/json, text/event-stream"},
+            json={"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                  "params": {"name": "zoek_makers", "arguments": {"zoekterm": "workshop"}}},
+        )
+    assert resp.status_code == 200, resp.text
+    assert "Mila Maker" in resp.text

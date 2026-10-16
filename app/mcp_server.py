@@ -7,7 +7,8 @@ op ``/mcp`` in de bestaande web-container. Dunne laag over de bestaande services
 AUTH: een ASGI-middleware leest ``Authorization: Bearer dwv_…``, resolvet het lid
 (``token_service.resolve``, eigen sessie) en zet ``member_id`` in een contextvar;
 een ongeldig token → 401. Zonder token is de server anoniem bruikbaar voor de
-openbare gids (``zoek_makers``, ``hoe_werkt_dewereldvan``; PRD hub §4.2). Elke tool leest die contextvar en opent z'n eigen
+openbare gids (``zoek_makers``, ``hoe_werkt_dewereldvan``; PRD hub §4.2). Elke tool
+leest die contextvar en opent z'n eigen
 ``SessionLocal`` (de drain-thread mag de request-sessie niet delen). Een token =
 "act as dit approved lid"; nooit role-escalatie.
 
@@ -21,8 +22,10 @@ import contextvars
 import logging
 import time
 from collections import deque
+from urllib.parse import urlsplit
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 from app.config import settings
 from app.db import SessionLocal
@@ -46,7 +49,30 @@ _member_id: contextvars.ContextVar[int | None] = contextvars.ContextVar(
     "mcp_member_id", default=None
 )
 
-mcp = FastMCP("dewereldvan", stateless_http=True, json_response=True)
+def _transport_security() -> TransportSecuritySettings:
+    """DNS-rebinding-bescherming mét de echte hostnamen. Zonder dit staat FastMCP
+    alleen localhost toe en gaf elke request via dewereldvan.ai "Invalid Host header"
+    (gevonden bij de hub-deploy 2026-10-16)."""
+    host = urlsplit(settings.base_url).hostname or "localhost"
+    bare = host.removeprefix("app.").removeprefix("www.")
+    hosts = sorted({host, bare, f"app.{bare}", f"www.{bare}"})
+    return TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=[
+            *hosts, "localhost", "localhost:*", "127.0.0.1", "127.0.0.1:*", "testserver",
+        ],
+        allowed_origins=[
+            *(f"https://{h}" for h in hosts), "http://localhost:*", "http://127.0.0.1:*",
+        ],
+    )
+
+
+mcp = FastMCP(
+    "dewereldvan",
+    stateless_http=True,
+    json_response=True,
+    transport_security=_transport_security(),
+)
 mcp.settings.streamable_http_path = "/"  # gemount op /mcp → serveer op de root
 
 
@@ -192,8 +218,9 @@ def stel_voor(maker_slug: str, bericht: str) -> dict:
         member = _me(db)
         if member is None:
             return {"fout": "niet ingelogd"}
-        from app.models import MemberStatus, Profile
         from sqlalchemy import select
+
+        from app.models import MemberStatus, Profile
 
         to_member = db.scalar(
             select(Member).join(Profile, Profile.member_id == Member.id).where(

@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.115.1] - 2026-10-16
+### Fixed — MCP-server was via het publieke domein onbereikbaar ("Invalid Host header")
+FastMCP zet DNS-rebinding-bescherming standaard op localhost-only; elke MCP-call via dewereldvan.ai
+gaf daardoor 421 "Invalid Host header" (bestond al vóór de hub; er was nooit een token gebruikt, dus
+onopgemerkt). Nu met de echte hostnamen (apex, `app.`, `www.`) uit `BASE_URL`; bescherming blijft aan.
+Regressietests: toegestane hosts + een echte HTTP `tools/call` zonder token.
+
 ## [0.115.0] - 2026-10-16
 ### Added — Maandelijkse AI-steekproef: "Noemt een AI-assistent je?" (PRD hub §4.4, deel 2)
 - Per openbaar profiel twee vragen zoals een opdrachtgever ze stelt ("Welke AI-trainers in Nederland of
