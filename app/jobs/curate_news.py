@@ -9,7 +9,8 @@ persisteert elk voorstel als ``Post``: **zeker** (``auto_approvable``:
 relevantie ≥ ``AUTO_APPROVE_THRESHOLD``) → direct ``live``; **twijfel** →
 ``pending_review`` in ``/admin/nieuws`` (spiegelt de agenda-curatie, v0.116.0).
 Idempotent (dedup op URL via ``create_curated_news`` → een dubbele run maakt
-geen dubbele items). Best-effort: een fout in de AI-laag breekt niets (de service vangt 'm af en levert een lege lijst). Gegated op
+geen dubbele items). Best-effort: een fout in de AI-laag breekt niets (de
+service vangt 'm af en levert een lege lijst). Gegated op
 ``settings.ai_enrich_enabled``.
 
 Optioneel: bij nieuwe kandidaten een in-app "klaar"-chip (state-derived) +

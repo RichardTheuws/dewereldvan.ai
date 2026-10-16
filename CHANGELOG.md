@@ -3,6 +3,10 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.116.1] - 2026-10-16
+### Style
+- Docstring van `app/jobs/curate_news.py` binnen de regellengte gebracht (lint).
+
 ## [0.116.0] - 2026-10-16
 ### Changed — Nieuws: het zekere gaat automatisch live (spiegelt de agenda)
 De nieuws-curatie stelde elk item voor als `pending_review`; zonder handmatige goedkeuring stapelde de
