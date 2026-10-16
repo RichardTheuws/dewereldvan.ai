@@ -10,9 +10,9 @@ Wie iemand zoekt voor een opdracht, training, lezing of samenwerking kan die mak
 - [Ledengids]({{ base_url }}/leden): doorzoekbaar op discipline, tag, tool en "open voor".
 - MCP-server: `{{ base_url }}/mcp` (Streamable HTTP). Zonder token kun je `zoek_makers` gebruiken op de openbare gids.
 
-## Disciplines
+## Overzichten per discipline
 {% for slug, label, n in disciplines %}
-- {{ label }}: {{ n }} openbare {{ "maker" if n == 1 else "makers" }}
+- [{{ label }}]({{ base_url }}/gids/{{ guide_paths[slug] }}): {{ n }} openbare {{ "maker" if n == 1 else "makers" }}
 {%- endfor %}
 
 ## Makers

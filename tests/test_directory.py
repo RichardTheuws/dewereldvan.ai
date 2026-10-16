@@ -27,6 +27,7 @@ def route_db():
     Base.metadata.create_all(eng)
     Session = sessionmaker(bind=eng, autoflush=False, future=True)
     with Session() as s:
+
         def add(email, name, slug, vis, **kw):
             m = Member(email=email, name=name, status=kw.pop("status", MemberStatus.approved))
             s.add(m)
@@ -36,14 +37,34 @@ def route_db():
             s.flush()
             return p
 
-        mila = add("mila@x.nl", "Mila Maker", "mila", Visibility.public,
-                   headline="AI-trainer", open_to=["trainingen"])
-        s.add(Offering(profile_id=mila.id, title="RAG-workshop", kind=OfferingKind.workshop,
-                       url="https://mila.example/workshop", slug="rag-workshop"))
+        mila = add(
+            "mila@x.nl",
+            "Mila Maker",
+            "mila",
+            Visibility.public,
+            headline="AI-trainer",
+            open_to=["trainingen"],
+        )
+        s.add(
+            Offering(
+                profile_id=mila.id,
+                title="RAG-workshop",
+                kind=OfferingKind.workshop,
+                url="https://mila.example/workshop",
+                slug="rag-workshop",
+            )
+        )
         add("bo@x.nl", "Bo Besloten", "bo", Visibility.members, headline="Geheim")
         add("gs@x.nl", "Gus Geschorst", "gus", Visibility.public, status=MemberStatus.suspended)
-        add("sec@x.nl", "Sem Sectie", "sem", Visibility.public, headline="Bouwer",
-            open_to=["klantwerk"], public_sections=["bio"])
+        add(
+            "sec@x.nl",
+            "Sem Sectie",
+            "sem",
+            Visibility.public,
+            headline="Bouwer",
+            open_to=["klantwerk"],
+            public_sections=["bio"],
+        )
         s.commit()
     yield Session
     eng.dispose()
@@ -91,7 +112,11 @@ def test_llms_txt(client):
     assert resp.status_code == 200 and resp.headers["content-type"].startswith("text/plain")
     body = resp.text
     assert body.startswith("# dewereldvan.ai")
-    assert "/makers.json" in body and "/leden/mila" in body and "Trainers: 1" in body
+    assert (
+        "/makers.json" in body
+        and "/leden/mila" in body
+        and "[Trainers](https://dewereldvan.ai/gids/trainers): 1 openbare maker" in body
+    )
     assert "Bo Besloten" not in body and "Gus" not in body
 
 
@@ -101,8 +126,9 @@ def test_jsonld_person_services_and_contact(route_db):
 
         mila = s.scalar(select(Profile).where(Profile.slug == "mila"))
         data = seo_service.jsonld_person(mila)
-        services = [o["itemOffered"] for o in data["makesOffer"]
-                    if o["itemOffered"]["@type"] == "Service"]
+        services = [
+            o["itemOffered"] for o in data["makesOffer"] if o["itemOffered"]["@type"] == "Service"
+        ]
         assert services[0]["name"] == "Trainingen"
         assert data["hasOccupation"] == [{"@type": "Occupation", "name": "Trainer"}]
         assert data["contactPoint"]["url"].endswith("/leden/mila/vraag")
@@ -183,3 +209,56 @@ def test_mcp_anonymous_rate_limit(monkeypatch):
         assert _run_auth([], ip="7.7.7.7")[0] == 200
     assert _run_auth([], ip="7.7.7.7")[0] == 429
     assert _run_auth([], ip="8.8.8.8")[0] == 200
+
+
+# --------------------------------------------------------------------------- #
+# Overzichtspagina's (PRD hub §4.3)                                            #
+# --------------------------------------------------------------------------- #
+def test_gids_index_counts(client):
+    html = client.get("/gids").text
+    assert "Wie maakt wat met AI." in html and 'href="/gids/trainers"' in html
+
+
+def test_gids_discipline_lists_public_makers_with_jsonld(client):
+    resp = client.get("/gids/trainers")
+    assert resp.status_code == 200
+    html = resp.text
+    assert "Mila Maker" in html and "Bo Besloten" not in html
+    assert 'name="robots" content="noindex"' not in html
+    assert '"@type": "CollectionPage"' in html or '"@type":"CollectionPage"' in html
+
+
+def test_gids_empty_discipline_is_noindex(client):
+    html = client.get("/gids/audio-ai").text
+    assert "Deze gids is nog leeg." in html and 'content="noindex"' in html
+
+
+def test_gids_filter_is_noindex_and_filters(client):
+    html = client.get("/gids/trainers?open_voor=spreken").text
+    assert 'content="noindex"' in html and "Niemand met deze keuze." in html
+    assert "Mila Maker" in client.get("/gids/trainers?open_voor=trainingen").text
+
+
+def test_gids_unknown_is_404(client):
+    assert client.get("/gids/astrologen").status_code == 404
+
+
+def test_gids_hidden_makes_not_listed(client, route_db):
+    # Sem toont 'wat ik maak' niet publiek → hoort in geen enkele discipline-gids.
+    with route_db() as s:
+        from sqlalchemy import select
+
+        sem = s.scalar(select(Profile).where(Profile.slug == "sem"))
+        s.add(Offering(profile_id=sem.id, title="Agent", kind=OfferingKind.project, slug="agent"))
+        s.commit()
+    assert "Sem Sectie" not in client.get("/gids/bouwers").text
+
+
+def test_sitemap_has_only_filled_guides(client):
+    xml = client.get("/sitemap.xml").text
+    assert "/gids/trainers" in xml and "/gids</loc>" in xml
+    assert "/gids/audio-ai" not in xml
+
+
+def test_llms_txt_links_guides(client):
+    assert "/gids/trainers" in client.get("/llms.txt").text

@@ -5378,3 +5378,30 @@ a.roadmap-item__origin:focus-visible {
 .cosmic .inquiry-row__topic { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--gold); align-self: center; }
 .cosmic .inquiry-row__snippet { grid-column: 1 / -1; color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
 .cosmic .inquiry-row__meta { grid-column: 1 / -1; font-size: 0.78rem; color: var(--muted); opacity: 0.8; }
+
+/* ---- Gidsen per discipline (PRD hub §4.3) ---- */
+.cosmic .open-chip.gids-chip--on {
+  color: #f3eaff; border-color: var(--violet); background: rgba(109, 93, 252, 0.22);
+  box-shadow: 0 0 14px rgba(109, 93, 252, 0.35);
+}
+.cosmic a.open-chip, .cosmic a.gids-card { text-decoration: none; }
+.cosmic .gids-card { color: var(--text); }
+.cosmic .gids-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 640px) { .cosmic .gids-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1000px) { .cosmic .gids-grid { grid-template-columns: repeat(3, 1fr); } }
+.cosmic .gids-card {
+  position: relative; display: flex; flex-direction: column; gap: 8px; padding: 26px 24px 22px;
+  border: 1px solid var(--line); border-radius: 20px; background: var(--card); overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.25s, transform 0.25s;
+}
+.cosmic .gids-card::after {
+  content: ""; position: absolute; width: 220px; height: 220px; right: -90px; top: -100px;
+  background: radial-gradient(circle, rgba(109, 93, 252, 0.18), transparent 70%); pointer-events: none;
+}
+.cosmic .gids-card:hover { border-color: rgba(177, 92, 255, 0.5); box-shadow: 0 24px 60px -34px rgba(63, 210, 255, 0.5); transform: translateY(-2px); }
+.cosmic .gids-card__count { font-family: "Fraunces", serif; font-size: 2.4rem; line-height: 1; color: var(--gold); }
+.cosmic .gids-card__title { font-family: "Fraunces", serif; font-size: 1.35rem; }
+.cosmic .gids-card__desc { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+.cosmic .gids-card__cta { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--cyan, #3fd2ff); margin-top: 6px; }
+@media (prefers-reduced-motion: reduce) { .cosmic .gids-card:hover { transform: none; } }
+.cosmic .gids-invite .form-card { max-width: 720px; }

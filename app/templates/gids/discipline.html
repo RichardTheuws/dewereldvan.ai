@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Overzichtspagina per discipline (PRD hub §4.3) — /gids/<discipline>. Publiek;
+   indexeerbaar zodra er ≥1 openbare maker is (anders noindex). Statische tekst,
+   nul AI. De kaarten zijn dezelfde sterren als op /leden. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set seo_title = guide.title ~ " — dewereldvan.ai" %}
+  {% set seo_desc = guide.intro %}
+  {% set og_type = "website" %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+  <div class="wrap">
+    {% set nav_active = "leden" %}
+    {% include "_cosmic_nav.html" %}
+
+    <main class="flex-1 pb-24">
+      <section class="samen-hero mt-8">
+        <div class="samen-hero__text">
+          <a class="text-link" href="/gids" data-reveal style="--d:100ms">← Alle gidsen</a>
+          <div class="eyebrow mt-5" data-reveal style="--d:160ms">Gids · {{ guide.short }}</div>
+          <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">{{ guide.title }}.</h1>
+          <p class="lede mt-5" style="max-width:52ch;--d:380ms" data-reveal>{{ guide.intro }}</p>
+          <div class="flow-steps" data-reveal style="--d:460ms">
+            <div class="flow-step"><span class="flow-step__num">1</span>
+              <div><div class="flow-step__title">Bekijk het werk</div>
+              <div class="flow-step__desc">Elk profiel laat zien wat iemand echt maakte.</div></div></div>
+            <div class="flow-step"><span class="flow-step__num">2</span>
+              <div><div class="flow-step__title">Stel rechtstreeks een vraag</div>
+              <div class="flow-step__desc">Over {{ guide.ask }}. Een account heb je niet nodig.</div></div></div>
+            <div class="flow-step"><span class="flow-step__num">3</span>
+              <div><div class="flow-step__title">Antwoord in je mail</div>
+              <div class="flow-step__desc">De maker reageert zelf. Gratis, en niemand betaalt voor een plek.</div></div></div>
+          </div>
+        </div>
+        <div class="starmotif samen-hero__motif" data-reveal="drift" style="--d:560ms" aria-hidden="true">
+          <svg viewBox="0 0 380 190">
+            <line class="starmotif__line" x1="70" y1="140" x2="160" y2="60"/>
+            <line class="starmotif__line" x1="160" y1="60" x2="240" y2="110"/>
+            <line class="starmotif__line" x1="240" y1="110" x2="320" y2="45"/>
+            <circle class="starmotif__star" cx="160" cy="60" r="6"/>
+            <circle class="starmotif__star--dim" cx="70" cy="140" r="4"/>
+            <circle class="starmotif__star--dim" cx="240" cy="110" r="4"/>
+            <circle class="starmotif__star--dim" cx="320" cy="45" r="4"/>
+          </svg>
+        </div>
+      </section>
+
+      <section class="mt-12" data-reveal style="--d:600ms">
+        <div class="section-title mb-4">Open voor</div>
+        <div class="open-chips">
+          <a class="open-chip{% if not open_to %} gids-chip--on{% endif %}" href="/gids/{{ guide.path }}">Alles</a>
+          {% for o in openness_options %}
+          <a class="open-chip{% if open_to == o.slug %} gids-chip--on{% endif %}"
+             href="/gids/{{ guide.path }}?open_voor={{ o.slug }}"><span class="open-chip__icon" aria-hidden="true">{{ o.icon }}</span>{{ o.label }}</a>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="mt-10" data-reveal style="--d:660ms">
+        {% if profiles %}
+        <p class="muted mb-4">{{ profiles | length }} {{ "maker" if profiles|length == 1 else "makers" }}, op alfabet. Niemand betaalt voor een plek.</p>
+        <div class="constellation">
+          {% for profile in profiles %}{% include "members/_member_star.html" %}{% endfor %}
+        </div>
+        {% else %}
+        <div class="constellation-empty">
+          <span class="constellation-empty__spark" aria-hidden="true">✦</span>
+          {% if open_to %}
+          <div class="headline" style="font-size:clamp(1.6rem,4vw,2.4rem)">Niemand met deze keuze.</div>
+          <p class="lede mt-3" style="max-width:46ch;margin-inline:auto">Nog niemand in deze gids staat hiervoor open.</p>
+          <a class="btn btn--ghost mt-6" href="/gids/{{ guide.path }}">Toon iedereen</a>
+          {% else %}
+          <div class="headline" style="font-size:clamp(1.6rem,4vw,2.4rem)">Deze gids is nog leeg.</div>
+          <p class="lede mt-3" style="max-width:46ch;margin-inline:auto">Nog niemand met een openbaar profiel in deze richting. Werk je zelf zo? Dan sta je hier als eerste.</p>
+          <a class="btn mt-6" href="/register">Maak je profiel</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </section>
+
+      {% if profiles %}
+      <section class="mt-16 gids-invite" data-reveal>
+        <div class="form-card">
+          <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+            <span>Werk je zelf als {{ guide.self_label }}? Met een openbaar profiel sta je in deze gids, vinden AI-assistenten je, en kunnen opdrachtgevers je rechtstreeks een vraag stellen.</span>
+          </div>
+          <a class="btn btn--ghost" href="{% if member %}/profiel/bewerken#zichtbaarheid{% else %}/register{% endif %}">{% if member %}Zet je profiel op openbaar{% else %}Maak je profiel{% endif %}</a>
+        </div>
+      </section>
+      {% endif %}
+
+      <section class="mt-14" data-reveal>
+        <div class="section-title mb-4">Andere gidsen</div>
+        <div class="open-chips">
+          {% for g in others %}<a class="open-chip" href="/gids/{{ g.path }}">{{ g.short }}</a>{% endfor %}
+        </div>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line)">
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/leden">alle makers</a>
+    </footer>
+  </div>
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.113.0] - 2026-10-16
+### Added — Overzichtspagina's per discipline: `/gids` en `/gids/<discipline>` (PRD hub §4.3)
+Overzichtspagina's worden vaker door AI-assistenten geciteerd dan losse profielen; nu heeft de hub ze.
+- `/gids`: alle richtingen met het aantal openbare makers. `/gids/bouwers|trainers|video-ai|audio-ai|
+  publicaties|design`: statische intro (nul AI), "zo werkt het" (werk bekijken → rechtstreeks vragen →
+  antwoord per mail), filter op "open voor", de makers als sterren-kaarten, uitnodiging om zelf openbaar
+  te worden, en links naar de andere gidsen.
+- SEO: `CollectionPage` + `ItemList`-JSON-LD; in de sitemap alleen met ≥1 openbare maker. Een lege of
+  gefilterde pagina is `noindex` (dunne pagina's schaden). `llms.txt` linkt de gidsen.
+- Privacy: discipline volgt uit publiek werk — wie 'wat ik maak' besloten houdt, staat in geen gids.
+- `/leden` linkt naar de gidsen. Regio-pagina's bewust nog niet: de Dichtbij-regio is niet gegeven
+  voor publieke weergave (eerst een eigen opt-in).
+- Tests: 8 nieuwe in `tests/test_directory.py`. Browsercheck lokaal (desktop + mobiel): layout, chips,
+  kaarten, geen console-fouten.
+
 ## [0.112.0] - 2026-10-16
 ### Added — De hub leesbaar voor AI-assistenten (PRD hub §4.2)
 Wie op dewereldvan.ai staat, wordt nu ook gevonden door ChatGPT, Claude, Perplexity en eigen agents.

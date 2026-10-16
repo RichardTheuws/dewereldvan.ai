@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# /gids — alle overzichtspagina's (PRD hub §4.3). Publiek + indexeerbaar. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = false %}
+  {% set seo_title = "Gidsen: AI-makers in Nederland en België — dewereldvan.ai" %}
+  {% set seo_desc = "Vind AI-bouwers, trainers, video- en audiomakers, schrijvers en ontwerpers in Nederland en België. Gratis, niet te koop, en je stelt ze rechtstreeks een vraag." %}
+  {% set og_type = "website" %}
+  {% set jsonld = none %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+  <div class="wrap">
+    {% set nav_active = "leden" %}
+    {% include "_cosmic_nav.html" %}
+    <main class="flex-1 pb-24">
+      <section class="mt-8" style="max-width:62ch">
+        <div class="eyebrow" data-reveal style="--d:160ms">Gidsen</div>
+        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Wie maakt wat met AI.</h1>
+        <p class="lede mt-5" data-reveal style="--d:380ms">
+          {{ total }} {{ "maker" if total == 1 else "makers" }} in Nederland en België {{ "koos" if total == 1 else "kozen" }} voor een openbaar
+          profiel. Kies een richting, bekijk hun werk en stel ze rechtstreeks een vraag.
+          Gratis, en niemand betaalt voor een plek.
+        </p>
+      </section>
+      <section class="mt-12 gids-grid">
+        {% for g, n in guides %}
+        <a class="gids-card" href="/gids/{{ g.path }}" data-reveal="drift" style="--d:{{ 420 + loop.index0 * 70 }}ms">
+          <span class="gids-card__count">{{ n }}</span>
+          <span class="gids-card__title">{{ g.short }}</span>
+          <span class="gids-card__desc">{{ g.intro }}</span>
+          <span class="gids-card__cta" aria-hidden="true">bekijk →</span>
+        </a>
+        {% endfor %}
+      </section>
+    </main>
+    <footer class="c-head" style="border-top:1px solid var(--line)">
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/leden">alle makers</a>
+    </footer>
+  </div>
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

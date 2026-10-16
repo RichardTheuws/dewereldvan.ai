@@ -66,6 +66,9 @@ PUBLIC_INDEXABLE = {
     "/roadmap",
     # Scene-gids: publiek + indexeerbaar (leert de AI-pipeline; statisch, nul AI-kosten).
     "/gids/scene",
+    # Overzichtspagina's per discipline (PRD hub §4.3).
+    "/gids",
+    "/gids/{path}",
     # Privacyverklaring: publiek + indexeerbaar (AVG/ePrivacy, vindbaar via footer).
     "/privacy",
 }
@@ -167,6 +170,7 @@ _PARAM_FILL = {
     "{inquiry_id}": "999999",
     "{role_id}": "999999",
     "{naam}": "bio",
+    "{path}": "bouwers",
     "{token}": "ongeldige-token",
 }
 

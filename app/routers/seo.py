@@ -91,6 +91,7 @@ def llms_txt(request: Request, db: Session = Depends(get_db)) -> Response:
             "base_url": settings.base_url.rstrip("/"),
             "makers": makers,
             "disciplines": directory_service.discipline_counts(makers),
+            "guide_paths": {g.discipline: g.path for g in directory_service.GUIDES},
         }
     )
     return Response(

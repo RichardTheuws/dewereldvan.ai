@@ -92,7 +92,8 @@ in geaccepteerde intro's tussen leden. Dat wordt bijgesteld:
 - `/gids/<discipline>` (bouwers, trainers, video-ai, audio-ai, publicatie, design): intro-tekst
   (statisch, geen AI), de openbare leden in die discipline, filter op `open_to`, `ItemList`-JSON-LD, in de
   sitemap.
-- **Regio**: `/gids/<discipline>/<provincie>` pas zodra ≥3 openbare leden in die combinatie; daaronder
+- **Regio** (*nog niet gebouwd*: de Dichtbij-regio is opt-in voor samenkomen, niet voor publieke weergave —
+  eerst een eigen opt-in "toon mijn regio publiek"): `/gids/<discipline>/<provincie>` pas zodra ≥3 openbare leden in die combinatie; daaronder
   `noindex` en niet in sitemap (dunne pagina's schaden). PC2 → provincie-mapping in `geo_service`.
 - Regio-filter op `/leden`.
 

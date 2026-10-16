@@ -252,6 +252,14 @@ def sitemap_entries(db: Session) -> list[SitemapEntry]:
         SitemapEntry(loc=canonical_url(path))
         for path in ("/", "/leden", "/agenda", "/nieuws", "/roadmap")
     ]
+    # Overzichtspagina's (PRD hub §4.3): /gids altijd, een discipline alleen met ≥1
+    # openbare maker (een lege pagina is noindex en hoort niet in de sitemap).
+    from app.services import directory_service
+
+    entries.append(SitemapEntry(loc=canonical_url("/gids")))
+    for guide in directory_service.GUIDES:
+        if directory_service.makers_for_guide(db, guide):
+            entries.append(SitemapEntry(loc=canonical_url(f"/gids/{guide.path}")))
     for profile in profiles:
         if not _is_public(profile):  # defensief; query dekt dit al
             continue
