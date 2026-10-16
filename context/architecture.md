@@ -57,6 +57,7 @@ Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.
 - **Notificaties**: `/profiel/notificaties` (+ `/kanaal`, `/telegram/start|ontkoppel`),
   `/telegram/webhook` (extern, secret-header, CSRF-exempt).
 - **Concierge/agent-shell**: `/concierge/bericht|stream|chips|index|nudge|profielbouw|founder/verhaal`.
+- **Zoeken**: `/zoek?q=` (`search_service`, nul AI).
 - **Gidsen (hub)**: `/gids`, `/gids/{discipline}` (+ `/gids/scene`), `/makers.json`, `/llms.txt`.
 - **Vindbaarheid (hub)**: `/profiel/vindbaarheid` (besloten); tellers via `stats_service`.
 - **Aanvragen (hub)**: `/leden/{slug}/vraag` (publiek GET/POST), `/aanvragen`, `/aanvragen/{id}`

@@ -1,0 +1,62 @@
+{# Compacte kaarten voor de voordeur en /zoek (PRD voordeur). Macro's, geen eigen
+   data-logica: de route levert alleen publiek-zichtbare items aan. `via` zet een
+   doorklik-label (?via=home) zodat de profielteller het apart kan tellen. #}
+
+{% macro maker_hit(p, disciplines, via='') -%}
+<article class="hit hit--maker">
+  <a class="hit__main" href="/leden/{{ p.slug }}{% if via %}?via={{ via }}{% endif %}">
+    {% set _ph = p.photo_url | safe_url if p.photo_url else '' %}
+    <span class="hit__avatar">{% if _ph %}<img src="{{ _ph }}" alt="" loading="lazy">{% else %}{{ (p.display_name or '?')[:1] }}{% endif %}</span>
+    <span class="hit__body">
+      <span class="hit__title">{{ p.display_name }}</span>
+      {% if p.headline %}<span class="hit__sub">{{ p.headline }}</span>{% endif %}
+      {% if disciplines %}<span class="hit__tags">{% for d in disciplines %}<span class="hit__tag">{{ d }}</span>{% endfor %}</span>{% endif %}
+    </span>
+  </a>
+  <a class="hit__cta" href="/leden/{{ p.slug }}/vraag{% if via %}?via={{ via }}{% endif %}">Stel een vraag →</a>
+</article>
+{%- endmacro %}
+
+{% macro event_hit(e) -%}
+<article class="hit hit--event">
+  <span class="hit__date">
+    {% if e.next_at %}<span class="hit__day">{{ e.next_at.day }}</span><span class="hit__mon">{{ (e.next_at | nl_datum).split(' ')[1] }}</span>
+    {% else %}<span class="hit__mon hit__mon--recurring">{{ e.frequency.value if e.frequency else 'terugkerend' }}</span>{% endif %}
+  </span>
+  <span class="hit__body">
+    {% if e.url %}<a class="hit__title" href="{{ e.url | safe_url }}" target="_blank" rel="noopener">{{ e.title }}</a>
+    {% else %}<span class="hit__title">{{ e.title }}</span>{% endif %}
+    <span class="hit__sub">{% if e.location %}{{ e.location }}{% endif %}{% if e.category %} · {{ e.category.value }}{% endif %}</span>
+  </span>
+</article>
+{%- endmacro %}
+
+{% macro news_hit(n) -%}
+<article class="hit hit--news">
+  <span class="hit__body">
+    <span class="hit__meta">{{ n.source or (n.url | link_domain) }}{% if n.published_at %} · {{ n.published_at | nl_datum }}{% endif %}</span>
+    {% if n.url %}<a class="hit__title" href="{{ n.url | safe_url }}" target="_blank" rel="noopener">{{ n.title }}</a>
+    {% else %}<span class="hit__title">{{ n.title }}</span>{% endif %}
+    {% if n.ai_take %}<span class="hit__sub">{{ n.ai_take | truncate(160) }}</span>{% endif %}
+  </span>
+</article>
+{%- endmacro %}
+
+{% macro quick_picks() -%}
+<div class="quick-picks">
+  <a class="open-chip" href="/gids/trainers"><span aria-hidden="true">🎓</span> Ik zoek een trainer</a>
+  <a class="open-chip" href="/gids/bouwers"><span aria-hidden="true">🛠</span> een bouwer of bureau</a>
+  <a class="open-chip" href="/agenda"><span aria-hidden="true">🗓</span> events deze maand</a>
+  <a class="open-chip" href="/nieuws"><span aria-hidden="true">📰</span> nieuws van deze week</a>
+</div>
+{%- endmacro %}
+
+{% macro search_box(q='', autofocus=false) -%}
+<form class="searchbox" action="/zoek" method="get" role="search">
+  <span class="searchbox__spark" aria-hidden="true">✦</span>
+  <input class="searchbox__input" type="search" name="q" value="{{ q }}" maxlength="100"
+         placeholder="Zoek een maker, onderwerp, event of nieuws — bv. ‘RAG’, ‘zorg’, ‘Utrecht’"
+         aria-label="Zoek op dewereldvan.ai" {% if autofocus %}autofocus{% endif %}>
+  <button class="btn searchbox__btn" type="submit">Zoek</button>
+</form>
+{%- endmacro %}

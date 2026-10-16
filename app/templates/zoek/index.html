@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# /zoek (PRD voordeur §3.1) — één zoekveld over makers, events en nieuws. Nul AI.
+   Leeg = snelkeuzes (indexeerbaar); met resultaten = noindex. #}
+{% from "_hits.html" import maker_hit, event_hit, news_hit, quick_picks, search_box %}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set seo_title = ("Zoeken: " ~ q ~ " — dewereldvan.ai") if searched else "Zoek AI-makers, events en nieuws — dewereldvan.ai" %}
+  {% set seo_desc = "Zoek in één keer AI-makers, events en nieuws in Nederland en België. Gratis, zonder account." %}
+  {% set og_type = "website" %}
+  {% set jsonld = none %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+  <div class="wrap">
+    {% include "_cosmic_nav.html" %}
+    <main class="flex-1 pb-24">
+      <section class="mt-8" style="max-width:760px">
+        <div class="eyebrow" data-reveal style="--d:120ms">Zoeken</div>
+        <h1 class="headline mt-5" data-reveal="materialize" style="--d:200ms">
+          {% if searched %}“{{ q }}”{% else %}Wat zoek je?{% endif %}
+        </h1>
+        <div class="mt-6" data-reveal style="--d:300ms">{{ search_box(q, autofocus=not searched) }}</div>
+        <div class="mt-4" data-reveal style="--d:360ms">{{ quick_picks() }}</div>
+      </section>
+
+      {% if searched %}
+        {% if res.empty %}
+        <section class="mt-12" data-reveal>
+          <div class="form-card" style="max-width:640px">
+            <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+              <span>Niets gevonden voor “{{ q }}”. Probeer een breder woord, of kijk per richting in de gidsen.</span></div>
+            <div class="open-chips">{% for g in guides %}<a class="open-chip" href="/gids/{{ g.path }}">{{ g.short }}</a>{% endfor %}</div>
+          </div>
+        </section>
+        {% else %}
+        <p class="muted mt-8" data-reveal>{{ res.totals.makers }} {{ "maker" if res.totals.makers == 1 else "makers" }} · {{ res.totals.events }} {{ "event" if res.totals.events == 1 else "events" }} · {{ res.totals.news }} nieuws</p>
+        {% if res.makers %}
+        <section class="mt-8" data-reveal>
+          <div class="section-title mb-4">Makers</div>
+          <div class="hits">{% for p in res.makers %}{{ maker_hit(p, disciplines_for(p)) }}{% endfor %}</div>
+          {% if res.totals.makers > res.makers|length %}<a class="text-link hits__more" href="/leden?maakt={{ q | urlencode }}">Alle {{ res.totals.makers }} makers →</a>{% endif %}
+        </section>
+        {% endif %}
+        {% if res.events %}
+        <section class="mt-12" data-reveal>
+          <div class="section-title mb-4">Events</div>
+          <div class="hits">{% for e in res.events %}{{ event_hit(e) }}{% endfor %}</div>
+          {% if res.totals.events > res.events|length %}<a class="text-link hits__more" href="/agenda">Hele agenda →</a>{% endif %}
+        </section>
+        {% endif %}
+        {% if res.news %}
+        <section class="mt-12" data-reveal>
+          <div class="section-title mb-4">Nieuws</div>
+          <div class="hits">{% for n in res.news %}{{ news_hit(n) }}{% endfor %}</div>
+          {% if res.totals.news > res.news|length %}<a class="text-link hits__more" href="/nieuws">Al het nieuws →</a>{% endif %}
+        </section>
+        {% endif %}
+        {% endif %}
+      {% endif %}
+    </main>
+    <footer class="c-head" style="border-top:1px solid var(--line)">
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/gids">alle gidsen</a>
+    </footer>
+  </div>
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

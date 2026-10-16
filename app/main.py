@@ -55,6 +55,7 @@ from app.routers import (
     seo,
     tools,
     vindbaarheid,
+    zoek,
 )
 from app.services import members_service, post_service, seo_service
 from app.services import visibility as visibility_service
@@ -287,6 +288,7 @@ def create_app() -> FastAPI:
     app.include_router(connections.router)
     app.include_router(inquiries.router)
     app.include_router(vindbaarheid.router)
+    app.include_router(zoek.router)
     app.include_router(notifications.router)
     app.include_router(connect.router)
     app.include_router(onboarding.router)

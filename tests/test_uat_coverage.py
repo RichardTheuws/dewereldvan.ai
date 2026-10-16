@@ -69,6 +69,8 @@ PUBLIC_INDEXABLE = {
     # Overzichtspagina's per discipline (PRD hub §4.3).
     "/gids",
     "/gids/{path}",
+    # Zoeken over de hub (PRD voordeur §3.1); resultaatpagina's zijn noindex.
+    "/zoek",
     # Privacyverklaring: publiek + indexeerbaar (AVG/ePrivacy, vindbaar via footer).
     "/privacy",
 }

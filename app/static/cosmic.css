@@ -5447,3 +5447,51 @@ a.roadmap-item__origin:focus-visible {
 .cosmic .vb-probe__marks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .cosmic .vb-mark { font-size: 0.8rem; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
 .cosmic .vb-mark--yes { color: #f3eaff; border-color: rgba(246, 205, 134, 0.55); background: rgba(246, 205, 134, 0.1); }
+
+/* ---- Voordeur + zoeken (PRD voordeur) ---- */
+.cosmic .searchbox {
+  display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 18px;
+  border: 1px solid rgba(177, 92, 255, 0.35); border-radius: 999px; background: var(--card);
+  box-shadow: 0 24px 70px -40px rgba(63, 210, 255, 0.55);
+}
+.cosmic .searchbox:focus-within { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(63, 210, 255, 0.15), 0 24px 70px -40px rgba(63, 210, 255, 0.7); }
+.cosmic .searchbox__spark { color: var(--gold); flex: none; }
+.cosmic .searchbox .searchbox__input {
+  flex: 1; min-width: 0; background: transparent; border: none; box-shadow: none; padding: 10px 0;
+  font-size: 1rem; color: var(--text); outline: none;
+}
+.cosmic .searchbox__btn { flex: none; }
+.cosmic .quick-picks { display: flex; flex-wrap: wrap; gap: 9px; }
+.cosmic .hits { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 820px) { .cosmic .hits { grid-template-columns: 1fr 1fr; } }
+.cosmic .hit {
+  display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px;
+  border: 1px solid var(--line); border-radius: 16px; background: var(--card);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cosmic .hit:hover { border-color: rgba(177, 92, 255, 0.45); box-shadow: 0 18px 50px -34px rgba(109, 93, 252, 0.7); }
+.cosmic .hit--maker { flex-direction: column; gap: 10px; }
+.cosmic .hit__main { display: flex; gap: 14px; align-items: flex-start; color: var(--text); text-decoration: none; }
+.cosmic .hit__avatar {
+  flex: none; width: 44px; height: 44px; border-radius: 999px; overflow: hidden; display: grid; place-items: center;
+  background: rgba(109, 93, 252, 0.25); border: 1px solid rgba(63, 210, 255, 0.35);
+  font-family: "Fraunces", serif; font-size: 1.1rem;
+}
+.cosmic .hit__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.cosmic .hit__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cosmic .hit__title { font-weight: 500; color: var(--text); text-decoration: none; line-height: 1.35; }
+.cosmic a.hit__title:hover { color: #fff; text-decoration: underline; text-decoration-color: rgba(63, 210, 255, 0.5); }
+.cosmic .hit__sub { color: var(--muted); font-size: 0.88rem; line-height: 1.45; }
+.cosmic .hit__meta { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.04em; color: var(--gold); text-transform: uppercase; }
+.cosmic .hit__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.cosmic .hit__tag { font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--cyan); border: 1px solid rgba(63, 210, 255, 0.35); border-radius: 999px; padding: 2px 8px; }
+.cosmic .hit__cta { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--gold); text-decoration: none; align-self: flex-start; }
+.cosmic .hit__date {
+  flex: none; width: 52px; display: flex; flex-direction: column; align-items: center; padding: 6px 0;
+  border: 1px solid rgba(246, 205, 134, 0.35); border-radius: 12px;
+}
+.cosmic .hit__day { font-family: "Fraunces", serif; font-size: 1.5rem; line-height: 1; }
+.cosmic .hit__mon { font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; color: var(--gold); margin-top: 3px; }
+.cosmic .hit__mon--recurring { font-size: 9px; text-align: center; padding: 4px 2px; }
+.cosmic .hits__more { display: inline-block; margin-top: 14px; }

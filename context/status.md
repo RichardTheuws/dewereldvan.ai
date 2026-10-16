@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-10-16 · **Versie**: 0.116.1 · **Branch**: `main`
+**Laatste update**: 2026-10-16 · **Versie**: 0.117.0 · **Branch**: `main`
 
+> **0.117.0** — **Voordeur stap 1: `/zoek`** over makers, events en nieuws (nul AI, bezoekers-poort).
+> PRD `docs/PRD-voordeur.md`. Volgende: de nieuwe homepage (eerst helpen, dan werven).
+>
 > **0.116.0** — **Nieuws: zeker (relevantie ≥85) gaat automatisch live**, twijfel blijft in `/admin/nieuws`
 > (spiegelt de agenda). Wachtrij leeggemaakt: 106 nieuws + 15 events goedgekeurd, 5 verlopen events geweigerd.
 >

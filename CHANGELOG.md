@@ -3,6 +3,19 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.117.0] - 2026-10-16
+### Added — `/zoek`: één zoekveld over makers, events en nieuws (PRD voordeur §3.1)
+- Zoekt in één keer in openbare makers (naam, kopregel, tags, tools, en alleen publieke blokken:
+  wat ik maak/bio), aankomende of terugkerende events (titel, locatie, beschrijving) en nieuws (titel,
+  duiding). Alle woorden moeten matchen, hoofdletterongevoelig. **Nul AI**; zoekopdrachten worden niet
+  opgeslagen.
+- Drie groepen met aantallen, max 6 per groep + "meer"; snelkeuzes (trainer, bouwer/bureau, events,
+  nieuws); nette lege staat met de gidsen. Lege `/zoek` indexeerbaar, resultaatpagina's `noindex`.
+- Gedeelde compacte kaarten (`_hits.html`: maker met "Stel een vraag", event met datumblok, nieuws met
+  bron) voor zoeken en straks de voordeur.
+- Privacy: besloten profielen/blokken, verlopen en wachtende events, verborgen nieuws en nieuws van
+  besloten leden komen nooit in de resultaten. Tests: `tests/test_zoek.py` (10).
+
 ## [0.116.1] - 2026-10-16
 ### Style
 - Docstring van `app/jobs/curate_news.py` binnen de regellengte gebracht (lint).
