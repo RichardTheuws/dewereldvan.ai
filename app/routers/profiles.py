@@ -466,6 +466,8 @@ def view_profile(
             and inquiry_service.accepts_inquiries(profile),
             **inquiries_router.form_context(profile, viewer),
             "is_visitor": viewer is None,
+            # Eigen werk op een openbaar profiel = dofollow (PRD hub §4.2).
+            "follow_links": not noindex,
             # Mens-naast-AI-correctiepad voor de tool-dossiers (doc 03 §4.3).
             **_tool_notes_context(db, profile, viewer),
             # JSON-LD + OG-beeld alleen voor publiek-indexeerbare profielen.

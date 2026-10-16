@@ -81,10 +81,12 @@ in geaccepteerde intro's tussen leden. Dat wordt bijgesteld:
   eigen site. Elke veld via `visibility.public_section_visible`.
 - **MCP anoniem read-only**: zonder token alleen `zoek_makers` (en een nieuw `lijst_disciplines`) over
   **openbare** profielen; met token blijft alles zoals het is. Ratelimit per IP.
-- **JSON-LD verrijkt**: `sameAs` (eigen site + presence-links), `areaServed` (regio), `makesOffer` met
-  `Service` per `open_to`-waarde, `ProfilePage` als wrapper.
-- **Backlink**: de eigen site van het lid (ProfileLink kind `website` / presence op eigen domein) wordt
-  **dofollow** op een openbaar profiel. Overige links blijven `nofollow`.
+- **JSON-LD verrijkt**: `makesOffer` met `Service` per `open_to`-waarde, `hasOccupation`, `contactPoint`.
+  *Gebouwd v0.112.0.* `sameAs` wacht op de "Vind me online"-strip (presence wordt nu niet bewaard) en
+  `areaServed` op een publieke regio-opt-in (de Dichtbij-regio is daar niet voor gegeven).
+- **Backlink**: links naar het eigen werk (projecten, builds) zijn **dofollow** op een openbaar profiel en
+  de projectpagina. Affiliaties blijven `nofollow`. *Gebouwd v0.112.0* (er bestaat geen apart
+  website-veld; eigen werk is de eerlijke bron).
 
 ### 4.3 Overzichtspagina's
 - `/gids/<discipline>` (bouwers, trainers, video-ai, audio-ai, publicatie, design): intro-tekst

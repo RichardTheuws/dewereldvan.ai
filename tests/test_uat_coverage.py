@@ -128,6 +128,9 @@ INFRA = {
     "/openapi.json",
     "/robots.txt",
     "/sitemap.xml",
+    # De hub als data (PRD hub §4.2): openbare gids voor AI-assistenten.
+    "/makers.json",
+    "/llms.txt",
     "/favicon.ico",
 }
 # Token-gated: zonder geldig token een nette 4xx (geen 5xx).

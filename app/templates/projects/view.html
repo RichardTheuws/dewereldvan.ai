@@ -118,7 +118,8 @@
       {# ---- Externe link naar de echte site ---- #}
       {% if _ext %}
       <section class="mt-10" data-reveal style="--d:420ms">
-        <a class="btn" href="{{ _ext }}" target="_blank" rel="noopener nofollow">
+        {# Eigen werk van een openbaar lid → dofollow (PRD hub §4.2); besloten → nofollow. #}
+        <a class="btn" href="{{ _ext }}" target="_blank" rel="{{ 'noopener nofollow' if noindex else 'noopener' }}">
           {% if offering.kind.value == 'workshop' %}Naar de workshop →{% elif offering.kind.value == 'writing' %}Lees het artikel →{% elif offering.kind.value == 'gallery' %}Bekijk het werk →{% else %}Bekijk het live →{% endif %}
         </a>
         <div class="card-url mt-3">{{ _ext }}</div>

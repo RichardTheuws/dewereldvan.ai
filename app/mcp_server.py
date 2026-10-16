@@ -6,7 +6,8 @@ op ``/mcp`` in de bestaande web-container. Dunne laag over de bestaande services
 
 AUTH: een ASGI-middleware leest ``Authorization: Bearer dwv_…``, resolvet het lid
 (``token_service.resolve``, eigen sessie) en zet ``member_id`` in een contextvar;
-zonder geldig token → 401. Elke tool leest die contextvar en opent z'n eigen
+een ongeldig token → 401. Zonder token is de server anoniem bruikbaar voor de
+openbare gids (``zoek_makers``, ``hoe_werkt_dewereldvan``; PRD hub §4.2). Elke tool leest die contextvar en opent z'n eigen
 ``SessionLocal`` (de drain-thread mag de request-sessie niet delen). Een token =
 "act as dit approved lid"; nooit role-escalatie.
 
@@ -18,6 +19,8 @@ from __future__ import annotations
 
 import contextvars
 import logging
+import time
+from collections import deque
 
 from mcp.server.fastmcp import FastMCP
 
@@ -28,6 +31,7 @@ from app.email import templates as email_templates
 from app.models import Member
 from app.services import (
     connection_service,
+    directory_service,
     match_service,
     members_service,
     profile_service,
@@ -138,8 +142,13 @@ def voeg_zoekvraag_toe(titel: str, omschrijving: str | None = None) -> dict:
 
 @mcp.tool()
 def zoek_makers(zoekterm: str) -> list[dict]:
-    """Doorzoek de ledengids op een term (tag, wat iemand maakt of zoekt)."""
+    """Zoek AI-makers in Nederland en België (bureaus, trainers, developers,
+    onderzoekers) op een term: wat iemand maakt, of een tag. Werkt ook zonder
+    token; dan doorzoek je alleen de openbare gids, met per maker een contactlink."""
     with SessionLocal() as db:
+        if _member_id.get() is None:
+            # Anoniem (PRD hub §4.2): alleen openbare profielen, alleen publieke blokken.
+            return directory_service.search_public(db, zoekterm)
         profiles = members_service.list_public_profiles(db, maakt=zoekterm)
         return [
             {
@@ -263,9 +272,44 @@ def bouw_profiel_uit_link(url: str) -> dict:
 # --------------------------------------------------------------------------- #
 
 
+# Anoniem (zonder token) mag alleen de openbare gids doorzoeken (PRD hub §4.2):
+# elke tool met lid-data checkt ``_me`` en antwoordt "niet ingelogd". Per IP een
+# eenvoudige limiet; de data is al publiek, dus dit beschermt alleen de server.
+ANON_LIMIT_PER_MIN = 60
+_anon_hits: dict[str, deque[float]] = {}
+
+
+def _anon_allowed(ip: str, now: float | None = None) -> bool:
+    now = time.monotonic() if now is None else now
+    hits = _anon_hits.setdefault(ip, deque())
+    while hits and now - hits[0] > 60:
+        hits.popleft()
+    if len(hits) >= ANON_LIMIT_PER_MIN:
+        return False
+    hits.append(now)
+    if len(_anon_hits) > 10_000:  # begrens het geheugen
+        _anon_hits.clear()
+    return True
+
+
+def _client_ip(scope, headers: dict) -> str:
+    cf = headers.get(b"cf-connecting-ip", b"").decode()
+    if cf:
+        return cf
+    client = scope.get("client")
+    return client[0] if client else "?"
+
+
+async def _reject(send, status: int, body: str) -> None:
+    await send({"type": "http.response.start", "status": status,
+                "headers": [(b"content-type", b"application/json")]})
+    await send({"type": "http.response.body", "body": body.encode()})
+
+
 class _BearerAuth:
-    """Authenticeert élke request met een persoonlijk Bearer-token en zet het lid
-    in de contextvar. Geen/ongeldig token → 401 (geen MCP-handshake zonder auth)."""
+    """Authenticeert een request met een persoonlijk Bearer-token en zet het lid in
+    de contextvar. Ongeldig token → 401. Géén token → anoniem (alleen de openbare
+    gids), met een limiet per IP."""
 
     def __init__(self, app):
         self.app = app
@@ -283,12 +327,14 @@ class _BearerAuth:
                 if member is not None:
                     member_id = member.id
                     db.commit()  # last_used_at
-        if member_id is None:
-            await send({"type": "http.response.start", "status": 401,
-                        "headers": [(b"content-type", b"application/json")]})
-            await send({"type": "http.response.body",
-                        "body": '{"error":"unauthorized - geef een geldig dwv_-token mee"}'.encode()})
-            return
+        if raw and member_id is None:
+            return await _reject(
+                send, 401, '{"error":"unauthorized - geef een geldig dwv_-token mee"}'
+            )
+        if member_id is None and not _anon_allowed(_client_ip(scope, headers)):
+            return await _reject(
+                send, 429, '{"error":"te veel verzoeken - probeer het zo opnieuw"}'
+            )
         tok = _member_id.set(member_id)
         try:
             await self.app(scope, receive, send)

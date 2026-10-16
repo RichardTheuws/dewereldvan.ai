@@ -3,6 +3,22 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.112.0] - 2026-10-16
+### Added — De hub leesbaar voor AI-assistenten (PRD hub §4.2)
+Wie op dewereldvan.ai staat, wordt nu ook gevonden door ChatGPT, Claude, Perplexity en eigen agents.
+- **`/makers.json`**: de openbare gids als data (naam, kopregel, disciplines, tags, tools, "open voor",
+  werk, contactlink). Alleen openbare profielen van goedgekeurde leden; besloten blokken en e-mail nooit.
+- **`/llms.txt`**: wegwijzer voor AI-assistenten (wat de hub is, waar de data staat, disciplines, makers).
+- **MCP zonder token**: `zoek_makers` werkt nu anoniem op de openbare gids (met contactlink per maker);
+  alle tools met lid-data blijven "niet ingelogd". Ongeldig token blijft 401; anoniem max 60/min per IP.
+- **JSON-LD**: per "Open voor"-waarde een schema.org `Service`, `hasOccupation` uit de disciplines en een
+  `contactPoint` naar de aanvraag-pagina. Besloten blokken blijven weg.
+- **Dofollow**: links naar eigen werk op een openbaar profiel en projectpagina zijn nu gewone links (een
+  vermelding levert nu ook SEO op). Affiliaties en besloten/preview blijven `nofollow`.
+- Eén bron: `directory_service` (door `visibility.py`). Tests: `tests/test_directory.py` (13). Lokaal
+  gerookt: MCP-handshake + `tools/call zoek_makers` zonder token, `llms.txt`, `makers.json`.
+- Live gecontroleerd: Cloudflare blokkeert GPTBot/ClaudeBot/PerplexityBot niet.
+
 ## [0.111.0] - 2026-10-16
 ### Added — Aanvragen van bezoekers: "Werk met <naam>" (PRD hub §4.1)
 De eerste weg van buiten naar binnen. Een opdrachtgever (geen lid) stelt een lid rechtstreeks een vraag

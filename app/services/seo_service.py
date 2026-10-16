@@ -149,10 +149,39 @@ def jsonld_person(profile: Profile, *, sections: dict[str, bool] | None = None) 
                 continue
             item: dict = {"@type": "CreativeWork", "name": off.title, "url": _project_url(off)}
             offers.append({"@type": "Offer", "itemOffered": item})
+    # Diensten (PRD hub §4.2): elke "Open voor"-waarde als schema.org ``Service`` —
+    # alleen als dat blok publiek is. Gestructureerde vermeldingen worden vaker door
+    # AI-assistenten geciteerd dan vrije tekst.
+    if _pub("open_to"):
+        from app.services import openness_service
+
+        for o in openness_service.labels_for(profile.open_to):
+            offers.append(
+                {
+                    "@type": "Offer",
+                    "itemOffered": {"@type": "Service", "name": o.label, "description": o.blurb},
+                }
+            )
     if offers:
         data["makesOffer"] = offers
 
+    disciplines = _derive_disciplines(profile) if _pub("makes") else []
+    if disciplines:
+        data["hasOccupation"] = [{"@type": "Occupation", "name": d} for d in disciplines]
+
+    # Contact: de aanvraag-pagina (PRD hub §4.1) — zo vindt ook een AI-assistent de weg.
+    data["contactPoint"] = {
+        "@type": "ContactPoint",
+        "contactType": "aanvragen",
+        "url": f"{_person_url(profile)}/vraag",
+    }
     return data
+
+
+def _derive_disciplines(profile: Profile) -> list[str]:
+    from app.services import members_service
+
+    return members_service.derive_disciplines(profile)
 
 
 def jsonld_project(offering: Offering) -> dict:

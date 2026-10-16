@@ -5,8 +5,12 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-10-16 · **Versie**: 0.111.0 · **Branch**: `main`
+**Laatste update**: 2026-10-16 · **Versie**: 0.112.0 · **Branch**: `main`
 
+> **0.112.0** — **Hub fase 1, stap 2: leesbaar voor AI (PRD hub §4.2).** `/makers.json`, `/llms.txt`,
+> anonieme read-only MCP (`zoek_makers`), JSON-LD `Service`/`hasOccupation`/`contactPoint`, dofollow eigen werk.
+> Eén bron `directory_service` via de bezoekers-poort. Volgende: §4.3 overzichtspagina's.
+>
 > **0.111.0** — **Hub fase 1, stap 1: aanvragen van bezoekers (PRD hub §4.1).** Op een openbaar profiel
 > kan een opdrachtgever zonder account een vraag stellen ("Werk met <naam>"); de beacons kiezen het onderwerp.
 > Nul AI, Turnstile + honeypot + limieten, bezorging via Telegram/chip, inbox `/aanvragen`, 180 dagen bewaard.
@@ -285,9 +289,8 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
   in de M4-`.env` (2026-06-21) → het pad is nu live binnen de €50/wk-cap.
 
 ## Open taken
-- [ ] **Hub fase 1 (PRD-hub, 2026-10-16)**: §4.1 aanvragen ✅ (v0.111.0) · §4.2 AI-leesbaarheid
-      (`llms.txt`, `/makers.json`, anonieme read-only MCP, JSON-LD `sameAs`/`Service`/`areaServed`, dofollow
-      eigen site) · §4.3 `/gids/<discipline>` (+ regio bij ≥3) · §4.4 vindbaarheids-dashboard + AI-steekproef.
+- [ ] **Hub fase 1 (PRD-hub, 2026-10-16)**: §4.1 aanvragen ✅ (v0.111.0) · §4.2 AI-leesbaarheid ✅
+      (v0.112.0; `sameAs` wacht op de "Vind me online"-strip, regio op publieke opt-in) · §4.3 `/gids/<discipline>` (+ regio bij ≥3) · §4.4 vindbaarheids-dashboard + AI-steekproef.
       Daarna: persoonlijke uitnodigingsronde (§8). Succes 2026-12-31: ≥15 openbare vermeldingen, ≥5 aanvragen.
 - [ ] **Bestaande e2e-fout** (los van de hub): `test_homepage_chip_opens_concierge_prefilled` faalt ook op
       v0.110.0 (Locator.click timeout) — uitzoeken.

@@ -30,7 +30,7 @@ Bezoeker ──HTTPS──► Cloudflare (DNS + WAF + Tunnel edge)
    discovery)
 ```
 Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.ai**
-(teaser). MCP-server gemount op `/mcp` (eigen Bearer-auth).
+(teaser). MCP-server gemount op `/mcp` (eigen Bearer-auth; zonder token alleen de openbare gids).
 
 ## Componenten (`app/`)
 - **routers/** (21): HTTP-endpoints (zie route-inventaris). **services/**: de logica
@@ -42,7 +42,8 @@ Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.
   (achtergrond-job), `notification_service` + `telegram_service`, `project_enrich_service`,
   `match_service`/`connection_service`, `nudge_service` (pull-chips), `cover_art_service`,
   `tool_service`, `member_memory_service`, `account_deletion`, `inquiry_service` (aanvragen van
-  bezoekers, nul AI).
+  bezoekers, nul AI), `directory_service` (de openbare gids als data: `/makers.json`, `/llms.txt`,
+  anonieme MCP, overzichtspagina's).
 
 ## Route-inventaris (gegroepeerd)
 - **Auth/toegang**: `/register`, `/login`, `/auth/verify`, `/logout`, `/welkom`,

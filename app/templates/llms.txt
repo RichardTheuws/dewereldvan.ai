@@ -1,0 +1,21 @@
+# dewereldvan.ai
+
+> Open community van iedereen in Nederland en België die met AI bouwt, traint, ontwerpt, onderzoekt of er beleid over maakt: van AI-bureaus en trainers tot developers en onderzoekers. Elke maker hieronder koos zelf voor een openbaar profiel. Vermeldingen zijn gratis en niet te koop.
+
+Wie iemand zoekt voor een opdracht, training, lezing of samenwerking kan die maker rechtstreeks een vraag stellen via de contactpagina van het profiel (`/leden/<naam>/vraag`); een account is niet nodig.
+
+## Data
+
+- [Alle openbare makers (JSON)]({{ base_url }}/makers.json): naam, kopregel, disciplines, tags, tools, waar ze voor open staan, werk en contactlink.
+- [Ledengids]({{ base_url }}/leden): doorzoekbaar op discipline, tag, tool en "open voor".
+- MCP-server: `{{ base_url }}/mcp` (Streamable HTTP). Zonder token kun je `zoek_makers` gebruiken op de openbare gids.
+
+## Disciplines
+{% for slug, label, n in disciplines %}
+- {{ label }}: {{ n }} openbare {{ "maker" if n == 1 else "makers" }}
+{%- endfor %}
+
+## Makers
+{% for p in makers %}
+- [{{ p.display_name }}]({{ base_url }}/leden/{{ p.slug }}){% if p.headline %}: {{ p.headline }}{% endif %}
+{%- endfor %}

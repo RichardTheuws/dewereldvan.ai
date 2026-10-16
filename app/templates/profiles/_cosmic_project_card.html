@@ -1,10 +1,12 @@
 {# A project card ("wat ik maak") on the public profile. Expects `item` with
-   .title, .description, .url, .image_url (an Offering or ProfileLink-shaped). #}
+   .title, .description, .url, .image_url (an Offering or ProfileLink-shaped).
+   `follow_links` (PRD hub §4.2): op een openbaar profiel is dit het eigen werk van het
+   lid → een gewone (dofollow) link; besloten/preview → nofollow. #}
 {% set _title = item.title if item.title is defined else item.label %}
 {% set _url = item.url | safe_url %}
 {% set _img = item.image_url | safe_url %}
 {% if _url %}
-<a class="card" href="{{ _url }}" target="_blank" rel="noopener nofollow">
+<a class="card" href="{{ _url }}" target="_blank" rel="{{ 'noopener' if follow_links else 'noopener nofollow' }}">
 {% else %}
 <div class="card">
 {% endif %}
