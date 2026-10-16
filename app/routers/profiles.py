@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import current_member, require_member
-from app.models import Member, Profile, Visibility
+from app.models import Member, MemberRole, Profile, Visibility
 from app.routers import inquiries as inquiries_router
 from app.schemas.profile import NeedForm, OfferingForm, ProfileForm, VisibilityForm
 from app.services import (
@@ -32,6 +32,7 @@ from app.services import (
     photo_service,
     profile_service,
     seo_service,
+    stats_service,
     tool_review_note_service,
 )
 from app.services import visibility as visibility_service
@@ -434,6 +435,11 @@ def view_profile(
             changed = True
     if changed:
         db.commit()
+
+    # Vindbaarheid (PRD hub §4.4): tel bezoek van mens of AI-assistent, nooit van de
+    # eigenaar of een admin. Alleen een dagteller; best-effort.
+    if viewer is None or (viewer.id != profile.member_id and viewer.role != MemberRole.admin):
+        stats_service.record_view(db, profile.id, request.headers.get("user-agent"))
 
     noindex = visibility_service.is_noindex(profile)
     # Sectie-niveau zichtbaarheid: welke blokken deze kijker ziet (leden/eigenaar =

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Je vindbaarheid (PRD hub §4.4) — besloten, noindex. Nul AI: alle getallen zijn
+   dagtellers uit stats_service; "zo leest een AI je" is exact maker_record. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Je vindbaarheid — dewereldvan.ai" %}
+  {% set seo_desc = "Hoe vaak je gevonden wordt, door mensen en door AI-assistenten." %}
+  {% include "_seo_head.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+  <div class="wrap">
+    {% include "_cosmic_nav.html" %}
+    <main class="flex-1 pb-24">
+      <section class="mt-8" style="max-width:60ch">
+        <div class="eyebrow" data-reveal style="--d:160ms">De laatste 30 dagen</div>
+        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Je vindbaarheid.</h1>
+        <p class="lede mt-5" data-reveal style="--d:380ms">
+          {% if is_public %}Hoe vaak mensen en AI-assistenten je profiel vonden, en wat er nog ontbreekt
+          om beter gevonden te worden.{% else %}Je profiel is besloten. Hieronder zie je wat je mist,
+          en wat je krijgt als je het openzet.{% endif %}
+        </p>
+      </section>
+
+      <section class="mt-10 vb-tiles" data-reveal style="--d:460ms">
+        <div class="vb-tile"><span class="vb-tile__n">{{ stats.views }}</span><span class="vb-tile__l">keer bekeken door mensen</span></div>
+        <div class="vb-tile"><span class="vb-tile__n">{{ stats.ai_fetches }}</span><span class="vb-tile__l">keer opgehaald door AI-assistenten</span></div>
+        <div class="vb-tile"><span class="vb-tile__n">{{ stats.mcp_hits }}</span><span class="vb-tile__l">keer in een zoekresultaat van een AI-agent</span></div>
+        <a class="vb-tile vb-tile--link" href="/aanvragen"><span class="vb-tile__n">{{ stats.inquiries }}</span><span class="vb-tile__l">{{ "vraag" if stats.inquiries == 1 else "vragen" }} van bezoekers →</span></a>
+      </section>
+
+      <section class="mt-10 form-card vb-chart" data-reveal style="--d:540ms">
+        <div class="section-title mb-4">Bezoekers per dag</div>
+        {% set h = 120 %}{% set bw = 14 %}{% set gap = 4 %}
+        {% set peak = stats.peak if stats.peak > 0 else 1 %}
+        <svg class="vb-bars" viewBox="0 0 {{ stats.days|length * (bw + gap) }} {{ h + 2 }}" role="img"
+             aria-label="Bezoekers per dag, laatste 30 dagen, piek {{ stats.peak }}">
+          <line class="vb-bars__base" x1="0" y1="{{ h + 1 }}" x2="{{ stats.days|length * (bw + gap) }}" y2="{{ h + 1 }}"/>
+          {% for day, n in stats.days %}
+          {% set bh = ((n / peak) * (h - 6)) | round(1) if n else 0 %}
+          <g class="vb-bar">
+            <rect class="vb-bar__hit" x="{{ loop.index0 * (bw + gap) }}" y="0" width="{{ bw + gap }}" height="{{ h + 2 }}"/>
+            {% if n %}<rect class="vb-bar__fill" x="{{ loop.index0 * (bw + gap) }}" y="{{ h - bh }}" width="{{ bw }}" height="{{ bh }}" rx="3"/>{% endif %}
+            <title>{{ day | nl_datum }}: {{ n }} {{ "bezoeker" if n == 1 else "bezoekers" }}</title>
+          </g>
+          {% endfor %}
+        </svg>
+        <div class="vb-axis"><span>{{ stats.days[0][0] | nl_datum }}</span><span>vandaag</span></div>
+        <table class="sr-only">
+          <caption>Bezoekers per dag</caption>
+          <tr><th>Dag</th><th>Bezoekers</th></tr>
+          {% for day, n in stats.days %}<tr><td>{{ day | nl_datum }}</td><td>{{ n }}</td></tr>{% endfor %}
+        </table>
+        <p class="form-hint mt-4">We tellen alleen getallen per dag: geen IP-adres, geen cookie, geen namen. Je eigen
+          bezoek telt niet mee, en zoekmachine-crawlers ook niet. AI-assistenten herkennen we aan hun naam
+          (zoals ChatGPT, Claude en Perplexity).</p>
+      </section>
+
+      {% if gaps %}
+      <section class="mt-12" data-reveal>
+        <div class="section-title mb-4">Wat je beter vindbaar maakt</div>
+        <div class="vb-gaps">
+          {% for title, why, href in gaps %}
+          <a class="vb-gap" href="{{ href }}">
+            <span class="vb-gap__title">{{ title }}</span>
+            <span class="vb-gap__why">{{ why }}</span>
+            <span class="vb-gap__cta" aria-hidden="true">regel het →</span>
+          </a>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <section class="mt-12 compose" data-reveal>
+        <div class="compose__intro">
+          <div class="eyebrow">Zo leest een AI je</div>
+          <h2 class="headline mt-4" style="font-size:clamp(1.8rem,4vw,2.6rem)">Precies dit.</h2>
+          <p class="lede mt-4" style="max-width:40ch">Dit is wat ChatGPT, Claude of een eigen agent over je ophaalt
+            via <a class="text-link" href="/makers.json">makers.json</a>, <a class="text-link" href="/llms.txt">llms.txt</a>
+            en de MCP-server. Alleen wat op je openbare profiel staat.</p>
+          {% if guides %}
+          <div class="mt-6"><div class="section-title mb-3">Je staat in</div>
+            <div class="open-chips">{% for g in guides %}<a class="open-chip" href="/gids/{{ g.path }}">Gids {{ g.short }}</a>{% endfor %}</div>
+          </div>
+          {% endif %}
+        </div>
+        <div class="form-card vb-record">
+          {% if is_public %}
+          <dl>
+            <dt>naam</dt><dd>{{ record.naam }}</dd>
+            <dt>kopregel</dt><dd>{{ record.kopregel or "—" }}</dd>
+            <dt>disciplines</dt><dd>{{ record.disciplines | join(", ") or "—" }}</dd>
+            <dt>open voor</dt><dd>{{ (record.open_voor or []) | join(", ") or "—" }}</dd>
+            <dt>tags</dt><dd>{{ record.tags | join(", ") or "—" }}</dd>
+            <dt>tools</dt><dd>{{ record.tools | join(", ") or "—" }}</dd>
+            <dt>werk</dt><dd>{% if record.werk %}{{ record.werk | map(attribute="titel") | join(", ") }}{% else %}—{% endif %}</dd>
+            <dt>contact</dt><dd>{{ record.contact }}</dd>
+          </dl>
+          {% else %}
+          <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+            <span>Niets. Een besloten profiel staat niet in de openbare gids, dus AI-assistenten kennen je niet.</span>
+          </div>
+          <a class="btn" href="/profiel/bewerken#zichtbaarheid">Zet je profiel op openbaar</a>
+          {% endif %}
+        </div>
+      </section>
+    </main>
+  </div>
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

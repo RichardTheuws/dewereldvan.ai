@@ -113,6 +113,7 @@ MEMBER_ONLY = {
     "/samen/nieuw",
     "/samen/{gathering_id}",
     "/aanvragen",
+    "/profiel/vindbaarheid",
     "/aanvragen/{inquiry_id}",
 }
 # Admin-only: gewoon lid → 403.

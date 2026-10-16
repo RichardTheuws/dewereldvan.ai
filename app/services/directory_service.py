@@ -73,12 +73,21 @@ def public_makers(db: Session, **filters) -> list[Profile]:
 
 def search_public(db: Session, term: str, limit: int = 20) -> list[dict]:
     """Zoek in de openbare gids (voor de anonieme MCP-tool): eerst op wat iemand
-    maakt, valt dat leeg dan op tag."""
+    maakt, valt dat leeg dan op tag. Telt elk resultaat als ``mcp_hit`` (§4.4)."""
+    from app.services import stats_service
+
     term = (term or "").strip()
     found = public_makers(db, maakt=term) if term else public_makers(db)
     if term and not found:
         found = public_makers(db, tag=term)
-    return [maker_record(p) for p in found[:limit]]
+    found = found[:limit]
+    try:
+        for p in found:
+            stats_service.record(db, p.id, stats_service.MCP_HIT)
+        db.commit()
+    except Exception:  # noqa: BLE001 — tellen mag de zoekactie nooit breken
+        db.rollback()
+    return [maker_record(p) for p in found]
 
 
 def discipline_counts(profiles: list[Profile]) -> list[tuple[str, str, int]]:

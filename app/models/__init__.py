@@ -61,6 +61,7 @@ from app.models.personal_token import PersonalToken
 from app.models.post import Post
 from app.models.profile import Profile
 from app.models.profile_link import ProfileLink
+from app.models.profile_stat import ProfileStatDay
 from app.models.roadmap_item import RoadmapItem
 from app.models.tag import Tag, profile_tag
 from app.models.tool import Tool, profile_tool
@@ -79,6 +80,7 @@ __all__ = [
     "IdeaStatus",
     "InquiryStatus",
     "Inquiry",
+    "ProfileStatDay",
     "RoadmapStatus",
     "PostKind",
     "PostReviewState",

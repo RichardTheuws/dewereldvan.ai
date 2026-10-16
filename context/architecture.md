@@ -42,7 +42,7 @@ Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.
   (achtergrond-job), `notification_service` + `telegram_service`, `project_enrich_service`,
   `match_service`/`connection_service`, `nudge_service` (pull-chips), `cover_art_service`,
   `tool_service`, `member_memory_service`, `account_deletion`, `inquiry_service` (aanvragen van
-  bezoekers, nul AI), `directory_service` (de openbare gids als data: `/makers.json`, `/llms.txt`,
+  bezoekers, nul AI), `stats_service` (anonieme dagtellers), `directory_service` (de openbare gids als data: `/makers.json`, `/llms.txt`,
   anonieme MCP, overzichtspagina's).
 
 ## Route-inventaris (gegroepeerd)
@@ -58,6 +58,7 @@ Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.
   `/telegram/webhook` (extern, secret-header, CSRF-exempt).
 - **Concierge/agent-shell**: `/concierge/bericht|stream|chips|index|nudge|profielbouw|founder/verhaal`.
 - **Gidsen (hub)**: `/gids`, `/gids/{discipline}` (+ `/gids/scene`), `/makers.json`, `/llms.txt`.
+- **Vindbaarheid (hub)**: `/profiel/vindbaarheid` (besloten); tellers via `stats_service`.
 - **Aanvragen (hub)**: `/leden/{slug}/vraag` (publiek GET/POST), `/aanvragen`, `/aanvragen/{id}`
   (+ `/status`) — besloten inbox.
 - **Community**: `/leden`, `/leden/{slug}`, `/projecten/{slug}`, `/agenda`, `/nieuws`, `/ideeen`,

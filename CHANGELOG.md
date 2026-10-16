@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.114.0] - 2026-10-16
+### Added — "Je vindbaarheid": laat zien dat een vermelding werkt (PRD hub §4.4, deel 1)
+- **Dashboard** `/profiel/vindbaarheid` (besloten, link in het menu en vanuit de inbox): laatste 30 dagen
+  bekeken door mensen, opgehaald door AI-assistenten, in een MCP-zoekresultaat, vragen van bezoekers;
+  staafgrafiek per dag (met tooltip + tabel voor schermlezers); "wat je beter vindbaar maakt" (besloten,
+  kopregel, werk, open voor, tags — met directe link); in welke gidsen je staat; en **"Zo leest een AI je"**:
+  exact de vermelding uit `makers.json`/MCP.
+- **Tellen zonder volgen**: `ProfileStatDay` (migratie 0040) — alleen een getal per profiel per dag per
+  soort; geen IP, user-agent of cookie opgeslagen. Mens vs. AI-assistent (GPTBot, ClaudeBot,
+  PerplexityBot, …) op user-agent; overige bots tellen niet; eigenaar en admin tellen niet. Anonieme
+  MCP-zoekresultaten tellen als `mcp_hit`. Best-effort: tellen breekt nooit een pagina. Account-wis
+  neemt de tellers mee.
+- Tests: `tests/test_vindbaarheid.py` (16). Browsercheck lokaal (desktop + mobiel).
+- **Nog niet**: de maandelijkse AI-steekproef (§4.4 deel 2).
+
 ## [0.113.0] - 2026-10-16
 ### Added — Overzichtspagina's per discipline: `/gids` en `/gids/<discipline>` (PRD hub §4.3)
 Overzichtspagina's worden vaker door AI-assistenten geciteerd dan losse profielen; nu heeft de hub ze.
