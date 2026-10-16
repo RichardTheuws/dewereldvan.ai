@@ -1,5 +1,10 @@
 # 01 — Noordster: wat 'De Wereld van AI' is
 
+> **Bijgesteld 2026-10-16 (PRD hub, `docs/PRD-hub.md`)** — de verwerping van een "publieke directory" in §6
+> is omgekeerd: de hub wordt een **publieke gids van wie er zelf voor kiest** (opt-in, geen scraping, niet te
+> koop), vindbaar voor opdrachtgevers én AI-assistenten. Hoofd-maatstaf wordt **aanvragen van buiten per
+> maand**; intro's tussen leden blijven een support-metric. De graaf + agent blijven de intelligentie.
+
 **Status**: TER GOEDKEURING · **Datum**: 2026-06-21 · **Subteam 1 van 4 (eigenaar noordster)**
 **Kadert**: subteams 2 (nieuws), 3 (tool-review), 4 (bezoeker-ervaring).
 **Leidend**: `CLAUDE.md` (ervaringsmandaat) + `docs/STYLEGUIDE.md` (kosmische diepte). Toetssteen overal:

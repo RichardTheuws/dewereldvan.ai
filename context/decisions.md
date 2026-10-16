@@ -6,6 +6,29 @@ Elke beslissing bevat: **Context** (waarom kiezen), **Beslissing** (wat), **Alte
 
 ---
 
+## [2026-10-16] De hub wordt een opt-in publieke gids: vindbaar voor opdrachtgevers én AI (PRD hub)
+
+**Context**: live-data 2026-10-16 — 24 leden, geen aanwas sinds augustus, laatste mens-login 8 aug, 7
+openbare profielen, 0 verbindingen. Wie op de hub staat krijgt niets terug (geen leads, backlinks,
+statistieken of AI-vindbaarheid). Richard: het moet de plek worden waar elk AI-bureau, elke trainer en
+developer op wíl staan.
+
+**Beslissing**: de noordster wordt bijgesteld (§6 van `docs/vision/01-noordster.md` verwierp een publieke
+directory). De hub wordt een **publieke gids van wie er zelf voor kiest** (opt-in), met als belofte "je wordt
+gevonden door opdrachtgevers én AI-assistenten, en je ziet dat het werkt". Fase 1: aanvraag-formulier voor
+bezoekers (nul AI, Turnstile), AI-leesbaarheid (`llms.txt`, `/makers.json`, anonieme read-only MCP, rijkere
+JSON-LD, dofollow eigen site), overzichtspagina's per discipline/regio, en een vindbaarheids-dashboard met
+AI-steekproef. Hoofd-maatstaf: aanvragen van buiten per maand.
+
+**Alternatieven**:
+- Default openbaar: afgewezen — breekt de privacy-invariant.
+- Vooraf vullen met gevonden bureaus: afgewezen — AVG + ethiekregels (niemand zonder toestemming).
+- Betaalde/uitgelichte plekken: afgewezen — onafhankelijkheid is het verkoopargument.
+- Eerst bureau-profielen: uitgesteld naar fase 2 — zonder terugkoppeling heeft een bureau er niets aan.
+
+**Gevolgen**: aanvragen worden bezorgd via `notify()` (geen e-mail, bestaand besluit blijft); het lid
+antwoordt zelf per mail. Na fase 1 een persoonlijke uitnodigingsronde. PRD: `docs/PRD-hub.md`.
+
 ## [2026-07-11] Sectie-niveau zichtbaarheid via `public_sections`, geen derde enum-waarde (PRD zichtbaarheid-secties)
 
 **Context**: "Alleen leden" (default) dekt al "helemaal niet in het publieke deel". Wat ontbrak: publiek
