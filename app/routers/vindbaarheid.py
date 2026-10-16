@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.deps import require_member
 from app.models import Member
-from app.services import directory_service, profile_service, stats_service
+from app.services import ai_probe_service, directory_service, profile_service, stats_service
 from app.services import visibility as visibility_service
 
 router = APIRouter(tags=["vindbaarheid"])
@@ -84,5 +84,6 @@ def vindbaarheid(
             "guides": guides,
             "stats": stats,
             "gaps": _gaps(profile, record, is_public),
+            "probes": ai_probe_service.latest_for(db, profile.id),
         },
     )

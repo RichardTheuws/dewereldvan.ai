@@ -32,6 +32,7 @@ from sqlalchemy.orm import Session
 
 from app.models import (
     AiChatTurn,
+    AiProbe,
     AuditAction,
     AuditLog,
     ConciergeNudgeDismissal,
@@ -166,6 +167,7 @@ def delete_member_completely(db: Session, member: Member) -> None:
         db.execute(delete(Offering).where(Offering.profile_id.in_(profile_ids)))
         db.execute(delete(Need).where(Need.profile_id.in_(profile_ids)))
         db.execute(delete(ProfileStatDay).where(ProfileStatDay.profile_id.in_(profile_ids)))
+        db.execute(delete(AiProbe).where(AiProbe.profile_id.in_(profile_ids)))
         db.execute(
             delete(ProfileLink).where(ProfileLink.profile_id.in_(profile_ids))
         )

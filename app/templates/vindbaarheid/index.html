@@ -67,6 +67,30 @@
           (zoals ChatGPT, Claude en Perplexity).</p>
       </section>
 
+      <section class="mt-12" data-reveal>
+        <div class="section-title mb-4">Noemt een AI-assistent je?</div>
+        {% if probes %}
+        <p class="muted mb-4" style="max-width:62ch">Steekproef met Claude (met web-search), {{ probes[0].created_at | nl_datum }}.
+          We stelden de vragen die een opdrachtgever zou stellen. Andere assistenten kunnen anders antwoorden.</p>
+        <div class="vb-probes">
+          {% for pr in probes %}
+          <div class="vb-probe">
+            <div class="vb-probe__q">“{{ pr.question }}”</div>
+            <div class="vb-probe__marks">
+              <span class="vb-mark {% if pr.mentioned %}vb-mark--yes{% endif %}">{% if pr.mentioned %}✓ Je werd genoemd{% else %}– Niet genoemd{% endif %}</span>
+              <span class="vb-mark {% if pr.hub_cited %}vb-mark--yes{% endif %}">{% if pr.hub_cited %}✓ dewereldvan.ai als bron{% else %}– dewereldvan.ai niet als bron{% endif %}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% elif is_public %}
+        <div class="form-card" style="max-width:620px"><div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+          <span>Op de 1e van elke maand stellen we Claude een paar vragen die een opdrachtgever zou stellen, en kijken of je genoemd wordt. Je eerste meting verschijnt hier.</span></div></div>
+        {% else %}
+        <p class="muted">Alleen voor openbare profielen.</p>
+        {% endif %}
+      </section>
+
       {% if gaps %}
       <section class="mt-12" data-reveal>
         <div class="section-title mb-4">Wat je beter vindbaar maakt</div>

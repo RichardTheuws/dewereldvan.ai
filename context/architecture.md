@@ -42,7 +42,7 @@ Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.
   (achtergrond-job), `notification_service` + `telegram_service`, `project_enrich_service`,
   `match_service`/`connection_service`, `nudge_service` (pull-chips), `cover_art_service`,
   `tool_service`, `member_memory_service`, `account_deletion`, `inquiry_service` (aanvragen van
-  bezoekers, nul AI), `stats_service` (anonieme dagtellers), `directory_service` (de openbare gids als data: `/makers.json`, `/llms.txt`,
+  bezoekers, nul AI), `stats_service` (anonieme dagtellers), `ai_probe_service` (maandelijkse AI-steekproef), `directory_service` (de openbare gids als data: `/makers.json`, `/llms.txt`,
   anonieme MCP, overzichtspagina's).
 
 ## Route-inventaris (gegroepeerd)

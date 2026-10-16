@@ -5,8 +5,13 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-10-16 · **Versie**: 0.114.0 · **Branch**: `main`
+**Laatste update**: 2026-10-16 · **Versie**: 0.115.0 · **Branch**: `main`
 
+> **0.115.0** — **Hub fase 1 compleet in code: maandelijkse AI-steekproef (PRD hub §4.4b).** Claude + web-search
+> beantwoordt per openbaar profiel twee opdrachtgever-vragen; deterministisch gemeten of het lid genoemd wordt
+> en of dewereldvan.ai als bron verschijnt. 1e van de maand, idempotent, begrensd. Migratie 0041.
+> **Nog te doen: deploy (migraties 0039–0041) + live browser-verificatie, daarna uitnodigingsronde (§8).**
+>
 > **0.114.0** — **Hub fase 1, stap 4a: "Je vindbaarheid" (PRD hub §4.4).** Dashboard met weergaven door
 > mensen/AI-assistenten/MCP + aanvragen, wat ontbreekt, en "zo leest een AI je". Dagtellers zonder
 > IP/UA/cookie (migratie 0040). Volgende: §4.4b maandelijkse AI-steekproef.
@@ -298,7 +303,7 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
 
 ## Open taken
 - [ ] **Hub fase 1 (PRD-hub, 2026-10-16)**: §4.1 aanvragen ✅ (v0.111.0) · §4.2 AI-leesbaarheid ✅
-      (v0.112.0; `sameAs` wacht op de "Vind me online"-strip, regio op publieke opt-in) · §4.3 `/gids/<discipline>` ✅ (v0.113.0; regio wacht op publieke opt-in) · §4.4 dashboard ✅ (v0.114.0) + AI-steekproef (open).
+      (v0.112.0; `sameAs` wacht op de "Vind me online"-strip, regio op publieke opt-in) · §4.3 `/gids/<discipline>` ✅ (v0.113.0; regio wacht op publieke opt-in) · §4.4 dashboard ✅ (v0.114.0) + AI-steekproef ✅ (v0.115.0). **Deploy open.**
       Daarna: persoonlijke uitnodigingsronde (§8). Succes 2026-12-31: ≥15 openbare vermeldingen, ≥5 aanvragen.
 - [ ] **Bestaande e2e-fout** (los van de hub): `test_homepage_chip_opens_concierge_prefilled` faalt ook op
       v0.110.0 (Locator.click timeout) — uitzoeken.

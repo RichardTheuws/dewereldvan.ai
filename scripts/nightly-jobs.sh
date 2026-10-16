@@ -9,7 +9,8 @@
 #   4. enrich_tool_logos — best-effort favicon/og:image-logo per tool-URL.
 #   5. review_tools      — AI-dossier per ≥1-gebruiker-tool (re-review na 90 dagen).
 #   6. purge_inquiries   — wist aanvragen van bezoekers ouder dan 180 dagen (nul AI).
-#   7. curate_news       — WEKELIJKS (zondag): stelt de nieuws-briefing voor als
+#   7. ai_probe          — MAANDELIJKS (1e): AI-steekproef per openbaar profiel.
+#   8. curate_news       — WEKELIJKS (zondag): stelt de nieuws-briefing voor als
 #                          pending_review (mens-in-de-lus; nooit silent-publish).
 #
 # Bewust GEEN `set -e`: faalt job 1, dan moet job 2 alsnog draaien. Elke job is
@@ -58,6 +59,14 @@ if [ "$(date +%u)" = "1" ]; then
   run_job curate_events app.jobs.curate_events
 else
   echo "--- $(ts) curate_events overgeslagen (alleen maandag) ---"
+fi
+
+# Maandelijkse gate: de AI-steekproef (PRD hub §4.4) draait ALLEEN op de 1e van de
+# maand. Idempotent per maand; begrensd per run (MAX_PROBES_PER_RUN).
+if [ "$(date +%d)" = "01" ]; then
+  run_job ai_probe app.jobs.ai_probe
+else
+  echo "--- $(ts) ai_probe overgeslagen (alleen de 1e van de maand) ---"
 fi
 
 # Eén consolidated seintje bij ≥1 gefaalde job (best-effort; mag de run niet breken).

@@ -7,6 +7,7 @@ all mappers are registered on a single metadata before use.
 from __future__ import annotations
 
 from app.models.ai_chat import AiChatTurn
+from app.models.ai_probe import AiProbe
 from app.models.ai_spend_log import AiSpendLog
 from app.models.audit import AuditLog
 from app.models.base import (
@@ -81,6 +82,7 @@ __all__ = [
     "InquiryStatus",
     "Inquiry",
     "ProfileStatDay",
+    "AiProbe",
     "RoadmapStatus",
     "PostKind",
     "PostReviewState",

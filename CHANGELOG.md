@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.115.0] - 2026-10-16
+### Added — Maandelijkse AI-steekproef: "Noemt een AI-assistent je?" (PRD hub §4.4, deel 2)
+- Per openbaar profiel twee vragen zoals een opdrachtgever ze stelt ("Welke AI-trainers in Nederland of
+  België kun je aanraden voor zorg?"), gemaakt uit de publieke vermelding (nul AI; nooit uit een besloten
+  blok). Claude beantwoordt ze met web-search; daarna stellen we **deterministisch** vast of het lid
+  genoemd werd en of dewereldvan.ai tussen de bronnen stond. Op het dashboard eerlijk benoemd als
+  "steekproef met Claude"; andere assistenten kunnen anders antwoorden.
+- `AiProbe` (migratie 0041), `ai_probe_service`, job `app.jobs.ai_probe` — via nightly-jobs.sh alleen op
+  de 1e van de maand; idempotent per maand; max 60 metingen per run, max 3 zoekopdrachten per vraag;
+  gegated op `AI_ENRICH_ENABLED`; account-wis neemt metingen mee.
+- Bewust `web_search_20250305`: de nieuwere versie filtert via code-execution, wat in een proef op
+  productie de `max_uses` opslokte en time-outte. Proef-aanroep in de productiecontainer gaf een
+  gegrond antwoord met 10 bronnen (dewereldvan.ai er nog niet bij: de nulmeting).
+- Tests: `tests/test_ai_probe.py` (7, nep-client, geen netwerk).
+
 ## [0.114.0] - 2026-10-16
 ### Added — "Je vindbaarheid": laat zien dat een vermelding werkt (PRD hub §4.4, deel 1)
 - **Dashboard** `/profiel/vindbaarheid` (besloten, link in het menu en vanuit de inbox): laatste 30 dagen
