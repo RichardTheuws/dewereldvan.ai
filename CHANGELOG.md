@@ -3,6 +3,22 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.118.0] - 2026-10-16
+### Changed — De voordeur helpt eerst, en werft pas daarna (PRD voordeur §3.2)
+Na de intro landde een bezoeker op een aanmeldpagina ("Geef een link. De agent bouwt je profiel.");
+wie een maker, event of nieuws zocht vond niets, terwijl er 44 events en 134 nieuwsitems live staan.
+- Nieuwe volgorde: (1) "Wie maakt wat met AI in Nederland en België?" + zoekveld (`/zoek`) +
+  snelkeuzes + signaalregel (makers · aankomende events · nieuws); (2) **Vind een maker**: gidsen met
+  aantallen + makers met zichtbaar werk ("Stel een vraag"); (3) **Binnenkort**: eerstvolgende events;
+  (4) **Deze week in AI** (anders "Recent in AI"); (5) pas dan **"Werk je zelf met AI? Sta erin"** met de
+  bestaande demo, de hub-voordelen en de constellatie; (6) open project. Intro ongewijzigd.
+- Weg: de chip "Word lid om de hele graaf te doorzoeken" (drempel op het verkeerde moment).
+- Meten: doorklik vanaf de voordeur (`?via=home`) telt apart (`via_home`); het vindbaarheidsdashboard
+  toont "waarvan N via de voorpagina". Zoekopdrachten worden niet opgeslagen.
+- SEO-titel/omschrijving van `/` op de zoekende bezoeker gericht.
+- Tests: volgorde, privacy (besloten/verlopen/verborgen weg), lege staten, via-home-telling; drie oude
+  homepage-tests bijgewerkt naar het nieuwe ontwerp. Browsercheck lokaal (desktop + mobiel, met intro).
+
 ## [0.117.0] - 2026-10-16
 ### Added — `/zoek`: één zoekveld over makers, events en nieuws (PRD voordeur §3.1)
 - Zoekt in één keer in openbare makers (naam, kopregel, tags, tools, en alleen publieke blokken:

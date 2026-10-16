@@ -28,6 +28,7 @@ __all__ = [
     "VIEW",
     "AI_FETCH",
     "MCP_HIT",
+    "VIA_HOME",
     "classify_agent",
     "record",
     "record_view",
@@ -35,7 +36,7 @@ __all__ = [
     "summary",
 ]
 
-VIEW, AI_FETCH, MCP_HIT = "view", "ai_fetch", "mcp_hit"
+VIEW, AI_FETCH, MCP_HIT, VIA_HOME = "view", "ai_fetch", "mcp_hit", "via_home"
 WINDOW_DAYS = 30
 
 # AI-assistenten die een pagina ophalen voor een antwoord of hun zoekindex.
@@ -89,13 +90,18 @@ def record(db: Session, profile_id: int, kind: str, day: date | None = None, n: 
         db.execute(update(ProfileStatDay).where(*where).values(count=ProfileStatDay.count + n))
 
 
-def record_view(db: Session, profile_id: int, user_agent: str | None) -> None:
-    """Tel een profielbezoek (mens of AI). Best-effort, commit zelf."""
+def record_view(
+    db: Session, profile_id: int, user_agent: str | None, *, via: str | None = None
+) -> None:
+    """Tel een profielbezoek (mens of AI). Een mens die vanaf de voordeur kwam
+    (``via="home"``) telt daarnaast als ``via_home``. Best-effort, commit zelf."""
     kind = classify_agent(user_agent)
     if kind is None:
         return
     try:
         record(db, profile_id, kind)
+        if kind == VIEW and via == "home":
+            record(db, profile_id, VIA_HOME)
         db.commit()
     except Exception:  # noqa: BLE001 — tellen mag het profiel nooit breken
         db.rollback()
@@ -109,6 +115,7 @@ class Summary:
     ai_fetches: int
     mcp_hits: int
     inquiries: int
+    via_home: int
     peak: int
 
 
@@ -121,7 +128,7 @@ def summary(db: Session, profile_id: int, member_id: int, today: date | None = N
         )
     ).all()
     per_day = {start + timedelta(days=i): 0 for i in range(WINDOW_DAYS)}
-    totals = {VIEW: 0, AI_FETCH: 0, MCP_HIT: 0}
+    totals = {VIEW: 0, AI_FETCH: 0, MCP_HIT: 0, VIA_HOME: 0}
     for day, kind, count in rows:
         totals[kind] = totals.get(kind, 0) + count
         if kind == VIEW and day in per_day:
@@ -139,5 +146,6 @@ def summary(db: Session, profile_id: int, member_id: int, today: date | None = N
         ai_fetches=totals[AI_FETCH],
         mcp_hits=totals[MCP_HIT],
         inquiries=inquiries,
+        via_home=totals[VIA_HOME],
         peak=max((c for _d, c in days), default=0),
     )

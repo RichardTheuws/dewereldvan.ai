@@ -282,6 +282,16 @@ def list_events(
     return sorted(events, key=lambda p: _event_sort_key(p, now))
 
 
+def upcoming_events(db: Session, limit: int = 6, *, now: datetime | None = None) -> list[Post]:
+    """Voor de voordeur (PRD voordeur §3.2): eerstvolgende events met datum, aangevuld
+    met terugkerende meetups zonder datum. Verlopen events nooit."""
+    now = naive_utc(now or utcnow())
+    events = list_events(db, now=now)
+    dated = [e for e in events if e.next_at is not None and e.next_at >= now]
+    recurring = [e for e in events if e.next_at is None]
+    return (dated + recurring)[:limit]
+
+
 def category_options() -> list[tuple[str, str]]:
     """(slug, label) voor de categorie-filterchips + de event-form-select op
     /agenda. Label = de waarde met hoofdletter (de enum-waarden zijn al leesbaar

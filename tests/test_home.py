@@ -238,9 +238,10 @@ def test_home_signal_shown_with_makers(client, SessionTest):
     _seed_public(SessionTest, 1)
     resp = client.get("/")
     assert resp.status_code == 200
-    # D4: enkelvoud bij precies 1 maker (geen "1 MAKERS").
-    assert "1 MAKER" in resp.text
-    assert "1 MAKERS" not in resp.text
+    # D4: enkelvoud bij precies 1 maker (geen "1 makers") — sinds de voordeur
+    # (v0.118.0) in de signaalregel onder het zoekveld.
+    assert ">1 maker</a>" in resp.text
+    assert "1 makers" not in resp.text
 
 
 # --------------------------------------------------------------------------- #

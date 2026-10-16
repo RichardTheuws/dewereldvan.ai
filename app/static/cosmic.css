@@ -5495,3 +5495,11 @@ a.roadmap-item__origin:focus-visible {
 .cosmic .hit__mon { font-family: "JetBrains Mono", monospace; font-size: 10px; text-transform: uppercase; color: var(--gold); margin-top: 3px; }
 .cosmic .hit__mon--recurring { font-size: 9px; text-align: center; padding: 4px 2px; }
 .cosmic .hits__more { display: inline-block; margin-top: 14px; }
+.cosmic .home-ask__search { max-width: 760px; }
+.cosmic .home-ask__stats { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted); }
+.cosmic .home-ask__stats a { color: var(--muted); text-decoration: none; border-bottom: 1px dashed rgba(255,255,255,0.2); }
+.cosmic .home-ask__stats a:hover { color: var(--text); }
+.cosmic .home-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.cosmic .home-count { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--gold); margin-left: 4px; }
+.cosmic a.open-chip.home-chip--empty { opacity: 0.6; }
+.cosmic .home-join { padding-top: 40px; border-top: 1px solid var(--line); }

@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-10-16 · **Versie**: 0.117.0 · **Branch**: `main`
+**Laatste update**: 2026-10-16 · **Versie**: 0.118.0 · **Branch**: `main`
 
+> **0.118.0** — **Voordeur stap 2: eerst helpen, dan werven.** Zoekveld + makers + events + nieuws boven,
+> het werven ("Sta erin") onderaan. Doorklik vanaf de voordeur apart geteld (`via_home`).
+>
 > **0.117.0** — **Voordeur stap 1: `/zoek`** over makers, events en nieuws (nul AI, bezoekers-poort).
 > PRD `docs/PRD-voordeur.md`. Volgende: de nieuwe homepage (eerst helpen, dan werven).
 >

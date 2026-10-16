@@ -6,6 +6,21 @@ Elke beslissing bevat: **Context** (waarom kiezen), **Beslissing** (wat), **Alte
 
 ---
 
+## [2026-10-16] De voordeur helpt eerst de zoekende bezoeker, en werft pas daarna (PRD voordeur)
+
+**Context**: na de intro landde elke bezoeker op een aanmeldpagina; makers/events/nieuws stonden er niet.
+Sinds de hub-PRD is de hoofdmaatstaf "aanvragen van buiten" — die komen van zoekende bezoekers.
+
+**Beslissing**: één voordeur, volgorde vraag+zoeken → makers → events → nieuws → "Sta erin" (werven).
+Zoeken zonder AI (`/zoek`). Richard akkoord 2026-10-16.
+
+**Alternatieven**:
+- Twee aparte voordeuren: afgewezen — keuzemenu bij binnenkomst, dubbel onderhoud.
+- Concierge open voor bezoekers: afgewezen — betaalde AI voor anon is uitgesloten.
+- Alleen knoppen herschikken: afgewezen — de content staat dan nog steeds niet op de voordeur.
+
+**Gevolgen**: de demo blijft, maar onderaan. Doorklik vanaf de voordeur wordt apart geteld.
+
 ## [2026-10-16] Nieuws-curatie keurt het zekere automatisch goed (zoals de agenda)
 
 **Context**: elk AI-nieuwsitem vroeg handmatige goedkeuring; die bleef sinds juli uit → 106 items in de

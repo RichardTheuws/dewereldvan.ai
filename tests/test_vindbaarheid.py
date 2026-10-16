@@ -169,3 +169,11 @@ def test_dashboard_closed_member_gets_nudge(client, route_db):
     html = client.get("/profiel/vindbaarheid").text
     assert "Je profiel is besloten" in html and "Zet je profiel op openbaar" in html
     assert "Gids " not in html
+
+
+def test_view_via_home_counts_separately(client, route_db):
+    client.get("/leden/mila?via=home", headers={"User-Agent": BROWSER})
+    client.get("/leden/mila?via=home", headers={"User-Agent": "ClaudeBot/1.0"})
+    assert _counts(route_db) == {"view": 1, "via_home": 1, "ai_fetch": 1}
+    _login(client, "mila@x.nl", route_db)
+    assert "waarvan 1 via de voorpagina" in client.get("/profiel/vindbaarheid").text

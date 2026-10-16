@@ -34,7 +34,7 @@
       </section>
 
       <section class="mt-10 vb-tiles" data-reveal style="--d:460ms">
-        <div class="vb-tile"><span class="vb-tile__n">{{ stats.views }}</span><span class="vb-tile__l">keer bekeken door mensen</span></div>
+        <div class="vb-tile"><span class="vb-tile__n">{{ stats.views }}</span><span class="vb-tile__l">keer bekeken door mensen{% if stats.via_home %}, waarvan {{ stats.via_home }} via de voorpagina{% endif %}</span></div>
         <div class="vb-tile"><span class="vb-tile__n">{{ stats.ai_fetches }}</span><span class="vb-tile__l">keer opgehaald door AI-assistenten</span></div>
         <div class="vb-tile"><span class="vb-tile__n">{{ stats.mcp_hits }}</span><span class="vb-tile__l">keer in een zoekresultaat van een AI-agent</span></div>
         <a class="vb-tile vb-tile--link" href="/aanvragen"><span class="vb-tile__n">{{ stats.inquiries }}</span><span class="vb-tile__l">{{ "vraag" if stats.inquiries == 1 else "vragen" }} van bezoekers →</span></a>

@@ -439,7 +439,10 @@ def view_profile(
     # Vindbaarheid (PRD hub §4.4): tel bezoek van mens of AI-assistent, nooit van de
     # eigenaar of een admin. Alleen een dagteller; best-effort.
     if viewer is None or (viewer.id != profile.member_id and viewer.role != MemberRole.admin):
-        stats_service.record_view(db, profile.id, request.headers.get("user-agent"))
+        stats_service.record_view(
+            db, profile.id, request.headers.get("user-agent"),
+            via=request.query_params.get("via"),
+        )
 
     noindex = visibility_service.is_noindex(profile)
     # Sectie-niveau zichtbaarheid: welke blokken deze kijker ziet (leden/eigenaar =

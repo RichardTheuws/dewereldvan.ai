@@ -57,7 +57,7 @@ from app.routers import (
     vindbaarheid,
     zoek,
 )
-from app.services import members_service, post_service, seo_service
+from app.services import directory_service, members_service, post_service, seo_service
 from app.services import visibility as visibility_service
 
 logging.basicConfig(level=logging.INFO)
@@ -353,6 +353,15 @@ def _register_core_routes(app: FastAPI) -> None:
         # De hero-constellatie toont tot 8 ECHTE makers; de lijnen tonen echte
         # gedeelde grond (tag/tool). Eén poort-call, daarna in-memory — geen N+1.
         preview_stars = public_profiles[:8]
+        # Voordeur (PRD voordeur §3.2): eerst helpen — makers, events, nieuws —
+        # dan pas werven. Alles via de bezoekers-poorten; nul AI.
+        visible_makers = directory_service.public_makers(db)
+        guide_counts = {
+            slug: n for slug, _l, n in directory_service.discipline_counts(visible_makers)
+        }
+        briefing = post_service.list_briefing(db, viewer=None)
+        news_items = briefing.briefing_this_week[:4] or briefing.archief[:4]
+        upcoming = post_service.upcoming_events(db, limit=10_000)
         return templates.TemplateResponse(
             request,
             "index.html",
@@ -367,6 +376,16 @@ def _register_core_routes(app: FastAPI) -> None:
                 "canonical": seo_service.canonical_url("/"),
                 # Absolute basis voor og:image (publieke unfurl-kaart).
                 "base_url": settings.base_url.rstrip("/"),
+                "guides": [
+                    (g, guide_counts.get(g.discipline, 0)) for g in directory_service.GUIDES
+                ],
+                "featured": directory_service.featured_makers(visible_makers),
+                "disciplines_for": lambda p: directory_service.maker_record(p)["disciplines"],
+                "upcoming": upcoming[:6],
+                "event_total": len(upcoming),
+                "news_items": news_items,
+                "news_this_week": bool(briefing.briefing_this_week),
+                "news_total": len(briefing.briefing_this_week) + len(briefing.archief),
             },
         )
 

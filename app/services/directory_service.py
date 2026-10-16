@@ -29,6 +29,7 @@ __all__ = [
     "discipline_counts",
     "makers_for_guide",
     "jsonld_guide",
+    "featured_makers",
 ]
 
 
@@ -217,3 +218,11 @@ def jsonld_guide(guide: Guide, profiles: list[Profile]) -> dict:
             ],
         },
     }
+
+
+def featured_makers(profiles: list[Profile], limit: int = 4) -> list[Profile]:
+    """Voor de voordeur: openbare makers die publiek werk tonen, met foto en een
+    compleet profiel eerst. Puur ordenen, geen ranking die te koop is."""
+    with_work = [p for p in profiles if _disciplines(p)]
+    with_work.sort(key=lambda p: (not p.photo_url, -(p.completeness or 0), p.display_name or ""))
+    return with_work[:limit]

@@ -143,3 +143,36 @@ def test_zoek_results_page(client, route_db):
 def test_zoek_no_results(client):
     html = client.get("/zoek", params={"q": "astrologie"}).text
     assert "Niets gevonden" in html
+
+
+# --------------------------------------------------------------------------- #
+# De voordeur (PRD voordeur §3.2)                                              #
+# --------------------------------------------------------------------------- #
+def test_home_helps_first_then_recruits(client):
+    html = client.get("/").text
+    i_ask = html.index("Wie maakt wat met AI in Nederland en België?")
+    i_makers = html.index("Vind een maker")
+    i_events = html.index("Binnenkort")
+    i_news = html.index("in AI</div>")
+    i_join = html.index("Werk je zelf met AI?")
+    assert i_ask < i_makers < i_events < i_news < i_join
+    assert 'action="/zoek"' in html
+    assert "/leden/mila/vraag?via=home" in html  # maker met werk, "Stel een vraag"
+    assert "RAG meetup Utrecht" in html and "vorig jaar" not in html
+    assert "Nieuw RAG-model" in html and "besloten lid" not in html
+    assert "Bo Besloten" not in html
+
+
+def test_home_without_events_or_news_drops_sections(client, route_db):
+    with route_db() as s:
+        for p in s.scalars(select(Post)):
+            s.delete(p)
+        s.commit()
+    html = client.get("/").text
+    assert "Binnenkort" not in html and "in AI</div>" not in html
+    assert "Vind een maker" in html
+
+
+def test_home_news_falls_back_to_recent(client):
+    # Het test-nieuws heeft geen briefing_week van deze week → "Recent in AI".
+    assert "Recent in AI" in client.get("/").text

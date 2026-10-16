@@ -119,7 +119,10 @@ def test_home_headline_promises_the_mechanism(client):
 # --------------------------------------------------------------------------- #
 def test_home_chips_use_safe_prefill_not_paid_submit(client):
     body = client.get("/").text
-    assert "data-concierge-prefill=" in body
+    # Voordeur (v0.118.0): de bezoeker zoekt zonder drempel — geen "word lid om te
+    # zoeken"-chip meer; zoeken loopt via /zoek (nul AI).
+    assert 'action="/zoek"' in body
+    assert "Word lid om de hele graaf" not in body
     # KILL-guard: de chips mogen NOOIT de auto-submittende fill-haak gebruiken
     # (die zou de betaalde, ongecapte agent-stream triggeren voor een anon).
     assert 'data-concierge-fill="wie bouwt' not in body
@@ -193,8 +196,8 @@ def test_home_constellation_hidden_below_three(client, SessionTest):
     _seed_public(SessionTest, 2)
     body = client.get("/").text
     assert "home-constellation" not in body
-    # Eerlijke fallback i.p.v. nep-sterren.
-    assert "De eerste makers" in body
+    # Geen nep-sterren; de voordeur toont wel de echte makers-sectie (v0.118.0).
+    assert "Vind een maker" in body
 
 
 # --------------------------------------------------------------------------- #

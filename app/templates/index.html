@@ -5,12 +5,13 @@
    includet de achtergrond-partials en het levende #stars-canvas als hero-veld.
    Werkt voor anonieme bezoekers (uitnodigend) én ingelogde leden (de voordeur
    naar het speelveld). Indexeerbaar. #}
+{% from "_hits.html" import maker_hit, event_hit, news_hit, quick_picks, search_box %}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = false %}
-  {% set seo_title = "dewereldvan.ai — de open community van AI-makers in NL & BE" %}
-  {% set seo_desc = "Een open plek voor iedereen in NL & BE die met AI bouwt, traint of er beleid over maakt. Maak je profiel, ontdek wat anderen maken, deel waar je naar zoekt." %}
+  {% set seo_title = "dewereldvan.ai — AI-makers, events en nieuws in Nederland en België" %}
+  {% set seo_desc = "Vind AI-bouwers, bureaus en trainers in Nederland en België, de AI-events van deze maand en het nieuws dat ertoe doet. Gratis, zonder account, en je stelt iedereen rechtstreeks een vraag." %}
   {% set og_type = "website" %}
   {% set og_image = (base_url ~ "/static/og-default.png") if base_url else none %}
   {% set jsonld = none %}
@@ -35,136 +36,112 @@
     {% include "_cosmic_nav.html" %}
 
     <main class="pb-24">
-      <section class="mt-6">
+      {# ---- 1. De vraag van de bezoeker eerst (PRD voordeur §3.2) ---- #}
+      <section class="mt-6 home-ask">
         <div class="eyebrow" data-reveal style="--d:160ms">
-          {% if logged_in %}WELKOM TERUG{% else %}DE WERELD VAN{% endif %}{% if member_count and member_count > 0 %} · {{ member_count }} MAKER{{ 'S' if member_count != 1 else '' }}{% endif %}
+          {% if logged_in %}WELKOM TERUG{% else %}DE WERELD VAN AI · NEDERLAND &amp; BELGIË{% endif %}
         </div>
-        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">
-          {% if logged_in %}Welkom in de wereld.{% else %}Geef een link. De agent bouwt je profiel.{% endif %}
-        </h1>
-        <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
-          {% if logged_in %}Ga verder met je profiel, of ontdek wat de anderen maken.{% else %}Een open plek voor iedereen in NL &amp; BE die met AI bouwt, traint of er beleid over maakt. Plak één link — de agent leest 'm en zet je profiel klaar.{% endif %}
+        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Wie maakt wat met AI in Nederland en België?</h1>
+        <p class="lede mt-5" style="max-width:56ch;--d:380ms" data-reveal>
+          Vind makers, bureaus en trainers, de AI-events van deze maand en het nieuws dat ertoe doet.
+          Gratis en zonder account. Je stelt iedereen hier rechtstreeks een vraag.
         </p>
+        <div class="mt-7 home-ask__search" data-reveal style="--d:460ms">{{ search_box() }}</div>
+        <div class="mt-4" data-reveal style="--d:520ms">{{ quick_picks() }}</div>
+        <p class="home-ask__stats mt-5" data-reveal style="--d:580ms">
+          <a href="/leden">{{ member_count }} {{ "maker" if member_count == 1 else "makers" }}</a> ·
+          <a href="/agenda">{{ event_total }} aankomende events</a> ·
+          <a href="/nieuws">{{ news_total }} nieuwsitems</a>
+        </p>
+      </section>
 
-        {% if not logged_in %}
-        {# W2-bewijs: laat de agent het vóór je ogen doen i.p.v. het te beweren. #}
-        <div class="mt-8" data-reveal style="--d:460ms">
-          {% include "_home_demo.html" %}
+      {# ---- 2. Vind een maker ---- #}
+      <section class="mt-20" id="makers" data-reveal>
+        <div class="home-head">
+          <div><div class="section-title">Vind een maker</div>
+            <p class="lede mt-2" style="max-width:52ch">Per richting, met echt werk op elk profiel. Niemand betaalt voor een plek.</p></div>
+          <a class="text-link" href="/gids">Alle gidsen →</a>
         </div>
+        <div class="open-chips mt-5">
+          {% for g, n in guides %}{% if n %}<a class="open-chip" href="/gids/{{ g.path }}">{{ g.short }} <span class="home-count">{{ n }}</span></a>{% endif %}{% endfor %}
+          {% for g, n in guides %}{% if not n %}<a class="open-chip home-chip--empty" href="/gids/{{ g.path }}">{{ g.short }}</a>{% endif %}{% endfor %}
+        </div>
+        {% if featured %}
+        <div class="hits mt-6">{% for p in featured %}{{ maker_hit(p, disciplines_for(p), via='home') }}{% endfor %}</div>
         {% endif %}
-
-        <div class="mt-8 flex flex-wrap items-center gap-3" data-reveal style="--d:560ms">
-          {% if logged_in %}
-          <a class="btn" href="/profiel/ai/bouwen">Naar mijn profiel</a>
-          <a class="btn btn--ghost" href="/leden">Ontdek de makers</a>
-          {% else %}
-          <a class="btn" href="/register">Word lid</a>
-          {# Het echte intelligentie-bewijs, prominent: doe het met je eigen link. #}
-          <a class="btn btn--ghost" href="/proef">Probeer het met je eigen link</a>
-          <a class="link" href="#makers">Bekijk de makers</a>
-          {% endif %}
-        </div>
-
-        {% if not logged_in %}
-        {# Proef de agent: de chip vult het concierge-veld + toont directe matches
-           uit de graaf (client-side instant-laag). Voor anon is de betaalde
-           agent-stream in de UI geblokkeerd (concierge: anon = ontdekken, lid =
-           agent); de afsluit-rij wijst naar "word lid". Server-side cap = follow-up. #}
-        <div class="home-chips mt-6" data-reveal style="--d:640ms">
-          <span class="home-chips__lead">Vraag de agent:</span>
-          <button type="button" class="home-chip" data-concierge-prefill="wie bouwt voice-agents?">wie bouwt voice-agents?</button>
-          <button type="button" class="home-chip" data-concierge-prefill="ik zoek iemand voor RAG">ik zoek iemand voor RAG</button>
-          <span class="home-chips__note">Word lid om de hele graaf te doorzoeken.</span>
-        </div>
-        {% endif %}
+        <a class="text-link hits__more" href="/leden">Bekijk alle makers →</a>
       </section>
 
-      {# W1-bewijs: een echte mini-constellatie van leden. Elke ster = een echt
-         lid; de lijnen tonen echte gedeelde grond (tag/tool). Bij <3 makers een
-         eerlijke tekst-fallback (nooit nep-sterren). #}
-      <section class="mt-20" id="makers">
-        <div class="section-title" data-reveal style="--d:160ms">De makers die er al zijn</div>
-        {% if preview_stars and preview_stars | length >= 3 %}
-        <div class="mt-6">{% include "_constellation.html" %}</div>
-        <a class="link home-constellation__all mt-6" href="/leden" data-reveal style="--d:320ms">Bekijk alle makers →</a>
-        {% else %}
-        <p class="lede mt-5" style="max-width:48ch" data-reveal style="--d:240ms">
-          De eerste makers zetten nu hun profiel op.{% if not logged_in %} Word lid en zet de jouwe ernaast.{% endif %}
-        </p>
-        {% if not logged_in %}<a class="btn mt-6" href="/register" data-reveal style="--d:320ms">Word lid</a>{% endif %}
-        {% endif %}
-      </section>
-
-      {# Waarom een profiel + wat er nú al kan. De belofte (noordster): één profiel
-         onderhouden, het netwerk werkt voor je terwijl je weg bent. #}
-      <section class="mt-20" id="wat-kan">
-        <div class="section-title" data-reveal style="--d:160ms">Waarom je hier een profiel maakt</div>
-        <p class="lede mt-3" style="max-width:52ch" data-reveal style="--d:220ms">
-          Je onderhoudt één profiel. Daarna doet een agent het werk: hij brengt jou
-          kansen — gegrond, klein, op het juiste moment. De op-last is bijna nul.
-        </p>
-        <div class="feature-grid mt-8">
-          <div class="feature-card" data-reveal="drift" style="--d:200ms">
-            <span class="feature-card__spark" aria-hidden="true">✦</span>
-            <div class="feature-card__title">Profiel uit één link</div>
-            <div class="feature-card__desc">Plak een link — de agent leest 'm en zet je profiel klaar. In minuten, geen formulier.</div>
-          </div>
-          <div class="feature-card" data-reveal="drift" style="--d:260ms">
-            <span class="feature-card__spark" aria-hidden="true">✦</span>
-            <div class="feature-card__title">Een agent die voor je zoekt</div>
-            <div class="feature-card__desc">Matches met wie jij nodig hebt, makers in jouw domein, intro-voorstellen — jij beslist, één klik wist alles.</div>
-          </div>
-          <div class="feature-card" data-reveal="drift" style="--d:320ms">
-            <span class="feature-card__spark" aria-hidden="true">✦</span>
-            <div class="feature-card__title">In je eigen tool</div>
-            <div class="feature-card__desc">Werk met het netwerk vanuit Claude Code of Cursor via MCP. Geen context-switch.</div>
-          </div>
-          <div class="feature-card" data-reveal="drift" style="--d:380ms">
-            <span class="feature-card__spark" aria-hidden="true">✦</span>
-            <div class="feature-card__title">Agenda &amp; nieuws</div>
-            <div class="feature-card__desc">AI-meetups in NL/BE (meld je aan) en een wekelijkse briefing van wat ertoe doet.</div>
-          </div>
+      {# ---- 3. Binnenkort ---- #}
+      {% if upcoming %}
+      <section class="mt-20" id="binnenkort" data-reveal>
+        <div class="home-head">
+          <div><div class="section-title">Binnenkort</div>
+            <p class="lede mt-2" style="max-width:52ch">AI-meetups, talks en congressen in Nederland en België.</p></div>
+          <a class="text-link" href="/agenda">Hele agenda →</a>
         </div>
-      </section>
-
-      {# Wat komt eraan — de roadmap is publiek + levend. #}
-      <section class="mt-20" id="wat-komt">
-        <div class="section-title" data-reveal style="--d:160ms">Wat we nog van plan zijn</div>
-        <p class="lede mt-3" style="max-width:52ch" data-reveal style="--d:220ms">
-          We bouwen in de open. Zie wat er al staat, wat in aanbouw is en wat we
-          overwegen — en stuur mee.
-        </p>
-        <div class="mt-6 flex flex-wrap items-center gap-3" data-reveal style="--d:300ms">
-          <a class="btn btn--ghost" href="/roadmap">Bekijk de roadmap</a>
-          <a class="link" href="/ideeen">Opper een idee →</a>
-        </div>
-      </section>
-
-      {# Open project — meebouwen. #}
-      <section class="mt-20" id="meebouwen">
-        <div class="section-title" data-reveal style="--d:160ms">Een open project — bouw mee</div>
-        <p class="lede mt-3" style="max-width:54ch" data-reveal style="--d:220ms">
-          dewereldvan.ai is een open project. De code staat op GitHub, de roadmap is
-          openbaar, en de ideeën komen van de leden. Meebouwen — met code of met een
-          idee — is welkom.
-        </p>
-        <div class="mt-6 flex flex-wrap items-center gap-3" data-reveal style="--d:300ms">
-          <a class="btn btn--ghost" href="https://github.com/RichardTheuws/dewereldvan.ai" target="_blank" rel="noopener">Bekijk de code op GitHub ↗</a>
-          {% if not logged_in %}<a class="btn" href="/register">Word lid</a>{% endif %}
-        </div>
-      </section>
-
-      {% if logged_in %}
-      {# Snelle deur naar het eigen profiel (alleen voor ingelogde leden). #}
-      <section class="mt-20">
-        <div class="grid">
-          <a class="card" href="/profiel/ai/bouwen" data-reveal="drift" style="--d:160ms">
-            <div class="card-label">Jouw profiel</div>
-            <div class="card-desc">Bouw of verfijn je profiel — wie je bent en waar je naar zoekt.</div>
-          </a>
-        </div>
+        <div class="hits mt-6">{% for e in upcoming %}{{ event_hit(e) }}{% endfor %}</div>
       </section>
       {% endif %}
+
+      {# ---- 4. Deze week in AI ---- #}
+      {% if news_items %}
+      <section class="mt-20" id="nieuws" data-reveal>
+        <div class="home-head">
+          <div><div class="section-title">{% if news_this_week %}Deze week in AI{% else %}Recent in AI{% endif %}</div>
+            <p class="lede mt-2" style="max-width:52ch">Gekozen op wat ertoe doet voor wie in NL en BE met AI werkt.</p></div>
+          <a class="text-link" href="/nieuws">Al het nieuws →</a>
+        </div>
+        <div class="hits mt-6">{% for n in news_items %}{{ news_hit(n) }}{% endfor %}</div>
+      </section>
+      {% endif %}
+
+      {# ---- 5. Pas nu: werk je zelf met AI? (het werven, met de bestaande demo) ---- #}
+      {% if not logged_in %}
+      <section class="mt-24 home-join" id="sta-erin" data-reveal>
+        <div class="eyebrow">Werk je zelf met AI?</div>
+        <h2 class="headline mt-4" style="font-size:clamp(2rem,5vw,3.4rem)">Sta erin. Geef een link, de agent bouwt je profiel.</h2>
+        <p class="lede mt-4" style="max-width:56ch">
+          Met een openbaar profiel kunnen opdrachtgevers je rechtstreeks een vraag stellen, sta je in de gids
+          van je vakgebied, vinden AI-assistenten je, en zie je elke maand of het werkt.
+        </p>
+        <div class="mt-8">{% include "_home_demo.html" %}</div>
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+          <a class="btn" href="/register">Maak je profiel</a>
+          <a class="btn btn--ghost" href="/proef">Probeer het met je eigen link</a>
+        </div>
+        <div class="feature-grid mt-10">
+          <div class="feature-card"><span class="feature-card__spark" aria-hidden="true">✦</span>
+            <div class="feature-card__title">Rechtstreekse vragen</div>
+            <div class="feature-card__desc">Opdrachtgevers stellen je een vraag via je profiel. Je krijgt een seintje en antwoordt zelf.</div></div>
+          <div class="feature-card"><span class="feature-card__spark" aria-hidden="true">✦</span>
+            <div class="feature-card__title">In de gids van je vak</div>
+            <div class="feature-card__desc">Bouwers, trainers, video, audio, design, publicaties. Gratis en niet te koop.</div></div>
+          <div class="feature-card"><span class="feature-card__spark" aria-hidden="true">✦</span>
+            <div class="feature-card__title">Vindbaar voor AI</div>
+            <div class="feature-card__desc">ChatGPT, Claude en eigen agents lezen de gids via llms.txt, makers.json en MCP.</div></div>
+          <div class="feature-card"><span class="feature-card__spark" aria-hidden="true">✦</span>
+            <div class="feature-card__title">Zie dat het werkt</div>
+            <div class="feature-card__desc">Hoe vaak mensen en AI-assistenten je vinden, en elke maand een steekproef: noemt een AI je?</div></div>
+        </div>
+        {% if preview_stars and preview_stars | length >= 3 %}
+        <div class="mt-12"><div class="section-title mb-4">De wereld groeit</div>{% include "_constellation.html" %}</div>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      {# ---- 6. Open project ---- #}
+      <section class="mt-20" id="meebouwen" data-reveal>
+        <div class="section-title">Een open project</div>
+        <p class="lede mt-3" style="max-width:54ch">
+          De code staat op GitHub, de roadmap is openbaar en de ideeën komen van de leden. Meebouwen is welkom.
+        </p>
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <a class="btn btn--ghost" href="/roadmap">Bekijk de roadmap</a>
+          <a class="link" href="/ideeen">Opper een idee →</a>
+          <a class="link" href="https://github.com/RichardTheuws/dewereldvan.ai" target="_blank" rel="noopener">GitHub ↗</a>
+        </div>
+      </section>
     </main>
 
     <footer class="c-head" style="border-top:1px solid var(--line);--d:880ms" data-reveal>
