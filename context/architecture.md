@@ -33,7 +33,7 @@ Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.
 (teaser). MCP-server gemount op `/mcp` (eigen Bearer-auth).
 
 ## Componenten (`app/`)
-- **routers/** (20): HTTP-endpoints (zie route-inventaris). **services/**: de logica
+- **routers/** (21): HTTP-endpoints (zie route-inventaris). **services/**: de logica
   (engine-loops, persistentie, integraties). **models/**: SQLAlchemy 2.x (25 tabellen).
   **templates/**: Jinja2 + htmx-partials. **email/**: EmailSender-adapters (alleen nog
   magic-link). **mcp_server.py**: FastMCP op `/mcp`.
@@ -41,7 +41,8 @@ Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.
   `surface`-registry), `footprint_service` (discovery-engine), `discovery_job_service`
   (achtergrond-job), `notification_service` + `telegram_service`, `project_enrich_service`,
   `match_service`/`connection_service`, `nudge_service` (pull-chips), `cover_art_service`,
-  `tool_service`, `member_memory_service`, `account_deletion`.
+  `tool_service`, `member_memory_service`, `account_deletion`, `inquiry_service` (aanvragen van
+  bezoekers, nul AI).
 
 ## Route-inventaris (gegroepeerd)
 - **Auth/toegang**: `/register`, `/login`, `/auth/verify`, `/logout`, `/welkom`,
@@ -55,6 +56,8 @@ Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.
 - **Notificaties**: `/profiel/notificaties` (+ `/kanaal`, `/telegram/start|ontkoppel`),
   `/telegram/webhook` (extern, secret-header, CSRF-exempt).
 - **Concierge/agent-shell**: `/concierge/bericht|stream|chips|index|nudge|profielbouw|founder/verhaal`.
+- **Aanvragen (hub)**: `/leden/{slug}/vraag` (publiek GET/POST), `/aanvragen`, `/aanvragen/{id}`
+  (+ `/status`) — besloten inbox.
 - **Community**: `/leden`, `/leden/{slug}`, `/projecten/{slug}`, `/agenda`, `/nieuws`, `/ideeen`,
   `/roadmap`, `/intro/*`, `/feedback*`.
 - **MCP/koppelen**: `/mcp`, `/profiel/verbind` (+ token-CRUD).

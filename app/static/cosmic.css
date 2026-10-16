@@ -5339,3 +5339,42 @@ a.roadmap-item__origin:focus-visible {
 .cosmic .member-note__glyph { color: var(--cyan); flex: none; }
 .cosmic .member-note strong { color: var(--text); font-weight: 500; }
 .cosmic .member-note em { font-style: normal; color: var(--gold); }
+
+/* ---- Aanvragen van bezoekers (PRD hub §4.1) ---- */
+.cosmic .inquiry-section { scroll-margin-top: 32px; padding-top: 28px; border-top: 1px solid var(--line); }
+.cosmic .inquiry-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.cosmic .inquiry-consent {
+  display: flex; gap: 10px; align-items: flex-start; margin-top: 20px;
+  font-size: 0.85rem; color: var(--muted); line-height: 1.5; cursor: pointer;
+}
+.cosmic .inquiry-consent input[type="checkbox"] {
+  width: 18px; height: 18px; min-width: 18px; padding: 0; margin: 2px 0 0; flex: none;
+  accent-color: var(--violet); box-shadow: none;
+}
+.cosmic .inquiry-consent span { flex: 1; }
+.cosmic .field-error { font-size: 0.82rem; color: #ffb4c8; margin-top: 6px; }
+.cosmic .inquiry-sent { text-align: left; padding: 8px 0; }
+.cosmic .inquiry-sent__star {
+  display: inline-grid; place-items: center; width: 46px; height: 46px; border-radius: 999px;
+  color: var(--gold); border: 1px solid rgba(246, 205, 134, 0.45);
+  box-shadow: 0 0 28px rgba(246, 205, 134, 0.25); font-size: 20px;
+  animation: inquiry-pulse 2.4s ease-in-out infinite;
+}
+.cosmic .inquiry-sent__title { font-family: "Fraunces", serif; font-size: 1.6rem; margin-top: 18px; }
+.cosmic .inquiry-sent__more, .cosmic .inquiry-back { display: inline-block; margin-top: 20px; }
+@keyframes inquiry-pulse { 50% { box-shadow: 0 0 44px rgba(246, 205, 134, 0.45); } }
+@media (prefers-reduced-motion: reduce) { .cosmic .inquiry-sent__star { animation: none; } }
+.cosmic .inquiry-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.cosmic .inquiry-inline { display: inline; }
+.cosmic .inquiry-list { display: flex; flex-direction: column; gap: 12px; max-width: 760px; }
+.cosmic .inquiry-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 18px 22px;
+  border: 1px solid var(--line); border-radius: 18px; background: var(--card);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cosmic .inquiry-row:hover { border-color: rgba(177, 92, 255, 0.5); box-shadow: 0 18px 50px -30px rgba(109, 93, 252, 0.6); }
+.cosmic .inquiry-row--new { border-color: rgba(246, 205, 134, 0.45); }
+.cosmic .inquiry-row__who { font-weight: 500; }
+.cosmic .inquiry-row__topic { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--gold); align-self: center; }
+.cosmic .inquiry-row__snippet { grid-column: 1 / -1; color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
+.cosmic .inquiry-row__meta { grid-column: 1 / -1; font-size: 0.78rem; color: var(--muted); opacity: 0.8; }

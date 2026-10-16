@@ -1,0 +1,36 @@
+{# "Werk met <voornaam>" — de aanvraag-sectie op het openbare profiel (PRD hub §4.1).
+   Twee-koloms compositie: verhaal + verhoogde glas-kaart met het formulier. #}
+{% set first = (profile.display_name or "").split(" ")[0] %}
+<section id="vraag" class="compose inquiry-section mt-16" data-reveal style="--d:200ms">
+  <div class="compose__intro">
+    <div class="eyebrow">Rechtstreeks contact</div>
+    <h2 class="headline mt-4">Werk met {{ first }}.</h2>
+    <p class="lede mt-4" style="max-width:40ch">
+      Je hoeft geen lid te zijn. Stel je vraag hier en {{ first }} antwoordt je zelf.
+    </p>
+    <div class="flow-steps">
+      <div class="flow-step"><span class="flow-step__num">1</span>
+        <div><div class="flow-step__title">Je stelt je vraag</div>
+        <div class="flow-step__desc">Kort en concreet: wat zoek je, en wanneer?</div></div></div>
+      <div class="flow-step"><span class="flow-step__num">2</span>
+        <div><div class="flow-step__title">{{ first }} krijgt een seintje</div>
+        <div class="flow-step__desc">Direct, via het kanaal dat {{ first }} zelf koos.</div></div></div>
+      <div class="flow-step"><span class="flow-step__num">3</span>
+        <div><div class="flow-step__title">Antwoord in je mail</div>
+        <div class="flow-step__desc">{{ first }} reageert rechtstreeks. Wij zitten er niet tussen.</div></div></div>
+    </div>
+  </div>
+  {% include "inquiries/_form.html" %}
+</section>
+{% if inquiry_open %}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script>
+  /* Een "Open voor"-beacon kiest meteen het juiste onderwerp en scrolt naar het formulier. */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-inquiry-topic]');
+    if (!b) return;
+    var r = document.querySelector('#inquiry-card input[name="topic"][value="' + b.dataset.inquiryTopic + '"]');
+    if (r) r.checked = true;
+  });
+</script>
+{% endif %}

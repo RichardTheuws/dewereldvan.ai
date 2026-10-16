@@ -272,3 +272,13 @@ class GatheringVoteChoice(str, enum.Enum):
     yes = "yes"
     maybe = "maybe"
     no = "no"
+
+
+class InquiryStatus(str, enum.Enum):
+    """Status van een aanvraag van een bezoeker (PRD hub §4.1). Het lid beheert
+    'm in de inbox. Langste waarde 'answered' = 8 → ``String(length=8)`` (0039)."""
+
+    new = "new"
+    read = "read"
+    answered = "answered"
+    spam = "spam"

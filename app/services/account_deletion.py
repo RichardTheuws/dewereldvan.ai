@@ -43,6 +43,7 @@ from app.models import (
     GroupInvite,
     Idea,
     IdeaVote,
+    Inquiry,
     MagicLinkToken,
     MatchSuggestion,
     Member,
@@ -196,6 +197,7 @@ def delete_member_completely(db: Session, member: Member) -> None:
             ConciergeNudgeDismissal.member_id == member_id
         )
     )
+    db.execute(delete(Inquiry).where(Inquiry.member_id == member_id))
     db.execute(delete(PersonalToken).where(PersonalToken.member_id == member_id))
     db.execute(delete(DiscoveryRun).where(DiscoveryRun.member_id == member_id))
     db.execute(delete(MemberChannel).where(MemberChannel.member_id == member_id))

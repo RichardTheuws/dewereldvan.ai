@@ -20,11 +20,13 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.deps import current_member, require_member
 from app.models import Member, Profile, Visibility
+from app.routers import inquiries as inquiries_router
 from app.schemas.profile import NeedForm, OfferingForm, ProfileForm, VisibilityForm
 from app.services import (
     account_deletion,
     emphasis_service,
     graph_service,
+    inquiry_service,
     offering_slug,
     openness_service,
     photo_service,
@@ -204,6 +206,10 @@ def preview_profile(
             "emphasis_cls": emphasis_service.emphasis_class(profile),
             "canonical": seo_service.canonical_url(f"/leden/{profile.slug}"),
             "open_to_items": _openness_items(profile),
+            # Preview = de bezoekers-ervaring, dus ook de aanvraag-sectie (als openbaar).
+            "show_inquiry": inquiry_service.accepts_inquiries(profile),
+            **inquiries_router.form_context(profile, None),
+            "is_visitor": True,
             "jsonld": None,
             "og_image": None,
         },
@@ -454,6 +460,12 @@ def view_profile(
             "emphasis_cls": emphasis_service.emphasis_class(profile),
             "canonical": seo_service.canonical_url(f"/leden/{profile.slug}"),
             "open_to_items": _openness_items(profile),
+            # Aanvraag van buiten (PRD hub §4.1): alleen voor een openbaar profiel
+            # en niet voor de eigenaar zelf.
+            "show_inquiry": not (viewer is not None and viewer.id == profile.member_id)
+            and inquiry_service.accepts_inquiries(profile),
+            **inquiries_router.form_context(profile, viewer),
+            "is_visitor": viewer is None,
             # Mens-naast-AI-correctiepad voor de tool-dossiers (doc 03 §4.3).
             **_tool_notes_context(db, profile, viewer),
             # JSON-LD + OG-beeld alleen voor publiek-indexeerbare profielen.

@@ -74,6 +74,8 @@ PUBLIC_NOINDEX = {
     "/register",
     "/login",
     "/profiel/gewist",
+    # Deelbare aanvraag-pagina (PRD hub §4.1): het profiel zelf is de indexeerbare pagina.
+    "/leden/{slug}/vraag",
 }
 # Publieke htmx-partials/overlay-fragmenten (concierge zit op elke pagina, ook
 # anoniem; anonieme feedback mag). Geen volledige documenten.
@@ -107,6 +109,8 @@ MEMBER_ONLY = {
     "/samen",
     "/samen/nieuw",
     "/samen/{gathering_id}",
+    "/aanvragen",
+    "/aanvragen/{inquiry_id}",
 }
 # Admin-only: gewoon lid → 403.
 ADMIN_ONLY = {
@@ -157,6 +161,7 @@ ACKNOWLEDGED = (
 _PARAM_FILL = {
     "{slug}": "uat-maker",  # default; /projecten/{slug} wordt apart ingevuld
     "{offering_id}": "999999",
+    "{inquiry_id}": "999999",
     "{role_id}": "999999",
     "{naam}": "bio",
     "{token}": "ongeldige-token",

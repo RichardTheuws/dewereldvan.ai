@@ -1,0 +1,96 @@
+{# Aanvraag-kaart (PRD hub §4.1) — ingebed op het openbare profiel én op de losse
+   /leden/{slug}/vraag-pagina. htmx post naar dezelfde route en swapt deze kaart;
+   zonder JS werkt het als gewoon formulier (de route rendert dan de hele pagina).
+   Nul AI. Turnstile + honeypot (`website`) + invultijd (`started`). #}
+{% set first = (profile.display_name or "").split(" ")[0] %}
+<div id="inquiry-card" class="form-card inquiry-card" data-reveal="materialize" style="--d:200ms">
+  {% if sent %}
+  <div class="inquiry-sent" role="status">
+    <span class="inquiry-sent__star" aria-hidden="true">✦</span>
+    <h3 class="inquiry-sent__title">Je vraag is bij {{ first }}.</h3>
+    <p class="lede mt-3">{{ first }} krijgt 'm nu te zien en antwoordt je zelf per mail.
+      Je gegevens gaan alleen naar {{ first }}.</p>
+    <a class="text-link inquiry-sent__more" href="/leden">Bekijk meer makers →</a>
+  </div>
+  {% elif not inquiry_open %}
+  <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+    <span>Vragen stellen via dewereldvan.ai kan op dit moment even niet. Probeer het later opnieuw.</span>
+  </div>
+  {% else %}
+  <form method="post" action="/leden/{{ profile.slug }}/vraag"
+        hx-post="/leden/{{ profile.slug }}/vraag" hx-target="#inquiry-card" hx-swap="outerHTML">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="started" value="{{ form_started }}">
+    <div class="inquiry-hp" aria-hidden="true">
+      <label>Laat dit leeg <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+      <span>Een vraag, een opdracht of een uitnodiging? Je bericht gaat rechtstreeks naar {{ first }}.</span>
+    </div>
+
+    {% if errors and errors._ %}<p class="notice notice--error" role="alert">{{ errors._ }}</p>{% endif %}
+
+    <div class="form-field">
+      <label class="field-label" for="iq-topic">Waar gaat het over?</label>
+      <div class="open-chips" role="radiogroup" aria-label="Onderwerp">
+        {% for slug, label in inquiry_topics %}
+        <label class="open-chip">
+          <input type="radio" name="topic" value="{{ slug }}"
+                 {% if form.topic == slug or (not form.topic and loop.first) %}checked{% endif %}>
+          <span>{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {% if errors.topic %}<p class="field-error">{{ errors.topic }}</p>{% endif %}
+    </div>
+
+    <div class="form-row">
+      <div>
+        <label class="field-label" for="iq-name">Je naam</label>
+        <input id="iq-name" type="text" name="name" maxlength="120" required autocomplete="name"
+               value="{{ form.name or '' }}">
+        {% if errors.name %}<p class="field-error">{{ errors.name }}</p>{% endif %}
+      </div>
+      <div>
+        <label class="field-label" for="iq-email">Je e-mail</label>
+        <input id="iq-email" type="email" name="email" maxlength="320" required autocomplete="email"
+               value="{{ form.email or '' }}">
+        {% if errors.email %}<p class="field-error">{{ errors.email }}</p>{% endif %}
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label" for="iq-org">Organisatie <span class="muted">(optioneel)</span></label>
+      <input id="iq-org" type="text" name="org" maxlength="160" autocomplete="organization"
+             value="{{ form.org or '' }}">
+    </div>
+
+    <div class="form-field">
+      <label class="field-label" for="iq-msg">Je bericht</label>
+      <textarea id="iq-msg" name="message" rows="5" minlength="20" maxlength="2000" required
+                placeholder="Wat wil je {{ first }} vragen? Hoe concreter, hoe sneller het antwoord.">{{ form.message or '' }}</textarea>
+      {% if errors.message %}<p class="field-error">{{ errors.message }}</p>{% endif %}
+    </div>
+
+    <label class="inquiry-consent">
+      <input type="checkbox" name="consent" value="1" required>
+      <span>Ik geef dewereldvan.ai toestemming om mijn naam, e-mail en bericht aan {{ first }} door te geven. We bewaren ze 180 dagen.</span>
+    </label>
+    {% if errors.consent %}<p class="field-error">{{ errors.consent }}</p>{% endif %}
+
+    <div class="cf-turnstile mt-5" data-sitekey="{{ turnstile_site_key }}" data-theme="dark"></div>
+
+    <div class="mt-6">
+      <button type="submit" class="btn">Stuur je vraag</button>
+    </div>
+  </form>
+  <script>
+    /* Na een htmx-swap (bv. een validatiefout) moet de Turnstile-widget opnieuw renderen. */
+    (function () {
+      var el = document.querySelector('#inquiry-card .cf-turnstile');
+      if (el && window.turnstile && !el.querySelector('iframe')) { window.turnstile.render(el); }
+    })();
+  </script>
+  {% endif %}
+</div>

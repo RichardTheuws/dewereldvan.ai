@@ -325,6 +325,22 @@ def select_chips(
                 )
             )
 
+    # 0y. Aanvragen van buiten (PRD hub §4.1) — een bezoeker wacht op antwoord.
+    if viewer is not None and "chip_inquiries" not in dismissed:
+        from app.services import inquiry_service
+
+        fresh = inquiry_service.count_new(db, viewer)
+        if fresh >= 1:
+            woord = "nieuwe vraag" if fresh == 1 else "nieuwe vragen"
+            chips.append(
+                Nudge(
+                    kind="chip_inquiries",
+                    message=f"{fresh} {woord} van een bezoeker",
+                    action_label="lees je aanvragen",
+                    action="navigate:/aanvragen",
+                )
+            )
+
     # 0a. Inkomende intro's (hoogste prioriteit) — iemand wacht op je antwoord.
     if viewer is not None and "chip_intros" not in dismissed:
         from app.services import connection_service

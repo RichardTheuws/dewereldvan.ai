@@ -19,6 +19,7 @@ from app.models.base import (
     GatheringState,
     GatheringVoteChoice,
     IdeaStatus,
+    InquiryStatus,
     MatchStatus,
     MemberRole,
     MemberStatus,
@@ -47,6 +48,7 @@ from app.models.gathering import (
 from app.models.group_invite import GroupInvite
 from app.models.idea import Idea
 from app.models.idea_vote import IdeaVote
+from app.models.inquiry import Inquiry
 from app.models.magic_link import MagicLinkToken
 from app.models.match_suggestion import MatchSuggestion
 from app.models.member import Member
@@ -75,6 +77,8 @@ __all__ = [
     "ProfileEmphasis",
     "ProfileLinkKind",
     "IdeaStatus",
+    "InquiryStatus",
+    "Inquiry",
     "RoadmapStatus",
     "PostKind",
     "PostReviewState",

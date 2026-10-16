@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Eén aanvraag (PRD hub §4.1). Besloten, noindex. Antwoorden gaat per mail
+   (mailto met onderwerp) — geen e-mail vanuit het platform. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Aanvraag van " ~ inquiry.sender_name ~ " — dewereldvan.ai" %}
+  {% set seo_desc = "Een vraag van een bezoeker." %}
+  {% include "_seo_head.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+  <div class="wrap">
+    {% include "_cosmic_nav.html" %}
+    <main class="flex-1 pb-24">
+      <section class="compose mt-8">
+        <div class="compose__intro">
+          <a class="text-link" href="/aanvragen" data-reveal style="--d:100ms">← Alle aanvragen</a>
+          <div class="eyebrow mt-5" data-reveal style="--d:180ms">{{ topic_label }} · {{ inquiry.created_at | nl_datum }}</div>
+          <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">{{ inquiry.sender_name }}</h1>
+          {% if inquiry.sender_org %}<p class="lede mt-3" data-reveal style="--d:340ms">{{ inquiry.sender_org }}</p>{% endif %}
+          <p class="mt-4 muted" data-reveal style="--d:400ms">{{ inquiry.sender_email }}</p>
+          <div class="mt-6 inquiry-actions" data-reveal style="--d:480ms">
+            {% set subject = "Re: je vraag via dewereldvan.ai (" ~ topic_label ~ ")" %}
+            <a class="btn" href="mailto:{{ inquiry.sender_email }}?subject={{ subject | urlencode }}">Antwoord per mail</a>
+            {% if inquiry.status.value != 'answered' %}
+            <form method="post" action="/aanvragen/{{ inquiry.id }}/status" class="inquiry-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="status" value="answered">
+              <button type="submit" class="btn btn--ghost">Markeer als beantwoord</button>
+            </form>
+            {% endif %}
+            <form method="post" action="/aanvragen/{{ inquiry.id }}/status" class="inquiry-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="status" value="spam">
+              <button type="submit" class="btn btn--ghost btn--sm">Dit is spam</button>
+            </form>
+          </div>
+        </div>
+        <div class="form-card" data-reveal="materialize" style="--d:320ms">
+          <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span><span>Het bericht</span></div>
+          <p class="lede" style="white-space:pre-line">{{ inquiry.message }}</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

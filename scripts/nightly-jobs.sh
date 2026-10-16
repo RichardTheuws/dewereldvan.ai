@@ -8,7 +8,8 @@
 #   3. enrich_projects   — screenshot-hero + AI-samenvatting op de projectpagina's.
 #   4. enrich_tool_logos — best-effort favicon/og:image-logo per tool-URL.
 #   5. review_tools      — AI-dossier per ≥1-gebruiker-tool (re-review na 90 dagen).
-#   6. curate_news       — WEKELIJKS (zondag): stelt de nieuws-briefing voor als
+#   6. purge_inquiries   — wist aanvragen van bezoekers ouder dan 180 dagen (nul AI).
+#   7. curate_news       — WEKELIJKS (zondag): stelt de nieuws-briefing voor als
 #                          pending_review (mens-in-de-lus; nooit silent-publish).
 #
 # Bewust GEEN `set -e`: faalt job 1, dan moet job 2 alsnog draaien. Elke job is
@@ -39,6 +40,7 @@ run_job distill_memories   app.jobs.distill_memories
 run_job enrich_projects    app.jobs.enrich_projects
 run_job enrich_tool_logos  app.jobs.enrich_tool_logos
 run_job review_tools       app.jobs.review_tools
+run_job purge_inquiries    app.jobs.purge_inquiries
 
 # Wekelijkse gate: nieuws-curatie draait ALLEEN op zondag (date +%u == 7).
 # "Schaarste = signaal" — dagelijks zou te veel admin-poort-werk en lauwe items

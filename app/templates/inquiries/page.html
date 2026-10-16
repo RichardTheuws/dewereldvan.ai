@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Losse aanvraag-pagina /leden/{slug}/vraag (PRD hub §4.1) — deelbare contact-link
+   en de no-JS-fallback van het ingebedde formulier. noindex (het profiel zelf is
+   de indexeerbare pagina). #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Stel een vraag aan " ~ profile.display_name ~ " — dewereldvan.ai" %}
+  {% set seo_desc = "Stel " ~ profile.display_name ~ " rechtstreeks een vraag." %}
+  {% include "_seo_head.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+  <div class="wrap">
+    {% include "_cosmic_nav.html" %}
+    <main class="flex-1 pb-24">
+      <a class="text-link inquiry-back" href="/leden/{{ profile.slug }}" data-reveal style="--d:100ms">← Profiel van {{ profile.display_name }}</a>
+      {% include "inquiries/_section.html" %}
+    </main>
+  </div>
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

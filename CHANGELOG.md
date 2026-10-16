@@ -3,6 +3,24 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.111.0] - 2026-10-16
+### Added — Aanvragen van bezoekers: "Werk met <naam>" (PRD hub §4.1)
+De eerste weg van buiten naar binnen. Een opdrachtgever (geen lid) stelt een lid rechtstreeks een vraag
+via het openbare profiel; tot nu toe liep "aanspreken" voor een bezoeker dood op "word lid".
+- **Profiel**: nieuwe sectie "Werk met <voornaam>" (compose: verhaal + "zo werkt het" + glas-kaart).
+  De "Open voor"-beacons kiezen voor een bezoeker meteen het onderwerp en scrollen naar het formulier.
+  Leden houden de concierge-intro. Losse deelbare pagina `/leden/{slug}/vraag` (noindex, no-JS-fallback).
+- **Nul AI** (harde constraint). Spam-poort: honeypot + minimale invultijd (stil "verzonden"),
+  Turnstile, validatie, per-IP- (5/24u, gezouten hash, nooit het ruwe IP) en per-profiel-limiet (20/24u),
+  dedupe via unique-constraint + savepoint. Zonder Turnstile-keys staat het formulier uit.
+- **Bezorging**: `notify()` naar het lid-gekozen kanaal (Telegram) + chip "N nieuwe vragen". Geen e-mail;
+  het lid antwoordt zelf (mailto met onderwerp).
+- **Inbox** `/aanvragen` + detail (gelezen/beantwoord/spam), link in het menu. Alleen eigen aanvragen.
+- **AVG**: toestemmingsvinkje; 180 dagen bewaard (`app.jobs.purge_inquiries`, nachtelijk); de
+  account-wis neemt aanvragen mee. Alleen bij een openbaar profiel van een goedgekeurd lid.
+- Model `Inquiry` + `InquiryStatus` (migratie 0039). Tests: `tests/test_inquiries.py` (29). Browsercheck
+  lokaal (desktop + mobiel, Turnstile-testsleutels): onderwerp-voorselectie, verzenden, inbox, detail.
+
 ## [0.110.0] - 2026-07-11
 ### Added — Footprint-presence: eigen aanwezigheid ≠ nieuws (durende fix, PRD-footprint-presence optie A)
 De durende oplossing voor de feed-vervuiling: de footprint-classifier onderscheidt nu de **eigen

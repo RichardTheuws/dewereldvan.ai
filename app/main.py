@@ -40,6 +40,7 @@ from app.routers import (
     feedback,
     gids,
     ideas,
+    inquiries,
     invite,
     members,
     notifications,
@@ -283,6 +284,7 @@ def create_app() -> FastAPI:
     app.include_router(samen.router)
     app.include_router(dichtbij.router)
     app.include_router(connections.router)
+    app.include_router(inquiries.router)
     app.include_router(notifications.router)
     app.include_router(connect.router)
     app.include_router(onboarding.router)

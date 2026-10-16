@@ -5,8 +5,14 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-07-11 · **Versie**: 0.110.0 · **Branch**: `main`
+**Laatste update**: 2026-10-16 · **Versie**: 0.111.0 · **Branch**: `main`
 
+> **0.111.0** — **Hub fase 1, stap 1: aanvragen van bezoekers (PRD hub §4.1).** Op een openbaar profiel
+> kan een opdrachtgever zonder account een vraag stellen ("Werk met <naam>"); de beacons kiezen het onderwerp.
+> Nul AI, Turnstile + honeypot + limieten, bezorging via Telegram/chip, inbox `/aanvragen`, 180 dagen bewaard.
+> Migratie 0039. Volgt uit het hub-onderzoek (noordster bijgesteld, `docs/PRD-hub.md`). Volgende: §4.2
+> AI-leesbaarheid, §4.3 overzichtspagina's, §4.4 vindbaarheids-dashboard.
+>
 > **0.110.0** — **Footprint-presence: eigen aanwezigheid ≠ nieuws (durende feed-fix).** De footprint-classifier
 > onderscheidt nu de eigen aanwezigheid van een lid (social-profiel/bio-listing/eigen site) van dekking
 > (artikel/podcast/interview) en eigen werk (project). Nieuw type **`presence`** crystalliseert NIETS — geen
@@ -279,6 +285,12 @@ uit één URL), met groen licht voor betaalde niet-lid-calls onder een **harde �
   in de M4-`.env` (2026-06-21) → het pad is nu live binnen de €50/wk-cap.
 
 ## Open taken
+- [ ] **Hub fase 1 (PRD-hub, 2026-10-16)**: §4.1 aanvragen ✅ (v0.111.0) · §4.2 AI-leesbaarheid
+      (`llms.txt`, `/makers.json`, anonieme read-only MCP, JSON-LD `sameAs`/`Service`/`areaServed`, dofollow
+      eigen site) · §4.3 `/gids/<discipline>` (+ regio bij ≥3) · §4.4 vindbaarheids-dashboard + AI-steekproef.
+      Daarna: persoonlijke uitnodigingsronde (§8). Succes 2026-12-31: ≥15 openbare vermeldingen, ≥5 aanvragen.
+- [ ] **Bestaande e2e-fout** (los van de hub): `test_homepage_chip_opens_concierge_prefilled` faalt ook op
+      v0.110.0 (Locator.click timeout) — uitzoeken.
 - [x] **Footprint-presence-pagina's uit de nieuwsfeed** (2026-07-11, data-cleanup, geen code): 7 items
       (LinkedIn/Instagram + bio-pagina's eve.law/legaldutch/heliview/cheeseinabox) mens-gecureerd verborgen
       via `post_service.set_hidden` (AuditLog, actor Richard). Echte artikelen (BNR/Omroep Veldhoven/

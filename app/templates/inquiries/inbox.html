@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Inbox "Aanvragen" (PRD hub §4.1) — vragen die bezoekers via het openbare profiel
+   stelden. Besloten, noindex. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Aanvragen — dewereldvan.ai" %}
+  {% set seo_desc = "Vragen die bezoekers je stelden." %}
+  {% include "_seo_head.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic" data-reveal-scroll hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+  <div class="wrap">
+    {% include "_cosmic_nav.html" %}
+    <main class="flex-1 pb-24">
+      <section class="samen-hero mt-8">
+        <div class="samen-hero__text">
+          <div class="eyebrow" data-reveal style="--d:160ms">Van buiten naar binnen</div>
+          <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Aanvragen.</h1>
+          <p class="lede mt-5" style="max-width:52ch;--d:380ms" data-reveal>
+            Vragen die bezoekers je via je openbare profiel stelden. Antwoord rechtstreeks
+            per mail: dewereldvan.ai zit er niet tussen.
+          </p>
+          {% if not accepts %}
+          <p class="notice mt-6" data-reveal style="--d:460ms">
+            Je profiel is niet openbaar, dus bezoekers kunnen je nu geen vraag stellen.
+            <a class="text-link" href="/profiel/bewerken#zichtbaarheid">Zet je profiel op openbaar</a>.
+          </p>
+          {% endif %}
+        </div>
+        <div class="radiusmotif samen-hero__motif" data-reveal="drift" style="--d:560ms" aria-hidden="true">
+          <svg viewBox="0 0 380 190">
+            <circle class="starmotif__line" cx="190" cy="95" r="80" fill="none"/>
+            <circle class="starmotif__line" cx="190" cy="95" r="48" fill="none"/>
+            <circle class="starmotif__star" cx="190" cy="95" r="6"/>
+            <circle class="starmotif__star--dim" cx="262" cy="60" r="4"/>
+            <circle class="starmotif__star--dim" cx="120" cy="130" r="4"/>
+          </svg>
+        </div>
+      </section>
+
+      <section class="mt-12" data-reveal style="--d:620ms">
+        {% if inquiries %}
+        <div class="inquiry-list">
+          {% for iq in inquiries %}
+          <a class="inquiry-row{% if iq.status.value == 'new' %} inquiry-row--new{% endif %}" href="/aanvragen/{{ iq.id }}">
+            <span class="inquiry-row__who">{{ iq.sender_name }}{% if iq.sender_org %} <span class="muted">· {{ iq.sender_org }}</span>{% endif %}</span>
+            <span class="inquiry-row__topic">{{ topic_label(iq.topic) }}</span>
+            <span class="inquiry-row__snippet">{{ iq.message[:140] }}{% if iq.message|length > 140 %}…{% endif %}</span>
+            <span class="inquiry-row__meta">{{ iq.created_at | nl_datum }}{% if iq.status.value == 'new' %} · nieuw{% elif iq.status.value == 'answered' %} · beantwoord{% endif %}</span>
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="form-card" style="max-width:560px">
+          <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+            <span>Nog geen aanvragen. Zodra iemand je via je profiel een vraag stelt, staat die hier
+              {% if accepts %}— en krijg je een seintje via je <a class="text-link" href="/profiel/notificaties">gekozen kanaal</a>{% endif %}.</span>
+          </div>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

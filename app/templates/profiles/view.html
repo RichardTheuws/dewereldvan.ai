@@ -111,6 +111,15 @@
             <span class="open-beacon__label">{{ it.label }}</span>
             <span class="open-beacon__blurb">{{ it.blurb }}</span>
           </span>
+          {% elif show_inquiry and inquiry_open and is_visitor %}
+          {# Bezoeker: de beacon opent de aanvraag met dit onderwerp (nul AI). #}
+          <a class="open-beacon open-beacon--action" href="#vraag" data-inquiry-topic="{{ it.slug }}"
+             title="Stel {{ profile.display_name }} een vraag hierover">
+            <span class="open-beacon__icon" aria-hidden="true">{{ it.icon }}</span>
+            <span class="open-beacon__label">{{ it.label }}</span>
+            <span class="open-beacon__blurb">{{ it.blurb }}</span>
+            <span class="open-beacon__cta" aria-hidden="true">vraag stellen →</span>
+          </a>
           {% else %}
           <button type="button" class="open-beacon open-beacon--action"
                   data-concierge-prefill="{{ it.intro }}"
@@ -241,6 +250,8 @@
         {% if sections.needs %}{{ section_seeking() }}{% endif %}
         {{ section_related() }}
       {% endif %}
+
+      {% if show_inquiry %}{% include "inquiries/_section.html" %}{% endif %}
 
     </main>
 
