@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.116.0] - 2026-10-16
+### Changed — Nieuws: het zekere gaat automatisch live (spiegelt de agenda)
+De nieuws-curatie stelde elk item voor als `pending_review`; zonder handmatige goedkeuring stapelde de
+wachtrij zich op (106 items sinds juli) en oogde `/nieuws` verlaten. Nu: relevantie ≥ 85
+(`news_curation_service.AUTO_APPROVE_THRESHOLD`) + een echte bron-URL → direct live; daaronder blijft
+het een voorstel in `/admin/nieuws`. De admin-push meldt beide aantallen.
+- Eenmalig (2026-10-16): de 106 wachtende nieuwsitems + 15 aankomende/terugkerende events goedgekeurd;
+  5 verlopen events geweigerd (blijven bewaard voor dedup). Alles via de bestaande geauditte functies.
+- Tests: drempel (85 live / 84 pending), URL-vereiste, admin-telling; de herkansingstest gebruikt nu 80.
+
 ## [0.115.1] - 2026-10-16
 ### Fixed — MCP-server was via het publieke domein onbereikbaar ("Invalid Host header")
 FastMCP zet DNS-rebinding-bescherming standaard op localhost-only; elke MCP-call via dewereldvan.ai

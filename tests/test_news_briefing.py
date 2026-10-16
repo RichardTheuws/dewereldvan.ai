@@ -500,7 +500,7 @@ def test_curate_news_job_retries_on_empty_then_persists(db, monkeypatch):
         return [
             news_curation_service.NewsCandidate(
                 title="Herkansing-hit", url="https://retry.example/win",
-                ai_take="waarom", ai_relevance=85,
+                ai_take="waarom", ai_relevance=80,  # onder de auto-keur-drempel
             )
         ]
 
@@ -536,6 +536,36 @@ def test_curate_news_job_no_retry_when_first_run_has_items(db, monkeypatch):
     created = job.main()
     assert calls["n"] == 1  # geen herkansing nodig
     assert created == 1
+
+
+def test_curate_news_job_auto_approves_only_the_sure(db, monkeypatch):
+    """v0.116.0: relevantie ≥ AUTO_APPROVE_THRESHOLD → direct live; daaronder blijft
+    het een voorstel. Spiegelt de agenda-curatie."""
+    from app.models import Post, PostKind
+
+    job = _job_with_fake_session(db, monkeypatch)
+    sent: list = []
+    monkeypatch.setattr(
+        job, "_notify_admins", lambda _db, count, live=0: sent.append((count, live))
+    )
+    t = news_curation_service.AUTO_APPROVE_THRESHOLD
+    monkeypatch.setattr(job.news_curation_service, "curate", lambda _db, **kw: [
+        news_curation_service.NewsCandidate(title="Zeker", url="https://a.example/1",
+                                            ai_take="x", ai_relevance=t),
+        news_curation_service.NewsCandidate(title="Twijfel", url="https://a.example/2",
+                                            ai_take="x", ai_relevance=t - 1),
+    ])
+    assert job.main() == 2
+    rows = db.scalars(select(Post).where(Post.kind == PostKind.nieuws))
+    state = {p.title: p.review_state for p in rows}
+    assert state == {"Zeker": PostReviewState.live, "Twijfel": PostReviewState.pending_review}
+    assert sent == [(1, 1)]
+    assert "Zeker" in [p.title for p in post_service.list_news(db)]
+
+
+def test_auto_approvable_needs_url():
+    c = news_curation_service.NewsCandidate(title="x", url="", ai_take="x", ai_relevance=99)
+    assert not news_curation_service.auto_approvable(c)
 
 
 def test_prompt_covers_two_tracks_diversity_and_recency():

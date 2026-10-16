@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-10-16 · **Versie**: 0.115.1 · **Branch**: `main`
+**Laatste update**: 2026-10-16 · **Versie**: 0.116.0 · **Branch**: `main`
 
+> **0.116.0** — **Nieuws: zeker (relevantie ≥85) gaat automatisch live**, twijfel blijft in `/admin/nieuws`
+> (spiegelt de agenda). Wachtrij leeggemaakt: 106 nieuws + 15 events goedgekeurd, 5 verlopen events geweigerd.
+>
 > **0.115.1** — **Fix: MCP via dewereldvan.ai gaf "Invalid Host header"** (FastMCP stond alleen localhost toe;
 > bestond al, onopgemerkt want nooit een token gebruikt). Gevonden bij de live-check van de hub-deploy.
 >

@@ -6,6 +6,21 @@ Elke beslissing bevat: **Context** (waarom kiezen), **Beslissing** (wat), **Alte
 
 ---
 
+## [2026-10-16] Nieuws-curatie keurt het zekere automatisch goed (zoals de agenda)
+
+**Context**: elk AI-nieuwsitem vroeg handmatige goedkeuring; die bleef sinds juli uit → 106 items in de
+wachtrij, `/nieuws` oogde verlaten voor nieuwe bezoekers. De agenda-curatie keurt al automatisch goed
+vanaf confidence 85 en werkt zonder omkijken.
+
+**Beslissing**: nieuws met relevantie ≥ 85 en een echte bron-URL gaat direct live; daaronder blijft het
+een voorstel (mens-in-de-lus voor twijfel). Richard akkoord 2026-10-16.
+
+**Alternatieven**:
+- Alles automatisch: afgewezen — twijfelgevallen horen langs een mens.
+- Handmatig houden: afgewezen — bewezen niet vol te houden (op-last), de site raakt verweesd.
+
+**Gevolgen**: de wekelijkse briefing vult zich vanzelf; de admin-push meldt live + wachtend.
+
 ## [2026-10-16] De hub wordt een opt-in publieke gids: vindbaar voor opdrachtgevers én AI (PRD hub)
 
 **Context**: live-data 2026-10-16 — 24 leden, geen aanwas sinds augustus, laatste mens-login 8 aug, 7

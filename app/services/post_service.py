@@ -423,11 +423,13 @@ def create_curated_news(
     added_by: Member | None = None,
     briefing_week: date | None = None,
     now: datetime | None = None,
+    live: bool = False,
 ) -> Post:
-    """Maak één AI-gecureerd nieuws-VOORSTEL (door de wekelijkse curatie-job).
+    """Maak één AI-gecureerd nieuws-item (door de wekelijkse curatie-job).
 
-    MENS-IN-DE-LUS-POORT: dit item start ALTIJD ``pending_review`` —
-    nooit ``live``. Het verschijnt pas publiek nadat een admin het goedkeurt.
+    AUTO-KEUR-POORT (v0.116.0, spiegelt ``create_curated_event``): ``live=True``
+    alleen als de job het zeker genoeg vond (``news_curation_service.auto_approvable``)
+    → direct publiek. Anders ``pending_review``: een admin keurt het goed.
 
     Idempotent op ``url``: een herhaalde curatie-run (zelfde artikel) maakt GEEN
     duplicaat — het bestaande nieuws-item (in welke staat dan ook) wordt
@@ -452,8 +454,8 @@ def create_curated_news(
         url=clean_url or None,
         source=(source or None),
         role=NewsRole.gedeeld,
-        # De poort: een voorstel, geen publicatie.
-        review_state=PostReviewState.pending_review,
+        # De poort: alleen het zekere gaat direct live, twijfel blijft een voorstel.
+        review_state=PostReviewState.live if live else PostReviewState.pending_review,
         source_kind=PostSourceKind.ai_curated,
         ai_take=(ai_take.strip()[:600] if ai_take else None),
         ai_relevance=ai_relevance,

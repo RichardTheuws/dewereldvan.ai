@@ -47,6 +47,8 @@ __all__ = [
     "NewsCandidate",
     "curate",
     "RELEVANCE_THRESHOLD",
+    "AUTO_APPROVE_THRESHOLD",
+    "auto_approvable",
 ]
 
 # --- Anthropic constanten (zie SDK-contract, gespiegeld van footprint_service) ---
@@ -65,6 +67,10 @@ DEDUP_WINDOW_DAYS: int = 60  # titels/urls uit deze periode = dedup-context
 # alleen items OP/BOVEN deze score komen als kandidaat op de shortlist. Een lauw
 # item is voor dit expert-publiek erger dan een gemist item.
 RELEVANCE_THRESHOLD: int = 70
+# Op/boven deze relevantie gaat een item AUTOMATISCH live (v0.116.0, spiegelt de
+# agenda-curatie): de wachtrij stapelde zich zonder dit maanden op (106 items in
+# okt 2026) en de site oogde verlaten. Daaronder → admin-queue (mens-in-de-lus).
+AUTO_APPROVE_THRESHOLD: int = 85
 
 # Adaptive thinking is verplicht op Opus 4.8; budget_tokens/temperature NOOIT.
 THINKING: dict[str, str] = {"type": "adaptive"}
@@ -399,3 +405,10 @@ def _run(
 
         # end_turn / max_tokens: lees de record_news_item-tool-output.
         return _read_items(final)
+
+
+def auto_approvable(candidate: NewsCandidate) -> bool:
+    """Mag dit voorstel automatisch live? Hoge relevantie + een echte bron-URL.
+    Alles daaronder blijft een voorstel in ``/admin/nieuws``."""
+    has_url = bool((candidate.url or "").strip())
+    return candidate.ai_relevance >= AUTO_APPROVE_THRESHOLD and has_url
