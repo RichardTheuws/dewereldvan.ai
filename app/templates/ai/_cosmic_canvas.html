@@ -11,6 +11,17 @@
 (function () {
   var fab = document.getElementById('intro-fab');
   if (fab && !document.querySelector('.cnav__replay')) fab.hidden = false;
+  if (!fab || fab.hidden) return;
+  // Zet de knop onder de welkom-band, zodat hij geen tekst of sluitknop bedekt.
+  function place() {
+    var band = document.querySelector('[data-welcome-band]');
+    fab.style.top = band ? (band.offsetHeight + 10) + 'px' : '';
+  }
+  place();
+  window.addEventListener('resize', place);
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('[data-welcome-band] button')) setTimeout(place, 0);
+  });
 })();
 </script>
 

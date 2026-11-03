@@ -231,3 +231,13 @@ def test_register_review_keeps_pending(client, engine, monkeypatch):
         assert m is not None
         assert m.status is MemberStatus.pending
         assert m.triage_note == "Twijfel — handmatig bekeken"
+
+
+def test_triage_prompt_welcomes_organisations():
+    """Hub-koers: bureaus en organisaties horen in de gids. De filter mag een
+    bedrijfsaccount nooit als twijfelgeval zien (Empathree, 2026-11-03)."""
+    from app.services import triage_service
+
+    prompt = triage_service._SYSTEM
+    assert "bureaus" in prompt and "organisaties zijn WELKOM" in prompt
+    assert "NOOIT een reden voor BEKIJK" in prompt

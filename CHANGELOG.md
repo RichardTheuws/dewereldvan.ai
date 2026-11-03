@@ -3,6 +3,21 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.118.3] - 2026-11-03
+### Fixed — Aanmelden tijdens de open uitnodiging
+- **Spamfilter hield bedrijven tegen.** De eerste aanmelding na de aankondiging (een AI-bedrijf, naam
+  gelijk aan het eigen e-maildomein) bleef op pending staan met als reden "kan een bedrijfsaccount
+  zijn". De filter mag alleen mens tegen bot beoordelen; de prompt zegt nu expliciet dat bedrijven,
+  bureaus, communities en organisaties welkom zijn en dat een bedrijfsnaam met eigen domein een
+  echt-signaal is. Test: `test_triage_prompt_welcomes_organisations`.
+- **"Bekijk intro"-knop over de welkom-band.** Op pagina's met de hoofdnav had de losse knop `hidden`,
+  maar de CSS overschreef dat: hij stond dubbel in beeld, over de bandtekst, en blokkeerde het ✕.
+  Nu `[hidden]` gerespecteerd, en op standalone pagina's (zoals `/register`) staat de knop onder de
+  band (mobiel scrollt hij mee).
+- **Nav op mobiel:** knoplabels breken niet meer af ("Word lid" over twee regels); de intro-knop heet
+  op smalle schermen "✦ intro" zodat de rij past.
+- Browsercheck lokaal: `/register`, `/`, `/nieuws`, `/privacy` op 390px en 1280px, band sluiten werkt.
+
 ## [0.118.2] - 2026-11-03
 ### Fixed — Testsuite weer volledig groen (1381 geslaagd)
 - MCP-authtests (`tests/test_directory.py`) faalden alleen in de volle run: de sync-API van Playwright

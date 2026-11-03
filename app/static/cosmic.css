@@ -245,6 +245,13 @@
 .cosmic .cnav__end {
   margin-left: auto;
 }
+/* Knoplabels nooit binnen de knop afbreken (mobiel: "Word lid" op twee regels). */
+.cosmic .cnav__end > * { white-space: nowrap; }
+@media (max-width: 640px) {
+  .cosmic .cnav__end { gap: 10px; flex-wrap: wrap; }
+  .cosmic .cnav__replay { padding: 0.34rem 0.7rem; font-size: 0.72rem; }
+  .cosmic .cnav__replay-verb { display: none; } /* mobiel: "✦ intro" past naast "Word lid" */
+}
 .cosmic .cnav__link {
   color: var(--muted);
   text-decoration: none;
@@ -1257,6 +1264,7 @@
   cursor: pointer;
   transition: color 0.25s, border-color 0.25s, transform 0.15s;
 }
+.cosmic .intro-fab[hidden] { display: none; } /* pagina mét hoofdnav: knop zit al in de nav */
 .cosmic .intro-fab span { color: var(--gold); }
 .cosmic .intro-fab:hover,
 .cosmic .intro-fab:focus-visible {
@@ -1266,7 +1274,9 @@
   outline: none;
 }
 @media (max-width: 640px) {
-  .cosmic .intro-fab { top: 10px; right: 10px; padding: 0.34rem 0.7rem; font-size: 0.72rem; }
+  /* Mobiel: scrollt mee met de pagina. Onder de welkom-band staat hij op alle
+     breedtes (top wordt in _cosmic_canvas.html op de bandhoogte gezet). */
+  .cosmic .intro-fab { position: absolute; top: 10px; right: 10px; padding: 0.34rem 0.7rem; font-size: 0.72rem; }
 }
 
 /* ---- galerij-grid (kind='gallery') — een raster van gehotlinkte portfolio-beelden ---- */
