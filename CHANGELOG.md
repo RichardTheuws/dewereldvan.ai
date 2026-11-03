@@ -3,6 +3,15 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.118.2] - 2026-11-03
+### Fixed — Testsuite weer volledig groen (1381 geslaagd)
+- MCP-authtests (`tests/test_directory.py`) faalden alleen in de volle run: de sync-API van Playwright
+  laat na de e2e-tests een draaiende event loop achter, waarna `asyncio.run()` weigert. De helper
+  draait de coroutine nu in een eigen thread.
+- E2e-test `test_homepage_chip_opens_concierge_prefilled` testte de concierge-chip die in v0.118.0
+  bewust van de homepage is gehaald. Vervangen door `test_homepage_search_finds_maker`: intro
+  overslaan, zoeken vanaf de voordeur, landen op `/zoek` met de juiste maker, geen JS-fouten.
+
 ## [0.118.1] - 2026-11-03
 ### Fixed — Projecten op een profiel volgen weer de gekozen volgorde
 - De relatie `Profile.offerings` had geen `order_by`, waardoor profielpagina en editor de projecten

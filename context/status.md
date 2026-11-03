@@ -5,8 +5,10 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-03 · **Versie**: 0.118.1 · **Branch**: `main`
+**Laatste update**: 2026-11-03 · **Versie**: 0.118.2 · **Branch**: `main`
 
+> **0.118.2** — Testsuite volledig groen (MCP-tests los van Playwright-loop; homepage-e2e test nu het zoeken).
+>
 > **0.118.1** — Fix: projecten op een profiel volgen weer `position` (relatie had geen `order_by`).
 >
 > **0.118.0** — **Voordeur stap 2: eerst helpen, dan werven.** Zoekveld + makers + events + nieuws boven,

@@ -73,15 +73,22 @@ def test_homepage_constellation_renders_real_makers(live_server, page: Page):
 # --------------------------------------------------------------------------- #
 # Proef-chips openen de concierge, voorgevuld (geen betaalde call)             #
 # --------------------------------------------------------------------------- #
-def test_homepage_chip_opens_concierge_prefilled(live_server, page: Page):
+def test_homepage_search_finds_maker(live_server, page: Page):
+    """De voordeur helpt eerst (v0.118.0): zoeken vanaf de homepage landt op /zoek
+    met de juiste maker. Vervangt de concierge-chiptest; die chip is bewust weg
+    (anonieme bezoekers krijgen geen betaalde AI)."""
+    errors = _collect_errors(page)
     page.goto(live_server, wait_until="networkidle")
-    chip = page.locator(".home-chip").first
-    chip.scroll_into_view_if_needed()
-    expected = chip.get_attribute("data-concierge-prefill")
-    chip.click()
-    overlay = page.locator("#concierge-overlay")
-    expect(overlay).to_be_visible()
-    expect(page.locator("#concierge-input")).to_have_value(expected)
+    # Zoals een bezoeker: de welkom-intro overslaan als hij opent.
+    skip = page.locator("#dwv-intro-skip")
+    if skip.is_visible():
+        skip.click()
+        expect(page.locator("#dwv-intro")).to_be_hidden()
+    page.locator(".searchbox__input").first.fill("rag")
+    page.locator(".searchbox__btn").first.click()
+    page.wait_for_url("**/zoek?q=rag")
+    expect(page.locator(".hit--maker .hit__title", has_text="Tycho Berg")).to_be_visible()
+    _assert_no_js_errors(errors, "/ → /zoek")
 
 
 # --------------------------------------------------------------------------- #

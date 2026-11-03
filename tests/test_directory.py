@@ -184,7 +184,12 @@ def _run_auth(headers: list[tuple[bytes, bytes]], ip="5.5.5.5"):
         return {"type": "http.request", "body": b""}
 
     scope = {"type": "http", "headers": headers, "client": (ip, 1)}
-    asyncio.run(mcp._BearerAuth(inner)(scope, receive, send))
+    # Eigen thread: de sync-API van Playwright (e2e-tests, eerder in de run) laat een
+    # draaiende event loop achter in de hoofdthread, en dan weigert asyncio.run().
+    from concurrent.futures import ThreadPoolExecutor
+
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        pool.submit(asyncio.run, mcp._BearerAuth(inner)(scope, receive, send)).result()
     return sent[0]["status"], seen
 
 
