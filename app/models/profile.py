@@ -104,7 +104,9 @@ class Profile(Base, TimestampMixin):
 
     member: Mapped[Member] = relationship(back_populates="profile")
     offerings: Mapped[list[Offering]] = relationship(
-        back_populates="profile", cascade="all, delete-orphan"
+        back_populates="profile",
+        cascade="all, delete-orphan",
+        order_by="(Offering.position, Offering.id)",
     )
     needs: Mapped[list[Need]] = relationship(
         back_populates="profile", cascade="all, delete-orphan"

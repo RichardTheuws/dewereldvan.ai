@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.118.1] - 2026-11-03
+### Fixed — Projecten op een profiel volgen weer de gekozen volgorde
+- De relatie `Profile.offerings` had geen `order_by`, waardoor profielpagina en editor de projecten
+  toonden in de willekeurige rijvolgorde van Postgres (na een update schuift een rij achteraan) en
+  `position` negeerden. Nu gesorteerd op `(position, id)`, net als `ProfileLink`.
+- Test: `tests/test_offering_order.py` (rood zonder de fix, groen erna).
+
 ## [0.118.0] - 2026-10-16
 ### Changed — De voordeur helpt eerst, en werft pas daarna (PRD voordeur §3.2)
 Na de intro landde een bezoeker op een aanmeldpagina ("Geef een link. De agent bouwt je profiel.");
