@@ -101,6 +101,35 @@ def issue_link(
     return IssuedLink(raw_token=raw, token=token)
 
 
+def peek_link(
+    db: Session,
+    raw_token: str,
+    *,
+    now: datetime | None = None,
+) -> VerifyResult:
+    """Controleer een token ZONDER het te verbruiken (voor de bevestigingspagina).
+
+    Mail-scanners (Microsoft Safe Links e.d.) openen elke link in een mail. Een GET
+    mag het token daarom nooit verbruiken; dat doet pas de knop (POST → verify_link).
+    """
+    now = now or utcnow()
+    if not raw_token:
+        return VerifyResult(VerifyStatus.invalid)
+    token = db.scalar(
+        select(MagicLinkToken).where(MagicLinkToken.token_hash == hash_token(raw_token))
+    )
+    if token is None:
+        return VerifyResult(VerifyStatus.invalid)
+    if token.used_at is not None:
+        return VerifyResult(VerifyStatus.used)
+    if naive_utc(token.expires_at) <= naive_utc(now):
+        return VerifyResult(VerifyStatus.expired)
+    member = db.get(Member, token.member_id)
+    if member is None:
+        return VerifyResult(VerifyStatus.invalid)
+    return VerifyResult(VerifyStatus.ok, member=member)
+
+
 def verify_link(
     db: Session,
     raw_token: str,

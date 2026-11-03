@@ -81,6 +81,7 @@ def _seed_public(SessionTest, n: int) -> None:
                     slug=f"maker-{i}",
                     display_name=f"Maker {i}",
                     visibility=Visibility.public,
+                    headline="Bouwt met AI",
                 )
             )
         s.commit()

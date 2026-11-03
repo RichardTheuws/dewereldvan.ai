@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="nl">
+{# Inlog-bevestiging — de magic-link opent hier; de maker klikt zelf op "Inloggen".
+   Een GET verbruikt het token niet (mail-scanners openen elke link); pas de POST
+   van de knop logt in. Standalone cosmic-document, noindex. #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set noindex = true %}
+  {% set seo_title = "Inloggen · dewereldvan.ai" %}
+  {% include "_seo_head.html" %}
+  {% include "_favicon.html" %}
+  <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Spline+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
+  <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
+</head>
+<body class="cosmic">
+  {% include "profiles/_cosmic_bg.html" %}
+  {% include "_preview_banner.html" %}
+
+  <div class="wrap wrap--narrow">
+    <header class="c-head" data-reveal style="--d:60ms">
+      <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
+    </header>
+
+    <main class="flex-1 pb-24 flex items-center justify-center" style="min-height:50vh">
+      <section class="text-center" style="max-width:48ch">
+        <div class="eyebrow" data-reveal style="--d:160ms;justify-content:center">Inloggen</div>
+        <h1 class="headline mt-5" data-reveal style="--d:260ms">Welkom, {{ name }}</h1>
+        <p class="lede mt-5" data-reveal style="--d:380ms">
+          Eén klik en je bent binnen.
+        </p>
+        <form class="mt-8" method="post" action="/auth/verify" data-reveal style="--d:480ms">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="token" value="{{ token }}">
+          <button class="btn" type="submit" autofocus>Inloggen</button>
+        </form>
+        <p class="muted mt-6" data-reveal style="--d:560ms;font-size:.85rem">
+          Ben jij {{ name }} niet? Sluit dan deze pagina.
+        </p>
+      </section>
+    </main>
+
+    <footer class="c-head" style="border-top:1px solid var(--line);--d:560ms" data-reveal>
+      <span class="muted">© 2026 dewereldvan.ai</span>
+      <a class="link" href="/">terug naar de wereld</a>
+    </footer>
+  </div>
+
+  {% include "_concierge.html" %}
+  {% include "ai/_cosmic_canvas.html" %}
+</body>
+</html>

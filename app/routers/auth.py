@@ -269,10 +269,45 @@ def login_submit(
 # --------------------------------------------------------------------------- #
 
 
+_VERIFY_REASONS = {
+    magic_link_service.VerifyStatus.expired: "Deze inloglink is verlopen.",
+    magic_link_service.VerifyStatus.used: "Deze inloglink is al gebruikt.",
+    magic_link_service.VerifyStatus.invalid: "Deze inloglink is ongeldig.",
+}
+
+
 @router.get("/auth/verify", response_class=HTMLResponse)
-def verify(
+def verify_confirm(
     request: Request,
     token: str = "",
+    db: Session = Depends(get_db),
+):
+    """Bevestigingspagina: de link opent, de maker klikt zelf op "Inloggen".
+
+    Mail-scanners (Microsoft Safe Links, Defender) openen elke link in een mail en
+    verbruikten zo het eenmalige token vóór de maker zelf klikte ("al gebruikt").
+    Een GET verbruikt daarom niets; pas de POST van de knop logt in.
+    """
+    result = magic_link_service.peek_link(db, token)
+    if not result.ok:
+        return _render(
+            request,
+            "auth/login_error.html",
+            {"reason": _VERIFY_REASONS.get(result.status, "Deze inloglink is ongeldig.")},
+            status_code=400,
+        )
+    assert result.member is not None
+    return _render(
+        request,
+        "auth/verify_confirm.html",
+        {"token": token, "name": result.member.name},
+    )
+
+
+@router.post("/auth/verify", response_class=HTMLResponse)
+def verify(
+    request: Request,
+    token: str = Form(""),
     db: Session = Depends(get_db),
 ):
     result = magic_link_service.verify_link(db, token)

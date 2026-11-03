@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.118.4] - 2026-11-03
+### Fixed — Inloggen werkt ook met Outlook/Microsoft 365, en de gids toont geen lege profielen
+- **Mail-scanners verbruikten de inloglink.** Microsoft Safe Links opent elke link in een mail vóór de
+  ontvanger. Omdat `GET /auth/verify` het eenmalige token direct verbruikte, kreeg een nieuw lid met
+  een bedrijfsmail "Deze inloglink is al gebruikt" (gezien in de logs: scanner 303, mens 400). Nu
+  opent de link een bevestigingspagina ("Welkom, {naam} — Inloggen"); pas die knop (`POST`) logt in.
+  Nieuwe `magic_link.peek_link` controleert zonder te verbruiken. Test:
+  `test_magic_link_survives_mail_scanner`.
+- **Lege profielen uit de gids.** Een openbaar profiel zonder kopregel, bio, "wat ik maak" of
+  werk-item staat niet meer in de gids, `makers.json`, de sitemap of de homepage-teller voor
+  bezoekers. Leden zien elkaar gewoon; het profiel verschijnt vanzelf zodra er iets in staat.
+  Test: `test_empty_public_profile_hidden_from_visitors_not_members`. Seed-profielen in zeven
+  bestaande tests kregen een kopregel.
+
 ## [0.118.3] - 2026-11-03
 ### Fixed — Aanmelden tijdens de open uitnodiging
 - **Spamfilter hield bedrijven tegen.** De eerste aanmelding na de aankondiging (een AI-bedrijf, naam

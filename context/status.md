@@ -5,8 +5,10 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-03 · **Versie**: 0.118.3 · **Branch**: `main`
+**Laatste update**: 2026-11-03 · **Versie**: 0.118.4 · **Branch**: `main`
 
+> **0.118.4** — Inloglink overleeft mail-scanners (bevestigingsknop); gids toont geen lege profielen.
+>
 > **0.118.3** — Open uitnodiging in de groep (2026-11-03): spamfilter laat bedrijven nu door; intro-knop niet meer over de welkom-band; mobiele nav past.
 >
 > **0.118.2** — Testsuite volledig groen (MCP-tests los van Playwright-loop; homepage-e2e test nu het zoeken).

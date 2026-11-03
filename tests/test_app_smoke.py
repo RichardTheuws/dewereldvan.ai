@@ -138,6 +138,10 @@ def test_admin_bootstrap_via_real_registration_flow(client, fake_email, engine):
 
         # 3. Verify the link -> session established, redirect to profile edit.
         resp = client.get(f"/auth/verify?token={token}", follow_redirects=False)
+        assert resp.status_code == 200  # bevestigingspagina, token nog niet verbruikt
+        resp = client.post(
+            "/auth/verify", data={"token": token, "csrf_token": csrf}, follow_redirects=False
+        )
         assert resp.status_code == 303
 
         # 4. The bootstrapped admin reaches the approval queue (not 303/403).
@@ -156,4 +160,48 @@ def test_admin_bootstrap_via_real_registration_flow(client, fake_email, engine):
                     delete(AuditLog).where(AuditLog.target_member_id == member.id)
                 )
                 s.delete(member)
+            s.commit()
+
+
+def test_magic_link_survives_mail_scanner(client, engine):
+    """Mail-scanners (Microsoft Safe Links) openen elke link. Een GET mag het token
+    niet verbruiken: pas de knop (POST) logt in (incident 2026-11-03)."""
+    import re
+
+    from app.models import MagicLinkToken, Member, MemberStatus
+    from app.services.magic_link import issue_link
+    from sqlalchemy import delete
+    from sqlalchemy.orm import Session
+
+    with Session(engine) as s:
+        member = Member(email="scanner@example.com", name="Sanne", status=MemberStatus.approved)
+        s.add(member)
+        s.flush()
+        raw = issue_link(s, member).raw_token
+        member_id = member.id
+        s.commit()
+    try:
+        # De scanner opent de link (meermaals): bevestigingspagina, niets verbruikt.
+        for _ in range(2):
+            resp = client.get(f"/auth/verify?token={raw}", follow_redirects=False)
+            assert resp.status_code == 200
+            assert "Welkom, Sanne" in resp.text and 'action="/auth/verify"' in resp.text
+        with Session(engine) as s:
+            assert s.query(MagicLinkToken).filter_by(member_id=member_id).one().used_at is None
+
+        # De maker klikt zelf op "Inloggen" → ingelogd.
+        csrf = re.search(r'name="csrf_token" value="([^"]+)"', resp.text).group(1)
+        resp = client.post(
+            "/auth/verify", data={"token": raw, "csrf_token": csrf}, follow_redirects=False
+        )
+        assert resp.status_code == 303
+
+        # Daarna is de link op: zowel openen als nogmaals klikken geeft de nette fout.
+        assert client.get(f"/auth/verify?token={raw}").status_code == 400
+        resp = client.post("/auth/verify", data={"token": raw, "csrf_token": csrf})
+        assert resp.status_code == 400 and "al gebruikt" in resp.text
+    finally:
+        with Session(engine) as s:
+            s.execute(delete(MagicLinkToken).where(MagicLinkToken.member_id == member_id))
+            s.execute(delete(Member).where(Member.id == member_id))
             s.commit()

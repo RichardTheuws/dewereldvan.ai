@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from sqlalchemy import String, cast, or_, select
+from sqlalchemy import String, cast, func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models import (
@@ -184,6 +184,22 @@ def _public_base():
     )
 
 
+def has_content_clause():
+    """AND-clause: het profiel heeft iets om te tonen (kopregel, bio, "wat ik maak"
+    of een werk-item). Een leeg profiel op openbaar maakt de gids rommelig voor een
+    opdrachtgever; het verschijnt vanzelf zodra er iets in staat (2026-11-03).
+    Alleen voor bezoekers (``for_visitor``) en de sitemap; leden zien elkaar gewoon."""
+    def _filled(col):
+        return func.length(func.trim(func.coalesce(col, ""))) > 0
+
+    return or_(
+        _filled(Profile.headline),
+        _filled(Profile.bio),
+        _filled(Profile.makes_summary),
+        select(Offering.id).where(Offering.profile_id == Profile.id).exists(),
+    )
+
+
 def _section_public_clause(section: str):
     """AND-clause: het blok ``section`` is voor een bezoeker zichtbaar op dit profiel —
     legacy (``public_sections IS NULL`` = volledig publiek) óf het blok staat in de
@@ -219,6 +235,9 @@ def list_public_profiles(
     Voor leden (default ``False``) telt alles: leden zien elk publiek profiel volledig.
     """
     stmt = _public_base()
+    if for_visitor:
+        # Een bezoeker (en een AI-assistent via de gids) ziet geen lege profielen.
+        stmt = stmt.where(has_content_clause())
 
     tag_q = (tag or "").strip()
     if tag_q:

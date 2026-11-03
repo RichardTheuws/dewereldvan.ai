@@ -217,6 +217,7 @@ def test_sitemap_route_serves_xml_with_public_only(client, page_engine):
                     slug="pub-lid",
                     display_name="Pub",
                     visibility=Visibility.public,
+                    headline="Bouwt met AI",
                 ),
                 Profile(
                     member_id=closed.id,

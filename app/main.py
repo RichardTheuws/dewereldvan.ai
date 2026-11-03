@@ -349,7 +349,7 @@ def _register_core_routes(app: FastAPI) -> None:
         # De voordeur toont één echt signaal (aantal publieke makers) + een
         # constellatie-preview. Eén poort-call (zelfde eager-load als /leden),
         # daarna in-memory tellen + slicen — geen tweede query.
-        public_profiles = members_service.list_public_profiles(db)
+        public_profiles = members_service.list_public_profiles(db, for_visitor=True)
         # De hero-constellatie toont tot 8 ECHTE makers; de lijnen tonen echte
         # gedeelde grond (tag/tool). Eén poort-call, daarna in-memory — geen N+1.
         preview_stars = public_profiles[:8]

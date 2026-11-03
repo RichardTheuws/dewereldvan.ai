@@ -223,6 +223,12 @@ def jsonld_project(offering: Offering) -> dict:
 # --- Sitemap ---------------------------------------------------------------
 
 
+def _has_content():
+    from app.services import members_service
+
+    return members_service.has_content_clause()
+
+
 def sitemap_entries(db: Session) -> list[SitemapEntry]:
     """Alle PUBLIEKE personen + hun publieke projecten, voor ``/sitemap.xml``.
 
@@ -236,6 +242,7 @@ def sitemap_entries(db: Session) -> list[SitemapEntry]:
         .where(
             Profile.visibility == Visibility.public,
             Member.status == MemberStatus.approved,
+            _has_content(),
         )
         .order_by(Profile.display_name.asc(), Profile.id.asc())
         .options(

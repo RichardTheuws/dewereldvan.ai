@@ -293,6 +293,7 @@ def _seed(page_engine):
                     slug="zichtbaar-lid",
                     display_name="Zichtbaar Lid",
                     visibility=Visibility.public,
+                    headline="Bouwt met AI",
                 ),
                 Profile(
                     member_id=closed.id,
@@ -344,6 +345,7 @@ def _seed_connected(page_engine):
             p = Profile(
                 member_id=m.id, slug=slug, display_name=nm,
                 visibility=Visibility.public,
+                headline="Bouwt met AI",
             )
             p.tags.append(tag)
             p.tools.append(tool)
@@ -377,3 +379,32 @@ def test_leden_filter_autocomplete_from_vocabulary(client, page_engine):
     assert 'list="vocab-tools"' in resp.text
     assert "Agents" in resp.text
     assert "Cursor" in resp.text
+
+
+def test_empty_public_profile_hidden_from_visitors_not_members(page_engine):
+    """Een leeg profiel op openbaar (geen kopregel, bio, "wat ik maak" of werk) staat
+    niet in de gids voor bezoekers en AI-assistenten; leden zien het wel. Zodra er
+    iets in staat, verschijnt het vanzelf (2026-11-03)."""
+    from app.services import directory_service, members_service, seo_service
+    from sqlalchemy.orm import Session
+
+    with Session(page_engine) as s:
+        m = Member(email="leeg@example.com", name="Leeg", status=MemberStatus.approved)
+        s.add(m)
+        s.flush()
+        p = Profile(member_id=m.id, slug="leeg-lid", display_name="Leeg",
+                    visibility=Visibility.public, headline="   ")
+        s.add(p)
+        s.commit()
+
+        visitor = [x.slug for x in members_service.list_public_profiles(s, for_visitor=True)]
+        member_view = [x.slug for x in members_service.list_public_profiles(s)]
+        assert "leeg-lid" not in visitor
+        assert "leeg-lid" not in [x.slug for x in directory_service.public_makers(s)]
+        assert not any("leeg-lid" in e.loc for e in seo_service.sitemap_entries(s))
+        assert "leeg-lid" in member_view
+
+        p.bio = "Ik bouw voice-agents."
+        s.commit()
+        visitor = [x.slug for x in members_service.list_public_profiles(s, for_visitor=True)]
+        assert "leeg-lid" in visitor
