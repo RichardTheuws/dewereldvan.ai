@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     # op M4 als je een gemonitord support-adres hebt.
     contact_email: str = ""
     magic_link_ttl_min: int = 15
+    # De welkomstmail bevat zelf een inloglink (geen omweg via /login). Die mail wordt
+    # vaak pas later gelezen, dus langer geldig; nog steeds eenmalig en scanner-proof
+    # (bevestigknop). Verlopen → de foutpagina biedt "nieuwe inloglink aanvragen".
+    welcome_link_ttl_hours: int = 72
     pending_expiry_days: int = 14
     admin_emails: str = ""  # comma-separated; bootstrap admin role on approval/login
     session_max_age_sec: int = 60 * 60 * 24 * 14  # 14d signed cookie

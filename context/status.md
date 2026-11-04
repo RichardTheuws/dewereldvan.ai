@@ -5,8 +5,10 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-04 · **Versie**: 0.120.0 · **Branch**: `main`
+**Laatste update**: 2026-11-04 · **Versie**: 0.120.1 · **Branch**: `main`
 
+> **0.120.1** — Welkomstmail bevat zelf een inloglink (72 uur, eenmalig); geen omweg via /login.
+>
 > **0.120.0** — **Design zonder AI-tells** (STYLEGUIDE §8): geen eyebrows, ✦/emoji, mono-labels, gloed of
 > eigen gedachtestreepjes meer; één lijn-iconenset; één entree-moment per pagina.
 >

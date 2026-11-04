@@ -72,8 +72,10 @@ def test_approve_sends_login_email(db, make_member, monkeypatch):
     assert msg.to == "welkom@example.com"
     # Pure verwelkoming (pivot Fase A) — geen "beoordeeld/goedgekeurd"-framing.
     assert "welkom" in msg.subject.lower() or "erbij" in msg.subject.lower()
+    # Directe inloglink in de mail (geen omweg via /login), plus de terugvalroute.
+    assert "/auth/verify?token=" in msg.text_body
+    assert msg.html_body and "/auth/verify?token=" in msg.html_body
     assert "/login" in msg.text_body
-    assert msg.html_body and "/login" in msg.html_body
 
 
 def test_approve_survives_email_failure(db, make_member, monkeypatch):
@@ -127,3 +129,50 @@ def test_magic_link_gating_pending_member_cannot_pass_approved_check(db, make_me
     assert member.status is not MemberStatus.approved
     approve_member(db, member, now=NOW)
     assert member.status is MemberStatus.approved
+
+
+def _token_from(text: str) -> str:
+    import re
+
+    return re.search(r"/auth/verify\?token=([\w-]+)", text).group(1)
+
+
+def test_welcome_link_is_long_lived_and_single_use(db, make_member, monkeypatch):
+    from datetime import timedelta
+
+    from app.models import MagicLinkToken
+    from app.security import hash_token
+    from app.services import magic_link
+
+    fake = FakeEmailSender()
+    monkeypatch.setattr(approval_service, "get_email_sender", lambda: fake)
+    member = make_member(email="lang@example.com", status=MemberStatus.pending)
+    approve_member(db, member, now=NOW)
+    raw = _token_from(fake.sent[0].text_body)
+
+    row = db.query(MagicLinkToken).filter_by(token_hash=hash_token(raw)).one()
+    life = row.expires_at - row.created_at
+    assert timedelta(hours=71) < life <= timedelta(hours=73)  # niet de 15 min van /login
+
+    # Na twee dagen nog geldig, eenmalig te gebruiken.
+    later = row.created_at + timedelta(days=2)
+    assert magic_link.verify_link(db, raw, now=later).ok
+    assert not magic_link.verify_link(db, raw, now=later).ok
+
+
+def test_welcome_link_falls_back_to_login_when_rate_limited(db, make_member, monkeypatch):
+    from app.services import magic_link
+
+    fake = FakeEmailSender()
+    monkeypatch.setattr(approval_service, "get_email_sender", lambda: fake)
+
+    def _limited(*a, **k):
+        raise magic_link.RateLimitExceeded()
+
+    monkeypatch.setattr(magic_link, "issue_link", _limited)
+    member = make_member(email="limiet@example.com", status=MemberStatus.pending)
+    approve_member(db, member, now=NOW)
+
+    body = fake.sent[0].text_body
+    assert "/auth/verify" not in body
+    assert "Inloggen: " in body and "/login" in body

@@ -12,7 +12,7 @@ member). Illegal transitions raise ``IllegalTransition`` and write nothing.
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
@@ -36,7 +36,20 @@ class IllegalTransition(RuntimeError):
     """Raised when a status transition is not allowed from the current state."""
 
 
-def _send_approval_email(member: Member) -> None:
+def _welcome_login_url(db: Session, member: Member) -> str | None:
+    """Een eenmalige inloglink voor in de welkomstmail (None als dat nu niet kan)."""
+    from app.services import magic_link
+
+    try:
+        issued = magic_link.issue_link(
+            db, member, ttl=timedelta(hours=settings.welcome_link_ttl_hours)
+        )
+    except magic_link.RateLimitExceeded:
+        return None
+    return f"{settings.base_url.rstrip('/')}/auth/verify?token={issued.raw_token}"
+
+
+def _send_approval_email(db: Session, member: Member) -> None:
     """Stuur de welkomst-/login-mail naar een zojuist goedgekeurd lid.
 
     Best-effort en fail-safe: een hapering in de mail-laag mag de goedkeuring
@@ -45,6 +58,10 @@ def _send_approval_email(member: Member) -> None:
     via ``/login`` een verse magic-link aanvragen.
     """
     login_url = f"{settings.base_url.rstrip('/')}/login"
+    # Direct inloggen vanuit de mail: de knop opent de bevestigpagina en logt in.
+    # Lukt het uitgeven niet, dan valt de knop terug op /login (nooit een kapotte mail).
+    direct_url = _welcome_login_url(db, member) or login_url
+    days = max(1, settings.welcome_link_ttl_hours // 24)
     try:
         get_email_sender().send(
             EmailMessage(
@@ -54,9 +71,13 @@ def _send_approval_email(member: Member) -> None:
                     f"Hoi {member.name},\n\n"
                     "Je bent erbij, een netwerk van AI-makers uit alle disciplines. "
                     "Log in en bouw je plek in de wereld op.\n\n"
-                    f"Inloggen: {login_url}\n"
+                    f"Inloggen: {direct_url}\n\n"
+                    f"Deze link werkt {days} dagen en één keer. Daarna vraag je een "
+                    f"nieuwe aan op {login_url}\n"
                 ),
-                html_body=email_templates.render_approval(member.name, login_url),
+                html_body=email_templates.render_approval(
+                    member.name, direct_url, request_url=login_url, days=days
+                ),
             )
         )
     except EmailSendError:
@@ -109,7 +130,7 @@ def approve_member(
         detail="pending->approved",
     )
     db.flush()
-    _send_approval_email(member)
+    _send_approval_email(db, member)
     return member
 
 

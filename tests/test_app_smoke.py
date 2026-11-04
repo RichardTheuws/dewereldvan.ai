@@ -205,3 +205,41 @@ def test_magic_link_survives_mail_scanner(client, engine):
             s.execute(delete(MagicLinkToken).where(MagicLinkToken.member_id == member_id))
             s.execute(delete(Member).where(Member.id == member_id))
             s.commit()
+
+
+def test_welcome_mail_link_logs_in_straight_to_welcome(client, engine, monkeypatch):
+    """De welkomstmail logt direct in (geen omweg via /login) en landt op /welkom."""
+    import re
+
+    from app.models import AuditLog, MagicLinkToken, Member, MemberStatus
+    from app.services import approval as approval_service
+    from sqlalchemy import delete
+    from sqlalchemy.orm import Session
+
+    from tests.conftest import FakeEmailSender
+
+    fake = FakeEmailSender()
+    monkeypatch.setattr(approval_service, "get_email_sender", lambda: fake)
+    with Session(engine) as s:
+        member = Member(email="direct@example.com", name="Leo", status=MemberStatus.pending)
+        s.add(member)
+        s.flush()
+        approval_service.approve_member(s, member)
+        member_id = member.id
+        s.commit()
+    try:
+        raw = re.search(r"/auth/verify\?token=([\w-]+)", fake.sent[0].text_body).group(1)
+        resp = client.get(f"/auth/verify?token={raw}")
+        assert resp.status_code == 200 and "Welkom, Leo" in resp.text
+        csrf = re.search(r'name="csrf_token" value="([^"]+)"', resp.text).group(1)
+        resp = client.post(
+            "/auth/verify", data={"token": raw, "csrf_token": csrf}, follow_redirects=False
+        )
+        assert resp.status_code == 303
+        assert resp.headers["location"].endswith("/welkom")
+    finally:
+        with Session(engine) as s:
+            s.execute(delete(MagicLinkToken).where(MagicLinkToken.member_id == member_id))
+            s.execute(delete(AuditLog).where(AuditLog.target_member_id == member_id))
+            s.execute(delete(Member).where(Member.id == member_id))
+            s.commit()

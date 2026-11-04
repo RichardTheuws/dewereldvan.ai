@@ -183,7 +183,9 @@ def render_invite(name: str, invite_url: str) -> str:
     return _render("invite.html", fallback, name=name, invite_url=invite_url)
 
 
-def render_approval(name: str, login_url: str) -> str:
+def render_approval(
+    name: str, login_url: str, *, request_url: str | None = None, days: int | None = None
+) -> str:
     """HTML-body voor de goedkeurings-mail (lid is zojuist goedgekeurd)."""
     fallback = _inline_shell(
         heading=f"Welkom, {escape(name)}!",
@@ -198,6 +200,8 @@ def render_approval(name: str, login_url: str) -> str:
         fallback,
         name=name,
         login_url=login_url,
+        request_url=request_url,
+        days=days,
     )
 
 

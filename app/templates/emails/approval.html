@@ -1,7 +1,7 @@
 {# Goedkeurings-mail (E4a) — lid is zojuist goedgekeurd. login_url veilig. #}
 {% extends "_base.html" %}
 {% block subject %}Je bent erbij · dewereldvan.ai{% endblock %}
-{% block preheader %}Je aanmelding is goedgekeurd. Log in en bouw je ster.{% endblock %}
+{% block preheader %}Eén klik en je bent binnen. Je profiel staat binnen een minuut klaar.{% endblock %}
 {% block heading %}Welkom, {{ name }}.{% endblock %}
 {% block body %}
   <p style="margin:0 0 14px 0;">
@@ -9,7 +9,8 @@
     trainers, audio- en video-makers, onderzoekers en beleidsmakers.
   </p>
   <p style="margin:0;">
-    Log in en bouw je plek: laat zien wie je bent, wat je maakt en waar je naar zoekt.
+    Klik op de knop en je bent binnen. Ik zoek je site en LinkedIn op en zet binnen een minuut
+    een eerste versie van je profiel klaar. Jij bepaalt of het openbaar gaat.
   </p>
 {% endblock %}
 {% block cta %}
@@ -17,9 +18,15 @@
     <tr>
       <td bgcolor="#f6cd86" style="border-radius:999px;">
         <a href="{{ login_url }}"
-           style="display:inline-block; padding:14px 30px; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:14px; font-weight:600; letter-spacing:0.03em; color:#1a1330; text-decoration:none; border-radius:999px;">
+           style="display:inline-block; padding:14px 30px; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; font-size:15px; font-weight:600; letter-spacing:0; color:#1a1330; text-decoration:none; border-radius:999px;">
           Inloggen         </a>
       </td>
     </tr>
   </table>
+  {% if request_url %}
+  <p style="margin:10px 0 0 0; font-size:13px; color:#7b7ea6;">
+    De knop werkt {{ days or 3 }} dagen en één keer. Daarna vraag je een nieuwe link aan op
+    <a href="{{ request_url }}" style="color:#7b7ea6;">dewereldvan.ai/login</a>.
+  </p>
+  {% endif %}
 {% endblock %}

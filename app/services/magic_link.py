@@ -79,10 +79,12 @@ def issue_link(
     *,
     requested_ip: str | None = None,
     now: datetime | None = None,
+    ttl: timedelta | None = None,
 ) -> IssuedLink:
     """Create a fresh magic-link token for ``member`` and return the raw token.
 
     Raises ``RateLimitExceeded`` if the member exceeded the per-hour budget.
+    ``ttl`` overrides the default lifetime (the welcome mail uses a longer one).
     """
     now = now or utcnow()
     if _recent_count(db, member.id, now) >= settings.rate_limit_magic_per_hour:
@@ -93,7 +95,7 @@ def issue_link(
         member_id=member.id,
         token_hash=hash_token(raw),
         # Store naive-UTC to match the tz-naive column (round-trip stable).
-        expires_at=naive_utc(magic_link_expiry(now)),
+        expires_at=naive_utc(now + ttl if ttl else magic_link_expiry(now)),
         requested_ip=requested_ip,
     )
     db.add(token)

@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.120.1] - 2026-11-04
+### Fixed — Welkomstmail logt direct in
+- De welkomstmail stuurde naar `/login`, waar je je adres opnieuw moest invullen en op een tweede mail
+  moest wachten. Van de 8 nieuwe leden van 3 november haakte er één precies daar af (geen inlogpoging).
+  De mail bevat nu zelf een eenmalige inloglink, **72 uur geldig** (`WELCOME_LINK_TTL_HOURS`), via de
+  bestaande scanner-proof bevestigpagina. Eerste klik → `/welkom` → "Zoek mij op".
+- Lukt het uitgeven niet (rate limit), dan valt de knop terug op `/login`. Verlopen link → de
+  foutpagina biedt "nieuwe inloglink aanvragen".
+- Mailtekst noemt de snelle profielbouw; knop in Helvetica (geen mono meer in de mail).
+
 ## [0.120.0] - 2026-11-04
 ### Changed — Design zonder AI-tells (STYLEGUIDE §8)
 Feedback uit de groep: de site was herkenbaar "Claude Code-design" (iconen, lettertypen, streepjes).
