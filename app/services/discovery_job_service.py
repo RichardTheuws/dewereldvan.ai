@@ -30,7 +30,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.db import SessionLocal
 from app.models import DiscoveryRun, Member
 from app.security import naive_utc, utcnow
-from app.services import footprint_service, profile_service
+from app.services import footprint_service, profile_concept_service, profile_service
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,7 @@ __all__ = [
     "STATUS_FAILED",
     "start",
     "run_job",
+    "run_chain",
     "get_run",
     "snapshot",
     "mark_seen",
@@ -162,13 +163,52 @@ def start(
         _inflight.add(member_id)
 
     threading.Thread(
-        target=run_job,
+        target=_thread_main,
         args=(member_id,),
-        kwargs={"focus": focus, "append": append},
+        # Een verse brede zoektocht begint met de snelle presence-ronde (PRD-profiel-
+        # vanzelf §3.1); de media-verdieping (append) is één losse pass.
+        kwargs={"focus": focus, "append": append, "chain": focus == "broad" and not append},
         name=f"discover-{member_id}-{focus}",
         daemon=True,
     ).start()
     return run
+
+
+def _thread_main(member_id: int, *, focus: str, append: bool, chain: bool) -> None:
+    """Thread-target: draai de pass(es) en geef de dubbel-werk-guard pas aan het eind vrij."""
+    try:
+        if chain:
+            run_chain(member_id)
+        else:
+            run_job(member_id, focus=focus, append=append)
+    finally:
+        with _inflight_lock:
+            _inflight.discard(member_id)
+
+
+def run_chain(
+    member_id: int, *, session_factory: sessionmaker = SessionLocal, client=None
+) -> None:
+    """Snelle presence-ronde (status blijft ``running``) → daarna de brede ronde.
+
+    Na de eerste ronde staat er al een concept + de zekere koppelingen op het profiel;
+    de brede ronde vult aan (append, gededupeerd op URL) en rondt de run af."""
+    run_job(
+        member_id, session_factory=session_factory, client=client,
+        focus="presence", append=False, final=False,
+    )
+    try:
+        with session_factory() as db:
+            run = get_run(db, member_id)
+            if run is None or run.status != STATUS_RUNNING:
+                return  # presence-ronde faalde (failed) of de run is weg
+    except Exception:  # noqa: BLE001 — achtergrond-thread mag nooit crashen
+        logger.exception("Discovery-keten: kon run niet lezen (%s)", member_id)
+        return
+    run_job(
+        member_id, session_factory=session_factory, client=client,
+        focus="broad", append=True,
+    )
 
 
 def _merge_dedup(existing: list[dict], fresh: list[dict]) -> list[dict]:
@@ -192,8 +232,14 @@ def run_job(
     client=None,
     focus: str = "broad",
     append: bool = False,
+    final: bool = True,
 ) -> None:
     """Draai de ontdekking in een EIGEN sessie en persisteer de bevindingen.
+
+    ``focus="presence"`` = de snelle eerste ronde: vult daarnaast het concept-profiel
+    in de lege velden (``profile_concept_service.apply_concept``). Elke vondst met
+    confidence ≥ 90 wordt meteen op de server gekoppeld, ook als niemand kijkt.
+    ``final=False`` laat de run op ``running`` staan (er volgt nog een pass).
 
     ``focus`` = "broad"/"media"; ``append`` voegt de nieuwe findings toe aan de
     bestaande (gededupeerd op URL — de verdieping vult aan i.p.v. te overschrijven).
@@ -219,15 +265,32 @@ def run_job(
                 if event != "candidate":
                     return
                 try:
-                    collected.append(json.loads(data))
+                    finding = json.loads(data)
                 except (ValueError, TypeError):
                     return
+                collected.append(finding)
+                # Koppel zekere vondsten in DEZELFDE commit als de vondst zelf, zodat de
+                # auto-POST van de kaart in de browser het bestaande item terugvindt.
+                result = profile_concept_service.auto_crystallize(
+                    db, profile, member, finding
+                )
                 run.findings_json = json.dumps(_merge_dedup(base, collected))
                 db.commit()
+                if result is not None and result.kind == "offering":
+                    from app.services import project_enrich_service
 
-            fresh = footprint_service.discover(
-                profile, _on_event, client=client, focus=focus
-            )
+                    project_enrich_service.trigger_async(result.id)
+
+            if focus == "presence":
+                fresh, concept = footprint_service.discover_presence(
+                    profile, _on_event, client=client
+                )
+                profile_concept_service.apply_concept(db, profile, concept)
+                db.commit()
+            else:
+                fresh = footprint_service.discover(
+                    profile, _on_event, client=client, focus=focus
+                )
             fresh_dicts = [f.as_event() for f in fresh]
             merged = _merge_dedup(base, fresh_dicts)
 
@@ -236,11 +299,14 @@ def run_job(
             if run is None:
                 return
             run.findings_json = json.dumps(merged)
-            run.status = STATUS_DONE if merged else STATUS_EMPTY
-            run.finished_at = naive_utc(utcnow())
             # Onthoud dat deze pass gedraaid heeft (ook bij 0 resultaten — "we hebben
             # gekeken") zodat de UI 'm niet opnieuw als verse stap aanbiedt.
             run.passes = json.dumps(sorted(passes_of(run) | {focus}))
+            if not final:
+                db.commit()  # er volgt nog een pass: status blijft running
+                return
+            run.status = STATUS_DONE if merged else STATUS_EMPTY
+            run.finished_at = naive_utc(utcnow())
             db.commit()
 
             # Push-seintje naar het lid-gekozen kanaal (no-op bij in-app: de
@@ -272,9 +338,6 @@ def run_job(
     except Exception:  # noqa: BLE001 — achtergrond-job mag nooit crashen
         logger.exception("Discovery-job faalde voor member %s", member_id)
         _mark_failed(member_id, session_factory)
-    finally:
-        with _inflight_lock:
-            _inflight.discard(member_id)
 
 
 # --------------------------------------------------------------------------- #

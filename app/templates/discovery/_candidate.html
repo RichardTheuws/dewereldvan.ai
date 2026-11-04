@@ -19,7 +19,7 @@
 {% set is_presence = finding.type in ("presence", "social") %}
 <div class="surface-card ontdek-card field--materializing{% if auto %} ontdek-card--auto{% endif %}"
      {% if auto %}hx-post="/profiel/ai/ontdek/crystalliseer"
-     hx-trigger="load delay:700ms" hx-target="closest .surface-card" hx-swap="outerHTML"{% endif %}>
+     hx-trigger="load delay:700ms" hx-include="this" hx-target="closest .surface-card" hx-swap="outerHTML"{% endif %}>
   {% if auto %}
   <input type="hidden" name="title" value="{{ finding.title }}">
   <input type="hidden" name="url" value="{{ finding.url | safe_url }}">

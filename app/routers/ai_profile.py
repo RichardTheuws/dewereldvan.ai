@@ -142,9 +142,50 @@ def _form_ctx(request: Request, profile: Profile, **extra) -> dict:
 # --------------------------------------------------------------------------- #
 
 
+def _ready(profile: Profile) -> bool:
+    """De publiceerkaart bovenaan: er staat inhoud en het profiel is nog niet openbaar."""
+    from app.models import Visibility
+    from app.services import profile_concept_service
+
+    return profile.visibility != Visibility.public and profile_concept_service.has_content(
+        profile
+    )
+
+
+@router.get("/profiel/ai/vorm", response_class=HTMLResponse)
+def live_form(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """De verse profielvorm (na de snelle ontdekkingsronde opnieuw geladen)."""
+    profile = profile_service.get_or_create_profile(db, member)
+    db.commit()
+    return _render(
+        request,
+        "ai/_live_form.html",
+        _form_ctx(request, profile, uncertain=bool(profile.ai_enriched)),
+    )
+
+
+@router.get("/profiel/ai/klaar", response_class=HTMLResponse)
+def ready_card(
+    request: Request,
+    member: Member = Depends(require_member),
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """De "je profiel staat klaar"-kaart (leeg anker als er nog niets te publiceren is)."""
+    profile = profile_service.get_or_create_profile(db, member)
+    db.commit()
+    return _render(
+        request, "ai/_ready_card.html", {"profile": profile, "ready": _ready(profile)}
+    )
+
+
 @router.get("/profiel/ai/bouwen", response_class=HTMLResponse)
 def build_page(
     request: Request,
+    zoek: str = "",
     member: Member = Depends(require_member),
     db: Session = Depends(get_db),
 ) -> HTMLResponse:
@@ -172,6 +213,11 @@ def build_page(
                 discovery_job_service.STATUS_DONE, discovery_job_service.STATUS_EMPTY
             ),
             discovery_media_done="media" in discovery_job_service.passes_of(drun),
+            discovery_running=discovery_job_service.is_running(drun),
+            # Vanaf /welkom ("Zoek mij op"): start de ontdekking direct bij laden —
+            # het lid klikte er zelf op. Nooit opnieuw als er al een run is.
+            autostart=bool(zoek) and drun is None and settings.ai_enrich_enabled,
+            ready=_ready(profile),
         ),
     )
 

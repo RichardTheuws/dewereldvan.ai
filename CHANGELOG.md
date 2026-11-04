@@ -3,6 +3,29 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.119.0] - 2026-11-04
+### Added — Het profiel vult zich vanzelf (PRD `docs/PRD-profiel-vanzelf.md`)
+- **Snelle eerste ronde.** "Zoek mij op" begint nu met een korte presence-ronde (eigen site +
+  LinkedIn, hooguit 3 zoekopdrachten en 2 pagina's, met het eigen e-maildomein als anker behalve bij
+  gmail/outlook en dergelijke). De brede ronde loopt daarna door in dezelfde run.
+- **Concept-profiel uit die ronde.** Kopregel, bio en rollen gaan alleen in de **lege** velden, en
+  alleen bij confidence ≥ 85 (naamgenoten). Een gevuld veld blijft ongemoeid; alles blijft besloten.
+  Nieuwe `profile_concept_service`.
+- **Koppelen op de server.** Vondsten met confidence ≥ 90 worden in de achtergrond-job gekoppeld
+  (project → werk-item, talk/media/blog → nieuws), in dezelfde commit als de vondst. Wie wegklikt,
+  komt terug bij een gevuld profiel.
+- **Live in beeld.** Na de snelle ronde laadt de bouwpagina de verse profielvorm
+  (`GET /profiel/ai/vorm`) en de publiceerkaart (`GET /profiel/ai/klaar`).
+- **"Je profiel staat klaar" bovenaan**, met één knop **Openbaar zetten** (de klik is de
+  toestemming, en dat staat erbij). Het keuzeblok per sectie blijft onderaan.
+- **Eén duidelijke start.** `/welkom` en de bouwpagina leiden met "Zoek mij op en bouw mijn profiel";
+  vanaf `/welkom` start het zoeken direct. Zelf vertellen staat eronder.
+- `scripts/backfill_profiel_vanzelf.py` voor leden met een afgeronde run van vóór deze versie.
+### Fixed
+- **Auto-koppelen in de browser stuurde zijn velden niet mee** (de kaart is geen formulier en had
+  geen `hx-include`), dus elke zekere vondst gaf een 400 en werd nooit gekoppeld. Bestond sinds
+  v0.39.0. Nu `hx-include="this"`; de server koppelt sowieso al.
+
 ## [0.118.4] - 2026-11-03
 ### Fixed — Inloggen werkt ook met Outlook/Microsoft 365, en de gids toont geen lege profielen
 - **Mail-scanners verbruikten de inloglink.** Microsoft Safe Links opent elke link in een mail vóór de

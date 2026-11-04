@@ -51,6 +51,10 @@ __all__ = [
     "is_high_confidence",
     "VALID_TYPES",
     "HIGH_CONFIDENCE",
+    "CONCEPT_CONFIDENCE",
+    "ProfileConcept",
+    "discover_presence",
+    "email_domain_hint",
 ]
 
 # --- Anthropic constanten (zie SDK-contract) ---
@@ -155,6 +159,104 @@ RECORD_TOOL: dict = {
 }
 
 
+# Snelle eerste ronde (PRD-profiel-vanzelf §3.1): dezelfde vondsten + een concept-
+# profiel, in één call. Hard begrensd zodat er binnen ±een minuut iets staat.
+PRESENCE_TOOL: dict = {
+    "name": "record_presence",
+    "description": (
+        "Leg de eigen aanwezigheidspagina's van deze persoon vast, plus een concept-"
+        "profiel dat ALLEEN op die bronnen steunt."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "findings": RECORD_TOOL["input_schema"]["properties"]["findings"],
+            "profile": {
+                "type": "object",
+                "properties": {
+                    "headline": {"type": "string"},
+                    "bio": {"type": "string"},
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "label": {"type": "string"},
+                                "url": {"type": "string"},
+                            },
+                            "required": ["label"],
+                        },
+                    },
+                    "is_organisation": {"type": "boolean"},
+                    "confidence": {"type": "integer"},
+                },
+                "required": ["headline", "bio", "confidence"],
+            },
+        },
+        "required": ["findings"],
+    },
+}
+PRESENCE_WEB_TOOLS: list[dict] = [
+    {"type": "web_search_20260209", "name": "web_search", "max_uses": 3},
+    {"type": "web_fetch_20260209", "name": "web_fetch", "max_uses": 2},
+]
+PRESENCE_MAX_PAUSE_TURNS: int = 2
+
+# Een concept vult alleen velden als de bronnen écht deze persoon zijn (naamgenoten).
+CONCEPT_CONFIDENCE: int = 85
+
+
+@dataclass(frozen=True)
+class ProfileConcept:
+    """Concept-profiel uit de eigen pagina's van het lid (gesaneerd, niet gepersisteerd)."""
+
+    headline: str | None
+    bio: str | None
+    roles: tuple[tuple[str, str | None], ...]
+    is_organisation: bool
+    confidence: int
+
+    @property
+    def usable(self) -> bool:
+        return self.confidence >= CONCEPT_CONFIDENCE and bool(self.headline or self.bio)
+
+
+def _sanitize_concept(raw: object) -> ProfileConcept | None:
+    """Saniteer het ``profile``-deel van record_presence (None = onbruikbaar)."""
+    from app.main import safe_url
+
+    if not isinstance(raw, dict):
+        return None
+    headline = " ".join(str(raw.get("headline", "") or "").split())[:200] or None
+    bio = str(raw.get("bio", "") or "").strip()[:1500] or None
+    try:
+        confidence = max(0, min(100, int(raw.get("confidence", 0))))
+    except (TypeError, ValueError):
+        confidence = 0
+    roles: list[tuple[str, str | None]] = []
+    for item in raw.get("roles", []) or []:
+        if not isinstance(item, dict):
+            continue
+        label = " ".join(str(item.get("label", "") or "").split())[:200]
+        if not label:
+            continue
+        url = safe_url(str(item.get("url", "") or "").strip()) or None
+        if url and not url.lower().startswith(("http://", "https://")):
+            url = None
+        roles.append((label, url[:1000] if url else None))
+        if len(roles) >= 3:
+            break
+    if not headline and not bio:
+        return None
+    return ProfileConcept(
+        headline=headline,
+        bio=bio,
+        roles=tuple(roles),
+        is_organisation=bool(raw.get("is_organisation")),
+        confidence=confidence,
+    )
+
+
 # --- Resultaat (service levert dit; de route confirmt los) ---
 
 
@@ -218,9 +320,23 @@ def _seed(profile: Profile) -> tuple[str, list[str]]:
 
 # Focus-modi voor de zoek-intent. "broad" = de standaard brede pass (eigen werk);
 # "media" = de gerichte verdieping naar vermeldingen ÓVER de persoon.
-VALID_FOCUS: frozenset[str] = frozenset({"broad", "media"})
+VALID_FOCUS: frozenset[str] = frozenset({"broad", "media", "presence"})
 
 _FOCUS_GUIDANCE: dict[str, str] = {
+    "presence": (
+        "\n\nSNELLE EERSTE RONDE — AANWEZIGHEID: zoek ALLEEN de eigen pagina's van deze "
+        "persoon: de eigen site of bedrijfssite en het LinkedIn-profiel (eventueel een "
+        "spreker- of teampagina). Doe hooguit een paar gerichte zoekopdrachten en lees "
+        "hooguit twee pagina's. Geen artikelen, geen nieuws, geen projecten zoeken — dat "
+        "komt later. Vul daarna in record_presence ook 'profile' in: een kopregel (wat "
+        "doet deze persoon, max 120 tekens), een korte bio van 2-3 zinnen in de ik-vorm, "
+        "en hooguit 3 rollen (functie + organisatie, met de URL van die organisatie). Is "
+        "dit een bedrijf, bureau of community in plaats van een persoon, zet dan "
+        "is_organisation=true, schrijf kopregel en bio over de organisatie (wij-vorm) en "
+        "geef als enige rol 'Organisatie' met de eigen site. Gebruik ALLEEN feiten uit de "
+        "bronnen; verzin niets. 'confidence' (0-100) zegt hoe zeker je bent dat deze "
+        "bronnen echt deze persoon zijn (naamgenoten!)."
+    ),
     "media": (
         "\n\nVERDIEPING — MEDIA: zoek nu SPECIFIEK naar media WAARIN deze persoon "
         "genoemd of aan het woord is: nieuwsberichten, interviews, podcasts, panels/"
@@ -232,12 +348,38 @@ _FOCUS_GUIDANCE: dict[str, str] = {
 }
 
 
-def _seed_prompt(name: str, anchors: list[str], focus: str = "broad") -> str:
+# Gewone mailproviders: het domein zegt niets over de persoon → geen domein-hint.
+_GENERIC_MAIL_DOMAINS: frozenset[str] = frozenset({
+    "gmail.com", "googlemail.com", "outlook.com", "outlook.nl", "hotmail.com",
+    "hotmail.nl", "live.com", "live.nl", "msn.com", "icloud.com", "me.com", "mac.com",
+    "yahoo.com", "yahoo.nl", "proton.me", "protonmail.com", "pm.me", "gmx.com",
+    "gmx.net", "gmx.de", "hey.com", "ziggo.nl", "kpnmail.nl", "kpnplanet.nl",
+    "planet.nl", "home.nl", "xs4all.nl", "hetnet.nl", "chello.nl", "telenet.be",
+    "skynet.be", "proximus.be", "aol.com", "mail.com", "zoho.com",
+})
+
+
+def email_domain_hint(email: str | None) -> str | None:
+    """Het eigen e-maildomein als zoek-anker, of ``None`` bij een gewone provider."""
+    domain = (email or "").rsplit("@", 1)[-1].strip().lower() if "@" in (email or "") else ""
+    if not domain or "." not in domain or domain in _GENERIC_MAIL_DOMAINS:
+        return None
+    return domain
+
+
+def _seed_prompt(
+    name: str, anchors: list[str], focus: str = "broad", domain: str | None = None
+) -> str:
     lines = [f"Zoek deze persoon op: {name or '(naam onbekend)'}"]
+    if domain:
+        lines.append(
+            f"\nE-maildomein van deze persoon: {domain} (waarschijnlijk de eigen site "
+            "of die van de werkgever — een sterk anker)."
+        )
     if anchors:
         lines.append("\nBekende ankers (gebruik deze om te disambigueren):")
         lines.extend(f"- {a}" for a in anchors)
-    else:
+    elif not domain:
         lines.append(
             "\nGeen ankers bekend — wees extra streng: neem alleen resultaten op "
             "die je sterk kunt corroboreren."
@@ -335,6 +477,19 @@ def _read_findings(final: object) -> list[Finding]:
     return []
 
 
+def _read_presence(final: object) -> tuple[list[Finding], ProfileConcept | None]:
+    """Lees de ``record_presence``-output: (vondsten, concept)."""
+    for block in getattr(final, "content", None) or []:
+        if (
+            _block_field(block, "type") == "tool_use"
+            and _block_field(block, "name") == "record_presence"
+        ):
+            raw = _block_field(block, "input")
+            concept = _sanitize_concept(raw.get("profile")) if isinstance(raw, dict) else None
+            return _sanitize(raw), concept
+    return [], None
+
+
 def _emit_thinking(final: object, send_event: Callable[[str, str], None]) -> None:
     """Best-effort: stuur de redenering (thinking-blokken) als ``reasoning``-event."""
     try:
@@ -414,12 +569,22 @@ def _run(
     *,
     client: anthropic.Anthropic | None = None,
     focus: str = "broad",
-) -> list[Finding]:
-    """De Claude-call met de server-tools + ``record_findings`` (pause-loop)."""
+    domain: str | None = None,
+    reader: Callable[[object], object] = _read_findings,
+):
+    """De Claude-call met de server-tools + de uitvoer-tool (pause-loop).
+
+    ``reader`` leest de finale turn (standaard ``record_findings`` → vondsten; de
+    presence-ronde leest ``record_presence`` → (vondsten, concept)). Bij een
+    refusal krijgt de reader ``None`` (→ leeg resultaat)."""
     client = client or _client()
-    tools = [*WEB_TOOLS, RECORD_TOOL]
+    presence = focus == "presence"
+    tools = (
+        [*PRESENCE_WEB_TOOLS, PRESENCE_TOOL] if presence else [*WEB_TOOLS, RECORD_TOOL]
+    )
+    max_pauses = PRESENCE_MAX_PAUSE_TURNS if presence else MAX_PAUSE_TURNS
     convo: list[dict] = [
-        {"role": "user", "content": _seed_prompt(name, anchors, focus)}
+        {"role": "user", "content": _seed_prompt(name, anchors, focus, domain)}
     ]
     pauses = 0
 
@@ -452,14 +617,14 @@ def _run(
 
         if _refused(final):
             send_event("done", "De assistent kon hier niet op ingaan.")
-            return []
+            return reader(None)
 
         stop = getattr(final, "stop_reason", None)
         if stop == "pause_turn":
             pauses += 1
-            if pauses > MAX_PAUSE_TURNS:
-                logger.warning("footprint: pause_turn cap (%d) bereikt.", MAX_PAUSE_TURNS)
-                return _read_findings(final)
+            if pauses > max_pauses:
+                logger.warning("footprint: pause_turn cap (%d) bereikt.", max_pauses)
+                return reader(final)
             # Server-tool-loop: de CURRENT-turn-content terugsturen en OPNIEUW
             # streamen (GEEN extra user-bericht; de server hervat zelf).
             convo = convo + [
@@ -467,8 +632,42 @@ def _run(
             ]
             continue
 
-        # end_turn / max_tokens: lees de record_findings-tool-output.
-        return _read_findings(final)
+        # end_turn / max_tokens: lees de uitvoer-tool.
+        return reader(final)
+
+
+def discover_presence(
+    profile: Profile,
+    send_event: Callable[[str, str], None],
+    *,
+    client: anthropic.Anthropic | None = None,
+) -> tuple[list[Finding], ProfileConcept | None]:
+    """De snelle eerste ronde: eigen site + LinkedIn, plus een concept-profiel.
+
+    Zelfde event-contract als ``discover`` (search/fetch/candidate), maar zonder
+    afsluitende ``done`` — de brede ronde loopt erna door. Gegated op
+    ``settings.ai_enrich_enabled``; best-effort (fout → ``([], None)``).
+    """
+    if not settings.ai_enrich_enabled:
+        return [], None
+    name, anchors = _seed(profile)
+    member = getattr(profile, "member", None)
+    domain = email_domain_hint(getattr(member, "email", None))
+    send_event("search", "Ik zoek je site en LinkedIn op…")
+    try:
+        findings, concept = _run(
+            name, anchors, send_event, client=client, focus="presence",
+            domain=domain, reader=_read_presence,
+        )
+    except Exception:  # noqa: BLE001 — best-effort; de brede ronde loopt gewoon door
+        logger.exception("footprint.discover_presence faalde voor profiel %s", profile.id)
+        return [], None
+
+    import json
+
+    for f in findings:
+        send_event("candidate", json.dumps(f.as_event()))
+    return findings, concept
 
 
 # --------------------------------------------------------------------------- #

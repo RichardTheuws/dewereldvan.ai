@@ -463,3 +463,24 @@ dat te tonen.
   laat geen spoor); expliciet `passes` bijhouden is eerlijk.
 
 **Gevolgen**: nieuwe meertraps-flows houden hun voortgang bij en sturen de UI. PRD: `docs/PRD-discovery-verdieping.md`.
+
+## [2026-11-04] De server bouwt het concept-profiel, het lid publiceert
+
+**Context**: na de open uitnodiging (2026-11-03) haakten 5 van de 7 nieuwe leden af op de bouwpagina.
+De ontdekking vond hen wel, maar duurde gemiddeld 13 minuten, en het resultaat kwam alleen op het
+profiel als de browser de kaarten renderde (en zelfs dat faalde: de auto-POST stuurde geen velden mee).
+Van 13 runs zijn er 2 ooit bekeken.
+
+**Beslissing**: de achtergrond-job doet het werk zelf. Een snelle presence-ronde levert binnen een
+minuut een concept (alleen lege velden, ≥85); zekere vondsten (≥90) koppelt de server. Publiceren
+blijft een bewuste klik van het lid, nu bovenaan met één knop.
+
+**Alternatieven**:
+- Mail achteraf om mensen terug te halen: afgewezen, strijdig met "geen e-mail behalve de magic-link".
+- Automatisch openbaar zetten: afgewezen, AVG-toestemming moet een eigen klik zijn.
+- De brede ronde sneller maken: afgewezen, de diepte is juist wat de media/talks vindt; de snelle
+  ronde ervoor geeft het directe resultaat.
+
+**Gevolgen**: een concept kan fout zijn. Daarom staat het besloten, draagt het de "klopt het?"-markering
+en is elk veld inline aan te passen. KILL-criterium: als leden het concept massaal aanpassen of wissen,
+moet de drempel omhoog.

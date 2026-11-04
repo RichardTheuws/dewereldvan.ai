@@ -115,6 +115,21 @@ def _media_done(member_id: int) -> bool:
         return discovery_job_service.media_done(db, member_id)
 
 
+def _presence_done(member_id: int) -> bool:
+    """Of de snelle presence-ronde al klaar is (eigen sessie, voor de async tail)."""
+    from app.db import SessionLocal
+
+    with SessionLocal() as db:
+        run = discovery_job_service.get_run(db, member_id)
+        return "presence" in discovery_job_service.passes_of(run)
+
+
+# Seintje aan de bouwpagina: ververs de profielvorm + de publiceerkaart (het host-
+# script in _stream_host.html laadt de fragmenten; op de resultaatpagina bestaan de
+# targets niet en doet het niets).
+_CONCEPT_REFRESH = '<span data-concept-refresh="' + "{n}" + '"></span>'
+
+
 def _candidate_html(request: Request, finding: dict) -> str:
     return _render_str(
         request,
@@ -266,6 +281,7 @@ async def stream(
         except (TypeError, ValueError):
             sent = 0
 
+        concept_sent = False
         deadline = time.monotonic() + _TAIL_MAX_SEC
         while time.monotonic() < deadline:
             status, findings = await run_in_threadpool(_snapshot, member_id)
@@ -276,8 +292,20 @@ async def stream(
                 yield _sse_event("candidate", html, event_id=sent)
 
             if status is None or status == discovery_job_service.STATUS_RUNNING:
+                # Snelle ronde klaar → toon het concept-profiel nu al (de brede
+                # ronde loopt door).
+                if (
+                    status is not None
+                    and not concept_sent
+                    and await run_in_threadpool(_presence_done, member_id)
+                ):
+                    concept_sent = True
+                    yield _sse_event("concept", _CONCEPT_REFRESH.format(n=sent))
                 await asyncio.sleep(_TAIL_POLL_SEC)
                 continue
+
+            # Afgerond: ververs de vorm nog één keer (koppelingen van de brede ronde).
+            yield _sse_event("concept", _CONCEPT_REFRESH.format(n=f"done-{sent}"))
 
             # Terminale status → afsluitende melding (+ verdiepings-aanbod) en stop.
             if status == discovery_job_service.STATUS_FAILED:

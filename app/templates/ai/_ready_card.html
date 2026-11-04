@@ -1,0 +1,30 @@
+{# "Je profiel staat klaar" — de publiceerkaart bovenaan de bouwpagina (PRD-profiel-
+   vanzelf §3.5). Verschijnt pas als er inhoud is én het profiel nog besloten staat.
+   Eén knop zet het openbaar via de bestaande POST /profiel/ai/publiceren; de klik is
+   de toestemming, en dat staat er letterlijk bij (AVG: bewuste, expliciete stap).
+   Het uitgebreide keuzeblok (per blok kiezen) blijft onderaan de pagina staan.
+   Zonder `ready` een leeg anker, zodat de ontdekking 'm later kan vullen. #}
+<div id="klaar-kaart">
+  {% if ready %}
+  <section class="card ready-card mt-10" data-reveal style="--d:120ms">
+    <div class="eyebrow"><span class="spark" aria-hidden="true">✦</span> Je profiel staat klaar</div>
+    <h2 class="ready-card__title">Zet het openbaar, dan vinden opdrachtgevers en AI je.</h2>
+    <p class="muted text-sm ready-card__lede">
+      Dit heb ik over je gevonden. Klopt iets niet? Klik hieronder op een veld en pas het aan.
+      Tot je op de knop drukt, zien alleen leden je profiel.
+    </p>
+    <form class="ready-card__actions" action="/profiel/ai/publiceren" method="post"
+          hx-post="/profiel/ai/publiceren" hx-target="#klaar-kaart" hx-swap="outerHTML">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="visibility" value="public">
+      <input type="hidden" name="consent" value="on">
+      <button class="btn" type="submit">Openbaar zetten</button>
+      <a class="text-link text-sm" href="/profiel/voorbeeld" target="_blank" rel="noopener">Eerst bekijken als bezoeker →</a>
+    </form>
+    <p class="muted text-xs ready-card__consent">
+      Met deze knop geef je toestemming om je naam, foto en profiel openbaar en vindbaar te maken.
+      Terugzetten kan altijd, onderaan deze pagina.
+    </p>
+  </section>
+  {% endif %}
+</div>

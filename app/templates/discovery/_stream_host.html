@@ -13,13 +13,16 @@
   {# Het levende werkveld: beweegt continu + narreert de echte fases (search/
      fetch/reasoning via het bind-script in de partial). Tussen events roteren
      on-brand geruststellingen zodat het nooit dood lijkt. #}
-  {% set working_status = "Ik zoek je op het web…" %}
-  {% set working_hint = "Dit duurt een paar minuten — ik zoek het web echt af en weeg wat van jou is. Kijk gerust rond; ik geef een seintje in de app zodra het klaar is en bewaar het resultaat voor als je terugkomt." %}
+  {% set working_status = "Ik zoek je site en LinkedIn op…" %}
+  {% set working_hint = "Binnen ongeveer een minuut staat er een eerste versie van je profiel. Daarna zoek ik verder naar je werk en vermeldingen; dat duurt langer. Je kunt gerust weggaan: ik bewaar alles en vul je profiel ondertussen aan." %}
   {% include "_cosmic_working.html" %}
 
   {# Kandidaten vliegen hierin binnen (beforeend = één voor één). #}
   <div class="ontdek__cards" data-ontdek-cards sse-swap="candidate" hx-swap="beforeend"
        aria-live="polite" aria-atomic="false"></div>
+
+  {# Concept-event: laadt de verse profielvorm + publiceerkaart op de bouwpagina. #}
+  <div data-ontdek-concept sse-swap="concept" hx-swap="innerHTML" hidden></div>
 
   {# Terminerend done-event: vervang het werkveld door de klaar-melding. #}
   <div data-ontdek-done sse-swap="done" hx-target="[data-cosmic-working]" hx-swap="outerHTML"
@@ -34,6 +37,18 @@
 
     // Verse kandidaat-kaarten spelen de materialisatie-animatie en gaan daarna
     // naar 'ready' (één keer per kaart). prefers-reduced-motion -> direct ready.
+    // Concept-seintje: de snelle ronde vulde het profiel → laad de verse vorm en de
+    // publiceerkaart, alleen als die op deze pagina staan (bouwpagina).
+    host.addEventListener('htmx:afterSwap', function (ev) {
+      if (!ev.target || !ev.target.matches || !ev.target.matches('[data-ontdek-concept]')) return;
+      if (document.getElementById('profielvorm')) {
+        htmx.ajax('GET', '/profiel/ai/vorm', { target: '#profielvorm', swap: 'outerHTML' });
+      }
+      if (document.getElementById('klaar-kaart')) {
+        htmx.ajax('GET', '/profiel/ai/klaar', { target: '#klaar-kaart', swap: 'outerHTML' });
+      }
+    });
+
     host.addEventListener('htmx:afterSwap', function () {
       var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
       var fresh = host.querySelectorAll('.field--materializing:not([data-mat-done])');
