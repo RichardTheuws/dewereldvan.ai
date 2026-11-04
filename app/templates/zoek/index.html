@@ -39,7 +39,7 @@
         {% if res.empty %}
         <section class="mt-12" data-reveal>
           <div class="form-card" style="max-width:640px">
-            <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+            <div class="form-card__lead">
               <span>Niets gevonden voor “{{ q }}”. Probeer een breder woord, of kijk per richting in de gidsen.</span></div>
             <div class="open-chips">{% for g in guides %}<a class="open-chip" href="/gids/{{ g.path }}">{{ g.short }}</a>{% endfor %}</div>
           </div>

@@ -1,15 +1,16 @@
+{% from "_icons.html" import icon %}
 {# Homepage-hero W2-bewijs: de agent bouwt een profiel vóór je ogen uit één link.
    Gescript, fictief, NUL AI-kosten, indexeerbaar. Speelt één keer af zodra het in
    beeld komt (data-demo-autoplay); reduced-motion toont alles direct. Deelt de
    choreografie met /demo via /static/demo-play.js. Vaste min-height = CLS-guard. #}
 <div class="home-demo" data-demo data-demo-autoplay aria-label="Voorbeeld: de agent bouwt een profiel uit een link">
   <div class="home-demo__badge" role="note">
-    <span aria-hidden="true">✦</span> Demo — fictief profiel, door AI opgebouwd
+    Demo: een fictief profiel, door AI opgebouwd
   </div>
 
   {# Faux invoerveld: de "ingevoerde" link wordt char-voor-char getypt. #}
   <div class="concierge-form home-demo__field" aria-hidden="true">
-    <span class="concierge-form__spark">✦</span>
+    <span class="concierge-form__spark">{{ icon('link') }}</span>
     <span class="concierge-form__input" data-demo-type="lena-hart.ai">lena-hart.ai</span>
   </div>
 
@@ -22,7 +23,7 @@
       <span class="reasoning__core"></span>
     </div>
     <div class="reasoning__body">
-      <div class="reasoning__label"><span aria-hidden="true">✦</span> de agent leest mee</div>
+      <div class="reasoning__label">De agent leest mee</div>
       <div class="reasoning__fetch"><div class="fetch-line fetch-line--ok">·· lena-hart.ai scannen ✓</div></div>
     </div>
   </div>
@@ -44,7 +45,7 @@
       <div class="card home-demo__card">
         <div class="demo-card__title">Wat ik maak</div>
         <p class="muted demo-card__desc">
-          Een copiloot die artsen meeschrijft in het dossier — sneller, met de privacy bewaakt.
+          Een copiloot die artsen meeschrijft in het dossier. Sneller, met de privacy bewaakt.
         </p>
       </div>
     </section>

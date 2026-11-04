@@ -30,7 +30,7 @@ __all__ = [
 class Openness:
     slug: str
     label: str
-    icon: str
+    icon: str  # naam in _icons.html (getekend lijn-icoon, geen emoji)
     blurb: str  # korte microcopy op de publieke beacon
     intro: str  # zin die de concierge-prefill vult ("Ik wil {naam} …")
 
@@ -38,15 +38,15 @@ class Openness:
 # Vaste volgorde = de chip-/beacon-volgorde overal. {naam} wordt in ``intro_for``
 # ingevuld met de voornaam van de maker.
 OPENNESS: list[Openness] = [
-    Openness("klantwerk", "Klantwerk", "💼", "open voor opdrachten",
+    Openness("klantwerk", "Klantwerk", "briefcase", "open voor opdrachten",
              "Ik heb een opdracht waarvoor ik {naam} wil benaderen"),
-    Openness("trainingen", "Trainingen", "🎓", "geeft trainingen & workshops",
+    Openness("trainingen", "Trainingen", "graduation", "geeft trainingen & workshops",
              "Ik wil {naam} vragen voor een training of workshop"),
-    Openness("spreken", "Spreken", "🎤", "beschikbaar als spreker",
+    Openness("spreken", "Spreken", "mic", "beschikbaar als spreker",
              "Ik wil {naam} uitnodigen om te spreken"),
-    Openness("interviews", "Interviews", "🎙", "open voor interviews",
+    Openness("interviews", "Interviews", "podcast", "open voor interviews",
              "Ik wil {naam} interviewen"),
-    Openness("samenwerkingen", "Samenwerkingen", "🤝", "zoekt samenwerkingen",
+    Openness("samenwerkingen", "Samenwerkingen", "handshake", "zoekt samenwerkingen",
              "Ik wil met {naam} samenwerken"),
 ]
 _BY_SLUG: dict[str, Openness] = {o.slug: o for o in OPENNESS}

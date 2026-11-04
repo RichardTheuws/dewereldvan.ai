@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 {# De Concierge — het kosmische intent-oppervlak (PRD §2, §4.2). GEEN chatbubbel.
 
    Globaal geïncludeerd in ÉLKE kosmische pagina (vlak vóór het constellatie-canvas).
@@ -78,7 +79,7 @@
   <div class="concierge-panel wrap--narrow" role="dialog" aria-modal="true"
        aria-label="De Concierge — vraag de wereld" data-reveal>
     <div class="concierge-panel__head">
-      <span class="concierge-panel__eyebrow"><span aria-hidden="true">✦</span> de concierge</span>
+      <span class="concierge-panel__eyebrow">De concierge</span>
       <button type="button" class="concierge-panel__close" data-concierge-close
               aria-label="Sluiten (Esc)">✕</button>
     </div>
@@ -90,7 +91,7 @@
           hx-swap="innerHTML"
           autocomplete="off"
           hx-on::after-request="if(event.detail.successful){var i=document.getElementById('concierge-input');if(i){i.value='';} var inst=document.getElementById('concierge-instant'); if(inst){inst.innerHTML='';} var ov=document.getElementById('concierge-overlay'); var host=document.getElementById('concierge-materialisatie'); if(ov&&host&&!ov.contains(host)&&window.dwvConcierge){window.dwvConcierge.close();}}">
-      <span class="concierge-form__spark" aria-hidden="true">✦</span>
+      <span class="concierge-form__spark">{{ icon('ask') }}</span>
       <input type="text" id="concierge-input" name="message"
              class="concierge-form__input"
              placeholder="{{ _ph }}"
@@ -216,10 +217,10 @@
     {% if _logged_in %}
     html += '<button type="button" class="concierge-instant__row concierge-instant__ask" role="option" ' +
             'onclick="document.getElementById(\'concierge-form\').requestSubmit()">' +
-            '<span class="concierge-instant__label">✦ Vraag de concierge het uit te zoeken</span></button>';
+            '<span class="concierge-instant__label">Vraag de concierge het uit te zoeken</span></button>';
     {% else %}
     html += '<a class="concierge-instant__row concierge-instant__ask" role="option" href="/register">' +
-            '<span class="concierge-instant__label">✦ Word lid om de agent dit te laten uitzoeken</span></a>';
+            '<span class="concierge-instant__label">Word lid om de agent dit te laten uitzoeken</span></a>';
     {% endif %}
     instant.innerHTML = html;
   }

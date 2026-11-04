@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 <!DOCTYPE html>
 <html lang="nl">
 {# Public profile page — "kosmische diepte" identity. Standalone cosmic document
@@ -44,7 +45,7 @@
   {% if preview %}{% include "profiles/_preview_frame.html" %}{% else %}{% include "_preview_banner.html" %}{% endif %}
 
   <div class="wrap wrap--narrow {{ ecls }}">
-    <header class="c-head" data-reveal style="--d:60ms">
+    <header class="c-head">
       <a class="brand" href="/"><span class="dot"></span> dewereldvan.ai</a>
       <div class="links">
         {% if is_owner %}
@@ -89,7 +90,7 @@
       {# Sectie-blokken als macro's, zodat emphasis de volgorde kan sturen. #}
       {% macro section_bio() %}
       {% if profile.bio %}
-      <section class="mt-12" data-reveal style="--d:340ms">
+      <section class="mt-12">
         <div class="section-title mb-3">Over</div>
         <p class="lede" style="max-width:58ch;white-space:pre-line">{{ profile.bio }}</p>
       </section>
@@ -101,13 +102,13 @@
          nul AI-kosten op de instant-laag). Voor de eigenaar/preview = stil signaal. #}
       {% macro section_open_to() %}
       {% if open_to_items %}
-      <section class="mt-12" data-reveal="materialize" style="--d:300ms">
+      <section class="mt-12">
         <div class="section-title mb-3">Open voor</div>
         <div class="open-beacons">
           {% for it in open_to_items %}
           {% if is_owner %}
           <span class="open-beacon">
-            <span class="open-beacon__icon" aria-hidden="true">{{ it.icon }}</span>
+            <span class="open-beacon__icon">{{ icon(it.icon) }}</span>
             <span class="open-beacon__label">{{ it.label }}</span>
             <span class="open-beacon__blurb">{{ it.blurb }}</span>
           </span>
@@ -115,7 +116,7 @@
           {# Bezoeker: de beacon opent de aanvraag met dit onderwerp (nul AI). #}
           <a class="open-beacon open-beacon--action" href="#vraag" data-inquiry-topic="{{ it.slug }}"
              title="Stel {{ profile.display_name }} een vraag hierover">
-            <span class="open-beacon__icon" aria-hidden="true">{{ it.icon }}</span>
+            <span class="open-beacon__icon">{{ icon(it.icon) }}</span>
             <span class="open-beacon__label">{{ it.label }}</span>
             <span class="open-beacon__blurb">{{ it.blurb }}</span>
             <span class="open-beacon__cta" aria-hidden="true">vraag stellen →</span>
@@ -124,7 +125,7 @@
           <button type="button" class="open-beacon open-beacon--action"
                   data-concierge-prefill="{{ it.intro }}"
                   title="Spreek {{ profile.display_name }} hierover aan">
-            <span class="open-beacon__icon" aria-hidden="true">{{ it.icon }}</span>
+            <span class="open-beacon__icon">{{ icon(it.icon) }}</span>
             <span class="open-beacon__label">{{ it.label }}</span>
             <span class="open-beacon__blurb">{{ it.blurb }}</span>
             <span class="open-beacon__cta" aria-hidden="true">aanspreken →</span>
@@ -139,7 +140,7 @@
       {% macro section_roles() %}
       {% set roles = profile.profile_links | selectattr('kind.value', 'equalto', 'affiliation') | list %}
       {% if roles %}
-      <section class="mt-14" data-reveal style="--d:400ms">
+      <section class="mt-14">
         <div class="section-title mb-4">Rollen &amp; affiliaties</div>
         <div class="grid">
           {% for link in roles %}{% include "profiles/_cosmic_link_card.html" %}{% endfor %}
@@ -151,21 +152,21 @@
       {% macro section_projects() %}
       {% set builds = profile.profile_links | selectattr('kind.value', 'equalto', 'build') | list %}
       {% if profile.offerings or builds %}
-      <section class="mt-14 profile-projects" data-reveal style="--d:460ms">
+      <section class="mt-14 profile-projects">
         <div class="section-title mb-4">Wat ik maak</div>
         <div class="grid">
           {% for item in profile.offerings %}
             {% if item.slug %}
             {# Eigen rijke projectpagina (linkwaarde) — klik gaat naar /projecten/{slug}.
                drift: kaarten komen wisselend van links/rechts i.p.v. als één blok. #}
-            <a class="card" href="/projecten/{{ item.slug }}" data-reveal="drift">
+            <a class="card" href="/projecten/{{ item.slug }}">
               {% set _img = item.image_url | safe_url %}
               {% if _img %}<img class="thumb" src="{{ _img }}" alt="" loading="lazy">{% endif %}
-              {% if item.kind.value == 'video' %}<span class="card-kind"><span aria-hidden="true">▶</span> Video</span>
-              {% elif item.kind.value == 'audio' %}<span class="card-kind"><span aria-hidden="true">♪</span> Audio</span>
-              {% elif item.kind.value == 'workshop' %}<span class="card-kind"><span aria-hidden="true">🗓</span> Workshop{% if item.event_at %} · {{ item.event_at | nl_datum }}{% endif %}</span>
-              {% elif item.kind.value == 'writing' %}<span class="card-kind"><span aria-hidden="true">✍</span> Publicatie</span>
-              {% elif item.kind.value == 'gallery' %}<span class="card-kind"><span aria-hidden="true">🖼</span> Galerij</span>{% endif %}
+              {% if item.kind.value == 'video' %}<span class="card-kind">{{ icon('video') }} Video</span>
+              {% elif item.kind.value == 'audio' %}<span class="card-kind">{{ icon('audio') }} Audio</span>
+              {% elif item.kind.value == 'workshop' %}<span class="card-kind">{{ icon('calendar') }} Workshop{% if item.event_at %} · {{ item.event_at | nl_datum }}{% endif %}</span>
+              {% elif item.kind.value == 'writing' %}<span class="card-kind">{{ icon('pen') }} Publicatie</span>
+              {% elif item.kind.value == 'gallery' %}<span class="card-kind">{{ icon('image') }} Galerij</span>{% endif %}
               <div class="card-label">{{ item.title }}</div>
               {% if item.description %}<div class="card-desc">{{ item.description }}</div>{% endif %}
               <div class="card-url">dewereldvan.ai/projecten/{{ item.slug }}</div>
@@ -178,7 +179,7 @@
         </div>
       </section>
       {% elif profile.makes_summary %}
-      <section class="mt-14" data-reveal style="--d:460ms">
+      <section class="mt-14">
         <div class="section-title mb-3">Wat ik maak</div>
         <p class="lede" style="max-width:58ch;white-space:pre-line">{{ profile.makes_summary }}</p>
       </section>
@@ -187,7 +188,7 @@
 
       {% macro section_tools() %}
       {% if profile.tools %}
-      <section class="mt-14" data-reveal style="--d:490ms">
+      <section class="mt-14">
         <div class="section-title mb-4">Tools die ik gebruik</div>
         {% set tools = profile.tools %}{% include "profiles/_cosmic_tools.html" %}
       </section>
@@ -196,7 +197,7 @@
 
       {% macro section_seeking() %}
       {% if profile.needs %}
-      <section class="mt-14" data-reveal style="--d:520ms">
+      <section class="mt-14">
         <div class="section-title mb-4">Waar ik naar zoek</div>
         <div class="space-y-3">
           {% for need in profile.needs %}
@@ -214,14 +215,14 @@
       {% if related %}
       {# Gegronde graaf-buren: elke kaart een echt lid + de concrete grond van de
          verbinding (gedeelde tag/tool). Geen verzinsel, strict uit de DB. #}
-      <section class="mt-14" data-reveal style="--d:540ms">
+      <section class="mt-14">
         <div class="section-title mb-4">Verbonden in de wereld</div>
         <div class="related-makers">
           {% for r in related %}
           <a class="related-maker" href="/leden/{{ r.profile.slug }}">
             <span class="related-maker__name">{{ r.profile.display_name }}</span>
             {% if r.profile.headline %}<span class="related-maker__headline">{{ r.profile.headline }}</span>{% endif %}
-            <span class="related-maker__bond">✦ {{ r.shared_label }}</span>
+            <span class="related-maker__bond">{{ r.shared_label }}</span>
           </a>
           {% endfor %}
         </div>
@@ -255,7 +256,7 @@
 
     </main>
 
-    <footer class="c-head" style="border-top:1px solid var(--line);--d:600ms" data-reveal>
+    <footer class="c-head" style="border-top:1px solid var(--line)">
       <span class="muted">© 2026 dewereldvan.ai</span>
       <a class="link" href="/leden">terug naar de makers</a>
     </footer>

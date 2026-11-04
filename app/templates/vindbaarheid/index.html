@@ -84,7 +84,7 @@
           {% endfor %}
         </div>
         {% elif is_public %}
-        <div class="form-card" style="max-width:620px"><div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+        <div class="form-card" style="max-width:620px"><div class="form-card__lead">
           <span>Op de 1e van elke maand stellen we Claude een paar vragen die een opdrachtgever zou stellen, en kijken of je genoemd wordt. Je eerste meting verschijnt hier.</span></div></div>
         {% else %}
         <p class="muted">Alleen voor openbare profielen.</p>
@@ -132,7 +132,7 @@
             <dt>contact</dt><dd>{{ record.contact }}</dd>
           </dl>
           {% else %}
-          <div class="form-card__lead"><span class="spark" aria-hidden="true">✦</span>
+          <div class="form-card__lead">
             <span>Niets. Een besloten profiel staat niet in de openbare gids, dus AI-assistenten kennen je niet.</span>
           </div>
           <a class="btn" href="/profiel/bewerken#zichtbaarheid">Zet je profiel op openbaar</a>

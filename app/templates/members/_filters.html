@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 {# Filter/zoek-balk voor de constellatie. Mono-labels + glas-inputs (bestaande
    .cosmic input-focus-gloed). htmx: bij wijziging GET /leden → #grid met het
    _grid.html-fragment. `hx-push-url` houdt de gefilterde URL deelbaar +
@@ -34,7 +35,7 @@
     </label>
     {% for o in openness_options %}
     <label class="disc-chip">
-      <input type="radio" name="open_to" value="{{ o.slug }}"{% if open_to == o.slug %} checked{% endif %}> {{ o.icon }} {{ o.label }}
+      <input type="radio" name="open_to" value="{{ o.slug }}"{% if open_to == o.slug %} checked{% endif %}> {{ icon(o.icon) }} {{ o.label }}
     </label>
     {% endfor %}
   </div>

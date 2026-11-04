@@ -27,9 +27,8 @@
     {% include "_cosmic_nav.html" %}
     <main class="flex-1 pb-24">
       <section class="mt-8" style="max-width:62ch">
-        <div class="eyebrow" data-reveal style="--d:160ms">Gidsen</div>
-        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Wie maakt wat met AI.</h1>
-        <p class="lede mt-5" data-reveal style="--d:380ms">
+        <h1 class="headline" data-reveal="materialize" style="--d:160ms">Wie maakt wat met AI.</h1>
+        <p class="lede mt-5">
           {{ total }} {{ "maker" if total == 1 else "makers" }} in Nederland en België {{ "koos" if total == 1 else "kozen" }} voor een openbaar
           profiel. Kies een richting, bekijk hun werk en stel ze rechtstreeks een vraag.
           Gratis, en niemand betaalt voor een plek.
@@ -37,11 +36,10 @@
       </section>
       <section class="mt-12 gids-grid">
         {% for g, n in guides %}
-        <a class="gids-card" href="/gids/{{ g.path }}" data-reveal="drift" style="--d:{{ 420 + loop.index0 * 70 }}ms">
-          <span class="gids-card__count">{{ n }}</span>
+        <a class="gids-card" href="/gids/{{ g.path }}">
           <span class="gids-card__title">{{ g.short }}</span>
           <span class="gids-card__desc">{{ g.intro }}</span>
-          <span class="gids-card__cta" aria-hidden="true">bekijk →</span>
+          <span class="gids-card__cta">{% if n %}{{ n }} {{ "maker" if n == 1 else "makers" }} bekijken →{% else %}Nog niemand, wees de eerste →{% endif %}</span>
         </a>
         {% endfor %}
       </section>

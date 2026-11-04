@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 {# Dunne, rustige kosmische preview-band (PRD §5.1). Bovenaan ÉLKE kosmische
    pagina, boven _cosmic_nav.html. Server-rendered (werkt zonder JS): de boodschap
    staat er gewoon. ✕ zet een sessie-cookie (`dwv_preview_dismissed`) zodat de band
@@ -8,10 +9,9 @@
 {% if request.cookies.get("dwv_preview_dismissed") != "1" %}
 <div class="preview-banner" id="preview-banner" data-welcome-band role="note" aria-label="Welkom-melding" data-reveal style="--d:20ms">
   <span class="preview-banner__text">
-    <span class="preview-banner__spark" aria-hidden="true">✦</span>
-    dewereldvan.ai is open — iedereen die met AI bouwt, leert of er beleid over maakt is welkom.
+    dewereldvan.ai is open. Iedereen die met AI bouwt, leert of er beleid over maakt, is welkom.
   </span>
   <button type="button" class="preview-banner__close" aria-label="Melding sluiten"
-          onclick="(function(b){document.cookie='dwv_preview_dismissed=1; path=/; max-age=2592000; samesite=lax';b.remove();})(this.closest('.preview-banner'))">✕</button>
+          onclick="(function(b){document.cookie='dwv_preview_dismissed=1; path=/; max-age=2592000; samesite=lax';b.remove();})(this.closest('.preview-banner'))">{{ icon('close') }}</button>
 </div>
 {% endif %}

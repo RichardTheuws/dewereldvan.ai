@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 {# Hero-media, één bron van waarheid: video (voorrang) → beeld → nevel.
    De video wordt NIET vooraf geladen (preload="none"): de cover-afbeelding dient
    als poster (lichtgewicht) en de video laadt+speelt pas bij een klik op play —
@@ -11,10 +12,10 @@
   <source src="{{ profile.cover_video_url | safe_url }}" type="video/mp4">
 </video>
 <button class="cover__play" type="button" data-cover-play aria-label="Speel de video af">
-  <span class="cover__play-icon" aria-hidden="true">▶</span>
+  <span class="cover__play-icon">{{ icon('play') }}</span>
 </button>
 <button class="cover-mute" type="button" data-cover-mute aria-label="Geluid aan of uit" hidden>
-  <span class="cover-mute__icon" aria-hidden="true">🔊</span>
+  <span class="cover-mute__icon" data-on>{{ icon('sound-on') }}</span><span class="cover-mute__icon" data-off hidden>{{ icon('sound-off') }}</span>
 </button>
 <script>
 (function () {
@@ -30,7 +31,7 @@
       vid.muted = false;                 // klik = gesture → geluid mag
       // Verberg de play-knop meteen (optimistisch → responsief); toon de mute-pill.
       playBtn.hidden = true;
-      if (mute) { mute.hidden = false; mute.querySelector('.cover-mute__icon').textContent = '🔊'; }
+      if (mute) { mute.hidden = false; mute.querySelector('[data-on]').hidden = false; mute.querySelector('[data-off]').hidden = true; }
       var restore = function () { playBtn.hidden = false; if (mute) mute.hidden = true; };
       vid.addEventListener('ended', restore, { once: true });
       var p = vid.play();
@@ -42,8 +43,8 @@
       var v = muteBtn.parentElement.querySelector('[data-cover-video]');
       if (!v) return;
       v.muted = !v.muted;
-      var ic = muteBtn.querySelector('.cover-mute__icon');
-      if (ic) ic.textContent = v.muted ? '🔇' : '🔊';
+      muteBtn.querySelector('[data-on]').hidden = v.muted;
+      muteBtn.querySelector('[data-off]').hidden = !v.muted;
     }
   });
 })();

@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 {# Herbruikbare kosmische hoofdnav. Vervangt de ad-hoc .c-head-headers.
    Leest request.session voor login- én admin-state (geen per-route context nodig);
    verwacht optioneel nav_active (str). Werkt zonder JS; reduced-motion-safe.
@@ -17,14 +18,14 @@
   <div class="cnav__end">
     <button type="button" class="cnav__concierge" data-concierge-open
             aria-label="Vraag de wereld (⌘K)" title="Vraag de wereld — ⌘K of /">
-      <span class="cnav__concierge-spark" aria-hidden="true">✦</span>
+      <span class="cnav__concierge-spark">{{ icon('ask') }}</span>
       <span class="cnav__concierge-text">Vraag de wereld</span>
     </button>
     {# Bekijk de intro opnieuw — overal rechtsboven. Op de home leeft de intro
        (#dwv-intro) → direct replay; elders → naar de home met ?intro=1. #}
     <button type="button" class="cnav__replay" title="Bekijk de intro van de site opnieuw"
             onclick="if(document.getElementById('dwv-intro')){window.dispatchEvent(new CustomEvent('dwv:intro-replay'))}else{location.href='/?intro=1'}">
-      <span class="spark" aria-hidden="true">✦</span> <span class="cnav__replay-verb">Bekijk </span>intro
+      {{ icon('play') }}<span class="cnav__replay-verb">Bekijk </span>intro
     </button>
     {% if request.session.get("is_admin") %}
     {# Operationeel: de admin houdt altijd toegang tot de goedkeur-queue. #}
@@ -53,14 +54,14 @@
        (_concierge.html) op de pagina; zonder JS is het een onschuldige knop. #}
     <button type="button" class="cnav__concierge" data-concierge-open
             aria-label="Vraag de wereld (⌘K)" title="Vraag de wereld — ⌘K of /">
-      <span class="cnav__concierge-spark" aria-hidden="true">✦</span>
+      <span class="cnav__concierge-spark">{{ icon('ask') }}</span>
       <span class="cnav__concierge-text">Vraag de wereld</span>
     </button>
     {# Bekijk de intro opnieuw — overal rechtsboven. Op de home leeft de intro
        (#dwv-intro) → direct replay; elders → naar de home met ?intro=1. #}
     <button type="button" class="cnav__replay" title="Bekijk de intro van de site opnieuw"
             onclick="if(document.getElementById('dwv-intro')){window.dispatchEvent(new CustomEvent('dwv:intro-replay'))}else{location.href='/?intro=1'}">
-      <span class="spark" aria-hidden="true">✦</span> <span class="cnav__replay-verb">Bekijk </span>intro
+      {{ icon('play') }}<span class="cnav__replay-verb">Bekijk </span>intro
     </button>
     <a class="cnav__link" href="/login">Inloggen</a>
     <a class="btn btn--ghost btn--sm" href="/register">Word lid</a>

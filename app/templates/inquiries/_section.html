@@ -1,10 +1,9 @@
 {# "Werk met <voornaam>" — de aanvraag-sectie op het openbare profiel (PRD hub §4.1).
    Twee-koloms compositie: verhaal + verhoogde glas-kaart met het formulier. #}
 {% set first = (profile.display_name or "").split(" ")[0] %}
-<section id="vraag" class="compose inquiry-section mt-16" data-reveal style="--d:200ms">
+<section id="vraag" class="compose inquiry-section mt-16">
   <div class="compose__intro">
-    <div class="eyebrow">Rechtstreeks contact</div>
-    <h2 class="headline mt-4">Werk met {{ first }}.</h2>
+    <h2 class="headline">Werk met {{ first }}.</h2>
     <p class="lede mt-4" style="max-width:40ch">
       Je hoeft geen lid te zijn. Stel je vraag hier en {{ first }} antwoordt je zelf.
     </p>

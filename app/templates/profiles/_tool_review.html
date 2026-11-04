@@ -6,7 +6,7 @@
 
    Verwacht: `tool` (.name/.url/.tool_review/.tool_review_status/.tool_reviewed_at)
    en optioneel `tool_users` (#leden dat de tool gebruikt). Lege/fail-staten:
-   - no_source  -> "Nog geen review — de website ontbreekt."
+   - no_source  -> "Nog geen review: de website ontbreekt."
    - failed/geen -> stil (laatste goede review of niets).
 #}
 {% set _rev = tool.tool_review %}
@@ -15,8 +15,8 @@
 {% if not _rev %}
   {% if tool.tool_review_status == 'no_source' %}
   <div class="card" data-reveal="materialize">
-    <div class="eyebrow eyebrow--plain" style="margin-bottom:10px">AI-REVIEW</div>
-    <p class="card-desc">Nog geen review — de website ontbreekt.</p>
+    <div class="eyebrow eyebrow--plain" style="margin-bottom:10px">AI-review</div>
+    <p class="card-desc">Nog geen review: de website ontbreekt.</p>
   </div>
   {% endif %}
   {# failed/geen review -> stil: render niets. #}
@@ -24,7 +24,7 @@
 <article class="card" data-reveal="materialize" style="text-align:left;cursor:default">
   {# Herkomst meteen zichtbaar: AI-REVIEW · host · datum. #}
   <div class="eyebrow" style="margin-bottom:14px;flex-wrap:wrap">
-    AI-REVIEW{% if _host %} · {{ _host }}{% endif %}{% if tool.tool_reviewed_at %} · {{ tool.tool_reviewed_at | nl_datum }}{% endif %}
+    AI-review{% if _host %} · {{ _host }}{% endif %}{% if tool.tool_reviewed_at %} · {{ tool.tool_reviewed_at | nl_datum }}{% endif %}
   </div>
 
   {# one_liner als lead. #}
@@ -33,7 +33,7 @@
   {% if _rev.confidence == 'low' %}
   <p class="card-desc" style="margin-bottom:14px;opacity:.85">
     <span class="chip">beperkt onderbouwd</span>
-    Deze review is gemaakt op weinig bron-informatie — help 'm aan te vullen.
+    Deze review is gemaakt op weinig bron-informatie. Help 'm aan te vullen.
   </p>
   {% endif %}
 
