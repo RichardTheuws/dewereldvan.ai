@@ -76,6 +76,8 @@ def test_presence_prompt_carries_domain_and_caps_tools(db, make_member, make_pro
     assert "Geen ankers bekend" not in prompt
     tools = {t["name"]: t for t in kwargs["tools"]}
     assert tools["web_search"]["max_uses"] == 3
+    assert tools["web_search"]["type"] == "web_search_20250305"  # snel, gemeten
+    assert kwargs["extra_body"] == {"output_config": {"effort": "low"}}
     assert "record_presence" in tools
     assert concept is not None and concept.headline == "CTO bij HeleCloud"
 

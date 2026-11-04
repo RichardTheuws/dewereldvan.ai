@@ -196,10 +196,15 @@ PRESENCE_TOOL: dict = {
         "required": ["findings"],
     },
 }
+# Basis-varianten (geen dynamic filtering) + effort "low": gemeten op productie 17 s
+# tegen 56 s met de _20260209-varianten en > 4 min met de standaard-effort, bij gelijke
+# kwaliteit van het concept (2026-11-04). De brede ronde houdt de diepe varianten.
 PRESENCE_WEB_TOOLS: list[dict] = [
-    {"type": "web_search_20260209", "name": "web_search", "max_uses": 3},
-    {"type": "web_fetch_20260209", "name": "web_fetch", "max_uses": 2},
+    {"type": "web_search_20250305", "name": "web_search", "max_uses": 3},
+    {"type": "web_fetch_20250910", "name": "web_fetch", "max_uses": 2},
 ]
+# SDK 0.69.0 kent ``output_config`` nog niet als argument → via extra_body.
+PRESENCE_EXTRA_BODY: dict = {"output_config": {"effort": "low"}}
 PRESENCE_MAX_PAUSE_TURNS: int = 2
 
 # Een concept vult alleen velden als de bronnen écht deze persoon zijn (naamgenoten).
@@ -606,6 +611,7 @@ def _run(
             thinking=THINKING,
             tools=tools,
             messages=convo,
+            **({"extra_body": PRESENCE_EXTRA_BODY} if presence else {}),
         ) as stream:
             # Tekst-deltas zijn de "ik zoek…"-begeleiding; reasoning komt ná de
             # stream uit final.content (zoals ai_profile het doet).

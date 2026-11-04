@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.119.1] - 2026-11-04
+### Fixed — Snelle ronde echt snel
+- De presence-ronde liep op productie > 4 minuten (Opus 4.8, standaard-effort, web-tools met dynamic
+  filtering). Gemeten in de container: basis-varianten `web_search_20250305`/`web_fetch_20250910` +
+  `output_config.effort = "low"` → **17 s**, met een even goed concept (56 s met de nieuwe tools op low).
+  Alleen de presence-ronde; de brede ronde blijft diep zoeken.
+
 ## [0.119.0] - 2026-11-04
 ### Added — Het profiel vult zich vanzelf (PRD `docs/PRD-profiel-vanzelf.md`)
 - **Snelle eerste ronde.** "Zoek mij op" begint nu met een korte presence-ronde (eigen site +

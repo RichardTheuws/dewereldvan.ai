@@ -5,8 +5,10 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-04 · **Versie**: 0.119.0 · **Branch**: `main`
+**Laatste update**: 2026-11-04 · **Versie**: 0.119.1 · **Branch**: `main`
 
+> **0.119.1** — Snelle ronde gemeten op 17 s (basis-webtools + effort low; was > 4 min).
+>
 > **0.119.0** — **Het profiel vult zich vanzelf** (PRD `docs/PRD-profiel-vanzelf.md`): snelle presence-ronde →
 > concept in lege velden (≥85) + koppelen op de server (≥90) + "Je profiel staat klaar"-kaart bovenaan. Meting:
 > van de volgende 10 nieuwe leden ≥5 binnen 24 uur openbaar mét inhoud (was 1 van 7).
