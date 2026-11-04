@@ -3,7 +3,8 @@
 Per lid: (1) koppel de bestaande vondsten met confidence ≥ 90 op de server, (2) draai de
 snelle presence-ronde en vul het concept in de lege velden. Publiceert niets.
 
-    docker exec -i -w /app dewereldvan-app-web-1 python scripts/backfill_profiel_vanzelf.py 40 43 44
+    docker exec -w /app -e PYTHONPATH=/app dewereldvan-app-web-1 \
+        python scripts/backfill_profiel_vanzelf.py 40 43 44
 """
 
 from __future__ import annotations
