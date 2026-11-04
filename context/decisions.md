@@ -502,3 +502,17 @@ Impeccable). Eén look voor iedereen.
   met een contrastcheck.
 
 **Gevolgen**: nieuwe schermen volgen §8; de checklist in §6 toetst erop.
+
+## [2026-11-04] De voordeur toont de community, niet de beheerder
+
+**Beslissing**: de beheerder staat niet bij de uitgelichte makers op de voordeur, en de selectie roteert
+per dag (foto eerst). Het nieuwsblok op de voordeur toont algemeen nieuws; artikelen óver een lid
+(rol geschreven/geïnterviewd/vermeld) horen op het profiel. Bij zelf-wissen gaan die artikelen mee weg.
+
+**Alternatieven**:
+- Rotatie zonder uitsluiting: afgewezen. De voordeur van je eigen platform hoort niet over jezelf te gaan.
+- Nieuws over leden alleen ontdubbelen per lid: afgewezen. Oude persberichten (vaak van jaren terug)
+  zijn geen nieuws en zouden het blok blijven vullen zodra iemands footprint gekoppeld wordt.
+
+**Gevolgen**: footprint-nieuws is profielinhoud, geen redactie-nieuws. Een nieuws-item zonder auteur
+mag nooit over een persoon gaan; het wissen (`account_deletion`) bewaakt dat.

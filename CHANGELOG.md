@@ -3,6 +3,18 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.120.2] - 2026-11-04
+### Fixed — De voordeur toont de community, niet de beheerder
+- **Uitgelichte makers**: de beheerder staat er niet meer tussen, en de keuze roteert per dag
+  (makers met foto eerst). Voorheen zette de vaste sortering op foto + volledigheid steeds dezelfde
+  vier neer.
+- **Nieuws op de voordeur** is algemeen nieuws. Artikelen óver een lid (rol geschreven, geïnterviewd
+  of vermeld, meestal uit de footprint-koppeling) horen op het profiel en vullen niet meer het
+  nieuwsblok, ook niet via de terugval naar het archief.
+- **Wissen ruimt nieuws over het lid op** (AVG). Bij zelf-wissen bleven die items staan zonder
+  auteur, en de zichtbaarheidspoort zag ze dan als redactie-nieuws en toonde ze publiek. Ze gaan nu
+  mee weg; gedeeld nieuws en agenda blijven staan zonder auteur. Bestaande wees-items opgeruimd.
+
 ## [0.120.1] - 2026-11-04
 ### Fixed — Welkomstmail logt direct in
 - De welkomstmail stuurde naar `/login`, waar je je adres opnieuw moest invullen en op een tweede mail

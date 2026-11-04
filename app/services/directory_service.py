@@ -11,11 +11,13 @@ voor publieke weergave) en alles uit besloten blokken.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
+from datetime import date
 
 from sqlalchemy.orm import Session
 
-from app.models import Profile
+from app.models import MemberRole, Profile
 from app.services import members_service, openness_service, seo_service
 from app.services.visibility import can_view, public_section_visible
 
@@ -220,9 +222,23 @@ def jsonld_guide(guide: Guide, profiles: list[Profile]) -> dict:
     }
 
 
-def featured_makers(profiles: list[Profile], limit: int = 4) -> list[Profile]:
-    """Voor de voordeur: openbare makers die publiek werk tonen, met foto en een
-    compleet profiel eerst. Puur ordenen, geen ranking die te koop is."""
-    with_work = [p for p in profiles if _disciplines(p)]
-    with_work.sort(key=lambda p: (not p.photo_url, -(p.completeness or 0), p.display_name or ""))
+def featured_makers(
+    profiles: list[Profile], limit: int = 4, *, today: date | None = None
+) -> list[Profile]:
+    """Voor de voordeur: openbare makers die publiek werk tonen, makers met een foto
+    eerst. De volgorde roteert per dag, zodat iedereen aan de beurt komt in plaats
+    van steeds dezelfde vier. De beheerder van het platform staat er niet tussen:
+    de voordeur laat de community zien, niet de gastheer. Geen ranking die te koop is."""
+    seed = (today or date.today()).isoformat()
+
+    def _turn(p: Profile) -> str:
+        return hashlib.sha256(f"{seed}:{p.id}".encode()).hexdigest()
+
+    with_work = [p for p in profiles if _disciplines(p) and not _is_host(p)]
+    with_work.sort(key=lambda p: (not p.photo_url, _turn(p)))
     return with_work[:limit]
+
+
+def _is_host(profile: Profile) -> bool:
+    member = getattr(profile, "member", None)
+    return member is not None and member.role == MemberRole.admin

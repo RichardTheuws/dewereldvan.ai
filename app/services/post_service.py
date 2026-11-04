@@ -316,6 +316,20 @@ def _author_hidden_for(post: Post, viewer: Member | None) -> bool:
     return not can_view(author.profile, viewer)
 
 
+# Rollen waarbij het artikel over het lid zelf gaat (footprint), niet over AI in het
+# algemeen. Die horen op het profiel, niet in het algemene nieuws op de voordeur.
+ABOUT_MEMBER_ROLES: tuple[NewsRole, ...] = (
+    NewsRole.geschreven,
+    NewsRole.geinterviewd,
+    NewsRole.vermeld,
+)
+
+
+def is_about_member(post: Post) -> bool:
+    """Of een nieuws-item over een lid zelf gaat (zie ``ABOUT_MEMBER_ROLES``)."""
+    return post.role in ABOUT_MEMBER_ROLES
+
+
 def list_news(db: Session, *, viewer: Member | None = None) -> list[Post]:
     """Zichtbaar nieuws (alle weken samen), nieuwste publicatie eerst
     (``published_at`` of ``created_at`` als terugval).

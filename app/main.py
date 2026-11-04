@@ -360,7 +360,10 @@ def _register_core_routes(app: FastAPI) -> None:
             slug: n for slug, _l, n in directory_service.discipline_counts(visible_makers)
         }
         briefing = post_service.list_briefing(db, viewer=None)
-        news_items = briefing.briefing_this_week[:4] or briefing.archief[:4]
+        # Algemeen nieuws op de voordeur; artikelen óver een lid staan op diens profiel.
+        this_week = [p for p in briefing.briefing_this_week if not post_service.is_about_member(p)]
+        archief = [p for p in briefing.archief if not post_service.is_about_member(p)]
+        news_items = this_week[:4] or archief[:4]
         upcoming = post_service.upcoming_events(db, limit=10_000)
         return templates.TemplateResponse(
             request,
@@ -384,8 +387,8 @@ def _register_core_routes(app: FastAPI) -> None:
                 "upcoming": upcoming[:6],
                 "event_total": len(upcoming),
                 "news_items": news_items,
-                "news_this_week": bool(briefing.briefing_this_week),
-                "news_total": len(briefing.briefing_this_week) + len(briefing.archief),
+                "news_this_week": bool(this_week),
+                "news_total": len(this_week) + len(archief),
             },
         )
 

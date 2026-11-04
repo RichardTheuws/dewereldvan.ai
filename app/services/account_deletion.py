@@ -55,6 +55,7 @@ from app.models import (
     OfferingSlugHistory,
     PersonalToken,
     Post,
+    PostKind,
     Profile,
     ProfileLink,
     ProfileStatDay,
@@ -62,6 +63,7 @@ from app.models import (
     profile_tag,
     profile_tool,
 )
+from app.services import post_service
 from app.services.photo_service import delete_photo
 
 
@@ -121,8 +123,18 @@ def delete_member_completely(db: Session, member: Member) -> None:
         .where(GroupInvite.created_by == member_id)
         .values(created_by=None)
     )
-    # Agenda/nieuws-bijdragen blijven staan (community-waarde: een meetup of
-    # gedeeld artikel houdt nut voor de groep), maar verliezen de toevoeger-anker.
+    # Nieuws ÓVER dit lid (zelf geschreven, geïnterviewd, genoemd — meestal uit de
+    # footprint-koppeling) draagt de identiteit van het lid en gaat dus mee weg.
+    # Zonder auteur zou de zichtbaarheidspoort het als redactie-nieuws publiek tonen.
+    db.execute(
+        delete(Post).where(
+            Post.added_by_id == member_id,
+            Post.kind == PostKind.nieuws,
+            Post.role.in_(post_service.ABOUT_MEMBER_ROLES),
+        )
+    )
+    # Agenda/gedeeld nieuws blijft staan (community-waarde: een meetup of
+    # gedeeld artikel houdt nut voor de groep), maar verliest de toevoeger-anker.
     db.execute(
         update(Post).where(Post.added_by_id == member_id).values(added_by_id=None)
     )
