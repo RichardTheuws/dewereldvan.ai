@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-04 · **Versie**: 0.119.1 · **Branch**: `main`
+**Laatste update**: 2026-11-04 · **Versie**: 0.120.0 · **Branch**: `main`
 
+> **0.120.0** — **Design zonder AI-tells** (STYLEGUIDE §8): geen eyebrows, ✦/emoji, mono-labels, gloed of
+> eigen gedachtestreepjes meer; één lijn-iconenset; één entree-moment per pagina.
+>
 > **0.119.1** — Snelle ronde gemeten op 17 s (basis-webtools + effort low; was > 4 min).
 >
 > **0.119.0** — **Het profiel vult zich vanzelf** (PRD `docs/PRD-profiel-vanzelf.md`): snelle presence-ronde →

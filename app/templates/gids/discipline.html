@@ -6,7 +6,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  {% set seo_title = guide.title ~ " — dewereldvan.ai" %}
+  {% set seo_title = guide.title ~ " · dewereldvan.ai" %}
   {% set seo_desc = guide.intro %}
   {% set og_type = "website" %}
   {% include "_seo_head.html" %}
@@ -30,8 +30,7 @@
       <section class="samen-hero mt-8">
         <div class="samen-hero__text">
           <a class="text-link" href="/gids" data-reveal style="--d:100ms">← Alle gidsen</a>
-          <div class="eyebrow mt-5" data-reveal style="--d:160ms">Gids · {{ guide.short }}</div>
-          <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">{{ guide.title }}.</h1>
+          <h1 class="headline" data-reveal="materialize" style="--d:260ms">{{ guide.title }}.</h1>
           <p class="lede mt-5" style="max-width:52ch;--d:380ms" data-reveal>{{ guide.intro }}</p>
           <div class="flow-steps" data-reveal style="--d:460ms">
             <div class="flow-step"><span class="flow-step__num">1</span>
@@ -77,8 +76,7 @@
         </div>
         {% else %}
         <div class="constellation-empty">
-          <span class="constellation-empty__spark" aria-hidden="true">✦</span>
-          {% if open_to %}
+                    {% if open_to %}
           <div class="headline" style="font-size:clamp(1.6rem,4vw,2.4rem)">Niemand met deze keuze.</div>
           <p class="lede mt-3" style="max-width:46ch;margin-inline:auto">Nog niemand in deze gids staat hiervoor open.</p>
           <a class="btn btn--ghost mt-6" href="/gids/{{ guide.path }}">Toon iedereen</a>

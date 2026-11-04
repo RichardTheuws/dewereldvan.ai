@@ -16,9 +16,9 @@
     {% if _need.description %}<p class="card-desc mt-1">{{ _need.description }}</p>{% endif %}
   </div>
   {% if uncertain %}
-  <span class="uncertain__dot" aria-hidden="true">✦</span>
+  <span class="uncertain__dot" aria-hidden="true"></span>
   <div class="uncertain__hint">
-    Dit leidde ik af — klopt het?
+    Dit leidde ik af, klopt het?
     <span class="uncertain__act">
       <button type="button" class="btn btn--sm"
               hx-post="/profiel/ai/veld/seeking/bevestig"

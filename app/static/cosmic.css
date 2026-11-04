@@ -1259,7 +1259,9 @@
 @media (max-width: 640px) {
   /* Mobiel: scrollt mee met de pagina. Onder de welkom-band staat hij op alle
      breedtes (top wordt in _cosmic_canvas.html op de bandhoogte gezet). */
-  .cosmic .intro-fab { position: absolute; top: 10px; right: 10px; padding: 0.34rem 0.7rem; font-size: 0.72rem; }
+  /* Mobiel botste de losse knop met de rechterlink van de kop (bv. "Alle makers" op een
+     profiel). De intro staat op de home en in de hoofdnav; hier laten we hem weg. */
+  .cosmic .intro-fab { display: none; }
 }
 
 /* ---- galerij-grid (kind='gallery') — een raster van gehotlinkte portfolio-beelden ---- */
@@ -3073,11 +3075,7 @@ a.roadmap-item__origin:focus-visible {
   color: var(--muted);
   font-size: 0.95rem;
 }
-.cosmic .slot--ask__copy::before {
-  content: "✦";
-  color: var(--gold);
-  font-size: 0.9em;
-}
+.cosmic .slot--ask__copy::before { content: none; }
 
 /* ---- onzekerheids-marker: afgeleid veld ("dit leidde ik af — klopt het?") ---- */
 .cosmic .uncertain {
@@ -3088,10 +3086,10 @@ a.roadmap-item__origin:focus-visible {
   position: absolute;
   top: 2px;
   right: 4px;
-  font-size: 0.8rem;
-  line-height: 1;
-  color: var(--gold);
-  text-shadow: 0 0 12px rgba(246, 205, 134, 0.7);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
   animation: cosmic-twinkle 3.4s ease-in-out infinite;
   pointer-events: none;
 }
@@ -3245,11 +3243,7 @@ a.roadmap-item__origin:focus-visible {
   font-family: "Spline Sans", sans-serif;
   font-size: 0.95rem;
 }
-.cosmic .slot--empty::before {
-  content: "✦";
-  color: var(--gold);
-  font-size: 0.9em;
-}
+.cosmic .slot--empty::before { content: none; }
 
 /* ---- seeking-kaart hergebruikt card-label/-desc buiten een .card-context ---- */
 .cosmic .seeking .card-label {
@@ -5523,3 +5517,23 @@ a.roadmap-item__origin:focus-visible {
   margin-bottom: 6px;
 }
 .cosmic .feature-list dd { margin: 0; color: var(--muted); line-height: 1.6; max-width: 40ch; }
+.cosmic .page-meta { font-size: 15px; color: var(--muted); margin: 0; }
+
+/* ---- Eén entree-moment per pagina (design zonder tells) ----
+   Alleen de paginakop (data-reveal="materialize") komt binnen; de rest staat er
+   meteen. Geen identieke fade per sectie meer, en een volledige screenshot of een
+   crawler ziet de hele pagina. Bewuste choreografie (de welkomst, de demo) zet
+   `data-reveal-staged` op <body> en houdt de getrapte onthulling. */
+.cosmic:not([data-reveal-staged]) [data-reveal]:not([data-reveal="materialize"]) {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition: none;
+}
+/* De hover-kaart van een ster aan de rand stak buiten het scherm (horizontale scroll op
+   mobiel). Sterren rechts van het midden openen hun kaart naar links. */
+.cosmic .home-constellation { overflow-x: clip; }
+.cosmic .home-star[style*="left:7"] .home-star__card,
+.cosmic .home-star[style*="left:8"] .home-star__card { left: auto; right: 0; transform: none; }
+.cosmic .home-star[style*="left:1"] .home-star__card,
+.cosmic .home-star[style*="left:2"] .home-star__card { left: 0; transform: none; }

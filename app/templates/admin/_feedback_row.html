@@ -14,7 +14,7 @@
   <p class="fb-row__body">{{ item.body }}</p>
 
   {% if item.ai_summary %}
-  <p class="fb-row__summary"><span aria-hidden="true">✦</span> {{ item.ai_summary }}</p>
+  <p class="fb-row__summary">{{ item.ai_summary }}</p>
   {% endif %}
 
   <div class="fb-row__actions">
@@ -24,6 +24,6 @@
             hx-swap="outerHTML">
       {% if item.hidden %}Toon weer{% else %}Verberg{% endif %}
     </button>
-    {% if item.hidden %}<span class="fb-row__flag">verborgen</span>{% endif %}
+    {% if item.hidden %}<span class="fb-row__flag">Verborgen</span>{% endif %}
   </div>
 </article>

@@ -19,8 +19,7 @@
   {% include "members/_member_star.html" %}
   {% if shared_tags %}
   <div class="concierge-card__why">
-    <span aria-hidden="true">✦</span>
-    Jullie delen
+        Jullie delen
     {% for t in shared_tags[:3] %}<span class="chip">{{ t }}</span>{% endfor %}
   </div>
   {% endif %}

@@ -115,7 +115,7 @@ def submit(
     except idea_service.IdeaRateLimited:
         ctx = _list_context(db, member)
         ctx["error"] = (
-            "Je deelde net al een paar ideeen — geef ons even tijd. Probeer het "
+            "Je deelde net al een paar ideeen, geef ons even tijd. Probeer het "
             "over een uur opnieuw."
         )
         return _render(request, "ideas/_list.html", ctx, status_code=429)

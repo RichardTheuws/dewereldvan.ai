@@ -27,11 +27,11 @@
     {% set _is_new = p.id in _new_ids %}
     <a class="home-star{% if loop.index0 < 3 %} home-star--gold{% endif %}{% if _is_new %} home-star--new{% endif %}"
        href="/leden/{{ p.slug }}" style="left:{{ c[0] }}%;top:{{ c[1] }}%"
-       aria-label="{{ p.display_name }}{% if _is_new %} (pas verschenen){% endif %}{% if p.headline %} — {{ p.headline }}{% endif %}">
+       aria-label="{{ p.display_name }}{% if _is_new %} (pas verschenen){% endif %}{% if p.headline %}, {{ p.headline }}{% endif %}">
       <span class="home-star__dot{% if not _src %} home-star__dot--initials{% endif %}">
         {% if _src %}<img src="{{ _src }}" alt="" loading="lazy">{% else %}{{ (p.display_name or '?')[:1] | upper }}{% endif %}
       </span>
-      {% if _is_new %}<span class="home-star__new" aria-hidden="true">nieuw</span>{% endif %}
+      {% if _is_new %}<span class="home-star__new" aria-hidden="true">Nieuw</span>{% endif %}
       <span class="home-star__name">{{ p.display_name }}</span>
       {# Headline hoort bij de altijd-publieke basiskaart; de ``makes_summary``-
          fallback is een 'wat ik maak'-veld en mag alleen als die sectie voor deze

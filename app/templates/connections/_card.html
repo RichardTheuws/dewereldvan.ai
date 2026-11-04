@@ -19,13 +19,13 @@
 
   {% if conn.status.value == 'accepted' %}
   <div class="conn-card__contact">
-    ✦ Jullie zijn verbonden — bereik {{ other.name }} via
+    Jullie zijn verbonden, bereik {{ other.name }} via
     <a class="text-link" href="mailto:{{ other.email }}">{{ other.email }}</a>.
   </div>
   {% elif incoming and conn.status.value == 'pending' %}
   <div class="conn-card__actions">
     <button class="btn btn--sm" hx-post="/intro/{{ conn.id }}/accept"
-            hx-target="#conn-{{ conn.id }}" hx-swap="outerHTML">✦ Accepteren</button>
+            hx-target="#conn-{{ conn.id }}" hx-swap="outerHTML">Accepteren</button>
     <button class="btn btn--ghost btn--sm" hx-post="/intro/{{ conn.id }}/decline"
             hx-target="#conn-{{ conn.id }}" hx-swap="outerHTML">Niet nu</button>
   </div>

@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = true %}
-  {% set seo_title = "Uitnodigingslink — beheer · dewereldvan.ai" %}
+  {% set seo_title = "Uitnodigingslink · beheer · dewereldvan.ai" %}
   {% include "_seo_head.html" %}
   {% include "_favicon.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
@@ -34,11 +34,10 @@
 
     <main class="flex-1 pb-24">
       <section class="mt-6">
-        <div class="eyebrow" data-reveal style="--d:160ms">Beheer</div>
-        <h1 class="headline mt-5" data-reveal style="--d:260ms">Uitnodigingslink.</h1>
+        <h1 class="headline" data-reveal style="--d:260ms">Uitnodigingslink.</h1>
         <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
           Eén deelbare link voor de WhatsApp-groep. Wie 'm opent, kan meteen een
-          profiel bouwen — geen wachtrij. De link is 24 uur geldig; genereer een
+          profiel bouwen, geen wachtrij. De link is 24 uur geldig; genereer een
           nieuwe om de oude direct ongeldig te maken.
         </p>
 
@@ -52,7 +51,7 @@
       <section class="mt-10" data-reveal style="--d:480ms">
         {% if invite %}
         <div class="card">
-          <div class="eyebrow" style="margin-bottom:.5rem">Actieve link</div>
+          <div class="field-label" style="margin-bottom:.5rem">Actieve link</div>
           <p style="word-break:break-all;font-size:.95rem;font-family:'JetBrains Mono',monospace">
             <code>{{ invite_url }}</code>
           </p>
@@ -69,8 +68,7 @@
         </div>
         {% else %}
         <div class="constellation-empty" data-reveal>
-          <span class="constellation-empty__spark" aria-hidden="true">✦</span>
-          <p class="lede" style="max-width:42ch;margin:0 auto">
+                    <p class="lede" style="max-width:42ch;margin:0 auto">
             Er is nog geen actieve uitnodigingslink. Genereer er één om te delen.
           </p>
         </div>

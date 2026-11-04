@@ -7,7 +7,7 @@
    - smart_lead      : uitnodigende kopzin
    - smart_placeholder : placeholder-voorbeeld #}
 <div class="smart-add">
-  <div class="smart-add__lead">✦ {{ smart_lead }}</div>
+  <div class="smart-add__lead">{{ smart_lead }}</div>
   <form id="{{ smart_id }}"
         hx-post="{{ smart_action }}"
         hx-target="#{{ smart_draft }}"
@@ -19,8 +19,8 @@
     <div class="smart-add__foot">
       <button type="button" class="btn btn--ghost btn--sm smart-add__voice" data-voice
               aria-label="Inspreken" hidden>🎤 Inspreken</button>
-      <span id="{{ smart_id }}-busy" class="smart-add__busy htmx-indicator">✦ de agent leest mee…</span>
-      <button type="submit" class="btn">✦ Laat de agent het invullen</button>
+      <span id="{{ smart_id }}-busy" class="smart-add__busy htmx-indicator">de agent leest mee…</span>
+      <button type="submit" class="btn">Laat de agent het invullen</button>
     </div>
   </form>
   <div id="{{ smart_draft }}" class="smart-add__draft mt-5"></div>

@@ -25,7 +25,7 @@
     {# Waarom dit lid in de review-queue staat (spam-triage). Geen oordeel over de
        persoon — alleen het signaal dat een mens even moet kijken. #}
     <p style="margin:8px 0 0;color:var(--muted);font-size:0.82rem">
-      <span aria-hidden="true">✦</span> {{ member.triage_note }}
+      {{ member.triage_note }}
     </p>
     {% endif %}
   </div>

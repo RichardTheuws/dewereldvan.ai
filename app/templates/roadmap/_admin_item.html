@@ -31,7 +31,7 @@
       <textarea id="rm-{{ item.id }}-desc" name="description" rows="2" maxlength="4000">{{ item.description or "" }}</textarea>
     </div>
     <div class="rm-admin-item__foot">
-      {% if item.linked_idea_id %}<span class="rm-admin-item__origin">✦ uit idee #{{ item.linked_idea_id }}</span>{% endif %}
+      {% if item.linked_idea_id %}<span class="rm-admin-item__origin">uit idee #{{ item.linked_idea_id }}</span>{% endif %}
       <button class="btn btn--ghost btn--sm" type="submit">Opslaan</button>
       <button class="btn btn--ghost btn--sm" type="button"
               hx-post="/admin/roadmap/{{ item.id }}/verwijderen"

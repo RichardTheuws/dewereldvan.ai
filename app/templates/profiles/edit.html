@@ -34,8 +34,7 @@
 
     <main class="flex-1 pb-24">
       <section class="mt-6">
-        <div class="eyebrow" data-reveal style="--d:160ms">Mijn profiel · beheer</div>
-        <h1 class="headline mt-5" data-reveal style="--d:260ms">Mijn profiel.</h1>
+        <h1 class="headline" data-reveal style="--d:260ms">Mijn profiel.</h1>
         <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
           Vul aan wie je bent, wat je maakt en waar je naar zoekt. Wijzigingen
           slaan per onderdeel op.
@@ -72,7 +71,7 @@
         <h2 class="section-title" style="margin-bottom:6px">Sfeerbeeld</h2>
         <p class="muted text-sm" style="margin-bottom:18px">
           Het achtergrondbeeld bovenaan je profiel. De AI maakt er automatisch een
-          die past bij wat je doet — in de hero-studio kies je zelf uit varianten,
+          die past bij wat je doet, in de hero-studio kies je zelf uit varianten,
           stuur je de sfeer en zet je je favoriet vast.
         </p>
         <div id="cover">{% include "ai/_cover.html" %}</div>
@@ -108,7 +107,7 @@
             <span class="field-label">Waar ik voor opensta</span>
             <p class="muted" style="margin:2px 0 12px;font-size:0.9rem;line-height:1.5;max-width:54ch">
               Laat anderen zien waarvoor ze je mogen benaderen. Op je profiel worden dit
-              uitnodigende signalen — één klik en de bezoeker kan je gericht aanspreken.
+              uitnodigende signalen, één klik en de bezoeker kan je gericht aanspreken.
             </p>
             {% set has_suggestion = openness_suggested - openness_selected %}
             <div class="open-chips">
@@ -119,13 +118,13 @@
                 <input type="checkbox" name="open_to" value="{{ o.slug }}" {% if is_sel %}checked{% endif %}>
                 <span class="open-chip__icon" aria-hidden="true">{{ o.icon }}</span>
                 <span class="open-chip__label">{{ o.label }}</span>
-                {% if is_sug %}<span class="open-chip__hint" title="De agent stelt dit voor op basis van je werk">✦ voorgesteld</span>{% endif %}
+                {% if is_sug %}<span class="open-chip__hint" title="De agent stelt dit voor op basis van je werk">voorgesteld</span>{% endif %}
               </label>
               {% endfor %}
             </div>
             {% if has_suggestion %}
             <p class="muted" style="margin:10px 0 0;font-size:0.85rem;line-height:1.5">
-              ✦ De agent stelt enkele opties voor op basis van wat je maakt — vink aan wat klopt.
+              De agent stelt enkele opties voor op basis van wat je maakt, vink aan wat klopt.
             </p>
             {% endif %}
           </div>
@@ -194,14 +193,14 @@
               hx-swap="outerHTML">
           <label class="field-label" for="vis-select">Sta je op de openbare site?</label>
           <select id="vis-select" name="visibility" style="max-width:340px">
-            <option value="members" {% if profile.visibility.value == "members" %}selected{% endif %}>Nee — alleen leden (niet op de openbare site)</option>
-            <option value="public" {% if profile.visibility.value == "public" %}selected{% endif %}>Ja — openbaar en vindbaar</option>
+            <option value="members" {% if profile.visibility.value == "members" %}selected{% endif %}>Nee, alleen leden (niet op de openbare site)</option>
+            <option value="public" {% if profile.visibility.value == "public" %}selected{% endif %}>Ja, openbaar en vindbaar</option>
           </select>
 
           {# 'Nee' = helemaal niet op de openbare site. #}
           <p class="vis-members-note muted" style="margin:0;font-size:0.9rem;line-height:1.5;max-width:54ch">
             Je profiel staat dan <strong>niet</strong> op de openbare site en is niet vindbaar in
-            zoekmachines — alleen ingelogde leden zien het.
+            zoekmachines, alleen ingelogde leden zien het.
           </p>
 
           {# Sectie-niveau — alleen relevant bij 'Ja'. Naam + discipline + foto altijd zichtbaar. #}
@@ -209,7 +208,7 @@
           <fieldset class="vis-sections" style="border:1px solid var(--line);border-radius:12px;padding:14px 16px;max-width:54ch;display:flex;flex-direction:column;gap:8px">
             <legend class="muted" style="font-size:0.9rem;padding:0 6px">Wat zien bezoekers?</legend>
             <span class="muted" style="font-size:0.88rem;line-height:1.5">
-              Je naam, discipline en foto zijn altijd zichtbaar. Kies wat je verder toont —
+              Je naam, discipline en foto zijn altijd zichtbaar. Kies wat je verder toont,
               <strong>leden zien altijd je volledige profiel.</strong>
             </span>
             {% for slug, label in [("bio","Over jou"),("makes","Wat ik maak"),("needs","Wat ik zoek"),("open_to","Waar ik voor opensta")] %}
@@ -259,8 +258,8 @@
         <h2 class="section-title" style="margin-bottom:6px">Dichtbij <span class="muted" style="font-size:0.8rem;font-weight:400">· optioneel · besloten</span></h2>
         <p class="muted" style="margin:0 0 16px;font-size:0.95rem;line-height:1.5;max-width:54ch">
           Zet je globale gebied aan, dan stellen we bij een <a class="link" href="/samen">samenkomst</a>
-          makers uit de buurt voor. We bewaren alleen je <strong>postcode-gebied</strong> — nooit je
-          adres — en alleen leden zien dit; bezoekers nooit.
+          makers uit de buurt voor. We bewaren alleen je <strong>postcode-gebied</strong>: nooit je
+          adres, en alleen leden zien dit; bezoekers nooit.
         </p>
         {% include "dichtbij/_panel.html" %}
       </section>

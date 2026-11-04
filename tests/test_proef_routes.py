@@ -136,7 +136,7 @@ def test_get_shows_agent_reading_state(client, turnstile_on):
     assert resp.status_code == 200
     assert 'id="proef-reading"' in resp.text
     assert 'hx-indicator="#proef-reading"' in resp.text
-    assert "de agent leest" in resp.text
+    assert "De agent leest" in resp.text
 
 
 # --------------------------------------------------------------------------- #

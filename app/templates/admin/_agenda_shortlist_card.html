@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 {# Eén AI-event-kandidaat in de admin-shortlist (kaart-vorm; swap-doel). Na
    goedkeuren/weigeren swapt de server deze kaart in place (hx-swap="outerHTML"):
    de knoppen verdwijnen, ``message`` toont de uitkomst. Spiegelt
@@ -14,9 +15,9 @@
       </p>
       <div style="margin-top:6px;display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;color:var(--muted);font-size:0.9rem">
         {% if cat %}<span class="cat-badge cat-badge--{{ cat }}">{{ cat }}</span>{% endif %}
-        {% if freq %}<span class="freq-badge freq-badge--{{ freq }}"><span aria-hidden="true">✦</span> {{ freq }}</span>{% endif %}
+        {% if freq %}<span class="freq-badge freq-badge--{{ freq }}">{{ freq }}</span>{% endif %}
         {% if post.next_at %}<span>📅 {{ post.next_at | nl_datum }}</span>{% else %}<span style="color:#ffb3b3">⚠ geen datum</span>{% endif %}
-        {% if post.location %}<span>📍 {{ post.location }}</span>{% else %}<span style="color:#ffb3b3">⚠ geen locatie</span>{% endif %}
+        {% if post.location %}<span>{{ icon('pin') }} {{ post.location }}</span>{% else %}<span style="color:#ffb3b3">⚠ geen locatie</span>{% endif %}
       </div>
       <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <span class="chip chip--pending">confidence {{ post.ai_relevance if post.ai_relevance is not none else "—" }}</span>

@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 <!DOCTYPE html>
 <html lang="nl">
 {# De voordeur (/) — kosmische, levende constellatie-home. Standalone
@@ -10,7 +11,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = false %}
-  {% set seo_title = "dewereldvan.ai — AI-makers, events en nieuws in Nederland en België" %}
+  {% set seo_title = "dewereldvan.ai: AI-makers, events en nieuws in Nederland en België" %}
   {% set seo_desc = "Vind AI-bouwers, bureaus en trainers in Nederland en België, de AI-events van deze maand en het nieuws dat ertoe doet. Gratis, zonder account, en je stelt iedereen rechtstreeks een vraag." %}
   {% set og_type = "website" %}
   {% set og_image = (base_url ~ "/static/og-default.png") if base_url else none %}
@@ -131,7 +132,7 @@
         <div class="mt-6 flex flex-wrap items-center gap-3">
           <a class="btn btn--ghost" href="/roadmap">Bekijk de roadmap</a>
           <a class="link" href="/ideeen">Opper een idee →</a>
-          <a class="link" href="https://github.com/RichardTheuws/dewereldvan.ai" target="_blank" rel="noopener">GitHub ↗</a>
+          <a class="link" href="https://github.com/RichardTheuws/dewereldvan.ai" target="_blank" rel="noopener">GitHub {{ icon('external') }}</a>
         </div>
       </section>
     </main>

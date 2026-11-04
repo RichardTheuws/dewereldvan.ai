@@ -11,12 +11,12 @@
   {% endif %}
 
   <div class="cover-studio__head">
-    <span class="profile-builder__eyebrow"><span aria-hidden="true">✦</span> hero-studio</span>
+    <span class="profile-builder__eyebrow">Hero-studio</span>
     <span class="cover-studio__head-actions">
       <button class="btn btn--ghost" type="button"
               hx-post="/profiel/ai/cover/vastzetten"
               hx-target="#cover" hx-swap="innerHTML" hx-disabled-elt="this">
-        {% if profile.cover_locked %}🔒 Vastgezet — ontgrendel{% else %}Hou deze vast{% endif %}
+        {% if profile.cover_locked %}Vastgezet. Ontgrendel{% else %}Hou deze vast{% endif %}
       </button>
       <button class="btn btn--ghost" type="button"
               hx-get="/profiel/ai/cover/kaart"
@@ -27,7 +27,7 @@
   </div>
 
   <p class="muted text-sm cover-studio__lead">
-    Kies een sfeer en laat een paar varianten verschijnen. Je kiest er één — of je
+    Kies een sfeer en laat een paar varianten verschijnen. Je kiest er één, of je
     houdt je huidige beeld. Alles blijft binnen de stijl van de site.
   </p>
 
@@ -70,8 +70,8 @@
     </div>
 
     <div class="cover-steer__go">
-      <button class="btn" type="submit">Toon varianten <span aria-hidden="true">✦</span></button>
-      <span class="htmx-indicator muted text-sm cover-steer__busy">✦ de varianten verschijnen…</span>
+      <button class="btn" type="submit">Toon varianten</button>
+      <span class="htmx-indicator muted text-sm cover-steer__busy">de varianten verschijnen…</span>
     </div>
   </form>
 
@@ -85,7 +85,7 @@
     {% endif %}
     {% if profile.cover_video_url %}
     <p class="muted text-sm cover-videohero__note">
-      Er staat nu een video als hero — die heeft voorrang op het beeld. Bezoekers zien je cover-beeld
+      Er staat nu een video als hero, die heeft voorrang op het beeld. Bezoekers zien je cover-beeld
       met een play-knop; de video laadt pas bij een klik en speelt dan mét geluid (bespaart data).
     </p>
     <button class="cover-pill" type="button"
@@ -105,17 +105,17 @@
           hx-encoding="multipart/form-data"
           hx-disabled-elt="find label">
       <label class="cover-pill cover-pill--primary cover-videohero__pick">
-        <span aria-hidden="true">✦</span> {% if profile.cover_video_url %}Vervang video…{% else %}Kies een video…{% endif %}
+        {% if profile.cover_video_url %}Vervang video…{% else %}Kies een video…{% endif %}
         <input type="file" name="video" accept="video/mp4" hidden
                onchange="if(this.files.length)this.form.requestSubmit()">
       </label>
-      <span class="htmx-indicator muted text-sm cover-videohero__busy">✦ je video wordt geplaatst…</span>
+      <span class="htmx-indicator muted text-sm cover-videohero__busy">je video wordt geplaatst…</span>
     </form>
     {% if video_error %}
     <p class="text-sm mt-2" style="color:#ffd5d5">{{ video_error }}</p>
     {% endif %}
     <p class="muted text-sm mt-2">
-      Nog geen video die past? <a class="text-link" href="/gids/scene">Volg de scene-gids</a> —
+      Nog geen video die past? <a class="text-link" href="/gids/scene">Volg de scene-gids</a>,
       maak er met AI één die bij je werk past.
     </p>
   </div>

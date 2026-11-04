@@ -36,14 +36,13 @@
 
   {# Eén enkele polite live-region in de flow (#concierge-flow). GEEN aria-live op
      <main> — dat zou nesten met de reasoning/flow-regions (dubbele announces). #}
-  <main role="main" aria-label="De wereld — agent-canvas" class="canvas wrap">
+  <main role="main" aria-label="De wereld, agent-canvas" class="canvas wrap">
     <section class="canvas-intro mt-10">
-      <div class="eyebrow" data-reveal style="--d:140ms">De wereld van AI</div>
-      <h1 class="headline mt-5" data-reveal style="--d:240ms">
+      <h1 class="headline" data-reveal style="--d:240ms">
         Welkom{% if member and member.name %}, {{ member.name.split()[0] }}{% endif %}.
       </h1>
       <p class="lede mt-5" style="max-width:54ch;--d:360ms" data-reveal>
-        Vraag wat je wilt vinden of doen — begin gewoon te typen. Ik laat de
+        Vraag wat je wilt vinden of doen, begin gewoon te typen. Ik laat de
         makers, ideeën en de roadmap hier zien.
       </p>
 
@@ -55,8 +54,7 @@
             hx-swap="innerHTML"
             autocomplete="off"
             hx-on::after-request="if(event.detail.successful){var i=this.querySelector('input[name=message]');if(i)i.value='';}">
-        <span class="concierge-form__spark" aria-hidden="true">✦</span>
-        <input type="text" name="message" class="concierge-form__input"
+                <input type="text" name="message" class="concierge-form__input"
                placeholder="Vraag de wereld iets, of begin te typen…"
                aria-label="Vraag de wereld"
                autocomplete="off" spellcheck="false" />
@@ -70,10 +68,10 @@
        De CTA opent de profielbouw-surface in de stroom (data-canvas-ask). #}
     {% if needs_profile %}
     <div class="canvas-firstrun" role="note" data-reveal style="--d:560ms">
-      <div class="canvas-firstrun__eyebrow"><span aria-hidden="true">✦</span> je profiel</div>
+      <div class="canvas-firstrun__eyebrow">Je profiel</div>
       <p class="canvas-firstrun__text">
         Zal ik je profiel opbouwen? Heb je een website? Dan scan ik die vast om te
-        weten wie je bent — één link en ik doe de rest. Of vertel kort wie je bent.
+        weten wie je bent, één link en ik doe de rest. Of vertel kort wie je bent.
       </p>
       {# Deterministisch + SINGLETON: open de builder direct (geen LLM-tool-gok).
          Bestaat er al een builder, scroll er dan heen i.p.v. een tweede toe te
@@ -81,7 +79,7 @@
          geven en de materialisatie + auto-cover breken. #}
       <button type="button" class="btn canvas-firstrun__go"
               onclick="(function(){var ex=document.querySelector('.profile-builder');if(ex){ex.scrollIntoView({behavior:'smooth',block:'center'});return;}if(window.htmx){htmx.ajax('GET','/concierge/profielbouw',{target:'#concierge-results',swap:'beforeend'});}})()">
-        Bouw mijn profiel ✦</button>
+        Bouw mijn profiel</button>
     </div>
     {% endif %}
 
@@ -91,8 +89,8 @@
     {% if preview_stars and preview_stars | length >= 3 %}
     <section id="canvas-ambient" class="canvas-ambient mt-12" data-reveal style="--d:560ms">
       <div class="canvas-ambient__head">
-        <span class="eyebrow eyebrow--plain">De wereld nu</span>
-        <span class="canvas-ambient__count">{{ member_count }} maker{{ 's' if member_count != 1 else '' }}{% if new_maker_count and new_maker_count >= 1 %} · <span class="canvas-ambient__new">{{ new_maker_count }} nieuw deze week ✦</span>{% endif %} · klik een ster, of vraag de agent</span>
+        <span class="page-meta">De wereld nu</span>
+        <span class="canvas-ambient__count">{{ member_count }} maker{{ 's' if member_count != 1 else '' }}{% if new_maker_count and new_maker_count >= 1 %} · <span class="canvas-ambient__new">{{ new_maker_count }} nieuw deze week </span>{% endif %} · klik een ster, of vraag de agent</span>
       </div>
       <div class="mt-6">{% include "_constellation.html" %}</div>
       <a class="link home-constellation__all mt-6" href="/leden">Bekijk alle makers →</a>

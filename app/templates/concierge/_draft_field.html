@@ -8,7 +8,7 @@
       hx-target="closest .surface-card"
       hx-swap="outerHTML">
   <div class="concierge-draft__head">
-    <span aria-hidden="true">✦</span> {{ label }} — klopt het? Pas gerust aan.
+    {{ label }}, klopt het? Pas gerust aan.
   </div>
   {% if field == 'bio' %}
   <textarea name="value" class="concierge-draft__field" rows="3" maxlength="4000"
@@ -18,7 +18,7 @@
          aria-label="{{ label }}" value="{{ value }}">
   {% endif %}
   <div class="concierge-draft__actions">
-    <button type="submit" class="btn">✦ Bijwerken</button>
+    <button type="submit" class="btn">Bijwerken</button>
     <button type="button" class="btn btn--ghost btn--sm"
             onclick="this.closest('.surface-card').remove()">laat maar</button>
   </div>

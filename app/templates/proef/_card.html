@@ -3,16 +3,16 @@
    met materialisatie. ``card`` = visitor_url_card.CardParts (wie/thema/match);
    ``source_host`` = de gelezen host (bron-attributie, gegrondheid). #}
 <article class="card" data-reveal="materialize">
-  <div class="eyebrow">Wat onze agent ziet</div>
+  <div class="section-title">Wat onze agent ziet</div>
   {% if source_host %}
   {# Gegrondheid zichtbaar: wát de agent las (anti-hallucinatie-signaal). #}
-  <div class="proef-source">✦ gelezen van {{ source_host }}</div>
+  <div class="proef-source">gelezen van {{ source_host }}</div>
   {% endif %}
 
   {% if not card.wie and not card.thema and not card.match %}
   {# Lege-kaart-staat: refusal/te dunne pagina → eerlijk, geen kale kaart. #}
   <p class="lede mt-4" style="max-width:54ch">
-    We konden er weinig uit halen. Probeer een rijkere pagina — je eigen site of
+    We konden er weinig uit halen. Probeer een rijkere pagina, je eigen site of
     een uitgebreid profiel werkt het best.
   </p>
   {% else %}

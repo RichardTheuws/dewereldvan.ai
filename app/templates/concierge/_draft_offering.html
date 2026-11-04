@@ -7,7 +7,7 @@
       hx-target="closest .surface-card"
       hx-swap="outerHTML">
   <div class="concierge-draft__head">
-    <span aria-hidden="true">✦</span> Nieuw project — klopt het? Pas gerust aan.
+    Nieuw project, klopt het? Pas gerust aan.
   </div>
   <span class="field-label">Titel</span>
   <input name="title" class="concierge-draft__field" maxlength="160" required
@@ -17,7 +17,7 @@
   <textarea name="description" class="concierge-draft__field" rows="2" maxlength="4000"
             aria-label="Beschrijving van het project">{{ fields.description | default('') }}</textarea>
   <div class="concierge-draft__actions">
-    <button type="submit" class="btn">✦ Toevoegen</button>
+    <button type="submit" class="btn">Toevoegen</button>
     <button type="button" class="btn btn--ghost btn--sm"
             onclick="this.closest('.surface-card').remove()">laat maar</button>
   </div>

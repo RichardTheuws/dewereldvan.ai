@@ -232,7 +232,7 @@ def stel_voor(maker_slug: str, bericht: str) -> dict:
         try:
             connection_service.check_intro_rate_limit(db, member)
         except connection_service.IntroRateLimited:
-            return {"fout": "je stuurde net al een paar intro's — geef het even tijd"}
+            return {"fout": "je stuurde net al een paar intro's, geef het even tijd"}
         connection_service.create_intro(db, from_member=member, to_member=to_member,
                                        message=bericht)
         db.commit()
@@ -240,7 +240,7 @@ def stel_voor(maker_slug: str, bericht: str) -> dict:
         try:
             get_email_sender().send(EmailMessage(
                 to=to_member.email,
-                subject=f"{member.name} wil kennismaken — dewereldvan.ai",
+                subject=f"{member.name} wil kennismaken · dewereldvan.ai",
                 text_body=f"Hoi {to_member.name},\n\n{member.name} wil kennismaken:\n\n{bericht}\n\nLog in: {login_url}\n",
                 html_body=email_templates.render_intro(to_member.name, member.name, bericht, login_url),
             ))
@@ -290,7 +290,7 @@ def bouw_profiel_uit_link(url: str) -> dict:
             db.commit()
         except Exception:  # noqa: BLE001 — best-effort; nooit de tool laten crashen
             logger.exception("bouw_profiel_uit_link faalde voor member %s", member.id)
-            return {"fout": "het bouwen lukte niet — probeer het later of via de site"}
+            return {"fout": "het bouwen lukte niet, probeer het later of via de site"}
         return {"ok": True, "kopregel": p.headline or "", "compleetheid": p.completeness}
 
 

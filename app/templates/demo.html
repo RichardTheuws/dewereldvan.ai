@@ -16,33 +16,31 @@
   {# Zonder JS (en voor crawlers): toon de demo-stappen gewoon. #}
   <noscript><style>.demo-step{opacity:1!important}.demo-reasoning{display:none!important}</style></noscript>
 </head>
-<body class="cosmic">
+<body class="cosmic" data-reveal-staged>
   {% include "profiles/_cosmic_bg.html" %}
 
   <div class="demo-badge" role="note">
-    <span aria-hidden="true">✦</span> Demo — fictief profiel, door AI opgebouwd
+    Demo: een fictief profiel, door AI opgebouwd
   </div>
 
   <div class="wrap canvas">
-    <main role="main" aria-label="Demo — zo bouw je je profiel" data-demo>
+    <main role="main" aria-label="Demo, zo bouw je je profiel" data-demo>
       <section class="canvas-intro mt-10">
-        <div class="eyebrow" data-reveal style="--d:140ms">De wereld van AI</div>
-        <h1 class="headline mt-5" data-reveal style="--d:240ms">Zo bouw je je profiel.</h1>
+        <h1 class="headline" data-reveal style="--d:240ms">Zo bouw je je profiel.</h1>
         <p class="lede mt-5" style="max-width:54ch;--d:360ms" data-reveal>
-          Geef één link — de AI leest 'm en bouwt je profiel op. Dit is een
+          Geef één link, de AI leest 'm en bouwt je profiel op. Dit is een
           voorbeeld met een verzonnen maker.
         </p>
 
         {# Faux invoerveld: toont de "ingevoerde" fictieve site. #}
         <div class="concierge-form canvas-form mt-8" data-reveal style="--d:460ms" aria-hidden="true">
-          <span class="concierge-form__spark">✦</span>
-          <span class="demo-typed concierge-form__input" data-demo-type="studio-nova.ai">studio-nova.ai</span>
+                    <span class="demo-typed concierge-form__input" data-demo-type="studio-nova.ai">studio-nova.ai</span>
         </div>
 
         {# Startknop: de demo speelt pas ná een klik (anders lijkt het een gewone
            paginalaadt i.p.v. een demo die je vóór je ogen ziet bouwen). #}
         <button type="button" id="demo-play" data-demo-play class="btn demo-play mt-6"
-                data-reveal style="--d:560ms">▶ Speel de demo af ✦</button>
+                data-reveal style="--d:560ms">Speel de demo af</button>
         <p class="muted text-sm mt-3" id="demo-hint" data-demo-hint data-reveal style="--d:620ms">
           Kijk hoe de AI uit één link een compleet profiel bouwt.
         </p>
@@ -57,7 +55,7 @@
           <span class="reasoning__core"></span>
         </div>
         <div class="reasoning__body">
-          <div class="reasoning__label"><span aria-hidden="true">✦</span> de gids leest mee</div>
+          <div class="reasoning__label">De gids leest mee</div>
           <div class="reasoning__fetch"><div class="fetch-line fetch-line--ok">·· studio-nova.ai scannen ✓</div></div>
           {# Per-stap-causaliteit landt hier, synchroon met elk veld. #}
           <div class="reasoning__fetch" data-demo-reasons></div>
@@ -69,7 +67,7 @@
         {# Door AI gegenereerd sfeerbeeld (echte fal.ai-output, vooraf gemaakt). #}
         <figure class="demo-cover demo-step" style="opacity:0" data-demo-reason="sfeerbeeld gegenereerd">
           <img src="/static/demo-nova-cover.jpg" alt="Door AI gegenereerd sfeerbeeld" loading="lazy">
-          <figcaption class="muted"><span aria-hidden="true">✦</span> sfeerbeeld — door AI gegenereerd</figcaption>
+          <figcaption class="muted">sfeerbeeld, door AI gegenereerd</figcaption>
         </figure>
 
         <section class="profile-identity demo-step" style="opacity:0" data-demo-reason="homepage gelezen → naam + headline">
@@ -88,7 +86,7 @@
         </section>
 
         <section class="mt-12 demo-step" style="opacity:0" data-demo-reason="over-sectie samengevat">
-          <div class="eyebrow">Over</div>
+          <div class="section-title">Over</div>
           <p class="lede mt-3" style="max-width:60ch">
             Audio-engineer en AI-bouwer. Maakt realtime stem-companions die meedenken
             tijdens opnames, en adviseert de cultuursector over verantwoorde AI.
@@ -96,7 +94,7 @@
         </section>
 
         <section class="mt-12 demo-step" style="opacity:0" data-demo-reason="projecten gevonden: 2">
-          <div class="eyebrow">Wat ik maak</div>
+          <div class="section-title">Wat ik maak</div>
           <div class="demo-cards mt-4">
             <div class="card demo-card">
               <div class="demo-card__title">StudioNova</div>
@@ -111,30 +109,30 @@
         </section>
 
         <section class="mt-12 demo-step" style="opacity:0" data-demo-reason="tijdlijn opgebouwd: 3 mijlpalen">
-          <div class="eyebrow">Tijdlijn</div>
+          <div class="section-title">Tijdlijn</div>
           <ul class="demo-timeline mt-4">
             <li><span class="demo-timeline__when">2019</span> Eerste realtime stem-prototype voor radio.</li>
-            <li><span class="demo-timeline__when">2022</span> StudioNova gelanceerd — companions voor podcasters.</li>
+            <li><span class="demo-timeline__when">2022</span> StudioNova gelanceerd, companions voor podcasters.</li>
             <li><span class="demo-timeline__when">2025</span> Adviestraject AI &amp; cultuur voor drie musea.</li>
           </ul>
         </section>
 
         <section class="mt-12 demo-step" style="opacity:0" data-demo-reason="vraag/aanbod afgeleid">
-          <div class="eyebrow">Waar ik naar zoek</div>
+          <div class="section-title">Waar ik naar zoek</div>
           <p class="lede mt-3" style="max-width:60ch">
-            Een mede-bouwer voor realtime audio-AI — iemand die van lage latency houdt.
+            Een mede-bouwer voor realtime audio-AI, iemand die van lage latency houdt.
           </p>
         </section>
 
         {# Glimp van de community-kant (fictief). #}
         <section class="mt-14 demo-step" style="opacity:0" data-demo-reason="netwerk-suggesties berekend">
-          <div class="eyebrow">Andere makers in de wereld</div>
+          <div class="section-title">Andere makers in de wereld</div>
           <div class="demo-cards mt-4">
             <div class="card demo-card"><div class="demo-card__title">Aria Wending</div><p class="muted demo-card__desc">Bouwt AI-tutors voor het mbo.</p></div>
             <div class="card demo-card"><div class="demo-card__title">Joris Vleugel</div><p class="muted demo-card__desc">Onderzoekt AI-beleid voor gemeenten.</p></div>
             <div class="card demo-card"><div class="demo-card__title">Mei Tan</div><p class="muted demo-card__desc">Maakt generatieve visuals voor theater.</p></div>
           </div>
-          <p class="muted text-sm mt-3">✦ Verzonnen makers — louter ter illustratie.</p>
+          <p class="muted text-sm mt-3">Verzonnen makers, louter ter illustratie.</p>
         </section>
       </div>
 
@@ -147,7 +145,7 @@
       </section>
 
       <footer class="c-head mt-20" style="border-top:1px solid var(--line)">
-        <span class="muted">✦ Demo met een verzonnen maker · dewereldvan.ai</span>
+        <span class="muted">Demo met een verzonnen maker · dewereldvan.ai</span>
         <a class="link" href="/">terug naar de wereld</a>
       </footer>
     </main>

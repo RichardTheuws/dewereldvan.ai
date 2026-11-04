@@ -3,6 +3,26 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.120.0] - 2026-11-04
+### Changed — Design zonder AI-tells (STYLEGUIDE §8)
+Feedback uit de groep: de site was herkenbaar "Claude Code-design" (iconen, lettertypen, streepjes).
+Getoetst aan de regels van Impeccable (`pbakaus/impeccable`). De kosmische wereld blijft; de tells gaan.
+- **Letters**: Spline Sans (`--font-ui`) voor alle interface. JetBrains Mono (`--font-data`) alleen nog
+  voor cijfers en code. Geen gespatieerde hoofdletters meer als label (104 regels omgezet).
+- **Eyebrows weg**: 43 labels boven koppen verwijderd; datum/soort staat als `.page-meta` onder de kop.
+  Sectiekoppen zijn Fraunces.
+- **Iconen**: ✦ (129×) en emoji als icoon vervangen door één getekende lijn-iconenset (`_icons.html`):
+  zoeken, vraag, play, agenda, nieuws, locatie, extern, open-voor-iconen, werk-soorten, geluid.
+- **Geen gekleurde gloed** op knoppen, avatar, zoekveld en kaarten: schaduw mét offset.
+- **Gedachtestreepjes** in onze eigen copy (197 in templates, 36 in Python-teksten) vervangen door
+  punt, komma of dubbele punt. Teksten van leden en nieuwsbronnen blijven ongemoeid.
+- **Gidsen** als redactionele lijst i.p.v. kaartjes met een groot getal; **kenmerken** op de home als lijst.
+- **Eén entree-moment per pagina**: alleen de paginakop komt binnen; de rest staat er meteen (welkomst
+  en demo houden hun choreografie via `data-reveal-staged`). Een volledige screenshot toont nu de hele pagina.
+### Fixed
+- Horizontale scroll op mobiel door de hover-kaart van een ster in de constellatie (bestond al live).
+- De losse "Bekijk intro"-knop lag op mobiel over de rechterlink van de kop (o.a. "Alle makers").
+
 ## [0.119.1] - 2026-11-04
 ### Fixed — Snelle ronde echt snel
 - De presence-ronde liep op productie > 4 minuten (Opus 4.8, standaard-effort, web-tools met dynamic

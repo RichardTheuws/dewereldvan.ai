@@ -168,7 +168,7 @@ def agenda_submit(
     except post_service.PostRateLimited:
         ctx = _agenda_context(db, member)
         ctx["error"] = (
-            "Je voegde net al een paar dingen toe — geef ons even tijd. "
+            "Je voegde net al een paar dingen toe, geef ons even tijd. "
             "Probeer het over een uur opnieuw."
         )
         return _render(request, "agenda/_list.html", ctx, status_code=429)
@@ -311,7 +311,7 @@ def nieuws_submit(
     except post_service.PostRateLimited:
         ctx = _nieuws_context(db, member)
         ctx["error"] = (
-            "Je voegde net al een paar dingen toe — geef ons even tijd. "
+            "Je voegde net al een paar dingen toe, geef ons even tijd. "
             "Probeer het over een uur opnieuw."
         )
         return _render(request, "nieuws/_list.html", ctx, status_code=429)
@@ -413,7 +413,7 @@ def admin_news_approve(
     post_service.approve_news(db, post, actor=admin)
     db.commit()
     db.refresh(post)
-    return _shortlist_card(request, post, "Goedgekeurd — staat nu in de briefing.")
+    return _shortlist_card(request, post, "Goedgekeurd, staat nu in de briefing.")
 
 
 @router.post("/admin/nieuws/{post_id}/weiger", response_class=HTMLResponse)
@@ -473,7 +473,7 @@ def admin_event_approve(
     post_service.approve_event(db, post, actor=admin)
     db.commit()
     db.refresh(post)
-    return _event_shortlist_card(request, post, "Goedgekeurd — staat nu op de agenda.")
+    return _event_shortlist_card(request, post, "Goedgekeurd, staat nu op de agenda.")
 
 
 @router.post("/admin/agenda/{post_id}/weiger", response_class=HTMLResponse)

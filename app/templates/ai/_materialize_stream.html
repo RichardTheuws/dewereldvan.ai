@@ -110,7 +110,7 @@
           var row = document.createElement('div');
           var isErr = state === 'err';
           row.className = 'fetch-line fetch-line--' + (isErr ? 'err' : 'ok');
-          row.textContent = '✦ ' + (host2 || 'bron') + ' ophalen ' + (isErr ? '✗' : '✓');
+          row.textContent = '' + (host2 || 'bron') + ' ophalen ' + (isErr ? '✗' : '✓');
           line.appendChild(row);
         } else if (type === 'done') {
           // Render het antwoord als nette markdown (geen kale ## / ** meer).

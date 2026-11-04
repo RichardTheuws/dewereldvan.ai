@@ -16,8 +16,7 @@
             hx-target="#cover"
             hx-swap="innerHTML"
             hx-disabled-elt="this">
-      <span aria-hidden="true">✦</span>
-      {% if profile.cover_image_url %}Nieuw beeld{% else %}Genereer beeld{% endif %}
+            {% if profile.cover_image_url %}Nieuw beeld{% else %}Genereer beeld{% endif %}
     </button>
     {% endif %}
     <button class="cover-pill cover-pill--primary" type="button"
@@ -25,10 +24,10 @@
             hx-target="#cover"
             hx-swap="innerHTML"
             hx-disabled-elt="this">
-      <span aria-hidden="true">✦</span> Hero-studio
+      Hero-studio
     </button>
     {% if profile.cover_locked %}
-    <span class="cover-pill cover-pill--flag" title="Je hebt deze cover vastgezet">🔒 vastgezet</span>
+    <span class="cover-pill cover-pill--flag" title="Je hebt deze cover vastgezet">Vastgezet</span>
     {% endif %}
   </div>
 </div>

@@ -49,10 +49,10 @@ def _send_approval_email(member: Member) -> None:
         get_email_sender().send(
             EmailMessage(
                 to=member.email,
-                subject="Je bent erbij — welkom bij dewereldvan.ai",
+                subject="Je bent erbij, welkom bij dewereldvan.ai",
                 text_body=(
                     f"Hoi {member.name},\n\n"
-                    "Je bent erbij — een netwerk van AI-makers uit alle disciplines. "
+                    "Je bent erbij, een netwerk van AI-makers uit alle disciplines. "
                     "Log in en bouw je plek in de wereld op.\n\n"
                     f"Inloggen: {login_url}\n"
                 ),

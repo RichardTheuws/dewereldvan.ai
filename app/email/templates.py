@@ -51,15 +51,15 @@ __all__ = [
 # zodat de HTML-mail en de tekst-fallback exact hetzelfde vertellen.
 ANNOUNCEMENT_FEATURES: list[tuple[str, str, str]] = [
     ("✦", "Je profiel uit één link",
-     "Plak een link — de agent leest 'm en bouwt je profiel. Bijwerken gaat in een gesprek."),
+     "Plak een link, de agent leest 'm en bouwt je profiel. Bijwerken gaat in een gesprek."),
     ("✦", "Een agent die voor je zoekt",
      "Matches met wie jij nodig hebt, makers in jouw domein, intro-voorstellen. Jij beslist."),
     ("✦", "In je eigen tool (MCP)",
-     "Werk met het netwerk vanuit Claude Code of Cursor — geen context-switch."),
+     "Werk met het netwerk vanuit Claude Code of Cursor, geen context-switch."),
     ("✦", "Een echte agenda + nieuws",
      "AI-meetups & events in NL/BE (meld je aan) en een wekelijkse nieuws-briefing."),
     ("✦", "Een open, levende roadmap",
-     "Zie wat er al staat, in aanbouw is en gepland — en stuur mee met je ideeën."),
+     "Zie wat er al staat, in aanbouw is en gepland, en stuur mee met je ideeën."),
 ]
 
 
@@ -188,7 +188,7 @@ def render_approval(name: str, login_url: str) -> str:
     fallback = _inline_shell(
         heading=f"Welkom, {escape(name)}!",
         body_html=(
-            "<p style='margin:0 0 12px 0;'>Je bent erbij — een netwerk van AI-makers "
+            "<p style='margin:0 0 12px 0;'>Je bent erbij, een netwerk van AI-makers "
             "uit alle disciplines. Log in en bouw je plek in de wereld op.</p>"
         ),
         cta=_inline_button("Inloggen", login_url),

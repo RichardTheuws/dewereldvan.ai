@@ -330,7 +330,7 @@ async def stream(
             "done",
             _render_str(
                 request, "discovery/_done.html",
-                {"message": "Dit duurt langer dan verwacht — kijk gerust rond; ik "
+                {"message": "Dit duurt langer dan verwacht, kijk gerust rond; ik "
                             "zet je resultaat klaar en geef een seintje in de app "
                             "zodra het klaar is."},
             ),
@@ -431,7 +431,7 @@ def crystallize_candidate(
             "discovery/_done.html",
             {
                 "message": (
-                    "Dit is je online aanwezigheid — die hoort bij je profiel, niet "
+                    "Dit is je online aanwezigheid, die hoort bij je profiel, niet "
                     "in het nieuws. Ik heb 'm niet als nieuws gekoppeld."
                 )
             },

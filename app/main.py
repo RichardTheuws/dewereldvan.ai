@@ -400,9 +400,9 @@ def _register_core_routes(app: FastAPI) -> None:
             {
                 "canonical": seo_service.canonical_url("/demo"),
                 "base_url": settings.base_url.rstrip("/"),
-                "seo_title": "Demo — zo bouw je je profiel · dewereldvan.ai",
+                "seo_title": "Demo: zo bouw je je profiel · dewereldvan.ai",
                 "seo_desc": (
-                    "Een door AI opgebouwd, fictief makersprofiel — zie in 20 "
+                    "Een door AI opgebouwd, fictief makersprofiel. Zie in 20 "
                     "seconden hoe dewereldvan.ai werkt."
                 ),
                 "og_type": "website",

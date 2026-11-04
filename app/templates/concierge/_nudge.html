@@ -18,8 +18,7 @@
 <div class="concierge-nudge {% if nudge.kind == 'founder_welcome' %}concierge-nudge--founder{% endif %}"
      id="concierge-nudge" data-reveal role="note">
   <div class="concierge-nudge__eyebrow">
-    <span aria-hidden="true">✦</span>
-    {% if nudge.kind == 'founder_welcome' %}een woord vooraf{% else %}de wereld merkte op{% endif %}
+        {% if nudge.kind == 'founder_welcome' %}Een woord vooraf{% else %}de wereld merkte op{% endif %}
   </div>
   <p class="concierge-nudge__text">{{ nudge.text }}</p>
   <div class="concierge-nudge__actions">
@@ -36,7 +35,7 @@
             hx-vals='{"nudge_kind": "{{ nudge.kind }}"}'
             hx-target="#concierge-nudge"
             hx-swap="outerHTML"
-            aria-label="Niet nu — verberg deze suggestie 30 dagen">
+            aria-label="Niet nu, verberg deze suggestie 30 dagen">
       ✕ {% if nudge.kind == 'founder_welcome' %}later{% else %}niet nu{% endif %}
     </button>
   </div>

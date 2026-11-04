@@ -145,7 +145,7 @@ def test_pending_enrich_shows_agent_at_work_state(make_client, SessionTest, monk
     )
     resp = make_client(None).get(f"/projecten/{slug}")
     assert resp.status_code == 200
-    assert "de agent bekijkt dit project" in resp.text
+    assert "De agent bekijkt dit project" in resp.text
 
 
 def test_members_only_owner_project_anon_redirects_to_login(make_client, SessionTest):

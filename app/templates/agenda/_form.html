@@ -6,14 +6,14 @@
       hx-target="#agenda-list"
       hx-swap="innerHTML"
       hx-on::after-request="if(event.detail.successful){var d=document.getElementById('agenda-draft');if(d)d.innerHTML='';var s=document.querySelector('#agenda-smart textarea');if(s)s.value='';}">
-  <div class="event-form__lead">{% if is_concept %}✦ Concept — de agent vulde dit in. Klopt het? Pas aan en plaats.{% else %}✦ Ken jij een AI-meetup? Zet 'm in de agenda.{% endif %}</div>
+  <div class="event-form__lead">{% if is_concept %}Concept, de agent vulde dit in. Klopt het? Pas aan en plaats.{% else %}Ken jij een AI-meetup? Zet 'm in de agenda.{% endif %}</div>
 
   <div class="event-form__grid">
     <div class="event-form__title">
       <label class="field-label" for="event-title">Naam van de meetup / het event</label>
       <input id="event-title" name="title" maxlength="200" required
              value="{{ f.title or '' }}"
-             placeholder="Bijv. Aimelo — AI-community Almelo">
+             placeholder="Bijv. Aimelo, AI-community Almelo">
     </div>
     <div>
       <label class="field-label" for="event-frequency">Hoe vaak?</label>
@@ -61,11 +61,11 @@
   <div class="mt-4">
     <label class="field-label" for="event-desc">Waar gaat het over? <span class="muted">(optioneel)</span></label>
     <textarea id="event-desc" name="description" rows="2" maxlength="4000"
-              placeholder="Eén of twee zinnen — voor wie, wat kun je verwachten.">{{ f.description or '' }}</textarea>
+              placeholder="Eén of twee zinnen, voor wie, wat kun je verwachten.">{{ f.description or '' }}</textarea>
   </div>
 
   <div class="idea-form__foot">
     <span class="idea-form__hint">De frequentie-badge maakt elke meetup in één oogopslag leesbaar.</span>
-    <button class="btn" type="submit">Aan de agenda toevoegen ✦</button>
+    <button class="btn" type="submit">Aan de agenda toevoegen</button>
   </div>
 </form>

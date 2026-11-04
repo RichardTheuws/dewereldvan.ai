@@ -23,21 +23,21 @@
     <div>
       <label class="field-label" for="pub-visibility">Sta je op de openbare site?</label>
       <select id="pub-visibility" name="visibility">
-        <option value="members" {% if profile.visibility.value == 'members' %}selected{% endif %}>Nee — alleen leden (niet op de openbare site)</option>
-        <option value="public" {% if profile.visibility.value == 'public' %}selected{% endif %}>Ja — openbaar en vindbaar</option>
+        <option value="members" {% if profile.visibility.value == 'members' %}selected{% endif %}>Nee, alleen leden (niet op de openbare site)</option>
+        <option value="public" {% if profile.visibility.value == 'public' %}selected{% endif %}>Ja, openbaar en vindbaar</option>
       </select>
     </div>
 
     <p class="vis-members-note text-sm muted">
       Je profiel staat dan <strong>niet</strong> op de openbare site en is niet vindbaar in
-      zoekmachines — alleen ingelogde leden zien het.
+      zoekmachines, alleen ingelogde leden zien het.
     </p>
 
     {# Sectie-keuze — alleen relevant bij 'Ja'. Naam + discipline + foto zijn altijd zichtbaar. #}
     <fieldset class="vis-sections">
       <legend class="field-label">Wat zien bezoekers?</legend>
       <p class="text-sm muted" style="margin:2px 0 8px">
-        Je naam, discipline en foto zijn altijd zichtbaar. Kies wat je verder toont —
+        Je naam, discipline en foto zijn altijd zichtbaar. Kies wat je verder toont,
         <strong>leden in de community zien altijd je volledige profiel.</strong>
       </p>
       {{ sec('bio', 'Over jou') }}

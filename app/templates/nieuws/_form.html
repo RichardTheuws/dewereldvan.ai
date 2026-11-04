@@ -6,7 +6,7 @@
       hx-target="#nieuws-list"
       hx-swap="innerHTML"
       hx-on::after-request="if(event.detail.successful){var d=document.getElementById('nieuws-draft');if(d)d.innerHTML='';var s=document.querySelector('#nieuws-smart textarea');if(s)s.value='';}">
-  <div class="event-form__lead">{% if is_concept %}✦ Concept — de agent vulde dit in. Klopt het? Pas aan en plaats.{% else %}✦ Iets verschenen — van of over jou? Deel het.{% endif %}</div>
+  <div class="event-form__lead">{% if is_concept %}Concept, de agent vulde dit in. Klopt het? Pas aan en plaats.{% else %}Iets verschenen, van of over jou? Deel het.{% endif %}</div>
 
   <div class="event-form__title">
     <label class="field-label" for="news-title">Kop van het artikel</label>
@@ -50,6 +50,6 @@
 
   <div class="idea-form__foot">
     <span class="idea-form__hint">Zo zien we elkaars werk en wat er speelt.</span>
-    <button class="btn" type="submit">Nieuws delen ✦</button>
+    <button class="btn" type="submit">Nieuws delen</button>
   </div>
 </form>

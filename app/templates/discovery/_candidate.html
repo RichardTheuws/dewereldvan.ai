@@ -42,14 +42,13 @@
     {% if is_presence %}
     {# Eigen aanwezigheid: informatief, geen koppeling. Het hoort bij je profiel. #}
     <p class="ontdek-card__ask muted">
-      <span class="ontdek-card__spark" aria-hidden="true">✦</span>
-      Je online aanwezigheid — die hoort bij je profiel, niet in het nieuws.
+            Je online aanwezigheid, die hoort bij je profiel, niet in het nieuws.
     </p>
     {% elif auto %}
     {# Hoge zekerheid: koppelt zichzelf. De regel hieronder is eerlijk — er gebeurt
        écht iets (de POST loopt); undo verschijnt zodra 'ie geland is. #}
     <p class="ontdek-card__settling muted" aria-live="polite">
-      <span class="ontdek-card__spark" aria-hidden="true">✦</span> Ik koppel dit aan je profiel…
+      Ik koppel dit aan je profiel…
     </p>
     {% else %}
     <p class="ontdek-card__ask muted">Klopt dit? Dan koppel ik het aan je profiel.</p>

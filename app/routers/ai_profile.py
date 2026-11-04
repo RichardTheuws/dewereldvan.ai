@@ -826,7 +826,7 @@ async def cover_video_upload(
     replaced = bool(old and old != new_url)
     if replaced:
         photo_service.delete_photo(old)  # generieke UPLOAD_DIR-wis (geen wees-mp4)
-    ok = "Je video is vervangen ✦" if replaced else "Je video staat nu op je hero ✦"
+    ok = "Je video is vervangen." if replaced else "Je video staat nu op je hero."
     return _render(
         request, "ai/_cover_studio.html", _studio_ctx(request, profile, video_ok=ok)
     )

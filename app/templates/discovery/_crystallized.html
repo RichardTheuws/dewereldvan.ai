@@ -6,8 +6,7 @@
 <div class="surface-card ontdek-card ontdek-card--done field--crystallized">
   <article class="card ontdek-card__inner">
     <p class="ontdek-card__added" aria-live="polite">
-      <span class="ontdek-card__check" aria-hidden="true">✦</span>
-      <span><strong>{{ finding.title }}</strong> staat nu op je profiel.</span>
+            <span><strong>{{ finding.title }}</strong> staat nu op je profiel.</span>
     </p>
     <form hx-post="/profiel/ai/ontdek/ongedaan"
           hx-target="closest .surface-card" hx-swap="outerHTML">

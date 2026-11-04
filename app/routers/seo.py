@@ -71,7 +71,7 @@ def makers_json(db: Session = Depends(get_db)) -> JSONResponse:
     makers = [directory_service.maker_record(p) for p in directory_service.public_makers(db)]
     return JSONResponse(
         {
-            "bron": "dewereldvan.ai — open community van wie in NL/BE met AI werkt",
+            "bron": "dewereldvan.ai: open community van wie in NL/BE met AI werkt",
             "uitleg": "Alleen leden die zelf voor een openbaar profiel kozen. Niet te koop; "
             "volgorde alfabetisch. Contact via de 'contact'-link per maker.",
             "aantal": len(makers),

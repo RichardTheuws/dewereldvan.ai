@@ -127,7 +127,7 @@ def samen_create(
         return _render(
             request, "samen/nieuw.html",
             {"member": member, "form": form,
-             "error": "Je startte net al iets — geef ons even. Probeer het over een uur weer."},
+             "error": "Je startte net al iets, geef ons even. Probeer het over een uur weer."},
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     try:
@@ -304,7 +304,7 @@ def samen_invite(
     try:
         connection_service.check_intro_rate_limit(db, member)
     except connection_service.IntroRateLimited:
-        return HTMLResponse("Je stuurde net al een paar intro's — geef het even tijd.", status_code=429)
+        return HTMLResponse("Je stuurde net al een paar intro's, geef het even tijd.", status_code=429)
 
     plek = f" ({gathering.location_hint})" if gathering.location_hint else ""
     text = (

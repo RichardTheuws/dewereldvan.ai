@@ -21,9 +21,9 @@
   {% if error %}
   <p class="photo-ring__msg photo-ring__msg--err" role="alert">{{ error }}</p>
   {% elif materialized %}
-  <p class="photo-ring__msg photo-ring__msg--ok" role="status">Daar ben je. ✦</p>
+  <p class="photo-ring__msg photo-ring__msg--ok" role="status">Daar ben je. </p>
   {% elif removed %}
-  <p class="photo-ring__msg" role="status">Foto verwijderd — je valt nu terug op je cover of initialen.</p>
+  <p class="photo-ring__msg" role="status">Foto verwijderd, je valt nu terug op je cover of initialen.</p>
   {% endif %}
 
   {% if photo.kind == "photo" %}

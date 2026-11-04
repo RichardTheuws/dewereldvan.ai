@@ -136,7 +136,7 @@ def submit(
                 "page_path": _page_path(request, page_path),
                 "member": member,
                 "error": (
-                    "Je deelde net al veel — geef ons even tijd om het te lezen. "
+                    "Je deelde net al veel, geef ons even tijd om het te lezen. "
                     "Probeer het over een uur opnieuw."
                 ),
             },

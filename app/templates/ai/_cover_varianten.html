@@ -4,12 +4,12 @@
 {% if backend_off %}
   <p class="muted text-sm">
     Sfeerbeelden staan nu even uit. Je profiel werkt prima met de kosmische
-    achtergrond — je kunt later varianten genereren.
+    achtergrond, je kunt later varianten genereren.
   </p>
 {% elif rate_limited %}
   <p class="text-sm" style="color:#ffd5d5">
     Je hebt voor nu het maximum aantal sfeerbeelden gemaakt. Probeer het over een
-    uurtje nog eens — je huidige beeld blijft gewoon staan.
+    uurtje nog eens, je huidige beeld blijft gewoon staan.
   </p>
 {% elif cover_error %}
   <p class="text-sm" style="color:#ffd5d5">{{ cover_error }}</p>

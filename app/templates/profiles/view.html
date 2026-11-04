@@ -21,7 +21,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {# Sectie-niveau zichtbaarheid: welke blokken de kijker ziet (default = alles). #}
   {% set sections = sections if sections is defined else {'bio': true, 'makes': true, 'needs': true, 'open_to': true} %}
-  {% set seo_title = (profile.headline or profile.display_name) ~ " — dewereldvan.ai" %}
+  {% set seo_title = (profile.headline or profile.display_name) ~ " · dewereldvan.ai" %}
   {% set seo_desc = meta_desc if meta_desc is defined else (profile.headline or profile.display_name) %}
   {% set og_type = "profile" %}
   {% include "_seo_head.html" %}

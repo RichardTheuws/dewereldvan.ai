@@ -1,18 +1,18 @@
 {# Verbind-paneel als IN-CANVAS surface (Agent-Shell). Zelfde token-genereren +
    commando + lijst als /profiel/verbind, maar materialiseert onder de chat. #}
 <div class="connect-panel">
-  <div class="connect-panel__head"><span aria-hidden="true">✦</span> Verbind je AI-tool</div>
+  <div class="connect-panel__head">Verbind je AI-tool</div>
 
   <div class="connect-step">
     <div class="connect-step__n">1</div>
     <div>
       <div class="connect-step__h">Genereer een token</div>
-      <p class="connect-step__p">Je ziet 'm één keer — bewaar 'm goed.</p>
+      <p class="connect-step__p">Je ziet 'm één keer, bewaar 'm goed.</p>
       <form class="connect-gen" hx-post="/profiel/verbind/token"
             hx-target="#connect-result" hx-swap="innerHTML">
         <input name="label" maxlength="80" placeholder="Bijv. Claude Code op mijn MacBook"
                aria-label="Label voor dit token">
-        <button class="btn btn--sm" type="submit">Genereer token ✦</button>
+        <button class="btn btn--sm" type="submit">Genereer token</button>
       </form>
     </div>
   </div>

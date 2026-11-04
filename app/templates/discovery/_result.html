@@ -6,7 +6,7 @@
 <div class="ontdek ontdek--result">
   {% if findings %}
   <p class="ontdek__result muted">
-    Dit vond ik eerder voor je — kies wat op je profiel mag.
+    Dit vond ik eerder voor je, kies wat op je profiel mag.
   </p>
   <div class="ontdek__cards" data-ontdek-cards>
     {% for finding in findings %}
@@ -26,6 +26,6 @@
   <form class="mt-6" hx-post="/profiel/ai/ontdek"
         hx-target="closest .ontdek" hx-swap="outerHTML">
     <input type="hidden" name="force" value="1">
-    <button type="submit" class="btn btn--ghost btn--sm">✦ Opnieuw zoeken</button>
+    <button type="submit" class="btn btn--ghost btn--sm">Opnieuw zoeken</button>
   </form>
 </div>

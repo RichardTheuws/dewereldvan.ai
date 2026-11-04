@@ -15,7 +15,7 @@
 {% if not _rev %}
   {% if tool.tool_review_status == 'no_source' %}
   <div class="card" data-reveal="materialize">
-    <div class="eyebrow eyebrow--plain" style="margin-bottom:10px">AI-review</div>
+    <div class="page-meta" style="margin-bottom:10px">AI-review</div>
     <p class="card-desc">Nog geen review: de website ontbreekt.</p>
   </div>
   {% endif %}
@@ -23,7 +23,7 @@
 {% else %}
 <article class="card" data-reveal="materialize" style="text-align:left;cursor:default">
   {# Herkomst meteen zichtbaar: AI-REVIEW · host · datum. #}
-  <div class="eyebrow" style="margin-bottom:14px;flex-wrap:wrap">
+  <div class="page-meta" style="margin-bottom:14px">
     AI-review{% if _host %} · {{ _host }}{% endif %}{% if tool.tool_reviewed_at %} · {{ tool.tool_reviewed_at | nl_datum }}{% endif %}
   </div>
 

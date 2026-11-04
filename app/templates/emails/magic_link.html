@@ -1,7 +1,7 @@
 {# Magic-link-inlogmail (E4a). verify_url komt veilig kant-en-klaar uit auth.py. #}
 {% extends "_base.html" %}
 {% block subject %}Je inloglink voor dewereldvan.ai{% endblock %}
-{% block preheader %}Klik om in te loggen — {{ ttl_min }} minuten geldig.{% endblock %}
+{% block preheader %}Klik om in te loggen, {{ ttl_min }} minuten geldig.{% endblock %}
 {% block heading %}Hoi {{ name }},{% endblock %}
 {% block body %}
   <p style="margin:0 0 14px 0;">
@@ -17,9 +17,8 @@
     <tr>
       <td bgcolor="#f6cd86" style="border-radius:999px;">
         <a href="{{ verify_url }}"
-           style="display:inline-block; padding:14px 30px; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:14px; font-weight:600; letter-spacing:0.03em; color:#1a1330; text-decoration:none; border-radius:999px;">
-          Inloggen ✦
-        </a>
+           style="display:inline-block; padding:14px 30px; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; font-size:15px; font-weight:600; letter-spacing:0; color:#1a1330; text-decoration:none; border-radius:999px;">
+          Inloggen         </a>
       </td>
     </tr>
   </table>

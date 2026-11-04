@@ -484,3 +484,21 @@ blijft een bewuste klik van het lid, nu bovenaan met één knop.
 **Gevolgen**: een concept kan fout zijn. Daarom staat het besloten, draagt het de "klopt het?"-markering
 en is elk veld inline aan te passen. KILL-criterium: als leden het concept massaal aanpassen of wissen,
 moet de drempel omhoog.
+
+## [2026-11-04] Eén look zonder AI-tells, geen theme-switcher
+
+**Context**: een nieuw lid schreef in de groep dat de site herkenbaar "Claude Code-design" is
+(icoontjes, lettertypen, streepjes). Voor een community van AI-makers is een gegenereerd ogende site
+een geloofwaardigheidsprobleem.
+
+**Beslissing**: de kosmische wereld blijft, de herkenbare patronen gaan (STYLEGUIDE §8, getoetst aan
+Impeccable). Eén look voor iedereen.
+
+**Alternatieven**:
+- Theme-switcher voor bezoekers (ook AI-gegenereerd): afgewezen. Bezoekers en crawlers zien toch de
+  standaard, AI per bezoeker botst met "anonieme bezoekers nooit betaalde AI", en een ongecontroleerd
+  thema over 100 templates is niet "tot in perfectie" te garanderen.
+- Later te overwegen (eigen PRD): leden stylen hun eigen openbare profiel met AI, binnen de tokens en
+  met een contrastcheck.
+
+**Gevolgen**: nieuwe schermen volgen §8; de checklist in §6 toetst erop.

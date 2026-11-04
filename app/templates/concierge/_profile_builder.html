@@ -8,7 +8,7 @@
    Drempel-verlagende opener (eigenaar-copy): begin met een link — de AI scant 'm. #}
 <div class="profile-builder">
   <div class="profile-builder__intro">
-    <span class="profile-builder__eyebrow"><span aria-hidden="true">✦</span> je profiel</span>
+    <span class="profile-builder__eyebrow">Je profiel</span>
     <p class="profile-builder__lead">
       Heb je een website? Dan scan ik die vast om te weten wie je bent. Als je liever
       direct wat meer informatie geeft kun je er gerust wat bij vertellen (of meerdere
@@ -31,9 +31,9 @@
               class="concierge-form__input profile-builder__input"
               aria-label="Je website, links, of een paar zinnen over jezelf"
               onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.form.requestSubmit();}"
-              placeholder="https://jouwsite.nl — of plak je GitHub/LinkedIn, of vertel kort wie je bent… (Enter om te bouwen)"></textarea>
+              placeholder="https://jouwsite.nl, of plak je GitHub/LinkedIn, of vertel kort wie je bent… (Enter om te bouwen)"></textarea>
     <button class="btn profile-builder__go" type="submit"
-            {% if not ai_enabled %}disabled{% endif %}>Bouw mee ✦</button>
+            {% if not ai_enabled %}disabled{% endif %}>Bouw mee</button>
   </form>
 
   {# Materialisatie: denkpaneel + levende profielvorm onder één EventSource.

@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = true %}
-  {% set seo_title = "Samenkomen — dewereldvan.ai" %}
+  {% set seo_title = "Samenkomen · dewereldvan.ai" %}
   {% set seo_desc = "Prik samen een moment en kom in het echt bij elkaar." %}
   {% include "_seo_head.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
@@ -26,11 +26,10 @@
     <main class="flex-1 pb-24">
       <section class="samen-hero mt-8">
         <div class="samen-hero__text">
-          <div class="eyebrow" data-reveal style="--d:160ms">In het echt, samen</div>
-          <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Samenkomen.</h1>
+          <h1 class="headline" data-reveal="materialize" style="--d:260ms">Samenkomen.</h1>
           <p class="lede mt-5" style="max-width:50ch;--d:380ms" data-reveal>
             Wil je een keer afspreken? Prik een paar avonden, laat anderen kiezen wat
-            past — en de winnende datum wordt vanzelf een echte afspraak in de agenda.
+            past, en de winnende datum wordt vanzelf een echte afspraak in de agenda.
           </p>
           <div class="mt-6">{% set note_delay = '460ms' %}{% include "samen/_besloten_note.html" %}</div>
           <div class="mt-7" data-reveal style="--d:540ms">
@@ -58,7 +57,7 @@
           {% for g in gatherings %}
           {% set t = tallies[g.id] %}
           <a class="datprik-card" href="/samen/{{ g.id }}">
-            <div class="datprik-card__spark" aria-hidden="true">✦</div>
+            <div class="datprik-card__spark" aria-hidden="true"></div>
             <div class="datprik-card__title">{{ g.title }}</div>
             <div class="datprik-card__meta">
               <span>{{ g.dates|length }} {% if g.dates|length == 1 %}datum{% else %}datums{% endif %}</span>
@@ -74,8 +73,7 @@
         </div>
         {% else %}
         <div class="constellation-empty" data-reveal>
-          <span class="constellation-empty__spark" aria-hidden="true">✦</span>
-          <p>Er loopt nog geen prikker. Wees de eerste die iets voorstelt —<br>een borrel, een meetup, een avond samen bouwen.</p>
+                    <p>Er loopt nog geen prikker. Wees de eerste die iets voorstelt —<br>een borrel, een meetup, een avond samen bouwen.</p>
           <a class="btn mt-5" href="/samen/nieuw">Start een prikker</a>
         </div>
         {% endif %}

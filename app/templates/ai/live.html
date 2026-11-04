@@ -19,7 +19,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bouw je profiel met AI — dewereldvan.ai</title>
+  <title>Bouw je profiel met AI · dewereldvan.ai</title>
   <meta name="robots" content="noindex">
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
@@ -41,8 +41,7 @@
     {% include "_cosmic_nav.html" %}
 
     <main class="flex-1 pb-16">
-      <div class="eyebrow" data-reveal style="--d:160ms">Profielbouw &nbsp;·&nbsp; met AI</div>
-      <h1 class="headline mt-5" data-reveal style="--d:260ms">Vertel je verhaal.</h1>
+      <h1 class="headline" data-reveal style="--d:260ms">Vertel je verhaal.</h1>
       <p class="lede mt-5 max-w-xl" data-reveal style="--d:380ms">
         Ik zoek je op en zet een eerste versie van je profiel voor je klaar. Daarna pas je
         alles aan door erop te klikken. <b>Niets wordt gepubliceerd</b> tot jij het zelf bevestigt.
@@ -63,11 +62,11 @@
         <form hx-post="/profiel/ai/ontdek"
               hx-target="#ontdek-resultaat" hx-swap="innerHTML">
           <button class="btn btn--ghost" type="submit" {% if not ai_enabled %}disabled{% endif %}>
-            ✦ Bekijk wat ik over je vond
+            Bekijk wat ik over je vond
           </button>
         </form>
         <p class="muted text-sm mt-3" style="max-width:54ch">
-          Ik heb je al online opgezocht{% if not discovery_media_done %} — je kunt nu ook
+          Ik heb je al online opgezocht{% if not discovery_media_done %}, je kunt nu ook
           media óver je laten zoeken (interviews, artikelen){% endif %}. Bekijk het resultaat
           en kies wat op je profiel mag.
         </p>
@@ -77,7 +76,7 @@
               hx-target="#ontdek-resultaat" hx-swap="innerHTML"
               hx-on::after-request="if(event.detail.successful){this.hidden=true;this.nextElementSibling.hidden=true;}">
           <button class="btn" type="submit" {% if not ai_enabled %}disabled{% endif %}>
-            ✦ Zoek mij op en bouw mijn profiel
+            Zoek mij op en bouw mijn profiel
           </button>
         </form>
         <p class="muted text-sm mt-3" style="max-width:54ch">
@@ -144,7 +143,7 @@
           <button class="btn btn--ghost" type="submit">Opnieuw beginnen</button>
         </form>
         <p class="muted text-sm mt-3" style="max-width:54ch">
-          "Opnieuw beginnen" wist alleen dit AI-gesprek en de concept-velden —
+          "Opnieuw beginnen" wist alleen dit AI-gesprek en de concept-velden,
           je account en profiel blijven bestaan.
         </p>
       </div>
@@ -155,7 +154,7 @@
         <p class="muted text-sm" style="margin:0 0 16px;line-height:1.6;max-width:54ch">
           Iets anders dan "opnieuw beginnen": je kunt je profiel en account
           altijd, in één keer, volledig en definitief verwijderen. Alles wordt
-          weggehaald — niets blijft achter.
+          weggehaald, niets blijft achter.
         </p>
         <form method="post" action="/profiel/verwijderen"
               onsubmit="return confirm('Dit verwijdert je profiel en alle gegevens definitief. Dit kan niet ongedaan gemaakt worden.\n\nWeet je het zeker?');">

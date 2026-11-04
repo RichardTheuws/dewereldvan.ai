@@ -1,8 +1,7 @@
 {# Eén roadmap-item als cosmische note (kanban-kaartje). Status-dot + label boven,
    titel, omschrijving, optionele fase-tag, en de gegronde herkomst (uit een idee). #}
 <article class="roadmap-item roadmap-note roadmap-item--{{ item.status.value }}">
-  <span class="roadmap-note__spark" aria-hidden="true">✦</span>
-  <div class="roadmap-item__status">
+    <div class="roadmap-item__status">
     <span class="roadmap-dot roadmap-dot--{{ item.status.value }}" aria-hidden="true"></span>
     <span class="roadmap-item__statuslabel">{{ item.status.value }}</span>
     {% if item.phase and item.phase not in ("Later", "") %}
@@ -18,10 +17,10 @@
   {% set _idea = item.linked_idea %}
   {% set _votes = _idea.votes | length %}
   <a class="roadmap-item__origin" href="/ideeen#idea-{{ _idea.id }}">
-    ✦ uit een idee{% if _idea.member %} van {{ _idea.member.name }}{% endif %}
+    uit een idee{% if _idea.member %} van {{ _idea.member.name }}{% endif %}
     {%- if _votes %} · {{ _votes }} stem{{ 'men' if _votes != 1 else '' }}{% endif %} →
   </a>
   {% elif item.linked_idea_id %}
-  <div class="roadmap-item__origin">✦ uit de ideeenbus</div>
+  <div class="roadmap-item__origin">uit de ideeenbus</div>
   {% endif %}
 </article>

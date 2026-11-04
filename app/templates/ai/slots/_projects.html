@@ -10,7 +10,7 @@
     {% for item in profile.offerings | sort(attribute='position') %}{% include "ai/slots/_offering_card.html" with context %}{% endfor %}
   </div>
   {% else %}
-  <p class="slot--empty slot--ask" style="display:block">Nog geen projecten — voeg er één toe</p>
+  <p class="slot--empty slot--ask" style="display:block">Nog geen projecten, voeg er één toe</p>
   {% endif %}
   <form class="mt-4"
         hx-post="/profiel/ai/offering"

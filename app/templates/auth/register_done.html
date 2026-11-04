@@ -28,18 +28,16 @@
     <main class="flex-1 pb-24 flex items-center justify-center" style="min-height:50vh">
       <section class="text-center" style="max-width:50ch">
         {% if auto_welcomed %}
-        <div class="eyebrow" data-reveal style="--d:160ms;justify-content:center">Welkom</div>
-        <h1 class="headline mt-5" data-reveal style="--d:260ms">Je bent erbij</h1>
+        <h1 class="headline" data-reveal style="--d:260ms">Je bent erbij</h1>
         <p class="lede mt-5" data-reveal style="--d:380ms">
           We hebben je een inloglink gestuurd naar <span class="muted">{{ email }}</span>.
           Klik erop om in te loggen en je plek in de wereld op te bouwen.
         </p>
         {% else %}
-        <div class="eyebrow" data-reveal style="--d:160ms;justify-content:center">Aanmelden</div>
-        <h1 class="headline mt-5" data-reveal style="--d:260ms">Je bent aangemeld</h1>
+        <h1 class="headline" data-reveal style="--d:260ms">Je bent aangemeld</h1>
         <p class="lede mt-5" data-reveal style="--d:380ms">
           We hebben je aanmelding voor <span class="muted">{{ email }}</span> binnen.
-          We kijken alleen even mee dat je geen bot bent — meestal snel — en dan
+          We kijken alleen even mee dat je geen bot bent, meestal snel, en dan
           krijg je een e-maillink om in te loggen. Je hoeft niets te doen.
         </p>
         {% endif %}

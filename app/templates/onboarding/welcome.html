@@ -8,7 +8,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = true %}
-  {% set seo_title = "Welkom — dewereldvan.ai" %}
+  {% set seo_title = "Welkom · dewereldvan.ai" %}
   {% include "_seo_head.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="/static/cosmic.css?v={{ asset_ver }}">
   <noscript><style>.cosmic [data-reveal]{opacity:1!important;transform:none!important;filter:none!important}</style></noscript>
 </head>
-<body class="cosmic welcome">
+<body class="cosmic welcome" data-reveal-staged>
   {% include "profiles/_cosmic_bg.html" %}
   {% include "_preview_banner.html" %}
 
@@ -29,9 +29,6 @@
         <span class="welcome__star-halo"></span>
       </div>
 
-      <p class="eyebrow eyebrow--plain welcome__eyebrow" data-reveal style="--d:480ms">
-        Welkom
-      </p>
       <h1 class="headline welcome__headline" data-reveal style="--d:680ms">
         Welkom in de wereld van AI.
       </h1>
@@ -46,7 +43,7 @@
       </p>
 
       <div class="welcome__actions" data-reveal style="--d:1280ms">
-        <a class="btn welcome__go" href="{{ next_url }}?zoek=1">✦ Zoek mij op en bouw mijn profiel</a>
+        <a class="btn welcome__go" href="{{ next_url }}?zoek=1">Zoek mij op en bouw mijn profiel</a>
         <p class="text-sm mt-4"><a class="text-link" href="{{ next_url }}">Liever zelf vertellen →</a></p>
       </div>
     </main>

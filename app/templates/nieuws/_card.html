@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 {# Eén nieuwskaart (Post/nieuws). Rol-badge ("hoe een lid bij het artikel zit") +
    bron + publicatiedatum + (bij AI-curatie) de "waarom dit ertoe doet"-duiding,
    een herkomst-badge en een tool/lid-verbindingschip (detectie-op-weergave, GEEN
@@ -56,7 +57,7 @@
   </h3>
 
   {% if origin %}
-  <div class="news-card__origin"><span class="news-card__origin-glyph" aria-hidden="true">↗</span>{{ origin }}</div>
+  <div class="news-card__origin"><span class="news-card__origin-glyph">{{ icon('external') }}</span>{{ origin }}</div>
   {% endif %}
 
   {% if post.ai_take %}
@@ -77,7 +78,7 @@
       {% if by_linkable %}<a class="news-card__by-link" href="/leden/{{ by_profile.slug }}">{{ by.name }}</a>{% elif by_named %}{{ by.name }}{% else %}een lid{% endif %}
     </span>
     {% endif %}
-    <a class="news-card__link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">lezen ↗</a>
+    <a class="news-card__link" href="{{ post.url | safe_url }}" target="_blank" rel="noopener">Lezen {{ icon('external') }}</a>
   </div>
 
   {% if is_admin %}
@@ -87,7 +88,7 @@
             hx-target="#post-{{ post.id }}" hx-swap="outerHTML">
       {% if post.hidden %}Toon{% else %}Verberg{% endif %}
     </button>
-    {% if post.hidden %}<span class="news-card__hidden">verborgen</span>{% endif %}
+    {% if post.hidden %}<span class="news-card__hidden">Verborgen</span>{% endif %}
   </div>
   {% endif %}
 </article>

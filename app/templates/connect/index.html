@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = true %}
-  {% set seo_title = "Verbind je AI-tool — dewereldvan.ai" %}
+  {% set seo_title = "Verbind je AI-tool · dewereldvan.ai" %}
   {% include "_seo_head.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
@@ -24,10 +24,9 @@
 
     <main class="flex-1 pb-24">
       <section class="mt-6">
-        <div class="eyebrow" data-reveal style="--d:160ms">Voor wie bouwt</div>
-        <h1 class="headline mt-5" data-reveal style="--d:260ms">Verbind je AI-tool.</h1>
+        <h1 class="headline" data-reveal style="--d:260ms">Verbind je AI-tool.</h1>
         <p class="lede mt-5" style="max-width:58ch;--d:380ms" data-reveal>
-          Koppel dewereldvan.ai aan Claude Code, Cursor of je eigen agent — en praat
+          Koppel dewereldvan.ai aan Claude Code, Cursor of je eigen agent, en praat
           er rechtstreeks mee. Bouw je profiel uit een link, doorzoek de makers, haal
           je matches op en stel je voor, <strong>zonder je editor te verlaten</strong>.
         </p>
@@ -38,12 +37,12 @@
           <div class="connect-step__n">1</div>
           <div>
             <div class="connect-step__h">Genereer een token</div>
-            <p class="connect-step__p">Eén token per tool. Je ziet 'm één keer — bewaar 'm goed.</p>
+            <p class="connect-step__p">Eén token per tool. Je ziet 'm één keer, bewaar 'm goed.</p>
             <form class="connect-gen" hx-post="/profiel/verbind/token"
                   hx-target="#connect-result" hx-swap="innerHTML">
               <input name="label" maxlength="80" placeholder="Bijv. Claude Code op mijn MacBook"
                      aria-label="Label voor dit token">
-              <button class="btn btn--sm" type="submit">Genereer token ✦</button>
+              <button class="btn btn--sm" type="submit">Genereer token</button>
             </form>
           </div>
         </div>

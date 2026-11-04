@@ -8,7 +8,7 @@
       hx-target="closest .surface-card"
       hx-swap="outerHTML">
   <div class="concierge-draft__head">
-    <span aria-hidden="true">✦</span> Een meetup voor de agenda — klopt het? Pas gerust aan.
+    Een meetup voor de agenda, klopt het? Pas gerust aan.
   </div>
   <span class="field-label">Naam van het event</span>
   <input name="title" class="concierge-draft__field" maxlength="200" required
@@ -41,7 +41,7 @@
             aria-label="Omschrijving">{{ fields.description | default('') }}</textarea>
 
   <div class="concierge-draft__actions">
-    <button type="submit" class="btn">✦ Aan de agenda toevoegen</button>
+    <button type="submit" class="btn">Aan de agenda toevoegen</button>
     <button type="button" class="btn btn--ghost btn--sm"
             onclick="this.closest('.surface-card').remove()">laat maar</button>
   </div>

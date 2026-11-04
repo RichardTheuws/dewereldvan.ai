@@ -9,7 +9,7 @@
         <input type="hidden" name="channel" value="in_app">
         <button type="submit" class="notif-opt{% if channel == 'in_app' %} notif-opt--on{% endif %}">
           <span class="notif-opt__title">In de app</span>
-          <span class="notif-opt__sub">Je ziet het zodra je langskomt — altijd aan.</span>
+          <span class="notif-opt__sub">Je ziet het zodra je langskomt, altijd aan.</span>
         </button>
       </form>
       <form hx-post="/profiel/notificaties/kanaal" hx-target="#notif-panel" hx-swap="outerHTML">
@@ -28,19 +28,19 @@
     {% if not tg_configured %}
       <p class="muted text-sm">Telegram-koppeling komt binnenkort beschikbaar.</p>
     {% elif tg_status == 'linked' %}
-      <p class="text-sm"><span class="notif-ok">✓</span> Gekoppeld — je seintjes komen in Telegram binnen.</p>
+      <p class="text-sm"><span class="notif-ok">✓</span> Gekoppeld, je seintjes komen in Telegram binnen.</p>
       <form hx-post="/profiel/notificaties/telegram/ontkoppel" hx-target="#notif-panel" hx-swap="outerHTML">
         <button type="submit" class="btn btn--ghost btn--sm">Ontkoppelen</button>
       </form>
     {% else %}
       {% if link_url %}
-        <p class="text-sm">Bijna klaar — open Telegram en druk op <b>Start</b> om te bevestigen:</p>
+        <p class="text-sm">Bijna klaar, open Telegram en druk op <b>Start</b> om te bevestigen:</p>
         <p><a class="btn btn--sm" href="{{ link_url }}" target="_blank" rel="noopener">Open Telegram →</a></p>
-        <p class="muted text-sm mt-2">Deze pagina ververst vanzelf zodra het gelukt is — of herlaad 'm.</p>
+        <p class="muted text-sm mt-2">Deze pagina ververst vanzelf zodra het gelukt is, of herlaad 'm.</p>
       {% else %}
         <p class="muted text-sm">Koppel Telegram om directe seintjes te krijgen.</p>
         <form hx-post="/profiel/notificaties/telegram/start" hx-target="#notif-panel" hx-swap="outerHTML">
-          <button type="submit" class="btn btn--sm">✦ Verbind Telegram</button>
+          <button type="submit" class="btn btn--sm">Verbind Telegram</button>
         </form>
       {% endif %}
     {% endif %}

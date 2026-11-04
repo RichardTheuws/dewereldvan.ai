@@ -5,7 +5,7 @@
 <div id="feedback-panel" class="feedback-panel" role="dialog" aria-modal="false"
      aria-label="Deel je gedachte">
   <div class="feedback-panel__head">
-    <span class="feedback-panel__eyebrow">✦ deel je gedachte</span>
+    <span class="feedback-panel__eyebrow">Deel je gedachte</span>
     <button type="button" class="feedback-panel__close" aria-label="Sluiten"
             data-feedback-close>×</button>
   </div>
@@ -29,12 +29,12 @@
 
     <label class="field-label" for="feedback-body" style="margin-top:14px">Je gedachte</label>
     <textarea id="feedback-body" name="body" rows="4" required
-              placeholder="Wat valt je op? Wat zou beter kunnen? Schrijf vrijuit — we lezen alles."
+              placeholder="Wat valt je op? Wat zou beter kunnen? Schrijf vrijuit, we lezen alles."
               autofocus>{{ body or "" }}</textarea>
 
     <div class="feedback-panel__foot">
       <span class="feedback-panel__hint">Verzonden vanaf <code>{{ page_path }}</code></span>
-      <button class="btn" type="submit">Versturen ✦</button>
+      <button class="btn" type="submit">Versturen</button>
     </div>
   </form>
 </div>

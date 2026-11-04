@@ -127,7 +127,7 @@ def create_intro(
         connection_service.check_intro_rate_limit(db, member)
     except connection_service.IntroRateLimited:
         return HTMLResponse(
-            "Je stuurde net al een paar intro's — geef het even tijd.",
+            "Je stuurde net al een paar intro's, geef het even tijd.",
             status_code=429,
         )
 

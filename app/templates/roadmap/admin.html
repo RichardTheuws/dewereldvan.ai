@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = true %}
-  {% set seo_title = "Roadmap — beheer · dewereldvan.ai" %}
+  {% set seo_title = "Roadmap · beheer · dewereldvan.ai" %}
   {% include "_seo_head.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
@@ -30,8 +30,7 @@
 
     <main class="flex-1 pb-24">
       <section class="mt-6">
-        <div class="eyebrow" data-reveal style="--d:160ms">Beheer · curatie</div>
-        <h1 class="headline mt-5" data-reveal style="--d:260ms">Roadmap-board.</h1>
+        <h1 class="headline" data-reveal style="--d:260ms">Roadmap-board.</h1>
         <p class="lede mt-5" style="max-width:54ch;--d:380ms" data-reveal>
           Voeg items toe, zet ze in een fase en stuur de volgorde met positie. Wat
           hier staat, leeft op de publieke roadmap.
@@ -39,7 +38,7 @@
       </section>
 
       {% if saved %}
-      <p class="rm-saved" role="status" data-reveal style="--d:440ms">✦ Opgeslagen.</p>
+      <p class="rm-saved" role="status" data-reveal style="--d:440ms">Opgeslagen.</p>
       {% endif %}
       {% if error %}
       <p class="idea-form__err" role="alert" data-reveal style="--d:440ms">{{ error }}</p>
@@ -73,10 +72,10 @@
           <div class="mt-3">
             <label class="field-label" for="rm-desc">Omschrijving</label>
             <textarea id="rm-desc" name="description" rows="2" maxlength="4000"
-                      placeholder="Optioneel — wat houdt het in?"></textarea>
+                      placeholder="Optioneel, wat houdt het in?"></textarea>
           </div>
           <div class="rm-create__foot">
-            <button class="btn" type="submit">Item toevoegen ✦</button>
+            <button class="btn" type="submit">Item toevoegen</button>
           </div>
         </form>
       </section>
@@ -91,8 +90,7 @@
         </div>
         {% else %}
         <div class="constellation-empty">
-          <span class="constellation-empty__spark" aria-hidden="true">✦</span>
-          <p class="lede" style="max-width:40ch;margin:0 auto">Nog geen items. Voeg het eerste hierboven toe.</p>
+                    <p class="lede" style="max-width:40ch;margin:0 auto">Nog geen items. Voeg het eerste hierboven toe.</p>
         </div>
         {% endif %}
       </section>

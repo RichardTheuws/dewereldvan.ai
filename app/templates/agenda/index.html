@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = false %}
-  {% set seo_title = "Agenda — dewereldvan.ai" %}
+  {% set seo_title = "Agenda · dewereldvan.ai" %}
   {% set seo_desc = "AI-meetups, workshops en events in Nederland en België. Ontdek wat er te doen is en meld je aan." %}
   {% include "_seo_head.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
@@ -27,10 +27,9 @@
 
     <main class="flex-1 pb-24">
       <section class="mt-6">
-        <div class="eyebrow" data-reveal style="--d:160ms">Samen, in de echte wereld</div>
-        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Agenda.</h1>
+        <h1 class="headline" data-reveal="materialize" style="--d:260ms">Agenda.</h1>
         <p class="lede mt-5" style="max-width:56ch;--d:380ms" data-reveal>
-          AI-meetups in NL/BE — wie, waar, en hoe vaak. <strong>Iedereen vult de
+          AI-meetups in NL/BE, wie, waar, en hoe vaak. <strong>Iedereen vult de
           agenda aan:</strong> ken je een meetup, zet 'm erin. Zo mist niemand
           iets.
         </p>
@@ -41,8 +40,8 @@
         {% set smart_id = "agenda-smart" %}
         {% set smart_action = "/agenda/concept" %}
         {% set smart_draft = "agenda-draft" %}
-        {% set smart_lead = "Ken jij een AI-meetup? Plak een link, of vertel het kort — de agent maakt 'm." %}
-        {% set smart_placeholder = "bijv. https://aimelo.nl — of: 'Aimelo, elke woensdag 18u in Almelo'" %}
+        {% set smart_lead = "Ken jij een AI-meetup? Plak een link, of vertel het kort, de agent maakt 'm." %}
+        {% set smart_placeholder = "bijv. https://aimelo.nl, of: 'Aimelo, elke woensdag 18u in Almelo'" %}
         {% include "posts/_smart_add.html" %}
         {% else %}
         {# Anon: lezen mag, toevoegen vraagt lidmaatschap (lichte, open uitnodiging). #}
@@ -56,8 +55,7 @@
       {% if is_admin and pending_events_count and pending_events_count > 0 %}
       <section class="mt-8" data-reveal style="--d:520ms">
         <a class="admin-banner" href="/admin/agenda">
-          <span class="admin-banner__spark" aria-hidden="true">✦</span>
-          <span class="admin-banner__text">
+                    <span class="admin-banner__text">
             <strong>{{ pending_events_count }}</strong> door de agent gevonden
             event{{ 's' if pending_events_count != 1 else '' }}
             wacht{{ 'en' if pending_events_count != 1 else '' }} op je beoordeling

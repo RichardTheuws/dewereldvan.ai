@@ -73,7 +73,7 @@ def add_correction(
     except tool_review_note_service.ToolNoteRateLimited:
         ctx = _notes_context(db, tool, member)
         ctx["error"] = (
-            "Je vulde net al veel aan — geef ons even tijd. Probeer het over "
+            "Je vulde net al veel aan, geef ons even tijd. Probeer het over "
             "een uur opnieuw."
         )
         return _render(request, "profiles/_tool_review_notes.html", ctx, status_code=429)

@@ -6,8 +6,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = false %}
-  {% set seo_title = "Nieuws — dewereldvan.ai" %}
-  {% set seo_desc = "Een wekelijkse briefing van het AI-nieuws dat ertoe doet voor makers in NL & BE — kort geduid, geen ruis." %}
+  {% set seo_title = "Nieuws · dewereldvan.ai" %}
+  {% set seo_desc = "Een wekelijkse briefing van het AI-nieuws dat ertoe doet voor makers in NL & BE, kort geduid, geen ruis." %}
   {% include "_seo_head.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
@@ -27,8 +27,7 @@
 
     <main class="flex-1 pb-24">
       <section class="mt-6">
-        <div class="eyebrow" data-reveal style="--d:160ms">Wat leden maken & waar ze in het nieuws zijn</div>
-        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Nieuws.</h1>
+        <h1 class="headline" data-reveal="materialize" style="--d:260ms">Nieuws.</h1>
         <p class="lede mt-5" style="max-width:56ch;--d:380ms" data-reveal>
           Een artikel geschreven, geïnterviewd, ergens uitgelicht? <strong>Deel
           het direct.</strong> Zo zien we elkaars werk en weten we wat er speelt.
@@ -40,8 +39,8 @@
         {% set smart_id = "nieuws-smart" %}
         {% set smart_action = "/nieuws/concept" %}
         {% set smart_draft = "nieuws-draft" %}
-        {% set smart_lead = "Iets verschenen — van of over jou? Plak de link of vertel het kort — de agent maakt 'm." %}
-        {% set smart_placeholder = "bijv. https://nrc.nl/… — of: 'geïnterviewd door Emerce over AI-agents'" %}
+        {% set smart_lead = "Iets verschenen, van of over jou? Plak de link of vertel het kort, de agent maakt 'm." %}
+        {% set smart_placeholder = "bijv. https://nrc.nl/…, of: 'geïnterviewd door Emerce over AI-agents'" %}
         {% include "posts/_smart_add.html" %}
         {% else %}
         {# Anon: lezen mag, plaatsen vraagt lidmaatschap (lichte, open uitnodiging). #}

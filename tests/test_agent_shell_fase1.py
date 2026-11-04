@@ -351,7 +351,7 @@ def test_canvas_one_live_region_not_on_main(make_client, SessionTest):
     mid = _seed_approved(SessionTest)
     body = make_client(mid).get("/").text
     assert (
-        '<main role="main" aria-label="De wereld — agent-canvas" class="canvas wrap">'
+        '<main role="main" aria-label="De wereld, agent-canvas" class="canvas wrap">'
         in body
     )
     assert (
@@ -512,7 +512,7 @@ def test_demo_route_public_indexable_and_fictional(make_client):
     """De publieke demo: 200, duidelijk fictief/AI-demo, CTA naar registratie,
     indexeerbaar (geen noindex)."""
     body = make_client(None).get("/demo").text
-    assert "Demo — fictief profiel" in body
+    assert "Demo: een fictief profiel" in body
     assert "Nova Belmonte" in body
     assert "studio-nova.ai" in body
     assert 'href="/register"' in body

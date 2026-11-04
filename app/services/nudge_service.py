@@ -182,7 +182,7 @@ def founder_welcome_nudge(viewer: Member) -> Nudge:
     return Nudge(
         kind=FOUNDER_NUDGE_KIND,
         message=(
-            f"{groet} Jij stond aan de wieg van deze wereld — vertel je "
+            f"{groet} Jij stond aan de wieg van deze wereld, vertel je "
             "ontstaansverhaal, dan bewaren we het bij je profiel."
         ),
         action_label="vertel je verhaal",
@@ -242,7 +242,7 @@ def select_nudge(
                 return Nudge(
                     kind="profiel_bijna_af",
                     message=(
-                        f"Je profiel is bijna compleet — alleen {missing} "
+                        f"Je profiel is bijna compleet, alleen {missing} "
                         f"ontbreekt nog."
                     ),
                     action_label="afmaken",
@@ -260,7 +260,7 @@ def select_nudge(
         return Nudge(
             kind="scene_gids",
             message=(
-                "Je profiel kan een levende scene krijgen — maak er met AI één "
+                "Je profiel kan een levende scene krijgen, maak er met AI één "
                 "die bij je werk past. De gids laat in vier stappen zien hoe."
             ),
             action_label="open de gids",
@@ -319,7 +319,7 @@ def select_chips(
             chips.append(
                 Nudge(
                     kind="chip_discovery",
-                    message=f"Je ontdekking is klaar — {found} {woord}",
+                    message=f"Je ontdekking is klaar, {found} {woord}",
                     action_label="bekijk je ontdekking",
                     action="navigate:/profiel/ai/ontdek/resultaat",
                 )

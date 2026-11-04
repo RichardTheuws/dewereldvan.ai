@@ -319,12 +319,12 @@ def run_job(
                 if focus == "media":
                     woord = "media-vermelding" if new_count == 1 else "media-vermeldingen"
                     title, body = "Ik vond media over je", (
-                        f"{new_count} {woord} gevonden — kies wat op je profiel mag."
+                        f"{new_count} {woord} gevonden, kies wat op je profiel mag."
                     )
                 else:
                     woord = "vermelding" if new_count == 1 else "vermeldingen"
                     title, body = "Je ontdekking is klaar", (
-                        f"Ik vond {new_count} mogelijke {woord} — kies wat op je profiel mag."
+                        f"Ik vond {new_count} mogelijke {woord}, kies wat op je profiel mag."
                     )
                 notification_service.notify(
                     db, member, notification_service.Notification(

@@ -281,11 +281,11 @@ def _degraded_fragment(
 ) -> HTMLResponse:
     """Nette, eerlijke degradatie-staat per gate-reden (doc §2.2)."""
     messages = {
-        "turnstile": "Even verifieren dat je een mens bent — probeer het zo nog eens.",
-        "burst": "Even geduld — je was net iets te snel. Probeer het over een halve minuut.",
-        "day_visitor": "Je gebruikte vandaag de gratis proef — leden doen dit onbeperkt.",
-        "day_ip": "Vanaf dit netwerk is de gratis proef vandaag op — leden doen dit onbeperkt.",
-        "weekcap": "De gratis proef is deze week op — kom morgen terug of word lid.",
+        "turnstile": "Even verifieren dat je een mens bent, probeer het zo nog eens.",
+        "burst": "Even geduld, je was net iets te snel. Probeer het over een halve minuut.",
+        "day_visitor": "Je gebruikte vandaag de gratis proef, leden doen dit onbeperkt.",
+        "day_ip": "Vanaf dit netwerk is de gratis proef vandaag op, leden doen dit onbeperkt.",
+        "weekcap": "De gratis proef is deze week op, kom morgen terug of word lid.",
     }
     message = messages.get(reason, "De gratis proef is nu even niet beschikbaar.")
     return _fragment(

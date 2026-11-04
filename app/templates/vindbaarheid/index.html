@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% set noindex = true %}
-  {% set seo_title = "Je vindbaarheid — dewereldvan.ai" %}
+  {% set seo_title = "Je vindbaarheid · dewereldvan.ai" %}
   {% set seo_desc = "Hoe vaak je gevonden wordt, door mensen en door AI-assistenten." %}
   {% include "_seo_head.html" %}
   <link rel="stylesheet" href="/static/util.css?v={{ asset_ver }}">
@@ -24,8 +24,7 @@
     {% include "_cosmic_nav.html" %}
     <main class="flex-1 pb-24">
       <section class="mt-8" style="max-width:60ch">
-        <div class="eyebrow" data-reveal style="--d:160ms">De laatste 30 dagen</div>
-        <h1 class="headline mt-5" data-reveal="materialize" style="--d:260ms">Je vindbaarheid.</h1>
+        <h1 class="headline" data-reveal="materialize" style="--d:260ms">Je vindbaarheid.</h1>
         <p class="lede mt-5" data-reveal style="--d:380ms">
           {% if is_public %}Hoe vaak mensen en AI-assistenten je profiel vonden, en wat er nog ontbreekt
           om beter gevonden te worden.{% else %}Je profiel is besloten. Hieronder zie je wat je mist,
@@ -108,8 +107,7 @@
 
       <section class="mt-12 compose" data-reveal>
         <div class="compose__intro">
-          <div class="eyebrow">Zo leest een AI je</div>
-          <h2 class="headline mt-4" style="font-size:clamp(1.8rem,4vw,2.6rem)">Precies dit.</h2>
+          <h2 class="headline" style="font-size:clamp(1.8rem,4vw,2.6rem)">Precies dit.</h2>
           <p class="lede mt-4" style="max-width:40ch">Dit is wat ChatGPT, Claude of een eigen agent over je ophaalt
             via <a class="text-link" href="/makers.json">makers.json</a>, <a class="text-link" href="/llms.txt">llms.txt</a>
             en de MCP-server. Alleen wat op je openbare profiel staat.</p>

@@ -1,4 +1,4 @@
-# dewereldvan.ai — Styleguide & ervaringsrichtlijnen
+# dewereldvan.ai: styleguide en ervaringsrichtlijnen
 
 > **"Kosmische diepte."** Eén identiteit, overal. Dit document is verplichte lectuur vóór elk
 > scherm, elke flow en elke e-mail. Zie ook het **Ervaringsmandaat** in `CLAUDE.md`.
@@ -36,8 +36,10 @@ gelijk-verdeelde paletten. **Nooit** paarse-gradient-op-wit (de generieke AI-loo
 
 ### Typografie
 - **Display**: **Fraunces** (serif, optisch, karaktervol) — koppen, hero, namen.
-- **Mono/labels**: **JetBrains Mono** — eyebrows, status, metadata, kleine labels (`letter-spacing` ruim).
-- **Body**: **Spline Sans** (300/400) — lopende tekst.
+- **Interface en body**: **Spline Sans** (`--font-ui`): lopende tekst, knoppen, nav, labels, chips.
+  Gewone hoofd- en kleine letters, `letter-spacing: 0`.
+- **Data**: **JetBrains Mono** (`--font-data`) **alleen voor echte cijfers en code**: tellingen,
+  scores, datums in een tijdlijn, tokens. Nooit als "technische" aankleding van labels of knoppen.
 - Via Google Fonts in `base.html`. Géén Inter/Roboto/Arial/system-ui voor sier.
 
 ### Achtergrond & sfeer (altijd aanwezig, nooit een platte kleur)
@@ -49,8 +51,10 @@ gelijk-verdeelde paletten. **Nooit** paarse-gradient-op-wit (de generieke AI-loo
   (`teaser/index.html`) en de `_cosmic_*`-partials.
 
 ### Motion
-- **Gechoreografeerde page-load**: gestaggerde reveals (eyebrow → kop → tekst → actie) met blur→scherp.
-- Hoog-impact momenten boven micro-fireworks. Hover/focus die verrast (gloed, lift).
+- **Eén entree-moment per pagina**: alleen de paginakop komt binnen (`data-reveal="materialize"`);
+  de rest staat er meteen. Een bewust gechoreografeerde pagina (de welkomst, de demo) zet
+  `data-reveal-staged` op `<body>`. Geen identieke fade op elke sectie.
+- Hoog-impact momenten boven micro-fireworks. Hover/focus met lift en een schaduw mét offset, geen gekleurde gloed.
 - **Alles respecteert `prefers-reduced-motion`** → animaties uit, content direct zichtbaar. Geen uitzondering.
 
 ### Compositie
@@ -60,10 +64,13 @@ mag. Niet centreren "omdat het moet".
 ---
 
 ## 2. Componenten & patronen
-- **Knoppen**: pill-vorm; primair = goud-gradient op donker, met lift + gloed op hover; mono-label.
+- **Knoppen**: pill-vorm; primair = goud-gradient op donker, lift op hover; label in Spline Sans.
 - **Inputs**: subtiele glas-fill, ronde rand; focus = cyaan rand + zachte gloed-ring.
-- **Kaarten** (profiel-links, projecten, ideeën): indigo glas, rand `--line`, beeld + titel + mono-meta.
-- **Eyebrow**: mono, uppercase, ruime `letter-spacing`, goud, met een kort gradient-lijntje ervoor.
+- **Kaarten** (profiel-links, projecten, ideeën): indigo glas, rand `--line`, beeld + titel + meta.
+  Is een lijst de echte vorm (gidsen, kenmerken), dan een redactionele lijst, geen kaartjesraster.
+- **Koppen**: de kop draagt zichzelf. Sectiekoppen zijn Fraunces (`.section-title`). Informatie die
+  bij de kop hoort (datum, soort) staat eronder als `.page-meta`.
+- **Iconen**: alleen uit `_icons.html` (getekende lijn-iconen, één lijndikte, `currentColor`).
 - **Cosmic background** als herbruikbare partial (`_cosmic_bg`) op elke kern-pagina.
 - htmx voor interactie; SSE voor streaming (AI-antwoorden, live updates). Geen JS-buildpipeline.
 
@@ -106,8 +113,9 @@ Verplicht meegenomen in elk relevant scherm:
 
 ## 6. Per-scherm checklist (af = alle vinkjes)
 - [ ] Kosmische achtergrond aanwezig (nebula/gloed/grain/vignet, evt. constellatie)
-- [ ] Fraunces + JetBrains Mono + Spline Sans correct ingezet
-- [ ] Gechoreografeerde entrance + doordachte hover/focus
+- [ ] Fraunces voor koppen, Spline Sans voor de interface, mono alleen voor cijfers en code
+- [ ] Eén entree-moment + doordachte hover/focus
+- [ ] Geen tells uit §8 (eyebrow, ✦/emoji, gloed, mono-labels, gedachtestreepjes in eigen copy)
 - [ ] `prefers-reduced-motion`, contrast, toetsenbord, responsive OK
 - [ ] Microcopy is eenvoudig, direct en to the point (niet zweverig); spreekt de maker als peer aan
 - [ ] Een slimme hulp aanwezig (feedback/suggestie/AI) waar relevant
@@ -124,3 +132,20 @@ Verplicht meegenomen in elk relevant scherm:
 - Een tweede, afwijkende huisstijl introduceren. Toegankelijkheid opofferen voor effect.
 - **Zweverig/poëtisch taalgebruik** ("je ster is verschenen", "het universum wacht"). In-app = eenvoudig en to the point.
 - **Auto-redirects als "ervaring"** (een pagina die je na X seconden wegklikt). Een onboarding is een moment waar de maker zélf doorklikt, geen doorverwijspagina.
+
+---
+
+## 8. Geen AI-tells (vastgelegd 2026-11-04)
+Aanleiding: feedback uit de groep dat de site herkenbaar "Claude Code-design" was (iconen,
+lettertypen, streepjes). Getoetst aan de regels van [Impeccable](https://github.com/pbakaus/impeccable).
+De kosmische wereld blijft; deze patronen verraden dat een pagina gegenereerd is en zijn verboden:
+- **Eyebrows**: een label in gespatieerde hoofdletters (met lijntje) boven een kop.
+- **Glyphs en emoji als iconen**: ✦, ▶, 🎓, 💼 en dergelijke. Gebruik `_icons.html`.
+- **Mono als kostuum**: monospace of hoofdletters met ruime `letter-spacing` voor labels, knoppen, nav.
+- **Gekleurde gloed zonder offset** (`box-shadow: 0 0 …`) op knoppen, kaarten, avatar en invoervelden.
+  Sterren en stippen in de constellatie mogen gloeien: die horen bij de wereld.
+- **Gedachtestreepjes (—) in onze eigen copy.** Gebruik een punt, komma of dubbele punt. Teksten van
+  leden en nieuwsbronnen laten we zoals ze zijn; in tabellen mag "—" een lege waarde aangeven.
+- **Een groot getal boven een label** als kaartontwerp, en **identieke kaartjesrasters** als paginastructuur.
+- **Dezelfde fade-in op elke sectie.**
+
