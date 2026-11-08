@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-04 · **Versie**: 0.120.2 · **Branch**: `main`
+**Laatste update**: 2026-11-08 · **Versie**: 0.120.3 · **Branch**: `main`
 
+> **0.120.3** — Deploy omgezet naar Hetzner: `scripts/deploy.sh` (Hetzner-lib, backup + `pg_dump` vooraf, live pas
+> bij de nieuwe versie op `/healthz`), `cloudflared` vastgepind op 2026.10.7.
+>
 > **0.120.2** — Voordeur toont de community: beheerder niet bij de uitgelichte makers (dagelijkse rotatie), geen
 > nieuws óver leden in het nieuwsblok, en zelf-wissen ruimt nieuws over het lid op.
 >
@@ -208,10 +211,9 @@
 
 ## Waar het draait
 - **🚀 LIVE (volledige app)**: **https://dewereldvan.ai** (apex, canonical) + `www` + `app.dewereldvan.ai` —
-  alle drie via de `dewereldvan-app`-tunnel naar dezelfde app. M4 (`server-mini`), Docker Compose
-  (`web` FastAPI + `postgres` 16 + `cloudflared`). `BASE_URL=https://dewereldvan.ai`. Redeploy =
-  `rsync ./ → ~/dewereldvan-app/` (excl. `.env`/`data`/`.venv`/`teaser`) + `docker compose up -d --build web`;
-  migraties draaien via Dockerfile-CMD. Details: memory `dewereldvan-deploy`.
+  alle drie via de `dewereldvan-app`-tunnel naar dezelfde app. Hetzner `theuws-prod:/srv/apps/dewereldvan-app`
+  (sinds 2026-11-04), Docker Compose (`web` FastAPI + `postgres` 16 + `cloudflared`). `BASE_URL=https://dewereldvan.ai`.
+  Redeploy = `scripts/deploy.sh` (alleen gepushte main); migraties draaien via Dockerfile-CMD. Details: memory `dewereldvan-deploy`.
 - **Teaser**: buiten dienst sinds de launch (2026-06-22, v0.79.1); stack gestopt, wachtlijst-volume bewaard.
 - AI/integraties live op preview: `ANTHROPIC_API_KEY`, `FAL_KEY`, `AI_ENRICH_ENABLED=true`,
   Cloudflare Browser Rendering (screenshots), **Telegram-bot** (@dewereldvanaibot).

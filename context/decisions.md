@@ -516,3 +516,20 @@ per dag (foto eerst). Het nieuwsblok op de voordeur toont algemeen nieuws; artik
 
 **Gevolgen**: footprint-nieuws is profielinhoud, geen redactie-nieuws. Een nieuws-item zonder auteur
 mag nooit over een persoon gaan; het wissen (`account_deletion`) bewaakt dat.
+
+## [2026-11-08] Deploy via de gedeelde Hetzner-lib, niet via rsync van de werkmap
+
+**Context**: de app verhuisde op 2026-11-04 naar Hetzner. De oude deploy (rsync van de werkmap naar de M4)
+wees nog naar een machine waar de app niet meer draait.
+
+**Beslissing**: `scripts/deploy.sh` op `scripts/deploy-hetzner-lib.sh` (template uit server-mini-development).
+Alleen de gepushte `main` (git archive), `.env` blijft op de server, tar-backup + `pg_dump` vooraf, en pas
+geslaagd als `/healthz` de nieuwe `VERSION` toont. `cloudflared` vastgepind.
+
+**Alternatieven**:
+- De oude rsync-regel omschrijven naar Hetzner: afgewezen. Die neemt ongecommit werk en lokale caches mee en
+  controleert niet of de nieuwe versie live staat.
+
+**Gevolgen**: eerst pushen, dan deployen. Een versie-upgrade van `cloudflared` is nu een bewuste wijziging in
+`docker-compose.yml`.
+

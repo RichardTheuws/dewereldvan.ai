@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Nachtelijke unattended jobs voor dewereldvan.ai — gegated op AI_ENRICH_ENABLED,
-# idempotent, lage op-last. Aangeroepen door de LaunchAgent
-# com.theuws.dewereldvan.nightly-jobs op de M4 (server-mini).
+# idempotent, lage op-last. Aangeroepen door de systemd-timer dewereldvan-nightly
+# op Hetzner theuws-prod (DWV_APP_DIR=/srv/apps/dewereldvan-app, DOCKER_BIN=/usr/bin/docker).
 #
 #   1. refresh_matches   — herrekent de vraag↔aanbod-matchsuggesties (Tier 1).
 #   2. distill_memories  — werkt het sessie-overstijgend concierge-geheugen bij (F2).

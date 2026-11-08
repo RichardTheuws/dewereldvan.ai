@@ -1,37 +1,24 @@
 # Backup & Restore — dewereldvan.ai
 
 De volledige platform-staat zit in één Postgres-database (`dewereldvan`, container
-`dewereldvan-app-postgres-1` op de M4). Profielen, leden, projecten, agenda, nieuws,
-ideeën — alles. Eén kapot volume zonder backup = alles weg. Daarom:
+`dewereldvan-app-postgres-1` op Hetzner `theuws-prod`, sinds 2026-11-04). Profielen, leden, projecten, agenda,
+nieuws, ideeën — alles. Eén kapot volume zonder backup = alles weg. Daarom:
 
 ## Hoe het nu beschermd is
 
-dewereldvan is geregistreerd in het **bestaande nachtelijke M1-backupsysteem**
-(`/Users/Shared/srv/monitoring/m4-backup.sh`, LaunchAgent `com.server-mini.m4-backup`,
-elke dag 02:00). Dat systeem doet al maanden de andere stacks (boekhoudr, n8n, …) en
-levert gratis: **logische `pg_dump`, gzip, size-validatie, daily/weekly-retentie
-(7 dagen / 4 weken), ntfy-alerting bij falen, en een freshness-heartbeat naar de M4.**
+- **Nachtelijke dump** door de host (systemd-timer `db-dump`, 03:30, infra-repo):
+  `/srv/infra/dumps/dewereldvan-app-postgres-1.sql.gz` op `theuws-prod` (alleen root leesbaar).
+- **Off-site**: `restic-backup` (04:00) naar de eigen Storage Box en R2-EU, plus Hetzner-snapshots.
+- **Bij elke deploy**: `scripts/deploy.sh` maakt vooraf een `pg_dump` in
+  `/srv/deploy-backups/hz/dewereldvan-app/db-<timestamp>.sql.gz`.
 
-dewereldvan staat in de `PG_DATABASES`-array van dat script:
-
-```
-"dewereldvan-app-postgres-1:app:dewereldvan"
-```
-
-De dump landt nachtelijks op de M1 in:
-
-```
-/Users/Shared/srv/backups/m4/daily/<YYYY-MM-DD>/postgres/dewereldvan.sql.gz
-/Users/Shared/srv/backups/m4/weekly/<YYYY-MM-DD>/postgres/dewereldvan.sql.gz   # zondags
-```
-
-> **Niet** een aparte cron op de M4 — bewust geaugmenteerd op het beproefde M1-systeem
-> i.p.v. een tweede, ongeteste backup-stack ernaast.
+Het M1-systeem (`m4-backup.sh`) en `scripts/backup-db.sh` (LaunchAgent op de M4) horen bij de oude M4-opzet en
+dekken de Hetzner-database niet.
 
 ## Een verse dump nu maken (handmatig, buiten het schema om)
 
 ```bash
-ssh server-mini "cd ~/dewereldvan-app && docker compose exec -T postgres \
+ssh theuws-prod "cd /srv/apps/dewereldvan-app && sudo -u deploy docker compose exec -T postgres \
   pg_dump -U app dewereldvan" | gzip > dewereldvan-$(date +%F).sql.gz
 ```
 
@@ -59,13 +46,10 @@ Vergelijk de aantallen met de live DB; gelijk = de dump is goed.
 ### 2. Productie-restore (alleen bij echt verlies)
 
 ```bash
-# haal de dump van de M1 (de M4 kent de M1-hostname niet; doe dit vanaf je laptop)
-scp server-mini-m1:/Users/Shared/srv/backups/m4/daily/<DATUM>/postgres/dewereldvan.sql.gz .
-# zet 'm op de M4
-scp dewereldvan.sql.gz server-mini:~/
+# kies de dump: de nachtelijke (/srv/infra/dumps/...) of een pre-deploy-dump (/srv/deploy-backups/hz/dewereldvan-app/)
 # herstel in de draaiende DB (na een DROP/CREATE van het schema indien nodig)
-ssh server-mini "cd ~/dewereldvan-app && gunzip -c ~/dewereldvan.sql.gz | \
-  docker compose exec -T postgres psql -U app -d dewereldvan -q"
+ssh theuws-prod "cd /srv/apps/dewereldvan-app && sudo gunzip -c <dump>.sql.gz | \
+  sudo -u deploy docker compose exec -T postgres psql -U app -d dewereldvan -q"
 ```
 
 ## Geverifieerd

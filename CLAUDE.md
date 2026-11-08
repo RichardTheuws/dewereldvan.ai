@@ -4,8 +4,8 @@
 Platform voor de leden van een WhatsApp-groep om een profiel aan te maken: wie ze zijn,
 wat ze maken, en waar ze naar op zoek zijn. Het MVP is profielen + ledengids; de visie is
 breder — directory, matchmaking (vraag/aanbod), community en een publieke showcase van het
-werk van leden. Domein `dewereldvan.ai` staat op Cloudflare; self-hosted op de Mac mini M4
-achter een Cloudflare Tunnel.
+werk van leden. Domein `dewereldvan.ai` staat op Cloudflare; self-hosted op Hetzner
+(`theuws-prod`) achter een Cloudflare Tunnel.
 
 ## ✨ Ervaringsmandaat (NIET ONDERHANDELBAAR)
 dewereldvan.ai is een open, gastvrije community voor iedereen in NL/BE die met AI bouwt, traint,
@@ -44,7 +44,8 @@ Dit project gebruikt uitgebreide context-documentatie:
 - **Visie**: directory + matchmaking + community + showcase — datamodel nu holistisch, bouw gefaseerd.
 - **Toegang**: open registratie → admin-goedkeuring (lichtgewicht queue) → passwordless magic-link login.
 - **Zichtbaarheid**: per profiel instelbaar, default besloten (alleen-leden).
-- **Hosting**: self-host op M4 Docker, Cloudflare ervóór (DNS + Tunnel, geen open poorten).
+- **Hosting**: self-host op Hetzner (`theuws-prod`, sinds 2026-11-04; daarvoor de M4), Docker Compose,
+  Cloudflare ervóór (DNS + Tunnel, geen open poorten).
 
 ## Tech Stack (samengevat)
 - **Backend**: Python 3.12 + FastAPI + SQLAlchemy 2.x + Alembic
@@ -76,8 +77,19 @@ E-mail in dev (`EMAIL_BACKEND=console`) wordt gelogd én naar `data/outbox/` ges
 (per bericht een `.txt` + een gecombineerde `outbox.log`) zodat magic-links klikbaar zijn.
 
 ## Deployment
-Self-hosted op `server-mini` (M4) via Docker Compose, geëxposeerd met Cloudflare Tunnel.
-Geen poortforwarding op de router. Details in context/architecture.md.
+Draait op Hetzner: `theuws-prod:/srv/apps/dewereldvan-app` (Docker Compose, eigenaar `deploy`, gebouwd op de
+server, amd64), geëxposeerd met de eigen `dewereldvan-app`-tunnel. Geen open poorten.
+
+```bash
+scripts/deploy.sh   # eerst committen + pushen; levert alleen de gepushte main
+```
+
+Het script maakt een backup + `pg_dump` in `/srv/deploy-backups/hz/dewereldvan-app/`, laat `.env` op de server
+staan en is pas geslaagd als `https://dewereldvan.ai/healthz` de nieuwe `VERSION` toont. De `.env` wijzigen:
+`ssh theuws-prod`, `sudo -u deploy nano /srv/apps/dewereldvan-app/.env`, dan `docker compose up -d`.
+Nachtjobs: systemd-timer `dewereldvan-nightly` (03:30, infra-repo). Hostingdetails:
+`~/Documents/server-mini-development/docs/HOSTING_HETZNER.md`. De M4-stack is weg: nooit daar opnieuw starten
+naast Hetzner, dan verdeelt de tunnel het verkeer.
 
 ## Werkwijze
 Volgt de globale workflow (~/.claude/CLAUDE.md): SemVer + CHANGELOG bij elke wijziging,

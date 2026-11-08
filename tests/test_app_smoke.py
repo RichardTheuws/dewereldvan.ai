@@ -60,6 +60,14 @@ def test_healthz_ok(client):
     assert resp.json()["status"] == "ok"
 
 
+def test_healthz_reports_deployed_version(client):
+    """Het deploy-script wacht op deze versie; die moet gelijk zijn aan VERSION."""
+    from pathlib import Path
+
+    version = (Path(__file__).resolve().parent.parent / "VERSION").read_text().strip()
+    assert client.get("/healthz").json()["version"] == version
+
+
 def test_register_page_renders(client):
     resp = client.get("/register")
     assert resp.status_code == 200

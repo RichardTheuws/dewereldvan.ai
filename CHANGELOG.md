@@ -3,6 +3,16 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.120.3] - 2026-11-08
+### Changed — Deploy naar Hetzner
+- De app draait sinds 4 november op Hetzner (`theuws-prod:/srv/apps/dewereldvan-app`), niet meer op de M4.
+  Nieuw: `scripts/deploy.sh` op basis van `scripts/deploy-hetzner-lib.sh`. Het levert alleen de gepushte `main`,
+  laat `.env` op de server staan, maakt vooraf een tar-backup en een `pg_dump`, bouwt op de server en meldt pas
+  "live" als `/healthz` de nieuwe versie toont.
+- `/healthz` geeft nu ook `version` terug.
+- `cloudflare/cloudflared` vastgepind op `2026.10.7` in plaats van `latest`.
+- Docs (CLAUDE.md, architectuur, status, backup en restore) wijzen naar Hetzner.
+
 ## [0.120.2] - 2026-11-04
 ### Fixed — De voordeur toont de community, niet de beheerder
 - **Uitgelichte makers**: de beheerder staat er niet meer tussen, en de keuze roteert per dag

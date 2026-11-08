@@ -68,6 +68,9 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
+# De gedeployde versie, zodat het deploy-script pas "live" meldt als /healthz de nieuwe toont.
+_VERSION_FILE = BASE_DIR.parent / "VERSION"
+_APP_VERSION = _VERSION_FILE.read_text().strip() if _VERSION_FILE.is_file() else "unknown"
 
 
 def _csrf_context(request: Request) -> dict:
@@ -422,7 +425,7 @@ def _register_core_routes(app: FastAPI) -> None:
             return JSONResponse(
                 {"status": "error", "detail": str(exc)}, status_code=503
             )
-        return JSONResponse({"status": "ok"})
+        return JSONResponse({"status": "ok", "version": _APP_VERSION})
 
 
 def _register_error_handlers(app: FastAPI) -> None:

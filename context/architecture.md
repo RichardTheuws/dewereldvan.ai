@@ -13,7 +13,7 @@ Bezoeker ──HTTPS──► Cloudflare (DNS + WAF + Tunnel edge)
                           │  (cloudflared, geen open poorten)
                           ▼
                  ┌─────────────────────────────┐
-                 │  Mac mini M4 (server-mini)   │
+                 │  Hetzner theuws-prod-01      │
                  │  Docker Compose              │
                  │  ┌────────┐   ┌────────────┐ │
                  │  │ web    │──►│ postgres 16│ │
@@ -29,8 +29,8 @@ Bezoeker ──HTTPS──► Cloudflare (DNS + WAF + Tunnel edge)
    concierge,
    discovery)
 ```
-Twee tunnels/ingressen: **app.dewereldvan.ai** (volledige app) en **dewereldvan.ai**
-(teaser). MCP-server gemount op `/mcp` (eigen Bearer-auth; zonder token alleen de openbare gids).
+Eén tunnel (`dewereldvan-app`) voor **dewereldvan.ai**, `www` en **app.dewereldvan.ai**, allemaal naar
+`web:8000`. Sinds 2026-11-04 op Hetzner (`/srv/apps/dewereldvan-app`); deploy met `scripts/deploy.sh`. MCP-server gemount op `/mcp` (eigen Bearer-auth; zonder token alleen de openbare gids).
 
 ## Componenten (`app/`)
 - **routers/** (21): HTTP-endpoints (zie route-inventaris). **services/**: de logica
