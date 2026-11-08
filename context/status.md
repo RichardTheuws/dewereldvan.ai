@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-08 · **Versie**: 0.120.3 · **Branch**: `main`
+**Laatste update**: 2026-11-08 · **Versie**: 0.121.0 · **Branch**: `main`
 
+> **0.121.0** — Deploy bevestigt de git-revisie via `/healthz`; pre-deploy-dump met pipefail + controle, dumps
+> geroteerd (10), versie uit de export.
+>
 > **0.120.3** — Deploy omgezet naar Hetzner: `scripts/deploy.sh` (Hetzner-lib, backup + `pg_dump` vooraf, live pas
 > bij de nieuwe versie op `/healthz`), `cloudflared` vastgepind op 2026.10.7.
 >

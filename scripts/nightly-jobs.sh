@@ -17,8 +17,8 @@
 # zelf best-effort (een fout in de AI-laag mag niets breken).
 set -uo pipefail
 
-APP_DIR="${DWV_APP_DIR:-$HOME/dewereldvan-app}"
-DOCKER="${DOCKER_BIN:-/usr/local/bin/docker}"
+APP_DIR="${DWV_APP_DIR:-/srv/apps/dewereldvan-app}"
+DOCKER="${DOCKER_BIN:-/usr/bin/docker}"
 
 cd "$APP_DIR" || { echo "FOUT: $APP_DIR niet gevonden"; exit 1; }
 

@@ -71,6 +71,9 @@ STATIC_DIR = BASE_DIR / "static"
 # De gedeployde versie, zodat het deploy-script pas "live" meldt als /healthz de nieuwe toont.
 _VERSION_FILE = BASE_DIR.parent / "VERSION"
 _APP_VERSION = _VERSION_FILE.read_text().strip() if _VERSION_FILE.is_file() else "unknown"
+# REVISION schrijft het deploy-script (git-sha); lokaal ontbreekt het bestand.
+_REVISION_FILE = BASE_DIR.parent / "REVISION"
+_APP_REVISION = _REVISION_FILE.read_text().strip() if _REVISION_FILE.is_file() else "dev"
 
 
 def _csrf_context(request: Request) -> dict:
@@ -425,7 +428,7 @@ def _register_core_routes(app: FastAPI) -> None:
             return JSONResponse(
                 {"status": "error", "detail": str(exc)}, status_code=503
             )
-        return JSONResponse({"status": "ok", "version": _APP_VERSION})
+        return JSONResponse({"status": "ok", "version": _APP_VERSION, "revision": _APP_REVISION})
 
 
 def _register_error_handlers(app: FastAPI) -> None:

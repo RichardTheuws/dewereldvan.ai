@@ -65,7 +65,10 @@ def test_healthz_reports_deployed_version(client):
     from pathlib import Path
 
     version = (Path(__file__).resolve().parent.parent / "VERSION").read_text().strip()
-    assert client.get("/healthz").json()["version"] == version
+    body = client.get("/healthz").json()
+    assert body["version"] == version
+    # Zonder REVISION-bestand (lokaal) staat er "dev"; het deploy-script wacht op de echte sha.
+    assert body["revision"]
 
 
 def test_register_page_renders(client):

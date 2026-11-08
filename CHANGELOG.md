@@ -3,6 +3,19 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.121.0] - 2026-11-08
+### Added — Deploy bevestigt de revisie
+- `/healthz` geeft ook `revision` (git-sha uit het `REVISION`-bestand van de deploy; lokaal `dev`). Het
+  deploy-script wacht op die sha, zodat een redeploy zonder versiebump ook echt nieuwe code bewijst.
+### Fixed — Deploy-script na review
+- De pre-deploy-dump draait met `pipefail` en telt alleen als hij de afsluitregel van `pg_dump` bevat; een
+  mislukte dump stopt de deploy vóór de migratie.
+- Oude pre-deploy-dumps worden opgeruimd (de nieuwste 10 blijven).
+- Versie en revisie komen uit de export, niet uit de werkmap. `/data/` staat ook buiten de sync.
+- Mislukt de deploy na de build, dan toont het script de backup en de dump als terugweg.
+- `nightly-jobs.sh` valt terug op de Hetzner-paden; de alert van `healthcheck.sh` (draait op de M4 als externe
+  check) verwijst naar theuws-prod.
+
 ## [0.120.3] - 2026-11-08
 ### Changed — Deploy naar Hetzner
 - De app draait sinds 4 november op Hetzner (`theuws-prod:/srv/apps/dewereldvan-app`), niet meer op de M4.

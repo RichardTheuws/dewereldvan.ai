@@ -85,7 +85,7 @@ scripts/deploy.sh   # eerst committen + pushen; levert alleen de gepushte main
 ```
 
 Het script maakt een backup + `pg_dump` in `/srv/deploy-backups/hz/dewereldvan-app/`, laat `.env` op de server
-staan en is pas geslaagd als `https://dewereldvan.ai/healthz` de nieuwe `VERSION` toont. De `.env` wijzigen:
+staan en is pas geslaagd als `https://dewereldvan.ai/healthz` de nieuwe git-`revision` toont. De `.env` wijzigen:
 `ssh theuws-prod`, `sudo -u deploy nano /srv/apps/dewereldvan-app/.env`, dan `docker compose up -d`.
 Nachtjobs: systemd-timer `dewereldvan-nightly` (03:30, infra-repo). Hostingdetails:
 `~/Documents/server-mini-development/docs/HOSTING_HETZNER.md`. De M4-stack is weg: nooit daar opnieuw starten

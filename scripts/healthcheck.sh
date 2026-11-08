@@ -6,7 +6,8 @@
 # zodat de alert óók werkt als álle containers plat liggen (in tegenstelling tot
 # notify_ops, dat de web-container nodig heeft).
 #
-# Gepland via launchd (com.theuws.dewereldvan.healthcheck, elke 5 min). De
+# Gepland via launchd op de M4 (com.theuws.dewereldvan.healthcheck, elke 5 min): bewust buiten
+# Hetzner, zodat de check ook werkt als theuws-prod plat ligt. De app zelf draait op Hetzner. De
 # debounce (state-file) voorkomt dat een outage elke run opnieuw pingt.
 set -uo pipefail
 
@@ -37,7 +38,7 @@ if [ "$code" = "200" ]; then
   echo "up" > "$STATE"
 else
   if [ "$prev" != "down" ]; then
-    send "🔴 dewereldvan.ai ONBEREIKBAAR — /healthz gaf ${code} op ${now}. Check de M4 (containers/tunnel/DB)."
+    send "🔴 dewereldvan.ai ONBEREIKBAAR — /healthz gaf ${code} op ${now}. Check theuws-prod (Hetzner: containers/tunnel/DB)."
   fi
   echo "down" > "$STATE"
 fi
