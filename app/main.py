@@ -201,6 +201,21 @@ async def _lifespan(app: FastAPI):
         yield
 
 
+class _McpNoSlashRedirect:
+    """Beantwoord ``/mcp`` direct, zonder 307 naar ``/mcp/``. De MCP-app is een
+    mount; Starlette redirect dan het kale pad, en Claude's custom-connector volgt
+    die redirect niet ("Connecting to the server: Not found 307"). Overal tonen we
+    de URL zonder slash, dus herschrijven we het pad vóór de router."""
+
+    def __init__(self, app) -> None:
+        self.app = app
+
+    async def __call__(self, scope, receive, send) -> None:
+        if scope["type"] == "http" and scope.get("path") == "/mcp":
+            scope = dict(scope, path="/mcp/", raw_path=b"/mcp/")
+        await self.app(scope, receive, send)
+
+
 def create_app() -> FastAPI:
     app = FastAPI(
         title="dewereldvan.ai", docs_url=None, redoc_url=None, lifespan=_lifespan
@@ -209,6 +224,7 @@ def create_app() -> FastAPI:
     # Order matters (last-added runs outermost). We want, outer -> inner:
     # ProxyHeaders -> Session -> CSRF, so the CSRF layer can read the loaded
     # session and the session sees the corrected (https) scheme.
+    app.add_middleware(_McpNoSlashRedirect)
     app.add_middleware(CSRFMiddleware)
     app.add_middleware(
         SessionMiddleware,

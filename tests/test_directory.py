@@ -293,5 +293,20 @@ def test_mcp_initialize_over_http_without_token(route_db, monkeypatch):
             json={"jsonrpc": "2.0", "id": 1, "method": "tools/call",
                   "params": {"name": "zoek_makers", "arguments": {"zoekterm": "workshop"}}},
         )
+        # Regressie (2026-11-10): Claude Desktop's connector meldde "Not found 307"
+        # op https://dewereldvan.ai/mcp; de mount redirectte naar /mcp/ en die
+        # redirect volgt de connector niet. Het kale pad moet zelf antwoorden.
+        # (In dezelfde lifespan: de FastMCP-sessiemanager draait één keer per proces.)
+        bare = c.post(
+            "/mcp",
+            headers={"Accept": "application/json, text/event-stream"},
+            json={"jsonrpc": "2.0", "id": 2, "method": "initialize",
+                  "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                             "clientInfo": {"name": "t", "version": "1"}}},
+            follow_redirects=False,
+        )
     assert resp.status_code == 200, resp.text
     assert "Mila Maker" in resp.text
+    assert bare.status_code == 200, (bare.status_code, bare.headers.get("location"))
+    assert '"serverInfo"' in bare.text
+

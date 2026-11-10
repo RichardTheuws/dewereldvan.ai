@@ -3,6 +3,13 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.121.1] - 2026-11-10
+### Fixed — MCP-connector in Claude Desktop
+- `https://dewereldvan.ai/mcp` antwoordt nu zelf. Eerst stuurde de mount het kale pad met een 307 door naar
+  `/mcp/`, en die redirect volgt de custom connector van Claude niet ("Connecting to the server: Not found
+  307"). Elke getoonde URL (verbind-pagina, concierge, `llms.txt`) staat zonder slash, dus herschrijft een
+  ASGI-laag `/mcp` naar `/mcp/` vóór de router. Regressietest in `test_directory.py`.
+
 ## [0.121.0] - 2026-11-08
 ### Added — Deploy bevestigt de revisie
 - `/healthz` geeft ook `revision` (git-sha uit het `REVISION`-bestand van de deploy; lokaal `dev`). Het

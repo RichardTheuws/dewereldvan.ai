@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-08 · **Versie**: 0.121.0 · **Branch**: `main`
+**Laatste update**: 2026-11-10 · **Versie**: 0.121.1 · **Branch**: `main`
 
+> **0.121.1** — Fix: MCP-connector in Claude Desktop gaf "Not found 307" op `/mcp`; het kale pad antwoordt nu
+> zelf (geen redirect naar `/mcp/`).
+>
 > **0.121.0** — Deploy bevestigt de git-revisie via `/healthz`; pre-deploy-dump met pipefail + controle, dumps
 > geroteerd (10), versie uit de export.
 >
