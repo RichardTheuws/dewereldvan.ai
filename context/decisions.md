@@ -552,3 +552,22 @@ met stijl en script inline. Het enige uit de database is het aantal openbare mak
 **Gevolgen**: de cijfers verouderen. METR werkt zijn pagina niet meer actief bij (laatste meetpunt april 2026);
 bij een nieuwe meting passen `DATA` in het template en de datum in de colofon aan. Namen van Frank Meeuwsen en
 Eoin McKenna staan op een publieke pagina: op verzoek aanpassen of weghalen.
+
+## [2026-11-26] Gek genoeg: three.js zelf hosten voor één pagina
+
+**Context**: de eerste versie van `/gek-genoeg` was een 2D-deeltjesveld. Naast het voorbeeld (een Three.js-stuk
+met dertien 3D-scenes) schoot dat visueel tekort, terwijl het doel juist is dat mensen de pagina doorsturen.
+
+**Beslissing**: three.js 0.170.0 als één bestand in `app/static/vendor/`, alleen geladen op `/gek-genoeg`. Geen
+buildstap: de engine staat als inline ES-module in het template. Tekst, bediening en bronnen blijven HTML, zodat
+de pagina leesbaar, toegankelijk en bruikbaar is zonder WebGL.
+
+**Alternatieven**:
+- three.js van een CDN: afgewezen. Een externe afhankelijkheid op een publieke pagina, en geen controle over de
+  versie.
+- Alle tekst in het canvas, zoals het voorbeeld: afgewezen. Dat breekt telefoonweergave, schermlezers en
+  vindbaarheid.
+
+**Gevolgen**: een nieuwe three.js-versie betekent een nieuw bestand met een nieuwe naam (statics zijn immutable
+gecachet). De werelden zijn alleen op een MacBook op snelheid gemeten (120 beelden per seconde); voor trage
+telefoons schakelt de resolutie automatisch terug.

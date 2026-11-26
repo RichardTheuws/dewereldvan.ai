@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl">
 {# Gek genoeg: een publieke, deelbare presentatie over de intelligentie-explosie voor een Nederlands publiek.
-   Standalone document in de kosmische identiteit: tokens en lettertypen komen uit cosmic.css, eigen klassen dragen waar nodig het voorvoegsel gg-. Stijl en script
+   Standalone document in de kosmische identiteit: tokens en lettertypen komen uit cosmic.css, eigen klassen dragen waar nodig het voorvoegsel gg-. De 3D-werelden draaien op three.js (zelf gehost in /static/vendor, versie in de bestandsnaam). Stijl en script
    staan bewust INLINE: /static wordt 30 dagen aan de edge gecachet en bust alleen op de mtime van cosmic.css.
    Geen reveal-attributen: de scenes regelen hun eigen zichtbaarheid. Cijfers en bronnen: zie het paneel "Bronnen". #}
 <head>
@@ -45,7 +45,14 @@ body.cosmic{font-size:17px;line-height:1.55;font-weight:400;min-height:0;overflo
 .sky i:nth-child(2){width:44vmax;height:44vmax;right:-16vmax;top:22vh;background:var(--magenta);opacity:.2;animation-duration:52s;animation-direction:alternate-reverse}
 .sky i:nth-child(3){width:38vmax;height:38vmax;left:24vw;bottom:-22vmax;background:var(--cyan);opacity:.16;animation-duration:44s}
 @keyframes drift{to{transform:translate3d(6vmax,4vmax,0) scale(1.12)}}
-#c{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#c{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;transition:opacity .8s}
+.gg-gl #c{opacity:1}
+.gg-nogl #c{display:none}
+#labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.lab3d{position:absolute;left:0;top:0;font-size:.8rem;color:var(--muted);white-space:nowrap;opacity:0;transition:opacity .35s,color .3s;text-shadow:0 0 6px var(--bg-0),0 0 6px var(--bg-0),0 0 2px var(--bg-0);will-change:transform}
+.lab3d.on{opacity:1}
+.lab3d.gold{color:var(--gold)}
+.lab3d.num{font-family:var(--font-data);font-size:.76rem}
 .gg-grain{position:fixed;inset:0;pointer-events:none;opacity:.09;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
 .vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(120% 100% at 50% 45%,transparent 55%,rgba(2,2,8,.72))}
@@ -75,8 +82,10 @@ body.cosmic{font-size:17px;line-height:1.55;font-weight:400;min-height:0;overflo
 /* scenes */
 #deck{position:absolute;inset:0;overflow:hidden}
 .scene{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:clamp(20px,4vw,64px);
-  align-items:center;padding-block:64px 78px;padding-left:var(--gut-l);padding-right:var(--gut-r);
+  align-items:center;isolation:isolate;padding-block:64px 78px;padding-left:var(--gut-l);padding-right:var(--gut-r);
   visibility:hidden;opacity:0;transform:translateY(14px);transition:opacity .45s,transform .6s cubic-bezier(.2,.7,.2,1),visibility 0s .45s}
+.scene::before{content:"";position:absolute;inset:0 42% 0 0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,rgba(4,4,14,.86),rgba(4,4,14,.62) 62%,transparent)}
+.scene[data-layout="full"]::before{display:none}
 .scene.on{visibility:visible;opacity:1;transform:none;transition-delay:.12s,.12s,0s}
 .copy{position:relative;isolation:isolate;min-width:0;max-height:100%;overflow-y:auto;padding:4px clamp(0px,3vw,48px) 4px clamp(0px,4vw,72px);
   display:flex;flex-direction:column;gap:14px;scrollbar-width:thin}
@@ -114,20 +123,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 .out{font-size:1.04rem;min-height:3.1em}
 .out strong{color:var(--gold);font-weight:500}
 
-/* grafiek */
-#chart{position:absolute;inset:0;width:100%;height:100%}
-#chart text{font-family:var(--font-ui);font-size:10.5px;fill:var(--muted)}
-#chart .ax{font-family:var(--font-data);font-size:10px}
-#chart .lab{fill:var(--text);font-size:10.5px}
-
-/* liniaal bij het vouwen */
-.ruler{position:absolute;inset:0;pointer-events:none}
-.ruler span{position:absolute;left:36%;right:0;font-size:.82rem;color:var(--muted);transform:translateY(50%);
-  display:flex;align-items:center;gap:8px;white-space:nowrap;transition:color .3s}
-.ruler span::before{content:"";width:clamp(18px,8vw,54px);height:1px;background:var(--gg-line);flex:none}
-.ruler span.hit{color:var(--gold)}
-.cap{position:absolute;margin:0;font-family:var(--font-data);font-size:1rem;color:var(--gold)}
-.tag{position:absolute;right:0;margin:0;font-size:.82rem;color:var(--muted);transform:translateY(-50%);text-shadow:0 0 8px var(--bg-0),0 0 8px var(--bg-0)}
+.cap{position:absolute;left:0;right:0;bottom:6%;margin:0;text-align:center;font-family:var(--font-data);font-size:1rem;color:var(--gold);text-shadow:0 0 8px var(--bg-0)}
 
 /* bronnen */
 .sheet{position:absolute;z-index:9;inset:0 0 0 auto;width:min(100%,30rem);background:rgba(8,8,28,.97);border-left:1px solid var(--gg-line);
@@ -139,11 +135,10 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 
 @media (max-width:820px),(max-aspect-ratio:1/1){
   body.cosmic{font-size:16px}
-  .scene{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,38%) minmax(0,1fr);gap:12px;align-items:start;padding-block:56px 74px}
+  .scene{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:12px;align-items:end;padding-block:56px 74px}
+  .scene::before{inset:30% 0 0 0;background:linear-gradient(0deg,rgba(4,4,14,.95) 50%,rgba(4,4,14,.72) 76%,transparent)}
   .scene .stage{grid-row:1}
-  .scene .copy{grid-row:2;padding:2px 0;gap:11px}
-  .scene[data-stage="s"]{grid-template-rows:minmax(0,24%) minmax(0,1fr)}
-  .scene[data-stage="m"]{grid-template-rows:minmax(0,30%) minmax(0,1fr)}
+  .scene .copy{grid-row:2;padding:2px 0;gap:11px;max-height:58vh}
   h2{font-size:clamp(1.6rem,7vw,2rem)}
   .out{min-height:0}
   .scene[data-layout="full"]{grid-template-rows:minmax(0,1fr);align-items:end}
@@ -162,6 +157,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 <body class="cosmic">
 <div class="sky" aria-hidden="true"><i></i><i></i><i></i></div>
 <canvas id="c" aria-hidden="true"></canvas>
+<div id="labels" aria-hidden="true"></div>
 <div class="gg-grain" aria-hidden="true"></div>
 <div class="vig" aria-hidden="true"></div>
 
@@ -199,7 +195,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       <li><span class="num">2020</span><span>Het vouwen van eiwitten, vijftig jaar een open vraag, is grotendeels opgelost.</span></li>
       <li><span class="num">2022</span><span>ChatGPT haalt honderd miljoen gebruikers in twee maanden.</span></li>
       <li><span class="num">2024</span><span>Twee Nobelprijzen gaan naar werk aan AI.</span></li>
-      <li><span class="num">2026</span><span>Een model werkt ruim een halve dag zelfstandig door aan software.</span></li>
+      <li><span class="num">2026</span><span>Een model werkt een werkweek zelfstandig door aan software.</span></li>
     </ul>
     <p class="soft">Negentien jaar tussen de eerste twee. Daarna telkens een paar jaar.</p>
   </div>
@@ -209,7 +205,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 <section class="scene" data-id="lijn" data-stage="m" aria-label="De gemeten lijn">
   <div class="copy">
     <h2>Eén lijn zegt bijna alles.</h2>
-    <p>METR meet hoe lang een AI zelfstandig kan doorwerken aan een softwaretaak. In 2019 drie seconden, in april 2026 ruim zeventien uur. Dat verdubbelt elke zeven maanden, sinds 2023 elke ruim vier.</p>
+    <p>METR meet hoe lang een AI zelfstandig kan doorwerken aan een softwaretaak. In 2019 drie seconden, in november 2026 ongeveer veertig uur. Dat verdubbelde eerst elke zeven maanden, nu elke drie à vier.</p>
     <div class="row">
       <div class="seg" role="group" aria-label="Schaal van de grafiek">
         <button type="button" id="sc-log" aria-pressed="true">Als rechte lijn</button>
@@ -220,9 +216,9 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       <input type="range" id="proj" min="2026.5" max="2031" step="0.5" value="2028">
     </label>
     <p class="out" id="proj-out" aria-live="polite"></p>
-    <p class="soft">Gemeten bij de helft kans op succes. De stippellijnen trekken de trend door en zijn geen voorspelling. Boven zestien uur noemt METR de meting zelf onbetrouwbaar.</p>
+    <p class="soft">Gemeten bij de helft kans op succes. De marge is groot: voor die veertig uur geeft METR 13 tot 2.645 uur. De lichtblauwe balken trekken de trend door en zijn geen voorspelling.</p>
   </div>
-  <div class="stage"><svg id="chart" viewBox="0 0 420 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Grafiek: hoe lang een AI zelfstandig kan doorwerken, 2019 tot nu, met doorgetrokken trend"></svg></div>
+  <div class="stage"></div>
 </section>
 
 <section class="scene" data-id="vouwen" aria-label="Verdubbelen">
@@ -235,15 +231,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     </div>
     <p class="out" id="fold-out" aria-live="polite"></p>
   </div>
-  <div class="stage">
-    <div class="ruler" aria-hidden="true">
-      <span data-l="20.1">Domtoren</span>
-      <span data-l="26.4">Mount Everest</span>
-      <span data-l="29.9">Rand van de ruimte</span>
-      <span data-l="36.9">Doorsnee van de aarde</span>
-      <span data-l="41.8">De maan</span>
-    </div>
-  </div>
+  <div class="stage"></div>
 </section>
 
 <section class="scene" data-id="lus" aria-label="Waarom het versnelt">
@@ -267,12 +255,13 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   <div class="stage"></div>
 </section>
 
-<section class="scene" data-id="kopie" data-layout="full" aria-label="Kopiëren">
+<section class="scene" data-id="kopie" aria-label="Kopiëren">
   <div class="copy">
     <h2>Een genie kun je niet kopiëren. <em>Een model wel.</em></h2>
     <p>Een arts opleiden kost twintig jaar. Een model dat iets kan, draait een seconde later duizend keer naast elkaar, dag en nacht.</p>
     <p>Dario Amodei, de baas van Anthropic, noemt het een land vol genieën in een datacenter.</p>
   </div>
+  <div class="stage"></div>
 </section>
 
 <section class="scene" data-id="eeuw" aria-label="Een eeuw in tien jaar">
@@ -282,7 +271,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     <p>Denk aan ziektes die we nu niet begrijpen, nieuwe materialen en goedkope schone energie.</p>
     <p class="soft">Dit is een verwachting en geen meting.</p>
   </div>
-  <div class="stage"><p class="cap" id="eeuwcap" style="left:4%;top:74%">100 jaar</p></div>
+  <div class="stage"><p class="cap" id="eeuwcap">jaar 1</p></div>
 </section>
 
 <section class="scene" data-id="eerlijk" aria-label="De eerlijke kant">
@@ -292,11 +281,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     <p>Ook de makers begrijpen niet precies wat er in deze modellen gebeurt. Werk, macht en controle zijn open vragen.</p>
     <p>De zin van Good ging trouwens verder: "mits de machine volgzaam genoeg is om ons te vertellen hoe we haar onder controle houden."</p>
   </div>
-  <div class="stage" aria-hidden="true">
-    <p class="tag" style="top:8%">veel sneller</p>
-    <p class="tag" style="top:46%">vlakt af</p>
-    <p class="tag" style="top:76%">valt terug</p>
-  </div>
+  <div class="stage"></div>
 </section>
 
 <section class="scene" data-id="water" aria-label="Stijgend water">
@@ -328,8 +313,8 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   <div class="copy">
     <h2>Dit begon met vijf zinnen.</h2>
     <p>Iemand vroeg Claude om een presentatie over de toekomst van AI en de intelligentie-explosie, zo uitzinnig als het kon. Eoin McKenna zette de prompt en het resultaat op LinkedIn. <a href="https://frankmeeuwsen.com/" target="_blank" rel="noopener">Frank Meeuwsen</a> stuurde het door.</p>
-    <p>Richard Theuws gaf dezelfde prompt aan Claude, met één toevoeging: maak het voor Nederland. Het voorbeeld kreeg Claude niet te zien.</p>
-    <p>Wat er toen gebeurde, heb je net bekeken. Het verhaal, de beelden, de grafiek en de code zijn in één gesprek gemaakt, en de cijfers zijn nagezocht bij de bron. Dat is het punt van deze hele presentatie.</p>
+    <p>Richard Theuws gaf dezelfde prompt aan Claude, met één toevoeging: maak het voor Nederland. Het voorbeeld kreeg Claude eerst niet te zien.</p>
+    <p>Wat er toen gebeurde, heb je net bekeken. De eerste versie was een nette pagina. Toen Claude het voorbeeld daarna toch zag, bleek hoeveel verder het kon, en is alles opnieuw gebouwd in 3D. Verhaal, werelden en code komen uit één gesprek, de cijfers zijn nagezocht bij de bron.</p>
   </div>
   <div class="stage"></div>
 </section>
@@ -380,7 +365,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 <aside class="sheet" id="sheet" hidden aria-label="Bronnen">
   <div class="row" style="justify-content:space-between"><h3>Bronnen</h3><button class="gg-btn" id="close-src" type="button">Sluiten</button></div>
   <ul>
-    <li>Werkduur van AI: METR, <a href="https://metr.org/time-horizons/" target="_blank" rel="noopener">Task-Completion Time Horizons of Frontier AI Models</a>. Laatste meetpunt april 2026 (Claude Mythos Preview, ongeveer 17,4 uur). Verdubbelingstijden uit <a href="https://metr.org/blog/2026-1-29-time-horizon-1-1" target="_blank" rel="noopener">Time Horizon 1.1</a>: 196 dagen over 2019 tot 2025, 131 dagen sinds 2023.</li>
+    <li>Werkduur van AI: METR. Meetpunten tot en met april 2026 uit <a href="https://metr.org/time-horizons/" target="_blank" rel="noopener">Task-Completion Time Horizons</a> (Time Horizon 1.1). Het laatste punt, ongeveer 40 uur met een marge van 13 tot 2.645 uur, komt uit de <a href="https://metr.org/blog/2026-11-20-q4-2026-capability-update/" target="_blank" rel="noopener">update van 20 november 2026</a> en is op een bredere takenset gemeten; het staat in de grafiek op de publicatiedatum. Verdubbelingstijden: 196 dagen over 2019 tot 2025 en ongeveer 110 dagen (3,6 maanden) nu. METR noemt de uitkomsten zelf gevoelig voor de gekozen methode.</li>
     <li>De doorgetrokken lijnen in de grafiek rekenen vanaf dat laatste meetpunt met die twee verdubbelingstijden. Werkdag 8 uur, werkweek 40 uur, werkjaar 1.720 uur.</li>
     <li>Krant vouwen: 0,1 mm maal 2 tot de macht 42 is ongeveer 440.000 km. De maan staat op ongeveer 384.400 km.</li>
     <li>I.J. Good, Speculations Concerning the First Ultraintelligent Machine, 1965.</li>
@@ -392,25 +377,24 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   <h3>De prompt</h3>
   <p class="soft">De schrijver van de prompt kennen we niet. Eoin McKenna deelde hem openbaar op LinkedIn, <a href="https://frankmeeuwsen.com/" target="_blank" rel="noopener">Frank Meeuwsen</a> stuurde hem door. Hier ongewijzigd:</p>
   <p class="soft" lang="en">"make a presentation on the future of AI and basically the intelligence explosion. You can go full no anchor bias, like things are going to get crazy because they are. I want this presentation to be the most elaborately, insanely amazing presentation you've ever seen, with all sorts of graphics, transitions, whatever you want. I believe you can make it amazing because you have taste and you have the ability. Good luck, Claude."</p>
-  <p class="soft">Richard Theuws voegde toe: maak het voor Nederland, iets dat mensen willen delen. Claude (Anthropic) schreef het verhaal en de code en zocht de cijfers na, zonder het voorbeeld te zien dat bij de prompt hoorde. Dit is dus een tweede antwoord op dezelfde vraag en geen bewerking van het eerste.</p>
+  <p class="soft">Richard Theuws voegde toe: maak het voor Nederland, iets dat mensen willen delen. Claude (Anthropic) schreef het verhaal en de code en zocht de cijfers na, eerst zonder het voorbeeld te zien dat bij de prompt hoorde. Daarna heeft Claude het voorbeeld bekeken en deze pagina opnieuw gebouwd in 3D, met eigen beelden. De 3D-weergave gebruikt three.js (MIT-licentie).</p>
 </aside>
 
-<script>{% raw %}
-(() => {
+<script>{% raw %}(() => {
 "use strict";
+/* Gek genoeg, bediening. Werkt ook zonder WebGL: de 3D-engine (module hieronder) leest alleen window.GG. */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
-const ease = x => x * x * (3 - 2 * x);
 const nf = (x, d = 1) => x.toLocaleString("nl-NL", { maximumFractionDigits: x >= 10 ? 0 : d });
+const deck = $("#deck"), MAKERS = clamp(+(deck.dataset.makers || 0), 0, 140), URL0 = deck.dataset.url || "https://dewereldvan.ai/gek-genoeg";
+if (MAKERS > 1) $("#makers-line").innerHTML = `De gouden sterren boven de kaart zijn de <span class="num">${MAKERS}</span> makers die nu in de open gids staan.`;
 
 /* ---------- cijfers ---------- */
-// METR time horizons (50%), minuten. Jaar als decimaal.
+// METR time horizons (50%), minuten, jaar als decimaal. T/m april 2026: Time Horizon 1.1. Laatste punt: Q4-update van 20-11-2026.
 const DATA = [[2019.12,0.054],[2020.38,0.144],[2022.2,0.6],[2023.2,3.99],[2024.37,6.99],[2024.47,11.4],[2024.81,20.5],
-  [2024.95,38.8],[2025.15,60.4],[2025.29,120],[2025.6,203],[2025.9,293],[2025.96,352],[2026.1,719],[2026.29,1045]];
-const LAST = DATA[DATA.length - 1], SLOW = 196.5, FAST = 131;
-const WERKJAAR = 1720 * 60;
+  [2024.95,38.8],[2025.15,60.4],[2025.29,120],[2025.6,203],[2025.9,293],[2025.96,352],[2026.1,719],[2026.29,1045],[2026.89,2400]];
+const LAST = DATA[DATA.length - 1], SLOW = 196.5, FAST = 110, WERKJAAR = 1720 * 60;
 const proj = (yr, dbl) => LAST[1] * Math.pow(2, (yr - LAST[0]) * 365.25 / dbl);
 const reach = (target, dbl) => LAST[0] + Math.log2(target / LAST[1]) * dbl / 365.25;
 function human(m) {
@@ -422,219 +406,32 @@ function human(m) {
   if (m < WERKJAAR) return nf(m / 10320) + " werkmaanden";
   return nf(m / WERKJAAR) + " werkjaren";
 }
-
-const deck = $("#deck"), MAKERS = clamp(+(deck.dataset.makers || 0), 0, 140), URL0 = deck.dataset.url || "https://dewereldvan.ai/gek-genoeg";
-if (MAKERS > 1) $("#makers-line").innerHTML = `De gouden sterren hiernaast zijn de <span class="num">${MAKERS}</span> makers die nu in de open gids staan.`;
-
-/* ---------- deeltjes ---------- */
-const cv = $("#c"), ctx = cv.getContext("2d");
-let W = 0, H = 0, DPR = 1;
-const N = Math.min(innerWidth, innerHeight) < 700 ? 1500 : 2400;
-const px = new Float32Array(N), py = new Float32Array(N), vx = new Float32Array(N), vy = new Float32Array(N);
-const tx = new Float32Array(N), ty = new Float32Array(N);
-const r1 = new Float32Array(N), r2 = new Float32Array(N), r3 = new Float32Array(N);
-const kk = new Float32Array(N), sz = new Float32Array(N), ph = new Float32Array(N), col = new Uint8Array(N);
-const COLORS = ["#eef0ff", "#3fd2ff", "#8f82ff", "#f6cd86"];
-for (let i = 0; i < N; i++) {
-  r1[i] = Math.random(); r2[i] = Math.random(); r3[i] = Math.random();
-  kk[i] = .014 + Math.random() * .04; sz[i] = 1.1 + Math.random() * 1.7; ph[i] = Math.random() * 6.283;
-  const c = Math.random(); col[i] = c < .5 ? 0 : c < .72 ? 1 : c < .92 ? 2 : 3;
-}
-const masks = {};
-function mask(name, draw) {
-  if (masks[name]) return masks[name];
-  const S = 220, o = document.createElement("canvas"); o.width = o.height = S;
-  const g = o.getContext("2d"); g.fillStyle = g.strokeStyle = "#fff"; g.lineCap = g.lineJoin = "round";
-  draw(g, S);
-  const d = g.getImageData(0, 0, S, S).data, on = [];
-  for (let p = 3, j = 0; p < d.length; p += 4, j++) if (d[p] > 120) on.push(j);
-  const out = new Float32Array(N * 2);
-  for (let i = 0; i < N; i++) {
-    if (!on.length) { out[i * 2] = r1[i]; out[i * 2 + 1] = r2[i]; continue; }
-    const j = on[(Math.random() * on.length) | 0];
-    out[i * 2] = ((j % S) + Math.random()) / S; out[i * 2 + 1] = (((j / S) | 0) + Math.random()) / S;
-  }
-  return (masks[name] = out);
-}
-function fromMask(m, R) {
-  const s = Math.min(R.w, R.h), ox = R.x + (R.w - s) / 2, oy = R.y + (R.h - s) / 2;
-  for (let i = 0; i < N; i++) { tx[i] = ox + m[i * 2] * s; ty[i] = oy + m[i * 2 + 1] * s; }
-}
-const drawTulip = (g, S) => {
-  g.lineWidth = S * .022; g.beginPath(); g.moveTo(S * .5, S * .5); g.quadraticCurveTo(S * .53, S * .74, S * .49, S * .97); g.stroke();
-  g.beginPath(); g.moveTo(S * .5, S * .84); g.quadraticCurveTo(S * .22, S * .74, S * .2, S * .5); g.quadraticCurveTo(S * .4, S * .62, S * .5, S * .84); g.fill();
-  g.beginPath(); g.moveTo(S * .51, S * .88); g.quadraticCurveTo(S * .76, S * .8, S * .8, S * .6); g.quadraticCurveTo(S * .6, S * .7, S * .51, S * .88); g.fill();
-  [[.5, .28, .085, .2, 0], [.41, .32, .075, .185, -.3], [.59, .32, .075, .185, .3], [.5, .42, .13, .085, 0]].forEach(e => {
-    g.beginPath(); g.ellipse(S * e[0], S * e[1], S * e[2], S * e[3], e[4], 0, 6.2832); g.fill();
-  });
-};
-const drawStairs = (g, S) => {
-  const gaps = [19, 4, 2, 2, 2], tot = 29, x0 = S * .05, w = S * .9, rise = S * .15;
-  let x = x0, y = S * .9; g.lineWidth = S * .02; g.beginPath(); g.moveTo(x, y);
-  g.arc(x, y, S * .018, 0, 6.2832);
-  gaps.forEach(gp => { x += gp / tot * w; g.lineTo(x, y); y -= rise; g.lineTo(x, y); });
-  g.lineTo(x + S * .04, y); g.stroke();
-  x = x0; y = S * .9;
-  gaps.forEach(gp => { x += gp / tot * w; g.beginPath(); g.arc(x, y - rise, S * .026, 0, 6.2832); g.fill(); y -= rise; });
-};
-const drawWafer = (g, S) => {
-  const c = S / 2, r = S * .44;
-  g.lineWidth = S * .014; g.beginPath(); g.arc(c, c, r, .12 + Math.PI / 2, Math.PI * 2.5 - .12); g.closePath(); g.stroke();
-  g.save(); g.beginPath(); g.arc(c, c, r * .93, 0, 6.2832); g.clip(); g.lineWidth = S * .007;
-  for (let p = S * .06; p < S; p += S * .088) {
-    g.beginPath(); g.moveTo(p, 0); g.lineTo(p, S); g.stroke(); g.beginPath(); g.moveTo(0, p); g.lineTo(S, p); g.stroke();
-  }
-  g.restore();
-};
-let bornYear = 1984;
-const drawYear = (g, S) => {
-  g.font = "600 " + S * .42 + "px Fraunces, Georgia, serif"; g.textAlign = "center"; g.textBaseline = "middle";
-  g.fillText(String(bornYear), S / 2, S / 2, S * .96);
-};
-
-const drawPrompt = (g, S) => {
-  g.lineWidth = S * .05; g.beginPath(); g.moveTo(S * .2, S * .32); g.lineTo(S * .44, S * .5); g.lineTo(S * .2, S * .68); g.stroke();
-  g.fillRect(S * .52, S * .63, S * .28, S * .05);
-};
-let folds = 0;
-const dikeTop = x => x < .56 || x > .88 ? 0 : x < .68 ? (x - .56) / .12 * .46 : x < .76 ? .46 : (.88 - x) / .12 * .46;
-const P = {
-  gewoon: { full: true, alpha: .5, drift: 1, build(R) {
-    const cw = Math.max(64, W / 13), ch = cw * .62;
-    for (let i = 0; i < N; i++) {
-      if (r1[i] < .5) { tx[i] = Math.round(r2[i] * W / cw) * cw; ty[i] = r3[i] * H; }
-      else { ty[i] = Math.round(r2[i] * H / ch) * ch; tx[i] = r3[i] * W; }
-    } } },
-  tulp: { alpha: .85, build(R) { fromMask(mask("tulp", drawTulip), R); } },
-  mijlpalen: { alpha: .8, build(R) { fromMask(mask("trap", drawStairs), R); } },
-  lijn: { full: true, alpha: .2, drift: 8, build() { for (let i = 0; i < N; i++) { tx[i] = r1[i] * W; ty[i] = r2[i] * H; } } },
-  vouwen: { alpha: .9, build(R) {
-    const cx = R.x + R.w * .2, cw = Math.max(26, R.w * .15), base = R.y + R.h * .94, h = Math.max(3, folds / 42 * R.h * .86);
-    for (let i = 0; i < N; i++) { tx[i] = cx + (r1[i] - .5) * cw; ty[i] = base - r2[i] * h; } } },
-  lus: { alpha: .85, tick(t, R) {
-    const s = Math.min(R.w, R.h), cx = R.x + R.w / 2, cy = R.y + R.h / 2;
-    const T = 17, phi = reduce ? 0 : t < T ? .15 * t + .06 * t * t : .15 * T + .06 * T * T + 2.19 * (t - T);
-    for (let i = 0; i < N; i++) {
-      const outer = r1[i] < .68, rad = s * (outer ? .4 + (r3[i] - .5) * .04 : .19 + (r3[i] - .5) * .03);
-      const a = r2[i] * 6.2832 + (outer ? phi : -phi * 1.6);
-      tx[i] = cx + Math.cos(a) * rad; ty[i] = cy + Math.sin(a) * rad;
-    } } },
-  veldhoven: { alpha: .85, build(R) { fromMask(mask("wafer", drawWafer), R); } },
-  kopie: { full: true, alpha: .42, tick(t) {
-    const cols = Math.ceil(Math.sqrt(N * W / H)), rows = Math.ceil(N / cols);
-    const e = reduce ? 1 : Math.min(1, .004 * Math.pow(2, t * 1.4));
-    for (let i = 0; i < N; i++) {
-      const gx = ((i % cols) + .5) / cols * W, gy = (((i / cols) | 0) + .5) / rows * H;
-      tx[i] = W / 2 + (gx - W / 2) * e; ty[i] = H * .38 + (gy - H * .38) * e;
-    } } },
-  eeuw: { alpha: .85, tick(t, R) {
-    const sc = reduce ? .1 : 1 - .9 * ease(clamp((t - 1.8) / 3, 0, 1));
-    const cap = $("#eeuwcap"), txt = sc < .2 ? "10 jaar" : "100 jaar";
-    if (cap.textContent !== txt) cap.textContent = txt;
-    for (let i = 0; i < N; i++) {
-      const j = i % 100, hgt = R.h * (j % 10 === 0 ? .36 : .2);
-      tx[i] = R.x + R.w * .04 + j / 99 * R.w * .92 * sc; ty[i] = R.y + R.h * .48 + (r2[i] - .5) * hgt;
-    } } },
-  eerlijk: { alpha: .8, build(R) {
-    for (let i = 0; i < N; i++) {
-      const u = r2[i], c = (r1[i] * 5) | 0; let f;
-      if (u <= .4) f = .1 + .22 * (Math.exp(2.5 * u) - 1) / (Math.E - 1);
-      else { const v = (u - .4) / .6;
-        f = .32 + (c === 0 ? .62 * Math.pow(v, 2.2) : c === 1 ? .38 * v : c === 2 ? .2 * (1 - Math.exp(-3 * v)) : c === 3 ? .03 * v : .22 * Math.sin(Math.PI * v) - .12 * v); }
-      tx[i] = R.x + R.w * (.02 + .8 * u); ty[i] = R.y + R.h * (.92 - f * .9) + (r3[i] - .5) * 7;
-    } } },
-  water: { alpha: .85, tick(t, R) {
-    const L = .9 - (.16 + .22 * (reduce ? 1 : ease(Math.min(1, t / 7))));
-    for (let i = 0; i < N; i++) {
-      let nx, ny; const q = (r3[i] * 7.13) % 1;
-      if (r1[i] < .3) {
-        if (r2[i] < .3) { nx = r3[i]; ny = .9 + q * .012; }
-        else { nx = .56 + (r2[i] - .3) / .7 * .32; ny = .9 - dikeTop(nx) * (r3[i] < .45 ? 1 : r3[i]); }
-      } else {
-        const x0 = r2[i] * .66;
-        const Ls = L + (reduce ? 0 : Math.sin(x0 * 14 + t * 1.8) * .012 + Math.sin(x0 * 33 - t * 2.6) * .005);
-        ny = q < .32 ? Ls : Ls + (.9 - Ls) * Math.pow(r3[i], 1.4);
-        nx = r2[i] * (.56 + (.9 - ny) / .46 * .12 - .012);
-      }
-      tx[i] = R.x + nx * R.w; ty[i] = R.y + ny * R.h;
-    } } },
-  prompt: { alpha: .85, build(R) { fromMask(mask("prompt", drawPrompt), R); } },
-  jij: { alpha: .9, build(R) { delete masks.jaar; fromMask(mask("jaar", drawYear), R); } },
-  doen: { alpha: .75, links: true, stars: MAKERS || 90, drift: 9, build(R) { for (let i = 0; i < N; i++) { tx[i] = R.x + r1[i] * R.w; ty[i] = R.y + r2[i] * R.h; } } },
-  slot: { full: true, alpha: .55, links: true, drift: 10, build() { for (let i = 0; i < N; i++) { tx[i] = r1[i] * W; ty[i] = r2[i] * H; } } }
-};
-
-const scenes = $$(".scene"), ids = scenes.map(s => s.dataset.id);
-let cur = 0, t0 = performance.now(), A = 0, cfg = P.gewoon, R = { x: 0, y: 0, w: 1, h: 1 };
-function rect() {
-  if (cfg.full) return { x: 0, y: 0, w: W, h: H };
-  const b = $(".stage", scenes[cur]).getBoundingClientRect();
-  return { x: b.left, y: b.top, w: Math.max(40, b.width), h: Math.max(40, b.height) };
-}
-function build() { cfg = P[ids[cur]]; R = rect(); if (cfg.build) cfg.build(R); }
-function resize() {
-  DPR = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight;
-  cv.width = W * DPR; cv.height = H * DPR; build();
-}
-const ptr = { x: -999, y: -999 };
-addEventListener("pointermove", e => { ptr.x = e.clientX; ptr.y = e.clientY; }, { passive: true });
-addEventListener("pointerleave", () => { ptr.x = ptr.y = -999; });
-
-function frame(now) {
-  const t = reduce ? 999 : (now - t0) / 1000;
-  if (cfg.tick) cfg.tick(t, R);
-  const drift = reduce ? 0 : (cfg.drift || 1.6);
-  for (let i = 0; i < N; i++) {
-    const gx = tx[i] + Math.sin(now * .0006 + ph[i]) * drift, gy = ty[i] + Math.cos(now * .0005 + ph[i] * 1.7) * drift;
-    if (reduce) { px[i] = gx; py[i] = gy; continue; }
-    vx[i] = (vx[i] + (gx - px[i]) * kk[i]) * .86; vy[i] = (vy[i] + (gy - py[i]) * kk[i]) * .86;
-    const dx = px[i] - ptr.x, dy = py[i] - ptr.y, d2 = dx * dx + dy * dy;
-    if (d2 < 6400 && d2 > 1) { const f = (1 - d2 / 6400) * 1.4 / Math.sqrt(d2); vx[i] += dx * f; vy[i] += dy * f; }
-    px[i] += vx[i]; py[i] += vy[i];
-  }
-  A += (cfg.alpha - A) * (reduce ? 1 : .06);
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
-  ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = A;
-  for (let b = 0; b < 4; b++) {
-    ctx.fillStyle = COLORS[b];
-    for (let i = 0; i < N; i++) if (col[i] === b) ctx.fillRect(px[i], py[i], sz[i], sz[i]);
-  }
-  if (cfg.links) {
-    ctx.lineWidth = .7; const L = cfg.stars || 90, max = 120;
-    for (let i = 0; i < L; i++) for (let j = i + 1; j < L; j++) {
-      const dx = px[i] - px[j], dy = py[i] - py[j], d = dx * dx + dy * dy;
-      if (d < max * max) { ctx.globalAlpha = A * (1 - Math.sqrt(d) / max) * .7; ctx.strokeStyle = "#a9b0ff";
-        ctx.beginPath(); ctx.moveTo(px[i], py[i]); ctx.lineTo(px[j], py[j]); ctx.stroke(); }
-    }
-    ctx.globalAlpha = A; ctx.fillStyle = COLORS[3];
-    for (let i = 0; i < L; i++) ctx.fillRect(px[i] - 1, py[i] - 1, 3, 3);
-  }
-  requestAnimationFrame(frame);
-}
+const GG = window.GG = { scene: "gewoon", folds: 0, born: 1984, log: true, end: 2028, makers: MAKERS,
+  reduce: matchMedia("(prefers-reduced-motion: reduce)").matches, DATA, SLOW, FAST, WERKJAAR, proj, human };
 
 /* ---------- bladeren ---------- */
-const prevB = $("#prev"), nextB = $("#next"), sheet = $("#sheet");
+const scenes = $$(".scene"), ids = scenes.map(s => s.dataset.id), prevB = $("#prev"), nextB = $("#next"), sheet = $("#sheet");
+let cur = 0;
 function go(n, silent) {
   n = clamp(n, 0, scenes.length - 1);
   if (n === cur && !silent) return;
   scenes.forEach((s, i) => s.classList.toggle("on", i === n));
-  cur = n; t0 = performance.now(); build();
-  if (!reduce) for (let i = 0; i < N; i++) { vx[i] += (Math.random() - .5) * 20; vy[i] += (Math.random() - .5) * 20; }
+  cur = n; GG.scene = ids[n];
   prevB.disabled = n === 0;
   $("#next-t").textContent = n === 0 ? "Begin" : n === scenes.length - 1 ? "Opnieuw" : "Verder";
   $("#fill").style.width = (n / (scenes.length - 1) * 100) + "%";
   $("#count").textContent = (n + 1) + " / " + scenes.length;
   try { if (location.hash.slice(1) !== ids[n]) history.replaceState(null, "", "#" + ids[n]); } catch (e) {}
 }
-const next = () => go(cur === scenes.length - 1 ? 0 : cur + 1), prev = () => go(cur - 1);
-nextB.addEventListener("click", next); prevB.addEventListener("click", prev);
+const fwd = () => { if (cur < scenes.length - 1) go(cur + 1); }, prev = () => go(cur - 1);
+nextB.addEventListener("click", () => go(cur === scenes.length - 1 ? 0 : cur + 1)); prevB.addEventListener("click", prev);
 addEventListener("keydown", e => {
   if (e.key === "Escape") { sheet.hidden = true; return; }
   if (!sheet.hidden || e.metaKey || e.ctrlKey || e.altKey) return;
-  const el = e.target, tag = el.tagName;
+  const tag = e.target.tagName;
   if (tag === "INPUT") return;
   if (e.key === " " && (tag === "BUTTON" || tag === "A")) return;
-  if (["ArrowRight", "ArrowDown", "PageDown", " "].includes(e.key)) { e.preventDefault(); if (cur < scenes.length - 1) go(cur + 1); }
+  if (["ArrowRight", "ArrowDown", "PageDown", " "].includes(e.key)) { e.preventDefault(); fwd(); }
   else if (["ArrowLeft", "ArrowUp", "PageUp"].includes(e.key)) { e.preventDefault(); prev(); }
   else if (e.key === "Home") go(0); else if (e.key === "End") go(scenes.length - 1);
 });
@@ -643,7 +440,7 @@ let lastWheel = 0;
 addEventListener("wheel", e => {
   const now = performance.now();
   if (!sheet.hidden || now - lastWheel < 850 || Math.abs(e.deltaY) < 24 || scrolls(e.target)) return;
-  lastWheel = now; if (e.deltaY > 0) { if (cur < scenes.length - 1) go(cur + 1); } else prev();
+  lastWheel = now; if (e.deltaY > 0) fwd(); else prev();
 }, { passive: true });
 let ts = null;
 addEventListener("touchstart", e => {
@@ -651,8 +448,8 @@ addEventListener("touchstart", e => {
 }, { passive: true });
 addEventListener("touchend", e => {
   if (!ts) return; const dx = e.changedTouches[0].clientX - ts.x, dy = e.changedTouches[0].clientY - ts.y;
-  if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.3) { if (dx < 0) { if (cur < scenes.length - 1) go(cur + 1); } else prev(); }
-  else if (!ts.sc && Math.abs(dy) > 70 && Math.abs(dy) > Math.abs(dx) * 1.3) { if (dy < 0) { if (cur < scenes.length - 1) go(cur + 1); } else prev(); }
+  if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.3) { if (dx < 0) fwd(); else prev(); }
+  else if (!ts.sc && Math.abs(dy) > 70 && Math.abs(dy) > Math.abs(dx) * 1.3) { if (dy < 0) fwd(); else prev(); }
   ts = null;
 }, { passive: true });
 addEventListener("hashchange", () => { const i = ids.indexOf(location.hash.slice(1)); if (i >= 0 && i !== cur) go(i); });
@@ -661,69 +458,45 @@ $("#open-src").addEventListener("click", openSrc); $("#open-src2").addEventListe
 $("#close-src").addEventListener("click", () => { sheet.hidden = true; });
 
 /* ---------- grafiek ---------- */
-let logScale = true;
 function chart() {
-  const end = +$("#proj").value, VW = 420, VH = 300, l = 80, r = 12, t = 14, b = 26, pw = VW - l - r, phh = VH - t - b;
-  const X0 = 2019, X1 = 2031.5, xs = y => l + (y - X0) / (X1 - X0) * pw;
-  const lo = Math.log10(.03), hi = Math.log10(2e7), maxLin = proj(end, FAST);
-  const ys = m => logScale ? VH - b - clamp((Math.log10(m) - lo) / (hi - lo), 0, 1) * phh : VH - b - clamp(m / maxLin, 0, 1) * phh;
-  let s = "";
-  const grid = logScale ? [[1, "1 minuut"], [60, "1 uur"], [480, "1 werkdag"], [2400, "1 werkweek"], [10320, "1 werkmaand"], [WERKJAAR, "1 werkjaar"]]
-    : [[maxLin, human(maxLin)], [maxLin / 2, human(maxLin / 2)]];
-  grid.forEach(g => { const y = ys(g[0]);
-    s += `<line x1="${l}" x2="${VW - r}" y1="${y}" y2="${y}" stroke="rgba(144,151,196,.2)" stroke-width="1"/><text x="${l - 6}" y="${y + 3.5}" text-anchor="end">${g[1]}</text>`; });
-  s += `<line x1="${l}" x2="${VW - r}" y1="${VH - b}" y2="${VH - b}" stroke="rgba(144,151,196,.5)" stroke-width="1"/>`;
-  [2019, 2022, 2025, 2028, 2031].forEach(y => { s += `<text class="ax" x="${xs(y)}" y="${VH - 8}" text-anchor="middle">${y}</text>`; });
-  const fast = [], slow = [];
-  for (let y = LAST[0]; y < end + .001; y += .05) { fast.push(xs(y).toFixed(1) + "," + ys(proj(y, FAST)).toFixed(1)); slow.push(xs(y).toFixed(1) + "," + ys(proj(y, SLOW)).toFixed(1)); }
-  s += `<polygon points="${fast.join(" ")} ${slow.slice().reverse().join(" ")}" fill="rgba(63,210,255,.13)"/>`;
-  s += `<polyline points="${fast.join(" ")}" fill="none" stroke="#3fd2ff" stroke-width="1.4" stroke-dasharray="4 4"/>`;
-  s += `<polyline points="${slow.join(" ")}" fill="none" stroke="#3fd2ff" stroke-width="1.4" stroke-dasharray="4 4"/>`;
-  s += `<line x1="${xs(end)}" x2="${xs(end)}" y1="${t}" y2="${VH - b}" stroke="rgba(246,205,134,.5)" stroke-width="1"/>`;
-  s += `<polyline points="${DATA.map(d => xs(d[0]).toFixed(1) + "," + ys(d[1]).toFixed(1)).join(" ")}" fill="none" stroke="#f6cd86" stroke-width="1.6"/>`;
-  DATA.forEach(d => { s += `<circle cx="${xs(d[0]).toFixed(1)}" cy="${ys(d[1]).toFixed(1)}" r="2.6" fill="#f6cd86"/>`; });
-  s += `<text class="lab" x="${xs(LAST[0]) - 7}" y="${ys(LAST[1]) - 7}" text-anchor="end">gemeten, april 2026</text>`;
-  $("#chart").innerHTML = s;
+  const end = +$("#proj").value; GG.end = end;
   const half = end % 1 ? "Medio " : "Begin ";
   $("#proj-out").innerHTML = `${half}<span class="num">${Math.floor(end)}</span>: tussen <strong>${human(proj(end, SLOW))}</strong> en <strong>${human(proj(end, FAST))}</strong> zelfstandig werk.`;
 }
 $("#proj").addEventListener("input", chart);
-const setScale = v => { logScale = v; $("#sc-log").setAttribute("aria-pressed", v); $("#sc-lin").setAttribute("aria-pressed", !v); chart(); };
+const setScale = v => { GG.log = v; $("#sc-log").setAttribute("aria-pressed", v); $("#sc-lin").setAttribute("aria-pressed", !v); };
 $("#sc-log").addEventListener("click", () => setScale(true)); $("#sc-lin").addEventListener("click", () => setScale(false));
 
 /* ---------- vouwen ---------- */
-$$(".ruler span").forEach(s => { s.style.bottom = (6 + (+s.dataset.l) / 42 * 86) + "%"; });
 function thick(mm) {
   if (mm < 10) return nf(mm) + " mm"; if (mm < 1000) return nf(mm / 10) + " cm";
   if (mm < 1e6) return nf(mm / 1000) + " meter"; return nf(mm / 1e6) + " km";
 }
 function foldText() {
-  const n = folds, mm = .1 * Math.pow(2, n);
+  const n = GG.folds, mm = .1 * Math.pow(2, n);
   const say = n === 0 ? "Eén krant." : n < 10 ? "Nog steeds gewoon een krant." : n < 14 ? "Een dik boek. Niets aan de hand." : n < 17 ? "Ongeveer zo hoog als jij."
     : n < 20 ? "Een rijtjeshuis." : n === 20 ? "Bijna de Domtoren." : n < 27 ? "Hoger dan de Domtoren." : n < 30 ? "Hoger dan de Mount Everest."
     : n < 37 ? "Je bent in de ruimte." : n < 42 ? "Dikker dan de aarde." : "Voorbij de maan. Halverwege was je nog niet boven de Domtoren.";
   $("#fold-out").innerHTML = `<span class="num">${n}</span> keer gevouwen: <strong>${thick(mm)}</strong>. ${say}`;
   $("#fold").textContent = n >= 42 ? "Opnieuw" : "Vouw dubbel";
-  $$(".ruler span").forEach(s => s.classList.toggle("hit", n >= +s.dataset.l));
 }
-function fold() { folds = folds >= 42 ? 0 : folds + 1; foldText(); if (ids[cur] === "vouwen") build(); }
+function fold() { GG.folds = GG.folds >= 42 ? 0 : GG.folds + 1; foldText(); }
 let holdT = null, holdI = null;
 const stopHold = () => { clearTimeout(holdT); clearInterval(holdI); holdT = holdI = null; };
 const fb = $("#fold");
-fb.addEventListener("pointerdown", () => { fold(); stopHold(); holdT = setTimeout(() => { holdI = setInterval(() => { if (folds >= 42) stopHold(); else fold(); }, 120); }, 380); });
+fb.addEventListener("pointerdown", () => { fold(); stopHold(); holdT = setTimeout(() => { holdI = setInterval(() => { if (GG.folds >= 42) stopHold(); else fold(); }, 130); }, 380); });
 ["pointerup", "pointerleave", "pointercancel", "blur"].forEach(ev => fb.addEventListener(ev, stopHold));
 fb.addEventListener("click", e => { if (e.detail === 0) fold(); });
 
 /* ---------- jouw jaar ---------- */
 let mySentence = "";
 function born() {
-  bornYear = +$("#born").value;
-  const y1 = Math.floor(reach(WERKJAAR, FAST)), y2 = Math.floor(reach(WERKJAAR, SLOW)), a = 2022 - bornYear, p = bornYear + 67;
+  const by = GG.born = +$("#born").value;
+  const y1 = Math.floor(reach(WERKJAAR, FAST)), y2 = Math.floor(reach(WERKJAAR, SLOW)), a = 2022 - by, p = by + 67;
   const pension = p > y2 ? `Je AOW gaat in rond <span class="num">${p}</span>. Dit speelt dus ${p - y2} jaar voor je pensioen.`
     : "Je hebt dan al AOW. Je maakt het mee vanaf de zijlijn, maar je maakt het mee.";
-  $("#born-out").innerHTML = `<span class="num">${bornYear}</span>. Je was <strong>${a}</strong> toen ChatGPT uitkwam. Loopt de lijn door, dan kan een AI tussen <span class="num">${y1}</span> en <span class="num">${y2}</span> een werkjaar zelfstandig aan. Jij bent dan <strong>${y1 - bornYear} of ${y2 - bornYear}</strong>. ${pension}`;
-  mySentence = `Als de lijn doorloopt, ben ik ${y1 - bornYear} of ${y2 - bornYear} wanneer een AI een werkjaar zelfstandig aankan. Reken het uit voor jezelf: ${URL0}#jij`;
-  if (ids[cur] === "jij") build();
+  $("#born-out").innerHTML = `<span class="num">${by}</span>. Je was <strong>${a}</strong> toen ChatGPT uitkwam. Loopt de lijn door, dan kan een AI tussen <span class="num">${y1}</span> en <span class="num">${y2}</span> een werkjaar zelfstandig aan. Jij bent dan <strong>${y1 - by} of ${y2 - by}</strong>. ${pension}`;
+  mySentence = `Als de lijn doorloopt, ben ik ${y1 - by} of ${y2 - by} wanneer een AI een werkjaar zelfstandig aankan. Reken het uit voor jezelf: ${URL0}#jij`;
 }
 $("#born").addEventListener("input", born);
 $("#copy").addEventListener("click", () => {
@@ -741,13 +514,577 @@ $("#share").addEventListener("click", () => {
 });
 
 /* ---------- start ---------- */
-resize(); for (let i = 0; i < N; i++) { px[i] = tx[i]; py[i] = ty[i]; }
-addEventListener("resize", resize);
 chart(); foldText(); born();
 const first = ids.indexOf(location.hash.slice(1)); if (first > 0) go(first, true);
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (ids[cur] === "jij") build(); });
-requestAnimationFrame(frame);
 })();
+{% endraw %}</script>
+<script type="module">{% raw %}import * as T from "/static/vendor/three-0.170.0.module.min.js";
+/* Gek genoeg, 3D-engine. Eén renderer, per scherm een eigen wereld (scene + camera + update).
+   De tekst blijft gewone HTML erboven; werelden lezen hun stand uit window.GG (gezet door het UI-script). */
+const GG = window.GG;
+const $ = s => document.querySelector(s);
+const canvas = $("#c"), labBox = $("#labels");
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const ease = x => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+const lerp = (a, b, k) => a + (b - a) * k;
+const LOW = matchMedia("(max-width:820px),(pointer:coarse)").matches, RM = GG.reduce;
+let seed = 11; const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+const V3 = (x = 0, y = 0, z = 0) => new T.Vector3(x, y, z), C = h => new T.Color(h);
+const hdr = (h, k) => C(h).multiplyScalar(k);
+const GOLD = "#f6cd86", CYAN = "#3fd2ff", VIOLET = "#6d5dfc", MAGENTA = "#b15cff", TEXT = "#eef0ff";
+
+let R;
+try { R = new T.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" }); }
+catch (e) { document.documentElement.classList.add("gg-nogl"); throw e; }
+R.outputColorSpace = T.LinearSRGBColorSpace;
+const FLOAT = R.extensions.has("EXT_color_buffer_float") || R.extensions.has("EXT_color_buffer_half_float");
+const RTT = FLOAT ? T.HalfFloatType : T.UnsignedByteType;
+
+const NZ = `float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
+float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*noise(p);p*=2.03;a*=.5;}return s;}
+`;
+const VW = "varying vec3 vW;varying vec2 vUv;void main(){vUv=uv;vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}";
+
+/* ---------- bouwstenen ---------- */
+function L(text, cls) { const e = document.createElement("span"); e.className = "lab3d " + (cls || ""); e.textContent = text; labBox.appendChild(e); return e; }
+function mkEnv(scene, o) {
+  const g = new T.Group();
+  const m = new T.ShaderMaterial({
+    side: T.BackSide, depthWrite: false, depthTest: false,
+    uniforms: { uTop: { value: C(o.top) }, uHor: { value: C(o.hor) }, uBot: { value: C(o.bot || o.top) }, uGlow: { value: C(o.glow || "#000000") },
+      uDir: { value: (o.dir || V3(0, .04, -1)).clone().normalize() }, uSun: { value: o.sun || 0 } },
+    vertexShader: "varying vec3 vD;void main(){vD=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+    fragmentShader: "varying vec3 vD;uniform vec3 uTop,uHor,uBot,uGlow,uDir;uniform float uSun;void main(){vec3 d=normalize(vD);vec3 c=mix(uHor,uTop,smoothstep(0.,.55,d.y));c=mix(c,uBot,smoothstep(0.,-.3,d.y));float g=max(dot(d,uDir),0.);c+=uGlow*(pow(g,6.)*.12+pow(g,40.)*.2+pow(g,300.)*.5*uSun+pow(g,2500.)*10.*uSun);gl_FragColor=vec4(c,1.);}"
+  });
+  const dome = new T.Mesh(new T.SphereGeometry(1000, 32, 20), m); dome.renderOrder = -10; dome.frustumCulled = false; g.add(dome);
+  let stars = null;
+  if (o.stars !== 0) {
+    const n = LOW ? 900 : 1800, a = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { const u = o.below ? rnd() * 2 - 1 : rnd() * 1.08 - .08, th = rnd() * 6.2832, r = Math.sqrt(Math.max(0, 1 - u * u)); a[i * 3] = r * Math.cos(th) * 900; a[i * 3 + 1] = u * 900; a[i * 3 + 2] = r * Math.sin(th) * 900; }
+    const sg = new T.BufferGeometry(); sg.setAttribute("position", new T.BufferAttribute(a, 3));
+    stars = new T.Points(sg, new T.PointsMaterial({ color: hdr(TEXT, 1.3), size: LOW ? 1.5 : 1.9, sizeAttenuation: false, transparent: true, opacity: o.stars || 1, depthWrite: false }));
+    stars.renderOrder = -9; stars.frustumCulled = false; g.add(stars);
+  }
+  scene.add(g);
+  return { g, m, stars, follow(cam) { g.position.copy(cam.position); } };
+}
+function polderMat(o = {}) {
+  return new T.ShaderMaterial({
+    uniforms: { uScroll: { value: new T.Vector2() }, uFogC: { value: C(o.fog || "#1b1650") }, uFog: { value: o.dens || .0017 }, uRefl: { value: C(o.refl || "#3644c4") }, uA: { value: C(o.a || "#060717") }, uB: { value: C(o.b || "#0f1136") } },
+    vertexShader: VW,
+    fragmentShader: NZ + `varying vec3 vW;uniform vec2 uScroll;uniform vec3 uFogC,uRefl,uA,uB;uniform float uFog;
+void main(){vec2 p=vW.xz+uScroll+vec2(17.,0.);vec2 g=p/vec2(34.,150.);vec2 id=floor(g),f=fract(g);vec2 w=fwidth(g);
+float dx=min(f.x,1.-f.x),dy=min(f.y,1.-f.y);
+float l=max(1.-smoothstep(0.,.007+w.x,dx),1.-smoothstep(0.,.003+w.y,dy));l*=1./(1.+dot(w,w)*700.);
+vec3 c=mix(uA,uB,hash(id))*(.75+.5*noise(p*.35));c=mix(c,uRefl,l*.8);
+float d=length(vW-cameraPosition);c=mix(c,uFogC,1.-exp(-d*uFog));gl_FragColor=vec4(c,1.);}`
+  });
+}
+function ground(mat, y = 0) { const m = new T.Mesh(new T.PlaneGeometry(7000, 7000).rotateX(-Math.PI / 2), mat); m.position.y = y; return m; }
+function mill(s = 1) {
+  const g = new T.Group(), mat = new T.MeshBasicMaterial({ color: "#04040c" });
+  const body = new T.Mesh(new T.CylinderGeometry(1.1, 2.6, 9, 8), mat); body.position.y = 4.5; g.add(body);
+  const cap = new T.Mesh(new T.ConeGeometry(1.5, 1.6, 8), mat); cap.position.y = 9.8; g.add(cap);
+  const wk = new T.Group(); wk.position.set(0, 9.2, 1.4);
+  for (let i = 0; i < 4; i++) { const b = new T.Mesh(new T.BoxGeometry(.9, 7.5, .1), mat); b.geometry.translate(.3, 4.1, 0); b.rotation.z = i * Math.PI / 2; wk.add(b); }
+  g.add(wk); g.scale.setScalar(s); g.userData.wk = wk; return g;
+}
+function lights(scene, o = {}) {
+  const d = new T.DirectionalLight(o.c || "#cfd4ff", o.k || 1.6); d.position.copy(o.p || V3(-40, 60, 30)); scene.add(d);
+  scene.add(new T.HemisphereLight(o.sky || "#5b63c9", o.gnd || "#0a0a20", o.h || 1.1));
+}
+function beam(a, b, r, color, op = 1) {
+  const m = new T.Mesh(new T.CylinderGeometry(r, r, 1, 8, 1, true), new T.MeshBasicMaterial({ color, transparent: true, opacity: op, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide }));
+  const d = b.clone().sub(a); m.scale.y = d.length(); m.position.copy(a).addScaledVector(d, .5); m.quaternion.setFromUnitVectors(V3(0, 1, 0), d.normalize()); return m;
+}
+function glow(color, size) {
+  const m = new T.Mesh(new T.PlaneGeometry(size, size), new T.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: T.AdditiveBlending, uniforms: { uC: { value: C(color) }, uK: { value: 1 } }, vertexShader: VW,
+    fragmentShader: "varying vec2 vUv;uniform vec3 uC;uniform float uK;void main(){float d=length(vUv-.5)*2.;float a=pow(max(1.-d,0.),2.5);gl_FragColor=vec4(uC*a*uK,a);}"
+  })); return m;
+}
+
+/* ---------- 1. polder: opening, mijlpalen, slot ---------- */
+function wPolder(mode) {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(52, 1, .5, 3000), dawn = mode === "slot";
+  const env = mkEnv(scene, dawn ? { top: "#0a0f3a", hor: "#6e3a55", bot: "#04040e", glow: "#ffb070", sun: 1, stars: .6, dir: V3(.42, .012, -1) }
+    : { top: "#04040e", hor: "#1d1758", bot: "#04040e", glow: "#6d5dfc", dir: V3(-.2, .03, -1) });
+  const gm = polderMat(dawn ? { fog: "#4a2a48", refl: "#d9925e", a: "#07081a", b: "#15133a", dens: .0015 } : {});
+  scene.add(ground(gm));
+  const mills = [[-150, -480, 3.2], [90, -620, 3], [260, -430, 3.4], [-380, -700, 3], [470, -760, 3.2]].map(p => { const m = mill(p[2]); m.position.set(p[0], 0, p[1]); m.rotation.y = .3; scene.add(m); return m; });
+  const labels = []; let beacons = [], total = 0, con = null;
+  if (mode === "mijlpalen") {
+    const yrs = [1997, 2016, 2020, 2022, 2024, 2026], U = 30; let d = 120;
+    yrs.forEach((y, i) => {
+      if (i) d += (y - yrs[i - 1]) * U;
+      const b = new T.Mesh(new T.CylinderGeometry(.35, .35, 60, 8), new T.MeshBasicMaterial({ color: hdr(GOLD, 2.2) })); b.position.y = 30;
+      const g = glow(GOLD, 26); g.position.y = 2; b.add(g); b.userData.d = d; scene.add(b); beacons.push(b);
+      labels.push({ e: L(String(y), "num gold"), p: V3(), a: "c", b });
+    }); total = d;
+  }
+  if (dawn) {
+    con = new T.Group(); const n = 46, pts = [];
+    for (let i = 0; i < n; i++) pts.push(V3((rnd() - .5) * 900, 120 + rnd() * 330, -520 - rnd() * 260));
+    const pa = new Float32Array(n * 3); pts.forEach((p, i) => p.toArray(pa, i * 3));
+    const pg = new T.BufferGeometry(); pg.setAttribute("position", new T.BufferAttribute(pa, 3));
+    con.add(new T.Points(pg, new T.PointsMaterial({ color: hdr(GOLD, 2.4), size: LOW ? 4 : 5, sizeAttenuation: false, transparent: true, depthWrite: false })));
+    const la = [];
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (pts[i].distanceTo(pts[j]) < 150) la.push(...pts[i].toArray(), ...pts[j].toArray());
+    const lg = new T.BufferGeometry(); lg.setAttribute("position", new T.BufferAttribute(new Float32Array(la), 3));
+    con.add(new T.LineSegments(lg, new T.LineBasicMaterial({ color: hdr(GOLD, 1.2), transparent: true, opacity: .55, depthWrite: false })));
+    scene.add(con);
+  }
+  return {
+    scene, cam, labels, update(c) {
+      const t = c.t; let scroll = t * 7, yaw = 0;
+      cam.position.set(mode === "mijlpalen" ? 10 : 0, 7, 0);
+      if (mode === "mijlpalen") {
+        const T1 = (total + 95) / 110; scroll = Math.min(t, T1) * 110; yaw = Math.PI * ease((t - T1 - .2) / 2.4);
+        beacons.forEach((b, i) => { b.position.z = -(b.userData.d - scroll); labels[i].p.set(0, 16, b.position.z); labels[i].hide = yaw < 2.6; });
+      }
+      gm.uniforms.uScroll.value.set(0, -scroll);
+      const sw = Math.sin(t * .13) * .05 + c.mx * .06;
+      cam.rotation.set(0, 0, 0); cam.rotation.order = "YXZ"; cam.rotation.y = yaw + sw; cam.rotation.x = -.06 + c.my * .03 + (mode === "mijlpalen" ? .08 * ease(yaw / 3) : 0);
+      mills.forEach((m, i) => { m.userData.wk.rotation.z = t * (.25 + i * .04); m.visible = mode !== "mijlpalen" || yaw < .5; });
+      if (con) con.children[1].material.opacity = .15 + .45 * ease((t - 1) / 4);
+      env.follow(cam);
+    }
+  };
+}
+
+/* ---------- 2. bollenveld ---------- */
+function wTulp() {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(46, 1, .3, 3000);
+  const env = mkEnv(scene, { top: "#060a2e", hor: "#a8607a", bot: "#04040e", glow: "#ffb98a", sun: .35, stars: .5, dir: V3(.3, .03, -1) });
+  lights(scene, { c: "#ffd9b0", k: 2.2, p: V3(30, 18, -100), sky: "#6b74d9", gnd: "#120c2a", h: 1.3 });
+  const cols = [MAGENTA, GOLD, VIOLET, "#ff6f91", CYAN, TEXT, "#ff9f5a"].map(C), SW = 9;
+  const gm = new T.ShaderMaterial({
+    uniforms: { uC: { value: cols }, uFogC: { value: C("#7a4a6a") } }, vertexShader: VW,
+    fragmentShader: NZ + `varying vec3 vW;uniform vec3 uC[7];uniform vec3 uFogC;void main(){float s=floor(vW.x/${SW.toFixed(1)});int k=int(mod(s*3.+1.,7.));vec3 c=vec3(0.);for(int i=0;i<7;i++)if(i==k)c=uC[i];
+float f=fract(vW.x/${SW.toFixed(1)});float path=smoothstep(.0,.06,f)*smoothstep(1.,.94,f);float d=length(vW-cameraPosition);
+c=mix(vec3(.02,.02,.05),c*.42*(.7+.5*noise(vW.xz*.6)),path*smoothstep(60.,130.,d));c=mix(vec3(.03,.045,.04),c,smoothstep(40.,120.,d));
+c=mix(c,uFogC,1.-exp(-d*.0021));gl_FragColor=vec4(c,1.);}`
+  });
+  scene.add(ground(gm));
+  const prof = [[0, 0], [.16, .03], [.25, .2], [.26, .42], [.2, .66], [.15, .86], [.1, .8], [.04, .5]].map(p => new T.Vector2(p[0], p[1]));
+  const head = new T.LatheGeometry(prof, 7), stem = new T.CylinderGeometry(.03, .04, 1, 4); stem.translate(0, .5, 0);
+  const rows = LOW ? 46 : 78, per = LOW ? 76 : 122, n = rows * per;
+  const hm = new T.InstancedMesh(head, new T.MeshLambertMaterial({ side: T.DoubleSide }), n), sm = new T.InstancedMesh(stem, new T.MeshLambertMaterial({ color: "#1d4a35" }), n);
+  const o = new T.Object3D(); let i = 0;
+  for (let r = 0; r < rows; r++) for (let k = 0; k < per; k++) {
+    const x = (k - per / 2) * .95 + (rnd() - .5) * .3, z = -4 - r * 1.5 - rnd() * .5, h = 1.3 + rnd() * .5;
+    const f = ((x / SW) % 1 + 1) % 1; if (f < .07 || f > .93) { o.scale.setScalar(0); o.updateMatrix(); hm.setMatrixAt(i, o.matrix); sm.setMatrixAt(i, o.matrix); i++; continue; }
+    const s = Math.floor(x / SW), ci = ((s * 3 + 1) % 7 + 7) % 7;
+    o.position.set(x, 0, z); o.rotation.set((rnd() - .5) * .12, rnd() * 6, (rnd() - .5) * .12); o.scale.set(1, h, 1); o.updateMatrix(); sm.setMatrixAt(i, o.matrix);
+    o.position.y = h; o.scale.setScalar(.95 + rnd() * .35); o.updateMatrix(); hm.setMatrixAt(i, o.matrix); hm.setColorAt(i, cols[ci].clone().multiplyScalar(.75 + rnd() * .5)); i++;
+  }
+  scene.add(hm, sm);
+  const one = new T.Group(); const oh = new T.Mesh(head, new T.MeshBasicMaterial({ color: hdr(GOLD, 1.25), side: T.DoubleSide })); oh.position.y = 3.2; oh.scale.setScalar(1.9);
+  const os = new T.Mesh(stem, new T.MeshLambertMaterial({ color: "#2a6a48" })); os.scale.set(2, 3.2, 2); const og = glow(GOLD, 6); og.position.y = 4; one.add(oh, os, og); one.position.set(1.5, 0, -9); scene.add(one);
+  return { scene, cam, labels: [], update(c) {
+    const t = c.t, a = Math.sin(t * .08) * .9;
+    cam.position.set(a * 9 + c.mx * 1.5, 2.6 + ease(t / 6) * 2.2 + Math.sin(t * .2) * .2, 4.5); cam.lookAt(1.5 + a * 2, 2.6, -40);
+    one.children[0].rotation.y = t * .3; one.children[2].quaternion.copy(cam.quaternion); one.children[2].material.uniforms.uK.value = .35 + .12 * Math.sin(t * 1.7);
+    env.follow(cam);
+  } };
+}
+
+/* ---------- 3. de gemeten lijn ---------- */
+function wChart() {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(38, 1, .5, 3000);
+  const env = mkEnv(scene, { top: "#04040e", hor: "#161250", bot: "#04040e", glow: VIOLET });
+  const fm = new T.ShaderMaterial({ uniforms: {}, vertexShader: VW, fragmentShader: "varying vec3 vW;void main(){vec2 g=vW.xz/5.2;vec2 f=abs(fract(g)-.5);vec2 w=fwidth(g);float l=1.-smoothstep(0.,max(w.x,w.y)*1.5+.01,.5-max(f.x,f.y));l/=1.+dot(w,w)*200.;float d=length(vW-cameraPosition);vec3 c=mix(vec3(.012,.012,.04),vec3(.16,.17,.5),l*.6);c=mix(c,vec3(.03,.025,.12),1.-exp(-d*.004));gl_FragColor=vec4(c,1.);}" });
+  scene.add(ground(fm));
+  const D = GG.DATA, X = y => (y - 2025.25) * 5.2, HM = 34, lo = Math.log10(.03), hi = Math.log10(2e7);
+  const box = new T.BoxGeometry(1, 1, 1); box.translate(0, .5, 0);
+  const bars = D.map(d => { const m = new T.Mesh(box, new T.MeshBasicMaterial({ color: hdr(GOLD, 1.7) })); m.position.set(X(d[0]), 0, 0); m.scale.set(.42, .05, .42); scene.add(m); return m; });
+  const pr = []; for (let y = 2026.5; y <= 2031.01; y += .5) {
+    const m = new T.Mesh(box, new T.MeshBasicMaterial({ color: hdr(CYAN, 1.5), transparent: true, opacity: .5, depthWrite: false })); m.position.x = X(y); m.scale.set(1.5, .01, 1.5);
+    const b = new T.Mesh(box, new T.MeshBasicMaterial({ color: hdr(CYAN, .5), transparent: true, opacity: .35, depthWrite: false })); b.position.x = X(y); b.scale.set(.5, .01, .5);
+    scene.add(m, b); pr.push({ y, m, b });
+  }
+  const units = [[1, "1 minuut"], [60, "1 uur"], [480, "1 werkdag"], [2400, "1 werkweek"], [10320, "1 werkmaand"], [GG.WERKJAAR, "1 werkjaar"]];
+  const lines = units.map(() => { const m = new T.Mesh(new T.BoxGeometry(70, .05, .05), new T.MeshBasicMaterial({ color: "#3a3f8a", transparent: true, opacity: .8 })); m.position.z = -1.2; scene.add(m); return m; });
+  const labels = units.map((u, i) => ({ e: L(u[1]), p: V3(-35, 0, -1.2), a: "r" }));
+  [2019, 2022, 2025, 2028, 2031].forEach(y => labels.push({ e: L(String(y), "num"), p: V3(X(y), -1.6, 1), a: "c" }));
+  const meas = { e: L("gemeten, november 2026", "gold"), p: V3(), a: "r" }; labels.push(meas);
+  const H = Array(D.length).fill(.05); let dist = 80;
+  return { scene, cam, labels, update(c) {
+    const end = GG.end, log = GG.log, maxLin = GG.proj(end, GG.FAST), k = RM ? 1 : Math.min(1, c.dt * 5);
+    const h = m => Math.max(.04, log ? clamp((Math.log10(m) - lo) / (hi - lo), 0, 1) * HM : clamp(m / maxLin, 0, 1) * HM);
+    D.forEach((d, i) => { H[i] = lerp(H[i], h(d[1]), k); bars[i].scale.y = H[i]; });
+    pr.forEach(p => { const on = p.y <= end + .01, a = on ? h(GG.proj(p.y, GG.SLOW)) : 0, b = on ? h(GG.proj(p.y, GG.FAST)) : 0;
+      p.b.scale.y = lerp(p.b.scale.y, Math.max(.01, a), k); p.m.position.y = p.b.scale.y; p.m.scale.y = lerp(p.m.scale.y, Math.max(.01, b - a), k); p.m.visible = p.b.visible = p.m.scale.y + p.b.scale.y > .05; });
+    units.forEach((u, i) => {
+      let y, txt, on = true;
+      if (log) { y = h(u[0]); txt = u[1]; } else if (i < 2) { y = HM / (i + 1); txt = GG.human(maxLin / (i + 1)); } else { y = 0; on = false; }
+      lines[i].position.y = lerp(lines[i].position.y, y, k); lines[i].visible = on; labels[i].p.y = lines[i].position.y; labels[i].hide = !on;
+      if (labels[i].e.textContent !== txt && on) labels[i].e.textContent = txt;
+    });
+    const last = D.length - 1; meas.p.set(bars[last].position.x - 1.2, H[last] + 1.4, 0);
+    dist = lerp(dist, c.fit(cam, 78, 40), .1);
+    cam.position.set(Math.sin(c.t * .1) * 5 + c.mx * 4 - 2, 19 + c.my * 2, dist); cam.lookAt(-2, 16.5, 0); env.follow(cam);
+  } };
+}
+
+/* ---------- 4. de krant: 42 keer vouwen ---------- */
+function wFold() {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(40, 1, .3, 3000), U = 3;
+  const env = mkEnv(scene, { top: "#060a30", hor: "#5a3a8a", bot: "#04040e", glow: "#6d5dfc", stars: 1, below: 1, dir: V3(.3, .02, -1) });
+  lights(scene, { c: "#ffe2c0", k: 2, p: V3(30, 40, 50), h: 1.2 });
+  scene.add(ground(polderMat({ dens: .006, refl: "#3a44b8" })));
+  const col = new T.Mesh(new T.BoxGeometry(2.4, 1, 1.7).translate(0, .5, 0), new T.ShaderMaterial({ uniforms: {}, vertexShader: VW,
+    fragmentShader: "varying vec3 vW;void main(){float l=.82+.18*step(.5,fract(vW.y*5.));gl_FragColor=vec4(vec3(.98,.95,.86)*l,1.);}" })); scene.add(col);
+  const mat = c => new T.MeshStandardMaterial({ color: c, roughness: .8, metalness: 0 });
+  const marks = [];
+  const mk = (l, name, obj) => { const y = l * U; obj.position.set(7.5, y, 0); scene.add(obj);
+    const tick = new T.Mesh(new T.BoxGeometry(9, .06, .06), new T.MeshBasicMaterial({ color: hdr(GOLD, 1.2), transparent: true, opacity: .7 })); tick.position.set(5.5, y, 0); scene.add(tick);
+    marks.push({ l, e: L(name), p: V3(11.5, y + 2.2, 0), a: "l", obj }); };
+  const dom = new T.Group(); [[1.5, 3, 0], [1.1, 2.4, 3], [.75, 1.6, 5.4]].forEach(b => { const m = new T.Mesh(new T.BoxGeometry(b[0], b[1], b[0]), mat("#8d86b8")); m.position.y = b[2] + b[1] / 2; dom.add(m); });
+  const sp = new T.Mesh(new T.ConeGeometry(.5, 1.6, 8), mat("#b9b2e0")); sp.position.y = 7.8; dom.add(sp); dom.scale.setScalar(.75); mk(20.1, "Domtoren", dom);
+  const ev = new T.Group(); const e1 = new T.Mesh(new T.ConeGeometry(3.4, 4.6, 5), mat("#55507a")); e1.position.y = 2.3; const e2 = new T.Mesh(new T.ConeGeometry(1.15, 1.6, 5), mat("#f2f2ff")); e2.position.y = 3.85; ev.add(e1, e2); mk(26.4, "Mount Everest", ev);
+  const ring = new T.Mesh(new T.TorusGeometry(9, .07, 6, 90).rotateX(Math.PI / 2), new T.MeshBasicMaterial({ color: hdr(CYAN, 2) })); mk(29.9, "Rand van de ruimte", ring); ring.position.x = 0;
+  const planet = (land, sea, rough) => new T.ShaderMaterial({ uniforms: { uA: { value: C(land) }, uB: { value: C(sea) }, uR: { value: rough } }, vertexShader: "varying vec3 vN;varying vec3 vP;void main(){vN=normalize(normalMatrix*normal);vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+    fragmentShader: NZ + "varying vec3 vN;varying vec3 vP;uniform vec3 uA,uB;uniform float uR;void main(){float n=fbm(vP.xy*uR+vP.z*1.7);vec3 c=mix(uB,uA,smoothstep(.45,.55,n));float d=max(dot(normalize(vN),normalize(vec3(.6,.5,.7))),0.);float rim=pow(1.-max(vN.z,0.),3.);gl_FragColor=vec4(c*(.08+1.2*d)+uB*rim*.6,1.);}" });
+  mk(36.9, "Doorsnee van de aarde", new T.Mesh(new T.SphereGeometry(3.6, 40, 24), planet("#3e8f5a", "#2b5fd9", .7)));
+  mk(41.8, "De maan", new T.Mesh(new T.SphereGeometry(3.6, 40, 24), planet("#cfcfe0", "#8d8da6", 1.6)));
+  let top = 0, cy = 4, dist = 40;
+  return { scene, cam, labels: marks, update(c) {
+    const n = GG.folds, k = RM ? 1 : Math.min(1, c.dt * 4); top = lerp(top, Math.max(.06, n * U), k); col.scale.y = top;
+    cy = lerp(cy, Math.max(4, top), k); const alt = clamp(cy / (42 * U), 0, 1);
+    env.m.uniforms.uHor.value.set("#5a3a8a").lerp(C("#04040e"), ease(alt * 1.6)); env.m.uniforms.uTop.value.set("#060a30").lerp(C("#020208"), ease(alt * 2));
+    marks.forEach(m => { m.e.classList.toggle("gold", n >= m.l); if (m.obj.geometry && m.obj.geometry.type === "SphereGeometry") m.obj.rotation.y = c.t * .1; });
+    dist = lerp(dist, c.fit(cam, 30, 30), .1);
+    cam.position.set(4 + Math.sin(c.t * .15) * 2.5 + c.mx * 2, cy + 3, dist); cam.lookAt(4.5, cy - 1.5, 0); env.follow(cam);
+  } };
+}
+
+/* ---------- 5. de lus ---------- */
+function wLoop() {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(42, 1, .3, 3000);
+  const env = mkEnv(scene, { top: "#04040e", hor: "#1a1458", bot: "#04040e", glow: MAGENTA, below: 1 });
+  const rings = [[9, 54, TEXT, 1.05, [1, 0, 0]], [6.6, 38, CYAN, 1.25, [0, 0, 1]], [4.3, 24, VIOLET, 1.7, [1, 0, 1]]].map((r, ri) => {
+    const g = new T.Group(), im = new T.InstancedMesh(new T.BoxGeometry(.55, .2, .5), new T.MeshBasicMaterial({ color: hdr(r[2], r[3]) }), r[1]), o = new T.Object3D();
+    for (let i = 0; i < r[1]; i++) { const a = i / r[1] * 6.2832; o.position.set(Math.cos(a) * r[0], 0, Math.sin(a) * r[0]); o.rotation.y = -a; o.updateMatrix(); im.setMatrixAt(i, o.matrix); }
+    const tor = new T.Mesh(new T.TorusGeometry(r[0], .025, 6, 120).rotateX(Math.PI / 2), new T.MeshBasicMaterial({ color: hdr(r[2], .6) }));
+    g.add(im, tor); const h = new T.Group(); h.add(g); h.userData = { g, ax: V3(...r[4]).normalize(), ri }; scene.add(h); return h;
+  });
+  const core = new T.Mesh(new T.IcosahedronGeometry(1.5, 2), new T.MeshBasicMaterial({ color: hdr(GOLD, 2) })); const cg = glow(GOLD, 16); scene.add(core, cg);
+  let dist = 40;
+  return { scene, cam, labels: [], update(c) {
+    const t = c.t, Tm = 17, phi = RM ? 2 : t < Tm ? .2 * t + .06 * t * t : .2 * Tm + .06 * Tm * Tm + 2.24 * (t - Tm), sp = RM ? .5 : Math.min(1, t / Tm);
+    rings.forEach(h => { h.userData.g.rotation.y = phi * (1 + h.userData.ri * .45) * (h.userData.ri % 2 ? -1 : 1); h.quaternion.setFromAxisAngle(h.userData.ax, .5 + h.userData.ri * .9 + phi * .12); });
+    core.rotation.set(phi * .7, phi, 0); core.scale.setScalar(1 + sp * .45 + Math.sin(phi * 3) * .04); core.material.color.copy(hdr(GOLD, 1.6 + sp * 2.6));
+    cg.quaternion.copy(cam.quaternion); cg.material.uniforms.uK.value = .5 + sp * 1.3; cg.scale.setScalar(1 + sp);
+    dist = lerp(dist, c.fit(cam, 24, 24), .1); const a = t * .1 + c.mx * .4;
+    cam.position.set(Math.sin(a) * dist, 5 + c.my * 4, Math.cos(a) * dist); cam.lookAt(0, 0, 0); env.follow(cam);
+  } };
+}
+
+/* ---------- 6. Veldhoven: tin, laser, spiegels, wafer ---------- */
+function wEuv() {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(40, 1, .3, 3000);
+  const env = mkEnv(scene, { top: "#04040e", hor: "#101040", bot: "#04040e", glow: VIOLET, below: 1 });
+  lights(scene, { c: "#dfe3ff", k: 2, p: V3(10, 30, 40), h: .9 });
+  const F = V3(-7, 0, 0), M1 = V3(-12.5, 0, 0), M2 = V3(1, 6.5, 0), M3 = V3(8, 1, 0), Wf = V3(8, -7, 0);
+  const drops = new T.InstancedMesh(new T.SphereGeometry(.14, 10, 8), new T.MeshBasicMaterial({ color: hdr("#cfe0ff", 1.6) }), 26); scene.add(drops);
+  const nozzle = new T.Mesh(new T.CylinderGeometry(.5, .25, 1.6, 12), new T.MeshStandardMaterial({ color: "#5a5f8a", roughness: .4, metalness: .7 })); nozzle.position.set(F.x, 9.6, 0); scene.add(nozzle);
+  const lz = beam(V3(-7, 0, 14), F, .05, hdr("#ff4f6d", 3.5)); scene.add(lz);
+  const flash = glow("#ffffff", 7); flash.position.copy(F); scene.add(flash);
+  const fl2 = glow(MAGENTA, 16); fl2.position.copy(F); scene.add(fl2);
+  const path = [F, M1, M2, M3, Wf], beams = [];
+  for (let i = 0; i < 4; i++) { const b = beam(path[i], path[i + 1], i ? .16 : .3, hdr(MAGENTA, 1.5), .55); scene.add(b); beams.push(b); const b2 = beam(path[i], path[i + 1], .05, hdr("#e9d6ff", 3), .9); scene.add(b2); beams.push(b2); }
+  const mm = new T.MeshStandardMaterial({ color: "#aab0ff", roughness: .12, metalness: 1, emissive: "#2a2360" });
+  [M1, M2, M3].forEach((p, i) => { const m = new T.Mesh(new T.CylinderGeometry(1.9, 1.9, .22, 40).rotateX(Math.PI / 2), mm);
+    const nrm = path[i].clone().sub(p).normalize().add(path[i + 2].clone().sub(p).normalize()).normalize(); m.position.copy(p).addScaledVector(nrm, -.12); m.lookAt(p.clone().add(nrm)); scene.add(m);
+    const rim = new T.Mesh(new T.TorusGeometry(1.95, .05, 6, 48), new T.MeshBasicMaterial({ color: hdr(CYAN, 1.2) })); rim.position.copy(m.position); rim.quaternion.copy(m.quaternion); scene.add(rim); });
+  const wm = new T.ShaderMaterial({ uniforms: { uP: { value: 0 }, uT: { value: 0 } }, vertexShader: VW,
+    fragmentShader: NZ + `varying vec2 vUv;uniform float uP,uT;void main(){vec2 p=vUv*2.-1.;float r=length(p);if(r>1.)discard;vec2 g=p*7.;vec2 id=floor(g),f=fract(g);float edge=step(.08,f.x)*step(.08,f.y)*step(f.x,.92)*step(f.y,.92);
+float ord=(id.y+7.)*14.+(mod(id.y,2.)<.5?id.x+7.:6.-id.x);float done=step(ord,uP*196.);float now=1.-step(1.5,abs(ord-uP*196.));
+vec3 c=vec3(.06,.06,.16);c=mix(c,vec3(.32,.26,.85)*(.6+.5*hash(id)),done*edge);c+=vec3(2.6,2.,1.1)*now*edge;c+=vec3(.2,.5,1.)*smoothstep(.94,1.,r)*.7;gl_FragColor=vec4(c,1.);}` });
+  const wafer = new T.Mesh(new T.CircleGeometry(4.4, 64).rotateX(-Math.PI / 2), wm); wafer.position.copy(Wf); scene.add(wafer);
+  const cage = new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(27, 20, 9)), new T.LineBasicMaterial({ color: "#3a3f8a", transparent: true, opacity: .5 })); cage.position.set(-2, 1, 0); scene.add(cage);
+  const o = new T.Object3D(); let dist = 50;
+  return { scene, cam, labels: [{ e: L("druppels tin"), p: V3(F.x + .8, 6.5, 0), a: "l" }, { e: L("laser"), p: V3(-7, .6, 8), a: "l" }, { e: L("plasma, 220.000 graden", "gold"), p: V3(F.x + .2, -1.6, 0), a: "c" }, { e: L("spiegels"), p: V3(M2.x + 2.6, M2.y + 1, 0), a: "l" }, { e: L("wafer"), p: V3(Wf.x + 5, Wf.y, 0), a: "l" }], update(c) {
+    const t = c.t, f = RM ? .5 : (t * 6) % 1, hit = RM ? .6 : Math.pow(1 - f, 3);
+    for (let i = 0; i < 26; i++) { const y = 8.6 - ((i + f) / 26) * 17.2; o.position.set(F.x, y, 0); o.scale.setScalar(y < 0 ? 0 : 1); o.updateMatrix(); drops.setMatrixAt(i, o.matrix); }
+    drops.instanceMatrix.needsUpdate = true;
+    flash.quaternion.copy(cam.quaternion); fl2.quaternion.copy(cam.quaternion); flash.material.uniforms.uK.value = .6 + hit * 2.4; fl2.material.uniforms.uK.value = .35 + hit * .7;
+    lz.material.opacity = .35 + hit * .65; beams.forEach((b, i) => b.material.opacity = (i % 2 ? .6 : .3) + hit * .35);
+    wm.uniforms.uP.value = RM ? .6 : (t / 26) % 1; wm.uniforms.uT.value = t;
+    dist = lerp(dist, c.fit(cam, 33, 24), .1); const a = Math.sin(t * .12) * .32 + c.mx * .2;
+    cam.position.set(-2 + Math.sin(a) * dist, 4 + c.my * 3, Math.cos(a) * dist); cam.lookAt(-2, .5, 0); env.follow(cam);
+  } };
+}
+
+/* ---------- 7. Nederland: een land vol lichtjes ---------- */
+const NL = [[3.37,51.37],[3.38,51.27],[3.80,51.21],[4.24,51.37],[4.40,51.45],[4.77,51.50],[5.04,51.48],[5.24,51.31],[5.50,51.29],[5.86,51.15],[5.77,50.96],[5.64,50.84],[5.69,50.76],[6.02,50.76],[6.09,50.92],[5.97,51.03],[6.17,51.16],[6.08,51.24],[6.22,51.36],[6.22,51.51],[6.10,51.66],[5.96,51.83],[6.17,51.90],[6.41,51.83],[6.83,51.97],[6.69,52.07],[7.06,52.24],[7.07,52.39],[6.70,52.48],[6.72,52.63],[7.05,52.64],[7.09,52.85],[7.21,53.01],[7.21,53.24],[6.90,53.44],[6.30,53.40],[5.90,53.38],[5.45,53.23],[5.41,53.07],[5.36,52.88],[5.71,52.84],[5.60,52.66],[5.47,52.52],[5.14,52.38],[5.05,52.45],[5.07,52.64],[5.29,52.70],[5.10,52.77],[5.04,52.94],[4.78,52.96],[4.63,52.63],[4.55,52.46],[4.40,52.22],[4.27,52.11],[4.12,51.98],[3.87,51.81],[3.70,51.73],[3.69,51.60],[3.44,51.54],[3.57,51.44]];
+const ISL = [[4.72,53.0,4.9,53.16],[4.95,53.24,5.1,53.3],[5.2,53.36,5.55,53.44],[5.63,53.44,5.95,53.47],[6.13,53.48,6.3,53.5]];
+function wNL(mode) {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(30, 1, .5, 3000), S = 40;
+  const env = mkEnv(scene, { top: "#04040e", hor: "#0d0c38", bot: "#04040e", glow: VIOLET, below: 1 });
+  const P = (lo, la) => [(lo - 5.3) * .616 * S, (la - 52.15) * S];
+  const poly = NL.map(p => P(p[0], p[1]));
+  const inside = (x, y) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const a = poly[i], b = poly[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; };
+  const sea = new T.Mesh(new T.PlaneGeometry(7000, 7000).rotateX(-Math.PI / 2), new T.ShaderMaterial({ uniforms: {}, vertexShader: VW,
+    fragmentShader: "varying vec3 vW;void main(){vec2 g=vW.xz/8.;vec2 f=abs(fract(g)-.5);vec2 w=fwidth(g);float l=(1.-smoothstep(0.,w.x*1.5+.01,.5-max(f.x,f.y)))/(1.+dot(w,w)*300.);float d=length(vW.xz);vec3 c=mix(vec3(.012,.014,.05),vec3(.07,.09,.3),l*.22);c*=1.-smoothstep(60.,260.,d)*.8;gl_FragColor=vec4(c,1.);}" })); sea.position.y = -.2; scene.add(sea);
+  const sh = new T.Shape(poly.map(p => new T.Vector2(p[0], p[1]))); const land = new T.Mesh(new T.ShapeGeometry(sh).rotateX(-Math.PI / 2), new T.MeshBasicMaterial({ color: "#11113c" })); scene.add(land);
+  const oa = []; poly.forEach(p => oa.push(p[0], .05, -p[1])); const og = new T.BufferGeometry(); og.setAttribute("position", new T.BufferAttribute(new Float32Array(oa), 3));
+  scene.add(new T.LineLoop(og, new T.LineBasicMaterial({ color: hdr(CYAN, .9), transparent: true, opacity: .65 })));
+  const N = LOW ? 3600 : 7500, pos = new Float32Array(N * 3), rank = new Float32Array(N), sd = new Float32Array(N), pts = [];
+  const seedP = P(5.40, 51.42);
+  while (pts.length < N) {
+    let x, y; if (rnd() < .035) { const q = ISL[(rnd() * ISL.length) | 0], a = P(q[0], q[1]), b = P(q[2], q[3]), k = rnd(); x = lerp(a[0], b[0], k) + (rnd() - .5) * 1.2; y = lerp(a[1], b[1], k) + (rnd() - .5) * 1.2; }
+    else { x = (rnd() - .5) * 110; y = (rnd() - .5) * 120; if (!inside(x, y)) continue; }
+    pts.push([x, y, Math.hypot(x - seedP[0], y - seedP[1])]);
+  }
+  pts.sort((a, b) => a[2] - b[2]); pts.forEach((p, i) => { pos[i * 3] = p[0]; pos[i * 3 + 1] = .3; pos[i * 3 + 2] = -p[1]; rank[i] = i; sd[i] = rnd(); });
+  const pg = new T.BufferGeometry(); pg.setAttribute("position", new T.BufferAttribute(pos, 3)); pg.setAttribute("aRank", new T.BufferAttribute(rank, 1)); pg.setAttribute("aSeed", new T.BufferAttribute(sd, 1));
+  const pm = new T.ShaderMaterial({ transparent: true, depthWrite: false, blending: T.AdditiveBlending, uniforms: { uCount: { value: 1 }, uT: { value: 0 }, uK: { value: 1 }, uPx: { value: 1 } },
+    vertexShader: "attribute float aRank,aSeed;uniform float uCount,uT,uPx;varying float vOn;varying float vS;void main(){vS=aSeed;vOn=clamp((uCount-aRank)/max(uCount*.12,1.),0.,1.);vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=uPx*(1.6+aSeed*2.2)*(150./-mv.z)*(.4+.6*vOn)*(.85+.15*sin(uT*2.+aSeed*40.));gl_Position=projectionMatrix*mv;}",
+    fragmentShader: "varying float vOn;varying float vS;uniform float uK;void main(){float d=length(gl_PointCoord-.5)*2.;float a=pow(max(1.-d,0.),2.)*vOn;vec3 c=mix(vec3(1.,.8,.5),vec3(.95,.96,1.),step(.7,vS));gl_FragColor=vec4(c*a*uK*1.8,a);}" });
+  const lightsP = new T.Points(pg, pm); lightsP.frustumCulled = false; scene.add(lightsP);
+  const sg = glow(GOLD, 14); sg.rotation.x = -Math.PI / 2; sg.position.set(seedP[0], .4, -seedP[1]); scene.add(sg);
+  const labels = [{ e: L("Veldhoven", "gold"), p: V3(seedP[0] + 2, 1, -seedP[1] + 3), a: "l" }];
+  let con = null;
+  if (mode === "doen") {
+    con = new T.Group(); const n = clamp(GG.makers || 9, 3, 140), sp = [];
+    for (let i = 0; i < n; i++) { const a = i / n * 6.2832 + rnd() * .5, r = 12 + rnd() * 22; sp.push(V3(Math.cos(a) * r, 16 + rnd() * 14, Math.sin(a) * r * 1.1 - 4)); }
+    const la = []; sp.forEach((p, i) => { const s = new T.Mesh(new T.IcosahedronGeometry(.55, 1), new T.MeshBasicMaterial({ color: hdr(GOLD, 2.6) })); s.position.copy(p); con.add(s);
+      const g = glow(GOLD, 6); g.position.copy(p); g.userData.bb = 1; con.add(g); const q = sp[(i + 1) % n], r2 = sp[(i + 3) % n]; la.push(...p.toArray(), ...q.toArray()); if (n > 4) la.push(...p.toArray(), ...r2.toArray()); la.push(p.x, p.y, p.z, p.x, .3, p.z); });
+    const lg = new T.BufferGeometry(); lg.setAttribute("position", new T.BufferAttribute(new Float32Array(la), 3));
+    con.add(new T.LineSegments(lg, new T.LineBasicMaterial({ color: hdr(GOLD, 1), transparent: true, opacity: .4, depthWrite: false }))); scene.add(con);
+  }
+  let dist = 200;
+  return { scene, cam, labels, update(c) {
+    const t = c.t; pm.uniforms.uT.value = t; pm.uniforms.uPx.value = R.getPixelRatio() * (LOW ? 1.25 : 1);
+    if (mode === "kopie") { pm.uniforms.uCount.value = RM ? N : Math.min(N * 1.2, Math.pow(2, Math.max(0, t - 1.2) * 1.7)); pm.uniforms.uK.value = 1.5; }
+    else { pm.uniforms.uCount.value = N * 1.2; pm.uniforms.uK.value = .5; }
+    sg.material.uniforms.uK.value = mode === "kopie" ? 1.2 * (1 - ease((t - 5) / 6)) + .25 : .2; labels[0].hide = mode !== "kopie" || t > 9;
+    if (con) con.children.forEach(o => { if (o.userData.bb) o.quaternion.copy(cam.quaternion); });
+    dist = lerp(dist, c.fit(cam, mode === "doen" ? 110 : 96, mode === "doen" ? 118 : 104), .1);
+    const az = Math.sin(t * .07) * .22 + c.mx * .12, el = mode === "doen" ? .7 : 1.12;
+    cam.position.set(Math.sin(az) * Math.cos(el) * dist, Math.sin(el) * dist, 6 + Math.cos(az) * Math.cos(el) * dist); cam.lookAt(0, mode === "doen" ? 7 : 0, 0); env.follow(cam);
+  } };
+}
+
+/* ---------- 8. honderd jaar in tien: de tunnel ---------- */
+function wTunnel() {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(62, 1, .3, 4000), SP = 13, N = 100;
+  const env = mkEnv(scene, { top: "#04040e", hor: "#0d0c38", bot: "#04040e", glow: VIOLET, below: 1 });
+  const im = new T.InstancedMesh(new T.TorusGeometry(6, .07, 6, 64), new T.MeshBasicMaterial(), N), o = new T.Object3D();
+  for (let i = 0; i < N; i++) { const dec = i % 10 === 0; o.position.set(0, 0, -i * SP); o.scale.setScalar(dec ? 1.22 : 1); o.updateMatrix(); im.setMatrixAt(i, o.matrix); im.setColorAt(i, dec ? hdr(GOLD, 2.6) : hdr(i % 2 ? VIOLET : CYAN, 1.1)); }
+  scene.add(im);
+  const sun = glow("#fff1d0", 900); sun.position.set(0, 0, -N * SP - 1500); scene.add(sun);
+  const cap = $("#eeuwcap");
+  return { scene, cam, labels: [], update(c) {
+    const t = RM ? 12 : c.t % 15, yrs = t < 5 ? 2 * t : t < 8.5 ? 10 + 90 * Math.pow((t - 5) / 3.5, 2.2) : 100 + (t - 8.5) * .6;
+    cam.position.set(Math.sin(t * .5) * .5 + c.mx, Math.cos(t * .37) * .4 + c.my, 8 - yrs * SP); cam.rotation.set(0, 0, Math.sin(t * .2) * .12);
+    cam.fov = 62 + 26 * ease((t - 5) / 2) * (1 - ease((t - 8.5) / 2)); cam.updateProjectionMatrix();
+    sun.material.uniforms.uK.value = .5 + ease((yrs - 60) / 40) * 1.6;
+    const txt = yrs >= 100 ? "100 jaar onderzoek, in 10 jaar tijd" : "jaar " + Math.max(1, Math.floor(yrs));
+    if (cap && cap.textContent !== txt) cap.textContent = txt; env.follow(cam);
+  } };
+}
+
+/* ---------- 9. de splitsing ---------- */
+function wFork() {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(46, 1, .3, 3000);
+  const env = mkEnv(scene, { top: "#04040e", hor: "#1a1558", bot: "#04040e", glow: VIOLET, below: 1 });
+  scene.add(ground(polderMat({ dens: .006 }), -8));
+  const defs = [[44, 34, CYAN, "veel sneller"], [24, 12, TEXT, null], [10, -10, "#9097c4", "vlakt af"], [1, -30, "#9097c4", null], [-5, 24, MAGENTA, "valt terug"]], labels = [], pulses = [];
+  const trunk = [V3(0, -6, 30), V3(0, -5, 10), V3(0, -3, -10)];
+  defs.forEach((d, i) => {
+    const curve = new T.CatmullRomCurve3([...trunk, V3(d[1] * .25, -3 + d[0] * .12, -30), V3(d[1] * .7, -3 + d[0] * .55, -60), V3(d[1], -3 + d[0], -95)]);
+    scene.add(new T.Mesh(new T.TubeGeometry(curve, 90, .3, 8), new T.MeshBasicMaterial({ color: hdr(d[2], 1.15) })));
+    const p = new T.Mesh(new T.SphereGeometry(.7, 12, 8), new T.MeshBasicMaterial({ color: hdr(d[2], 2.6) })); scene.add(p); pulses.push({ p, curve, o: i * .19 });
+    if (d[3]) labels.push({ e: L(d[3]), p: curve.getPoint(.97).add(V3(0, 2.2, 0)), a: "c" });
+  });
+  return { scene, cam, labels, update(c) {
+    const t = c.t; pulses.forEach(q => { q.p.position.copy(q.curve.getPoint(RM ? .7 : (t * .11 + q.o) % 1)); });
+    cam.position.set(-3 + Math.sin(t * .1) * 2.5 + c.mx * 3, 1 + c.my * 2, 46); cam.lookAt(2, 9, -60); env.follow(cam);
+  } };
+}
+
+/* ---------- 10. de dijk ---------- */
+function wDike() {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(54, 1, .4, 3000), G = new T.Group(); G.scale.x = -1; scene.add(G);
+  const env = mkEnv(scene, { top: "#05060f", hor: "#343a86", bot: "#04040e", glow: "#8fa0ff", stars: .35, dir: V3(.5, .03, -1) });
+  lights(scene, { c: "#b7c2ff", k: 1.8, p: V3(80, 50, -40), sky: "#4a55b8", gnd: "#070716", h: 1.2 });
+  const HC = 10, seg = LOW ? 110 : 190;
+  const wu = { uT: { value: 0 }, uLevel: { value: 2 }, uAmp: { value: 1 }, uShore: { value: 3 }, uHor: { value: C("#343a86") }, uTop: { value: C("#070a22") } };
+  const sea = new T.Mesh(new T.PlaneGeometry(760, 1100, seg, seg).rotateX(-Math.PI / 2), new T.ShaderMaterial({ uniforms: wu, side: T.DoubleSide,
+    vertexShader: `uniform float uT,uLevel,uAmp;varying vec3 vW;varying vec3 vN;varying float vH;
+void wv(vec2 p,vec2 d,float k,float a,float s,inout float h,inout vec2 g){float ph=dot(d,p)*k-uT*s;h+=a*sin(ph);g+=d*k*a*cos(ph);}
+void main(){vec4 w=modelMatrix*vec4(position,1.);float h=0.;vec2 g=vec2(0.);vec2 p=w.xz;
+wv(p,normalize(vec2(-1.,.25)),.085,1.15,.95,h,g);wv(p,normalize(vec2(-.8,-.5)),.16,.6,1.35,h,g);wv(p,normalize(vec2(-.3,1.)),.3,.3,1.9,h,g);wv(p,normalize(vec2(-1.,-.1)),.62,.13,2.7,h,g);
+h*=uAmp;g*=uAmp;w.y=uLevel+h;vH=h;vW=w.xyz;vN=normalize(vec3(-g.x,1.,-g.y));gl_Position=projectionMatrix*viewMatrix*w;}`,
+    fragmentShader: NZ + `uniform float uT,uShore;uniform vec3 uHor,uTop;varying vec3 vW;varying vec3 vN;varying float vH;
+void main(){vec3 V=normalize(cameraPosition-vW);vec3 N=normalize(vN);float fr=pow(1.-max(dot(N,V),0.),4.);vec3 r=reflect(-V,N);
+vec3 skyc=mix(uHor,uTop,clamp(r.y*1.6,0.,1.));vec3 c=mix(vec3(.008,.015,.05),skyc*1.25,.12+.88*fr);
+float foam=smoothstep(.85,1.9,vH)*(.4+.6*noise(vW.xz*.7+uT*.5));float sh=smoothstep(7.,0.,abs(vW.x-uShore))*(.35+.65*noise(vec2(vW.z*.35,uT*1.2)));
+c+=vec3(.75,.85,1.)*(foam*.5+sh*.6);float d=length(vW-cameraPosition);c=mix(c,uHor*.8,1.-exp(-d*.0022));gl_FragColor=vec4(c,1.);}` }));
+  sea.position.set(-360, 0, -420); G.add(sea);
+  const shp = new T.Shape([[-8, -10], [-8, -1.5], [14, HC], [21, HC], [42, -3], [42, -10]].map(p => new T.Vector2(p[0], p[1])));
+  const dike = new T.Mesh(new T.ExtrudeGeometry(shp, { depth: 1100, bevelEnabled: false, steps: 1 }), new T.MeshLambertMaterial({ color: "#1b3a36", side: T.DoubleSide })); dike.position.z = -980; G.add(dike);
+  const road = new T.Mesh(new T.BoxGeometry(4.6, .1, 1100), new T.MeshLambertMaterial({ color: "#474c70" })); road.position.set(17.5, HC, -430); G.add(road);
+  const NP = 36, posts = new T.InstancedMesh(new T.CylinderGeometry(.07, .07, 3.4, 5).translate(0, 1.7, 0), new T.MeshBasicMaterial({ color: "#0a0a18" }), NP), lamps = new T.InstancedMesh(new T.SphereGeometry(.24, 8, 6), new T.MeshBasicMaterial({ color: hdr(GOLD, 3.2) }), NP);
+  G.add(posts, lamps);
+  const land = ground(polderMat({ fog: "#1a1c52", dens: .0026, refl: "#6a78ff" }), -3); G.add(land);
+  const NH = LOW ? 90 : 170, houses = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1).translate(0, .5, 0), new T.MeshLambertMaterial({ color: "#12122a" }), NH), roofs = new T.InstancedMesh(new T.ConeGeometry(.74, .7, 4).rotateY(Math.PI / 4).translate(0, .35, 0), new T.MeshLambertMaterial({ color: "#2a1d3a" }), NH);
+  const wa = new Float32Array(NH * 3 * 2), o = new T.Object3D();
+  for (let i = 0; i < NH; i++) { const x = 52 + Math.pow(rnd(), 1.6) * 260, z = 40 - rnd() * 760, w = 5 + rnd() * 4, h = 3 + rnd() * 2, d = 6 + rnd() * 5;
+    o.position.set(x, -3, z); o.rotation.set(0, 0, 0); o.scale.set(w, h, d); o.updateMatrix(); houses.setMatrixAt(i, o.matrix); o.position.y = -3 + h; o.scale.set(w, 3, d); o.updateMatrix(); roofs.setMatrixAt(i, o.matrix);
+    wa.set([-(x - w / 2 - .1), -3 + h * .55, z + d * .2, -(x - w / 2 - .1), -3 + h * .55, z - d * .25], i * 6); }
+  G.add(houses, roofs);
+  const wg = new T.BufferGeometry(); wg.setAttribute("position", new T.BufferAttribute(wa, 3)); const win = new T.Points(wg, new T.PointsMaterial({ color: hdr("#ffc978", 3), size: LOW ? 2.4 : 3, sizeAttenuation: false })); win.frustumCulled = false; scene.add(win);
+  const church = new T.Group(); const cb = new T.Mesh(new T.BoxGeometry(5, 22, 5), new T.MeshLambertMaterial({ color: "#14142e" })); cb.position.y = 11; const cs = new T.Mesh(new T.ConeGeometry(3.8, 12, 4).rotateY(Math.PI / 4), new T.MeshLambertMaterial({ color: "#2a1d3a" })); cs.position.y = 28; church.add(cb, cs); church.position.set(96, -3, -250); G.add(church);
+  const ml = mill(2.6); ml.position.set(140, -3, -420); ml.rotation.y = -1.2; G.add(ml);
+  const labels = [{ e: L("zeeniveau"), p: V3(), a: "c" }, { e: L("het land erachter ligt lager"), p: V3(-70, 4, -120), a: "c" }];
+  return { scene, cam, labels, update(c) {
+    const t = c.t, lvl = RM ? 8.6 : 2.4 + 6.2 * ease(t / 14), gr = RM ? 1 : ease((t - 6) / 11), sc = 1 + .36 * gr, crest = HC * sc;
+    wu.uT.value = RM ? 3 : t; wu.uLevel.value = lvl; wu.uAmp.value = .75 + .5 * ease(t / 10); wu.uShore.value = 8 - (lvl + 1.5) / (crest + 1.5) * 22;
+    dike.scale.y = sc; road.position.y = crest;
+    for (let i = 0; i < NP; i++) { o.position.set(19.6, crest, 60 - i * 26); o.rotation.set(0, 0, 0); o.scale.setScalar(1); o.updateMatrix(); posts.setMatrixAt(i, o.matrix); o.position.y = crest + 3.5; o.updateMatrix(); lamps.setMatrixAt(i, o.matrix); }
+    posts.instanceMatrix.needsUpdate = lamps.instanceMatrix.needsUpdate = true; ml.userData.wk.rotation.z = t * .5;
+    labels[0].p.set(30, lvl + 3, -90); labels[0].hide = t < 3; labels[1].hide = t < 5;
+    cam.position.set(-17.5 + c.mx * 3, crest + 6.5 + c.my * 1.5, 92 - ease(t / 20) * 14); cam.lookAt(-11, crest - 4.5, -170); env.follow(cam);
+  } };
+}
+
+/* ---------- 11. jouw jaar ---------- */
+function wJij() {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(40, 1, .3, 3000);
+  const env = mkEnv(scene, { top: "#04040e", hor: "#16124e", bot: "#04040e", glow: MAGENTA, below: 1 });
+  const N = LOW ? 3200 : 7000, from = new Float32Array(N * 3), to = new Float32Array(N * 3), sd = new Float32Array(N);
+  for (let i = 0; i < N; i++) { sd[i] = rnd(); const a = rnd() * 6.28, r = 10 + rnd() * 26; from[i * 3] = Math.cos(a) * r; from[i * 3 + 1] = (rnd() - .5) * 24; from[i * 3 + 2] = Math.sin(a) * r - 10; }
+  const g = new T.BufferGeometry(); g.setAttribute("position", new T.BufferAttribute(new Float32Array(N * 3), 3)); g.setAttribute("aFrom", new T.BufferAttribute(from, 3)); g.setAttribute("aTo", new T.BufferAttribute(to, 3)); g.setAttribute("aSeed", new T.BufferAttribute(sd, 1));
+  const m = new T.ShaderMaterial({ transparent: true, depthWrite: false, blending: T.AdditiveBlending, uniforms: { uMix: { value: 0 }, uT: { value: 0 }, uPx: { value: 1 } },
+    vertexShader: "attribute vec3 aFrom,aTo;attribute float aSeed;uniform float uMix,uT,uPx;varying float vS;void main(){vS=aSeed;float k=clamp(uMix*1.6-aSeed*.6,0.,1.);k=k*k*(3.-2.*k);vec3 p=mix(aFrom,aTo,k);p+=vec3(sin(uT*.7+aSeed*50.),cos(uT*.6+aSeed*31.),sin(uT*.5+aSeed*17.))*(.12+.9*(1.-k));vec4 mv=modelViewMatrix*vec4(p,1.);gl_PointSize=uPx*(1.3+aSeed*2.2)*(42./-mv.z);gl_Position=projectionMatrix*mv;}",
+    fragmentShader: "varying float vS;void main(){float d=length(gl_PointCoord-.5)*2.;float a=pow(max(1.-d,0.),1.8);vec3 c=vS<.5?vec3(.93,.94,1.):vS<.72?vec3(.25,.82,1.):vS<.92?vec3(.56,.5,1.):vec3(.96,.8,.52);gl_FragColor=vec4(c*a*1.5,a);}" });
+  const pts = new T.Points(g, m); pts.frustumCulled = false; scene.add(pts);
+  const cv = document.createElement("canvas"); cv.width = 520; cv.height = 200; const cx = cv.getContext("2d", { willReadFrequently: true });
+  let shown = 0, mixT = 0, dist = 40;
+  function target(year) {
+    cx.clearRect(0, 0, 520, 200); cx.fillStyle = "#fff"; cx.font = "600 170px Fraunces, Georgia, serif"; cx.textAlign = "center"; cx.textBaseline = "middle"; cx.fillText(String(year), 260, 106, 500);
+    const d = cx.getImageData(0, 0, 520, 200).data, on = []; for (let p = 3, j = 0; p < d.length; p += 4, j++) if (d[p] > 120) on.push(j);
+    const k = clamp(ease(mixT), 0, 1), fa = g.attributes.aFrom.array, ta = g.attributes.aTo.array;
+    for (let i = 0; i < N; i++) { for (let q = 0; q < 3; q++) fa[i * 3 + q] = shown ? lerp(fa[i * 3 + q], ta[i * 3 + q], clamp(k * 1.6 - sd[i] * .6, 0, 1)) : fa[i * 3 + q];
+      const j = on.length ? on[(rnd() * on.length) | 0] : 0; ta[i * 3] = ((j % 520) / 520 - .5) * 26; ta[i * 3 + 1] = (.5 - ((j / 520) | 0) / 200) * 10; ta[i * 3 + 2] = (rnd() - .5) * 1.4; }
+    g.attributes.aFrom.needsUpdate = g.attributes.aTo.needsUpdate = true; shown = year; mixT = 0;
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { shown = -1; });
+  return { scene, cam, labels: [], update(c) {
+    if (shown !== GG.born) target(GG.born);
+    mixT = RM ? 1 : Math.min(1, mixT + c.dt * .8); m.uniforms.uMix.value = mixT; m.uniforms.uT.value = RM ? 0 : c.t; m.uniforms.uPx.value = R.getPixelRatio();
+    dist = lerp(dist, c.fit(cam, 30, 14), .1); const a = Math.sin(c.t * .2) * .22 + c.mx * .25;
+    cam.position.set(Math.sin(a) * dist, c.my * 3, Math.cos(a) * dist); cam.lookAt(0, 0, 0); env.follow(cam);
+  } };
+}
+
+/* ---------- 12. de prompt ---------- */
+function wPrompt() {
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(40, 1, .3, 3000);
+  const env = mkEnv(scene, { top: "#04040e", hor: "#141048", bot: "#04040e", glow: VIOLET, below: 1 });
+  const panel = new T.Mesh(new T.PlaneGeometry(26, 13), new T.MeshBasicMaterial({ color: "#0a0a26", transparent: true, opacity: .92 })); panel.position.z = -.2; scene.add(panel);
+  const frame = new T.LineSegments(new T.EdgesGeometry(new T.PlaneGeometry(26, 13)), new T.LineBasicMaterial({ color: hdr(VIOLET, 1.4) })); scene.add(frame);
+  const bars = []; const lineW = [22, 21, 22.5, 20, 6]; let idx = 0;
+  lineW.forEach((lw, li) => { let x = -11.5; while (x < -11.5 + lw - .8) { const w = Math.min(.7 + rnd() * 2.6, -11.5 + lw - x); bars.push({ x: x + w / 2, y: 4.2 - li * 2.05, w, i: idx++ }); x += w + .45; } });
+  const im = new T.InstancedMesh(new T.BoxGeometry(1, .55, .12), new T.MeshBasicMaterial(), bars.length), o = new T.Object3D();
+  bars.forEach((b, i) => { im.setColorAt(i, hdr(i % 7 === 3 ? GOLD : TEXT, i % 7 === 3 ? 1.8 : 1.05)); const a = rnd() * 6.28, r = 8 + rnd() * 7; b.g = V3(Math.cos(a) * r, (rnd() - .5) * 5 + Math.sin(a) * 2.5, Math.sin(a) * r - 6); b.s = rnd(); }); scene.add(im);
+  const cur = new T.Mesh(new T.BoxGeometry(.5, 1.1, .14), new T.MeshBasicMaterial({ color: hdr(GOLD, 3) })); scene.add(cur);
+  let dist = 50; const TY = 5.5, n = bars.length;
+  return { scene, cam, labels: [], update(c) {
+    const t = RM ? 4 : c.t, typed = clamp(t / TY, 0, 1) * n, k = RM ? 0 : ease((t - TY - 1.2) / 3), rot = RM ? 0 : Math.max(0, t - TY - 1.2) * .12;
+    bars.forEach((b, i) => { const on = i < typed ? 1 : 0, gx = b.g.x * Math.cos(rot) - (b.g.z + 6) * Math.sin(rot), gz = b.g.x * Math.sin(rot) + (b.g.z + 6) * Math.cos(rot) - 6;
+      const kk = ease(clamp(k * 1.5 - b.s * .5, 0, 1)); o.position.set(lerp(b.x, gx, kk), lerp(b.y, b.g.y, kk), lerp(0, gz, kk)); o.rotation.set(kk * b.s * 5, kk * 3 * b.s, 0); o.scale.set(b.w * on || .0001, on || .0001, 1); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
+    im.instanceMatrix.needsUpdate = true;
+    const cb = bars[Math.min(n - 1, Math.floor(typed))]; cur.position.set(typed >= n ? cb.x + cb.w / 2 + .7 : cb.x - cb.w / 2, cb.y, 0); cur.visible = RM || (t * 2.2) % 1 < .6;
+    panel.material.opacity = .92 * (1 - k * .75); frame.material.opacity = 1 - k * .6; frame.material.transparent = true;
+    dist = lerp(dist, c.fit(cam, 30 + k * 6, 16 + k * 6), .08); const a = Math.sin(c.t * .15) * .18 + c.mx * .2;
+    cam.position.set(Math.sin(a) * dist, 1 + c.my * 3 + k * 5, Math.cos(a) * dist); cam.lookAt(0, 0, 0); env.follow(cam);
+  } };
+}
+
+/* ---------- compositie: overgang, gloed, tonemapping ---------- */
+const QV = "varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}";
+const MIX = NZ + `uniform sampler2D tA,tB;uniform float uP,uTime,uAsp;
+vec3 mixed(vec2 uv,out float edge){vec3 a=texture2D(tA,uv).rgb;edge=0.;if(uP<=0.)return a;vec3 b=texture2D(tB,uv).rgb;
+float n=fbm(vec2(uv.x*uAsp,uv.y)*3.2+7.)*.75+(1.-uv.y)*.25;float x=uP*1.35-.15-n;float m=smoothstep(0.,.06,x);edge=m*(1.-smoothstep(.06,.2,x));return mix(a,b,m);}`;
+const quad = new T.Mesh(new T.PlaneGeometry(2, 2)), qS = new T.Scene(), qC = new T.OrthographicCamera(-1, 1, 1, -1, 0, 1); quad.frustumCulled = false; qS.add(quad);
+const U = { tA: { value: null }, tB: { value: null }, uP: { value: 0 }, uTime: { value: 0 }, uAsp: { value: 1 } };
+const mBright = new T.ShaderMaterial({ uniforms: { ...U, uTh: { value: FLOAT ? 1.0 : .78 } }, vertexShader: QV, depthTest: false,
+  fragmentShader: MIX + "varying vec2 vUv;uniform float uTh;void main(){float e;vec3 c=mixed(vUv,e);c+=vec3(1.9,1.5,.8)*e;float l=max(c.r,max(c.g,c.b));gl_FragColor=vec4(c*smoothstep(uTh,uTh+.6,l),1.);}" });
+const mBlur = new T.ShaderMaterial({ uniforms: { tA: { value: null }, uDir: { value: new T.Vector2() } }, vertexShader: QV, depthTest: false,
+  fragmentShader: "varying vec2 vUv;uniform sampler2D tA;uniform vec2 uDir;void main(){vec3 c=texture2D(tA,vUv).rgb*.227;c+=(texture2D(tA,vUv+uDir*1.38).rgb+texture2D(tA,vUv-uDir*1.38).rgb)*.316;c+=(texture2D(tA,vUv+uDir*3.23).rgb+texture2D(tA,vUv-uDir*3.23).rgb)*.07;gl_FragColor=vec4(c,1.);}" });
+const mFinal = new T.ShaderMaterial({ uniforms: { ...U, tBloom: { value: null }, uBloom: { value: FLOAT ? .6 : .5 } }, vertexShader: QV, depthTest: false,
+  fragmentShader: MIX + "varying vec2 vUv;uniform sampler2D tBloom;uniform float uBloom;void main(){float e;vec3 c=mixed(vUv,e);c+=vec3(1.9,1.5,.8)*e;c+=texture2D(tBloom,vUv).rgb*uBloom;c=(c*(2.51*c+.03))/(c*(2.43*c+.59)+.14);gl_FragColor=vec4(pow(clamp(c,0.,1.),vec3(1./2.2)),1.);}" });
+let W = 1, H = 1, rtA, rtB, rtH, rtB1, rtB2, qScale = 1, fAcc = 0, fN = 0;
+function mkRT(w, h, depth, samples) { const t = new T.WebGLRenderTarget(Math.max(2, w | 0), Math.max(2, h | 0), { type: RTT, depthBuffer: depth, samples: samples || 0 }); t.texture.minFilter = t.texture.magFilter = T.LinearFilter; return t; }
+function resize() {
+  W = innerWidth; H = innerHeight; const pr = Math.min(LOW ? 1.5 : 2, devicePixelRatio || 1) * qScale; R.setPixelRatio(pr); R.setSize(W, H, false);
+  [rtA, rtB, rtH, rtB1, rtB2].forEach(t => t && t.dispose()); const w = W * pr, h = H * pr, ms = LOW ? 0 : 4;
+  rtA = mkRT(w, h, true, ms); rtB = mkRT(w, h, true, ms); rtH = mkRT(w / 2, h / 2, false); rtB1 = mkRT(w / 4, h / 4, false); rtB2 = mkRT(w / 4, h / 4, false);
+}
+function pass(mat, target) { quad.material = mat; R.setRenderTarget(target); R.render(qS, qC); }
+
+/* ---------- regie ---------- */
+const factory = { gewoon: () => wPolder("gewoon"), tulp: wTulp, mijlpalen: () => wPolder("mijlpalen"), lijn: wChart, vouwen: wFold, lus: wLoop, veldhoven: wEuv, kopie: () => wNL("kopie"),
+  eeuw: wTunnel, eerlijk: wFork, water: wDike, jij: wJij, prompt: wPrompt, doen: () => wNL("doen"), slot: () => wPolder("slot") };
+const worlds = {}, ids = Object.keys(factory);
+function get(id) {
+  if (!worlds[id]) { try { worlds[id] = factory[id](); } catch (e) { console.error("wereld " + id, e); const s = new T.Scene(); s.background = C("#04040e"); worlds[id] = { scene: s, cam: new T.PerspectiveCamera(), labels: [], update() {} }; }
+    worlds[id].id = id; worlds[id].t0 = performance.now(); }
+  return worlds[id];
+}
+const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+addEventListener("pointermove", e => { if (e.pointerType === "mouse") { mouse.tx = e.clientX / innerWidth * 2 - 1; mouse.ty = e.clientY / innerHeight * 2 - 1; } }, { passive: true });
+const stageOf = {};
+function stage(id) { const el = stageOf[id] || (stageOf[id] = document.querySelector('.scene[data-id="' + id + '"] .stage')); if (!el) return { x: W / 2, y: H / 2, w: W, h: H };
+  const b = el.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2, w: Math.max(60, b.width), h: Math.max(60, b.height) }; }
+const pv = new T.Vector3();
+function draw(w, target, now, dt, showLabels) {
+  const st = stage(w.id), cam = w.cam; cam.aspect = W / H; cam.setViewOffset(W, H, -(st.x - W / 2), -(st.y - H / 2), W, H);
+  const ctx = { t: RM ? 30 : (now - w.t0) / 1000, dt, mx: mouse.x, my: mouse.y, W, H, st,
+    fit(c, needW, needH) { return Math.max(needH * H / st.h, needW * H / st.w) / (2 * Math.tan(c.fov * Math.PI / 360)); } };
+  w.update(ctx); cam.updateProjectionMatrix(); cam.updateMatrixWorld();
+  R.setRenderTarget(target); R.render(w.scene, cam);
+  w.labels.forEach(l => {
+    let on = showLabels && !l.hide; if (on) { pv.copy(l.p).project(cam); on = pv.z < 1 && Math.abs(pv.x) < 1.05 && Math.abs(pv.y) < 1.05;
+      if (on) l.e.style.transform = "translate(" + ((pv.x * .5 + .5) * W).toFixed(1) + "px," + ((-pv.y * .5 + .5) * H).toFixed(1) + "px) translate(" + (l.a === "r" ? "-100%" : l.a === "c" ? "-50%" : "0") + ",-50%)"; }
+    l.e.classList.toggle("on", !!on);
+  });
+}
+let cur = null, nxt = null, p = 0, last = performance.now(), want = null;
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(.05, (now - last) / 1000); last = now; mouse.x += (mouse.tx - mouse.x) * .05; mouse.y += (mouse.ty - mouse.y) * .05;
+  /* Trage telefoon: schakel de resolutie stapsgewijs terug in plaats van te haperen. */
+  fAcc += dt; fN++;
+  if (fN >= 100) { if (fN / fAcc < 33 && qScale > .5) { qScale = Math.max(.5, qScale * .75); resize(); } fAcc = 0; fN = 0; }
+  if (GG.scene !== want) {
+    want = GG.scene; const w = get(want); w.t0 = now; fAcc = 0; fN = -40;
+    if (!cur) cur = w; else if (w !== cur) { if (nxt) { cur.labels.forEach(l => l.e.classList.remove("on")); cur = nxt; } nxt = w; p = RM ? 1 : 0; }
+    const i = ids.indexOf(want), nx = ids[i + 1]; if (nx && !worlds[nx]) setTimeout(() => { const n = get(nx); try { R.compile(n.scene, n.cam); } catch (e) {} }, 700);
+  }
+  if (!cur) return;
+  if (nxt) { p += dt / .95; if (p >= 1) { cur.labels.forEach(l => l.e.classList.remove("on")); cur = nxt; nxt = null; p = 0; } }
+  draw(cur, rtA, now, dt, !nxt); if (nxt) draw(nxt, rtB, now, dt, false);
+  U.tA.value = rtA.texture; U.tB.value = nxt ? rtB.texture : rtA.texture; U.uP.value = nxt ? p : 0; U.uTime.value = now / 1000; U.uAsp.value = W / H;
+  for (const m of [mBright, mFinal]) { m.uniforms.tA.value = U.tA.value; m.uniforms.tB.value = U.tB.value; m.uniforms.uP.value = U.uP.value; m.uniforms.uAsp.value = U.uAsp.value; }
+  pass(mBright, rtH);
+  mBlur.uniforms.tA.value = rtH.texture; mBlur.uniforms.uDir.value.set(1 / rtB1.width, 0); pass(mBlur, rtB1);
+  mBlur.uniforms.tA.value = rtB1.texture; mBlur.uniforms.uDir.value.set(0, 1 / rtB2.height); pass(mBlur, rtB2);
+  mBlur.uniforms.tA.value = rtB2.texture; mBlur.uniforms.uDir.value.set(2 / rtB1.width, 0); pass(mBlur, rtB1);
+  mBlur.uniforms.tA.value = rtB1.texture; mBlur.uniforms.uDir.value.set(0, 2 / rtB2.height); pass(mBlur, rtB2);
+  mFinal.uniforms.tBloom.value = rtB2.texture; pass(mFinal, null);
+}
+resize(); addEventListener("resize", resize);
+canvas.addEventListener("webglcontextlost", e => { e.preventDefault(); document.documentElement.classList.add("gg-nogl"); });
+document.documentElement.classList.add("gg-gl");
+GG.engine = { worlds, get };
+requestAnimationFrame(frame);
 {% endraw %}</script>
 </body>
 </html>

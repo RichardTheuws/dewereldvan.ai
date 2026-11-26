@@ -316,3 +316,17 @@ def test_gek_genoeg_follows_styleguide():
     assert "—" not in src and "✦" not in src
     assert "data-reveal" not in src
     assert "prefers-reduced-motion" in src
+
+
+def test_gek_genoeg_3d_engine_is_self_hosted(client):
+    """De 3D-werelden draaien op een zelf gehoste three.js met de versie in de
+    bestandsnaam (statics zijn immutable gecachet), en de bediening werkt los van
+    WebGL: het UI-script staat apart van de module."""
+    html = client.get("/gek-genoeg").text
+    assert 'from "/static/vendor/three-0.170.0.module.min.js"' in html
+    assert html.count('<script type="module">') == 1 and "window.GG" in html
+    assert "cdn.jsdelivr.net" not in html and "unpkg.com" not in html
+    lib = client.get("/static/vendor/three-0.170.0.module.min.js")
+    assert lib.status_code == 200 and "SPDX-License-Identifier: MIT" in lib.text[:200]
+    # De nieuwste METR-meting staat met bron en marge op de pagina.
+    assert "2026-11-20-q4-2026-capability-update" in html and "13 tot 2.645 uur" in html

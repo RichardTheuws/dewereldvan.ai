@@ -65,7 +65,8 @@ Eén tunnel (`dewereldvan-app`) voor **dewereldvan.ai**, `www` en **app.dewereld
 - **Community**: `/leden`, `/leden/{slug}`, `/projecten/{slug}`, `/agenda`, `/nieuws`, `/ideeen`,
   `/roadmap`, `/intro/*`, `/feedback*`.
 - **Presentatie**: `/gek-genoeg` (`seo.py`, template `gek_genoeg.html`, stijl en script inline; leest alleen het
-  aantal openbare makers).
+  aantal openbare makers). 3D via `static/vendor/three-0.170.0.module.min.js`; het UI-script zet `window.GG`, de
+  inline module leest dat en tekent per scherm een wereld.
 - **MCP/koppelen**: `/mcp`, `/profiel/verbind` (+ token-CRUD).
 - **Admin**: `/queue`, `/members/{id}/approve|reject|suspend`, `/admin/*` (roadmap, ideeën,
   posts, feedback, uitnodiging).

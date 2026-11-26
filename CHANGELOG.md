@@ -3,6 +3,24 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.123.0] - 2026-11-26
+### Changed — Gek genoeg opnieuw gebouwd in 3D
+- `/gek-genoeg` is van een 2D-deeltjesveld naar echte 3D-werelden gegaan, één per scherm: een nachtelijke polder
+  met molens, een bollenveld, de METR-meting als lichtbalken, een krant die langs Domtoren, Everest, aarde en maan
+  omhoog groeit, de machine in Veldhoven (tin, laser, spiegels, wafer), Nederland dat vanuit Veldhoven vol lichtjes
+  loopt, een tunnel van honderd jaren, een splitsing van paden, en de dijk met stijgend water en het lagere land
+  erachter. Overgangen lossen op met een gouden rand; gloed en tonemapping in een eigen eindpass.
+- Aanleiding: na het bekijken van het voorbeeld (op verzoek van Richard) bleek het verschil in beeld te groot.
+  De beelden en de code zijn eigen; de herkomst en de volgorde (eerst zonder, daarna met voorbeeld) staan op de
+  pagina en in het bronnenpaneel.
+- three.js 0.170.0 (MIT) zelf gehost in `app/static/vendor/`, met de versie in de bestandsnaam. De tekst en de
+  bediening blijven gewone HTML en werken ook zonder WebGL; de engine leest alleen `window.GG`.
+- Trage apparaten: de resolutie schakelt automatisch terug onder 33 beelden per seconde. `prefers-reduced-motion`
+  toont elke wereld als stilstaand eindbeeld.
+- METR bijgewerkt naar de update van 20-11-2026: ongeveer 40 uur (marge 13 tot 2.645 uur), verdubbeling elke
+  3,6 maanden. Marge en methodekanttekening staan op de pagina.
+- Het scherm over kopiëren heeft nu de kaart naast de tekst. Nieuw deelbeeld. Test voor de zelf gehoste engine.
+
 ## [0.122.0] - 2026-11-26
 ### Added — Gek genoeg: presentatie over de intelligentie-explosie
 - Nieuwe publieke pagina `/gek-genoeg`: vijftien schermen over de intelligentie-explosie voor een Nederlands
