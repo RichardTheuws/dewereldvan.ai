@@ -533,3 +533,22 @@ geslaagd als `/healthz` de nieuwe `VERSION` toont. `cloudflared` vastgepind.
 **Gevolgen**: eerst pushen, dan deployen. Een versie-upgrade van `cloudflared` is nu een bewuste wijziging in
 `docker-compose.yml`.
 
+
+## [2026-11-26] Gek genoeg: een losse, deelbare presentatie als voordeur
+
+**Context**: Frank Meeuwsen stuurde een prompt door (openbaar gedeeld door Eoin McKenna) die elders een
+indrukwekkende AI-presentatie opleverde. Richard wilde zien wat dewereldvan.ai daarmee kan voor een Nederlands
+publiek, zonder het voorbeeld na te maken.
+
+**Beslissing**: een eigen pagina `/gek-genoeg` op de site, niet een los artifact. Nuchtere toon met Nederlandse
+ankers (tulpenmanie, ASML, Deltawerken), cijfers met bron, en de herkomst open op de pagina. Standalone template
+met stijl en script inline. Het enige uit de database is het aantal openbare makers, via de gids-poort.
+
+**Alternatieven**:
+- Alleen een Claude-artifact: afgewezen. Geen eigen deelbeeld, geen eigen domein, en bezoekers komen niet bij de
+  gids uit.
+- Script en stijl in `/static`: afgewezen. De edge cachet statics 30 dagen en bust alleen op `cosmic.css`.
+
+**Gevolgen**: de cijfers verouderen. METR werkt zijn pagina niet meer actief bij (laatste meetpunt april 2026);
+bij een nieuwe meting passen `DATA` in het template en de datum in de colofon aan. Namen van Frank Meeuwsen en
+Eoin McKenna staan op een publieke pagina: op verzoek aanpassen of weghalen.

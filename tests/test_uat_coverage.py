@@ -73,6 +73,8 @@ PUBLIC_INDEXABLE = {
     "/zoek",
     # Privacyverklaring: publiek + indexeerbaar (AVG/ePrivacy, vindbaar via footer).
     "/privacy",
+    # Presentatie over de intelligentie-explosie: publiek, deelbaar, indexeerbaar.
+    "/gek-genoeg",
 }
 # Publiek bereikbaar (anon → 200) maar bewust noindex (auth + post-delete).
 PUBLIC_NOINDEX = {

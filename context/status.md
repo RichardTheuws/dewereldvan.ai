@@ -5,7 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-10 · **Versie**: 0.121.1 · **Branch**: `main`
+**Laatste update**: 2026-11-26 · **Versie**: 0.122.0 · **Branch**: `main`
+
+> **0.122.0** — **Gek genoeg** (`/gek-genoeg`): publieke, deelbare presentatie over de intelligentie-explosie voor
+> Nederland, vijftien schermen met interactie (METR-lijn, krant vouwen, geboortejaar), bronnenpaneel en eigen
+> deelbeeld. Herkomst (prompt via Eoin McKenna en Frank Meeuwsen, gemaakt door Claude) staat op de pagina.
 
 > **0.121.1** — Fix: MCP-connector in Claude Desktop gaf "Not found 307" op `/mcp`; het kale pad antwoordt nu
 > zelf (geen redirect naar `/mcp/`).

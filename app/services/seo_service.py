@@ -257,7 +257,7 @@ def sitemap_entries(db: Session) -> list[SitemapEntry]:
     # veranderen continu / niet per-entity te bepalen).
     entries: list[SitemapEntry] = [
         SitemapEntry(loc=canonical_url(path))
-        for path in ("/", "/leden", "/agenda", "/nieuws", "/roadmap")
+        for path in ("/", "/leden", "/agenda", "/nieuws", "/roadmap", "/gek-genoeg")
     ]
     # Overzichtspagina's (PRD hub §4.3): /gids altijd, een discipline alleen met ≥1
     # openbare maker (een lege pagina is noindex en hoort niet in de sitemap).

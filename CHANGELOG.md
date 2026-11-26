@@ -3,6 +3,25 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.122.0] - 2026-11-26
+### Added — Gek genoeg: presentatie over de intelligentie-explosie
+- Nieuwe publieke pagina `/gek-genoeg`: vijftien schermen over de intelligentie-explosie voor een Nederlands
+  publiek, in de kosmische identiteit. Eén deeltjesveld vormt per scherm een ander beeld (polderraster, tulp,
+  wafer, dijk met stijgend water). Interactief: de METR-lijn doortrekken en van schaal wisselen, een krant 42
+  keer dubbelvouwen, en je geboortejaar invullen. Deelknoppen (WhatsApp, link kopiëren) en een eigen deelbeeld
+  (`/static/og-gek-genoeg.png`). Opgenomen in de sitemap.
+- Aanleiding en herkomst staan op de pagina zelf: een prompt die Eoin McKenna op LinkedIn deelde en Frank
+  Meeuwsen doorstuurde; Claude maakte deze versie zonder het voorbeeld te zien. De schrijver van de prompt is
+  onbekend.
+- Cijfers nagezocht op 26-11-2026 en vermeld in het bronnenpaneel (METR time horizons tot april 2026, ZEISS over
+  EUV, Universiteit Twente over AI-gebruik). Doorgetrokken lijnen zijn als trend gemarkeerd, niet als voorspelling.
+- Het scherm "Drie nuchtere dingen" toont het aantal openbare makers via de gids-poort
+  (`directory_service.public_makers`): alleen een getal, geen namen.
+- Stijl en script staan inline in `gek_genoeg.html`, omdat `/static` aan de edge 30 dagen gecachet wordt en alleen
+  op de mtime van `cosmic.css` bust.
+- Tests: route, deelbaarheid, makers-poort, sitemap en styleguide-regels in `test_seo.py`; route geclassificeerd in
+  de UAT-inventaris.
+
 ## [0.121.1] - 2026-11-10
 ### Fixed — MCP-connector in Claude Desktop
 - `https://dewereldvan.ai/mcp` antwoordt nu zelf. Eerst stuurde de mount het kale pad met een 307 door naar

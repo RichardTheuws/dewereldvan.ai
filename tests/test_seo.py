@@ -246,3 +246,73 @@ def test_robots_route(client):
     # De besloten profielen zitten op /leden/{slug} en zijn per-pagina noindex
     # (de echte poort); robots disallowt geen niet-bestaande /profiel/-route meer.
     assert "Disallow: /profiel/" not in resp.text
+
+
+# --------------------------------------------------------------------------- #
+# /gek-genoeg — publieke presentatie over de intelligentie-explosie            #
+# --------------------------------------------------------------------------- #
+def test_gek_genoeg_is_public_and_shareable(client):
+    resp = client.get("/gek-genoeg")
+    assert resp.status_code == 200
+    html = resp.text
+    assert "Doe maar gewoon, dan doe je al" in html
+    assert html.count('class="scene') == 15
+    # Deelbaar: canonical, eigen deelbeeld en geen noindex.
+    assert '<link rel="canonical" href="https://' in html
+    assert 'property="og:image"' in html and "/static/og-gek-genoeg.png" in html
+    assert 'name="robots" content="noindex"' not in html
+    # Transparant over de herkomst (AI-axioma) en met bronnen.
+    assert "Frank Meeuwsen" in html and "Gemaakt met Claude" in html
+    # De prompt is van een onbekende schrijver; Frank stuurde hem alleen door.
+    assert "Eoin McKenna" in html and "schrijver van de prompt kennen we niet" in html
+    assert "metr.org/time-horizons" in html
+
+
+def test_gek_genoeg_counts_only_public_makers(client, page_engine):
+    """Het makers-getal volgt de gids-poort: besloten profielen tellen niet mee
+    en er staat geen enkele naam op de pagina."""
+    from sqlalchemy.orm import Session
+
+    with Session(page_engine) as s:
+        pub = Member(email="gg-p@example.com", name="Zichtbaar", status=MemberStatus.approved)
+        closed = Member(email="gg-c@example.com", name="Verborgen", status=MemberStatus.approved)
+        s.add_all([pub, closed])
+        s.flush()
+        s.add_all(
+            [
+                Profile(
+                    member_id=pub.id,
+                    slug="gg-pub",
+                    display_name="Zichtbaar Lid",
+                    visibility=Visibility.public,
+                    headline="Bouwt met AI",
+                ),
+                Profile(
+                    member_id=closed.id,
+                    slug="gg-closed",
+                    display_name="Verborgen Lid",
+                    visibility=Visibility.members,
+                    headline="Bouwt ook met AI",
+                ),
+            ]
+        )
+        s.commit()
+
+    html = client.get("/gek-genoeg").text
+    assert 'data-makers="1"' in html
+    assert "Zichtbaar Lid" not in html and "Verborgen Lid" not in html
+
+
+def test_gek_genoeg_in_sitemap(client):
+    assert "/gek-genoeg" in client.get("/sitemap.xml").text
+
+
+def test_gek_genoeg_follows_styleguide():
+    """STYLEGUIDE §8: geen gedachtestreepjes in eigen copy, geen glyph-iconen; en
+    geen data-reveal (de pagina includet de reveal-director niet)."""
+    from pathlib import Path
+
+    src = Path("app/templates/gek_genoeg.html").read_text(encoding="utf-8")
+    assert "—" not in src and "✦" not in src
+    assert "data-reveal" not in src
+    assert "prefers-reduced-motion" in src

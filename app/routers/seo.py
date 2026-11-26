@@ -36,6 +36,24 @@ def privacy(request: Request) -> HTMLResponse:
     )
 
 
+@router.get("/gek-genoeg", response_class=HTMLResponse)
+def gek_genoeg(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
+    """Publieke presentatie over de intelligentie-explosie (deelbaar, indexeerbaar).
+
+    Het enige uit de database is het AANTAL openbare makers, via dezelfde poort als de
+    gids (``directory_service.public_makers``): geen namen, geen besloten profielen.
+    """
+    return request.app.state.templates.TemplateResponse(
+        request,
+        "gek_genoeg.html",
+        {
+            "canonical": seo_service.canonical_url("/gek-genoeg"),
+            "og_image": seo_service.canonical_url("/static/og-gek-genoeg.png"),
+            "maker_count": len(directory_service.public_makers(db)),
+        },
+    )
+
+
 @router.get("/favicon.ico", include_in_schema=False)
 def favicon() -> RedirectResponse:
     """Browsers vragen standaard ``/favicon.ico`` op (root) → zonder dit een 404 op

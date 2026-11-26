@@ -64,6 +64,8 @@ Eén tunnel (`dewereldvan-app`) voor **dewereldvan.ai**, `www` en **app.dewereld
   (+ `/status`) — besloten inbox.
 - **Community**: `/leden`, `/leden/{slug}`, `/projecten/{slug}`, `/agenda`, `/nieuws`, `/ideeen`,
   `/roadmap`, `/intro/*`, `/feedback*`.
+- **Presentatie**: `/gek-genoeg` (`seo.py`, template `gek_genoeg.html`, stijl en script inline; leest alleen het
+  aantal openbare makers).
 - **MCP/koppelen**: `/mcp`, `/profiel/verbind` (+ token-CRUD).
 - **Admin**: `/queue`, `/members/{id}/approve|reject|suspend`, `/admin/*` (roadmap, ideeën,
   posts, feedback, uitnodiging).
