@@ -5,8 +5,10 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-26 · **Versie**: 0.123.0 · **Branch**: `main`
+**Laatste update**: 2026-11-26 · **Versie**: 0.123.1 · **Branch**: `main`
 
+> **0.123.1** — Fix: het deelbeeld van Gek genoeg heeft een nieuwe bestandsnaam, zodat de edge het nieuwe toont.
+>
 > **0.123.0** — **Gek genoeg in 3D**: `/gek-genoeg` opnieuw gebouwd met twaalf eigen 3D-werelden op een zelf
 > gehoste three.js (polder, bollenveld, Veldhoven, Nederland vol lichtjes, de dijk). Tekst en bediening blijven
 > HTML; METR bijgewerkt naar 20-11-2026 (ongeveer 40 uur, verdubbeling elke 3,6 maanden).

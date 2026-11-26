@@ -48,7 +48,7 @@ def gek_genoeg(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
         "gek_genoeg.html",
         {
             "canonical": seo_service.canonical_url("/gek-genoeg"),
-            "og_image": seo_service.canonical_url("/static/og-gek-genoeg.png"),
+            "og_image": seo_service.canonical_url("/static/og-gek-genoeg-3d.png"),
             "maker_count": len(directory_service.public_makers(db)),
         },
     )

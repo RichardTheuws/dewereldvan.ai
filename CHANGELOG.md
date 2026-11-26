@@ -3,6 +3,11 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.123.1] - 2026-11-26
+### Fixed — Deelbeeld van Gek genoeg
+- Het nieuwe deelbeeld stond op dezelfde bestandsnaam als het oude en kwam daardoor niet door de edge-cache
+  (30 dagen). Het heet nu `og-gek-genoeg-3d.png`. Een vervangen static krijgt altijd een nieuwe naam.
+
 ## [0.123.0] - 2026-11-26
 ### Changed — Gek genoeg opnieuw gebouwd in 3D
 - `/gek-genoeg` is van een 2D-deeltjesveld naar echte 3D-werelden gegaan, één per scherm: een nachtelijke polder

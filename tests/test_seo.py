@@ -259,7 +259,7 @@ def test_gek_genoeg_is_public_and_shareable(client):
     assert html.count('class="scene') == 15
     # Deelbaar: canonical, eigen deelbeeld en geen noindex.
     assert '<link rel="canonical" href="https://' in html
-    assert 'property="og:image"' in html and "/static/og-gek-genoeg.png" in html
+    assert 'property="og:image"' in html and "/static/og-gek-genoeg-3d.png" in html
     assert 'name="robots" content="noindex"' not in html
     # Transparant over de herkomst (AI-axioma) en met bronnen.
     assert "Frank Meeuwsen" in html and "Gemaakt met Claude" in html
