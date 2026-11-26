@@ -3,6 +3,17 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.124.0] - 2026-11-26
+### Changed — Gek genoeg: verhaallijn en leesbaarheid
+- De schermen van `/gek-genoeg` staan in een nieuwe volgorde, zodat elk scherm op het vorige voortbouwt: eerst
+  meten (mijlpalen, de lijn, verdubbelen), dan wat het voor jou betekent (geboortejaar, was scherm 12 en is nu
+  6), dan waarom de lijn doorloopt (de lus, Veldhoven, kopiëren), de mooie en de eerlijke kant, het antwoord
+  (de dijk: bouwen), wat je zelf kunt doen, en als laatste hoe deze pagina zelf klein begon.
+- Alle teksten herschreven met een overgang naar het volgende scherm, langere lopende zinnen en meer je en we.
+  Getoetst met de kwaliteitscheck uit de li-check-skill (`check.py`): van 63,7 (herschrijven) naar 77,6 (OK).
+  Zinnen met een verbindingswoord gingen van 14 naar 28 procent, woorden per zin van 7,7 naar 9,8.
+- De doortrekschuif begint bij 2027, na het laatste meetpunt. Test voor de schermvolgorde.
+
 ## [0.123.1] - 2026-11-26
 ### Fixed — Deelbeeld van Gek genoeg
 - Het nieuwe deelbeeld stond op dezelfde bestandsnaam als het oude en kwam daardoor niet door de edge-cache

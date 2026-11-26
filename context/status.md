@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-26 · **Versie**: 0.123.1 · **Branch**: `main`
+**Laatste update**: 2026-11-26 · **Versie**: 0.124.0 · **Branch**: `main`
 
+> **0.124.0** — Gek genoeg: schermen in een nieuwe volgorde en alle teksten herschreven met overgangen; li-check
+> van 63,7 naar 77,6.
+>
 > **0.123.1** — Fix: het deelbeeld van Gek genoeg heeft een nieuwe bestandsnaam, zodat de edge het nieuwe toont.
 >
 > **0.123.0** — **Gek genoeg in 3D**: `/gek-genoeg` opnieuw gebouwd met twaalf eigen 3D-werelden op een zelf

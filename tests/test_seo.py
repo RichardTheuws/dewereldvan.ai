@@ -330,3 +330,15 @@ def test_gek_genoeg_3d_engine_is_self_hosted(client):
     assert lib.status_code == 200 and "SPDX-License-Identifier: MIT" in lib.text[:200]
     # De nieuwste METR-meting staat met bron en marge op de pagina.
     assert "2026-11-20-q4-2026-capability-update" in html and "13 tot 2.645 uur" in html
+
+
+def test_gek_genoeg_story_order(client):
+    """De verhaallijn: meten, wat het voor jou betekent, waarom het doorloopt, de
+    eerlijke kant, bouwen, en pas dan hoe deze pagina zelf begon."""
+    import re
+
+    order = re.findall(r'<section class="scene[^>]*data-id="(\w+)"', client.get("/gek-genoeg").text)
+    assert order == [
+        "gewoon", "tulp", "mijlpalen", "lijn", "vouwen", "jij", "lus", "veldhoven",
+        "kopie", "eeuw", "eerlijk", "water", "doen", "prompt", "slot",
+    ]
