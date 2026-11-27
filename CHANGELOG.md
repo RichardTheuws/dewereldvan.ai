@@ -3,6 +3,20 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.125.0] - 2026-11-27
+### Changed — Gek genoeg: opening, de eerlijke kant en de prompt
+- **Opening**: het scherm begint met alleen "Doe maar gewoon," boven een rustige polder. Na een paar tellen komt de
+  rest van de zin, verdubbelt het tempo en schiet de polder onder je door terwijl de camera opstijgt. De tekst en
+  de wereld lopen gelijk via de starttijd van de CSS-animatie. Bij verminderde beweging en zonder JavaScript
+  staat alles er meteen.
+- **De eerlijke kant**: de splitsing van vijf buizen is vervangen. De gouden lijn bestaat nu uit de zestien echte
+  METR-metingen (hoogte is het aantal verdubbelingen) en loopt tot een ring bij vandaag. Daarna waaiert ze uit
+  in tientallen draden tussen "vlakt af", "loopt door" en "gaat sneller", die vervagen naarmate ze verder gaan.
+- **De prompt**: de kaart typt de echte prompt uit (de tekst komt uit het bronnenpaneel), met de toegevoegde zin
+  in goud. Daarna groeien er twaalf miniaturen uit: de werelden van de eerdere schermen, live gerenderd in
+  kleine render targets, één per frame. Op telefoons één momentopname per wereld.
+- Gemeten op de M5 Pro: 120 beelden per seconde in alle drie de schermen, op desktop- en telefoonformaat.
+
 ## [0.124.0] - 2026-11-26
 ### Changed — Gek genoeg: verhaallijn en leesbaarheid
 - De schermen van `/gek-genoeg` staan in een nieuwe volgorde, zodat elk scherm op het vorige voortbouwt: eerst

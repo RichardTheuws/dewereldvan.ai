@@ -255,7 +255,7 @@ def test_gek_genoeg_is_public_and_shareable(client):
     resp = client.get("/gek-genoeg")
     assert resp.status_code == 200
     html = resp.text
-    assert "Doe maar gewoon, dan doe je al" in html
+    assert "Doe maar gewoon," in html and "dan doe je al" in html
     assert html.count('class="scene') == 15
     # Deelbaar: canonical, eigen deelbeeld en geen noindex.
     assert '<link rel="canonical" href="https://' in html
@@ -342,3 +342,14 @@ def test_gek_genoeg_story_order(client):
         "gewoon", "tulp", "mijlpalen", "lijn", "vouwen", "jij", "lus", "veldhoven",
         "kopie", "eeuw", "eerlijk", "water", "doen", "prompt", "slot",
     ]
+
+
+def test_gek_genoeg_opening_and_prompt_world(client):
+    """De opening houdt de tweede helft van de kop even achter (class `late`), maar
+    nooit bij verminderde beweging of zonder JavaScript. De prompt-wereld typt de
+    echte prompt uit het bronnenpaneel, dus die alinea moet vindbaar blijven."""
+    html = client.get("/gek-genoeg").text
+    assert '<span class="late" id="late">dan doe je al' in html
+    assert ".late,.scene.on .late{opacity:1;animation:none}" in html
+    assert ".late{opacity:1;animation:none}</style></noscript>" in html
+    assert 'id="prompt-src">"make a presentation on the future of AI' in html

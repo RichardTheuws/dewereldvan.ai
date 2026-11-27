@@ -5,8 +5,12 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-26 · **Versie**: 0.124.0 · **Branch**: `main`
+**Laatste update**: 2026-11-27 · **Versie**: 0.125.0 · **Branch**: `main`
 
+> **0.125.0** — Gek genoeg: nieuwe opening (de polder slaat op hol zodra de zin af is), de eerlijke kant als
+> de echte METR-metingen die na vandaag uitwaaieren, en de prompt die zichzelf uittypt en uitgroeit tot twaalf
+> live miniaturen van de eerdere werelden.
+>
 > **0.124.0** — Gek genoeg: schermen in een nieuwe volgorde en alle teksten herschreven met overgangen; li-check
 > van 63,7 naar 77,6.
 >
