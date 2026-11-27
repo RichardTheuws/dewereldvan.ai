@@ -148,7 +148,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   .ms{gap:5px;font-size:.95rem}
 }
 .late{opacity:0}
-.scene.on .late{animation:gg-late .9s var(--d,2.6s) both}
+.scene.on .late{animation:gg-late .6s var(--d,.9s) both}
 @keyframes gg-late{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){
   .late,.scene.on .late{opacity:1;animation:none}
@@ -175,9 +175,9 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 <section class="scene on" data-id="gewoon" data-layout="full" aria-label="Opening">
   <div class="copy">
     <h1>Doe maar gewoon, <span class="late" id="late">dan doe je al <em>gek genoeg</em>.</span></h1>
-    <p class="late" style="--d:5s">Zo zijn we opgevoed, en meestal werkt dat prima. Alleen gaan de komende jaren zo hard dat gewoon doen vanzelf een beetje gek wordt.</p>
-    <p class="soft late" style="--d:5.5s">Je kijkt naar een nuchtere presentatie over de intelligentie-explosie, in vijftien schermen. Ze begon met een prompt die Frank Meeuwsen doorstuurde, en wat er toen gebeurde lees je aan het eind.</p>
-    <p class="soft late" style="--d:5.5s">Blader met de pijltjestoetsen, door te vegen of met de knop rechtsonder.</p>
+    <p class="late" style="--d:2.3s">Zo zijn we opgevoed, en meestal werkt dat prima. Alleen gaan de komende jaren zo hard dat gewoon doen vanzelf een beetje gek wordt.</p>
+    <p class="soft late" style="--d:2.8s">Je kijkt naar een nuchtere presentatie over de intelligentie-explosie, in vijftien schermen. Ze begon met een prompt die Frank Meeuwsen doorstuurde, en wat er toen gebeurde lees je aan het eind.</p>
+    <p class="soft late" style="--d:2.8s">Blader met de pijltjestoetsen, door te vegen of met de knop rechtsonder.</p>
   </div>
 </section>
 
@@ -246,10 +246,6 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       <input type="range" id="born" min="1940" max="2015" step="1" value="1984">
     </label>
     <p class="out" id="born-out" aria-live="polite"></p>
-    <div class="row">
-      <button class="gg-btn" id="copy" type="button">Kopieer mijn zin</button>
-      <span class="soft" id="copy-msg" role="status"></span>
-    </div>
     <p class="soft">Een werkjaar is hier 1.720 uur. De kans op succes is de helft, en een lijn kan altijd afbuigen.</p>
   </div>
   <div class="stage"></div>
@@ -494,20 +490,14 @@ fb.addEventListener("pointerdown", () => { fold(); stopHold(); holdT = setTimeou
 fb.addEventListener("click", e => { if (e.detail === 0) fold(); });
 
 /* ---------- jouw jaar ---------- */
-let mySentence = "";
 function born() {
   const by = GG.born = +$("#born").value;
   const y1 = Math.floor(reach(WERKJAAR, FAST)), y2 = Math.floor(reach(WERKJAAR, SLOW)), a = 2022 - by, p = by + 67;
   const pension = p > y2 ? `Je AOW gaat in rond <span class="num">${p}</span>. Dit speelt dus ${p - y2} jaar voor je pensioen.`
     : "Je hebt dan al AOW. Je maakt het mee vanaf de zijlijn, maar je maakt het mee.";
   $("#born-out").innerHTML = `<span class="num">${by}</span>. Je was <strong>${a}</strong> toen ChatGPT uitkwam. Loopt de lijn door, dan kan een AI tussen <span class="num">${y1}</span> en <span class="num">${y2}</span> een werkjaar zelfstandig aan. Jij bent dan <strong>${y1 - by} of ${y2 - by}</strong>. ${pension}`;
-  mySentence = `Als de lijn doorloopt, ben ik ${y1 - by} of ${y2 - by} wanneer een AI een werkjaar zelfstandig aankan. Reken het uit voor jezelf: ${URL0}#jij`;
 }
 $("#born").addEventListener("input", born);
-$("#copy").addEventListener("click", () => {
-  const msg = $("#copy-msg"), done = () => { msg.textContent = "Gekopieerd. Plak hem waar je wilt."; }, fail = () => { msg.textContent = mySentence; };
-  try { navigator.clipboard.writeText(mySentence).then(done, fail); } catch (e) { fail(); }
-});
 
 /* ---------- delen ---------- */
 const shareText = "Doe maar gewoon, dan doe je al gek genoeg. Een nuchtere presentatie over de intelligentie-explosie: " + URL0;
@@ -620,6 +610,17 @@ function wPolder(mode) {
   const mills = [[-150, -480, 3.2], [90, -620, 3], [260, -430, 3.4], [-380, -700, 3], [470, -760, 3.2]].map(p => { const m = mill(p[2]); m.position.set(p[0], 0, p[1]); m.rotation.y = .3; scene.add(m); return m; });
   const labels = []; let beacons = [], total = 0, con = null, run = 0, wkA = 0, lastT = 0; const go = mode === "gewoon" && !RM, gA = C("#6d5dfc"), gB = C("#f2a05c"), late = $("#late");
   mills.forEach(m => { m.userData.d = -m.position.z; });
+  const rA = C("#3644c4"), rB = C("#e0a060"), pil = []; let lf = null;
+  if (go) {
+    const n = LOW ? 1000 : 2400, a = new Float32Array(n * 3), sd = new Float32Array(n);
+    for (let i = 0; i < n; i++) { a[i * 3] = (rnd() - .5) * 1600; a[i * 3 + 1] = .6; a[i * 3 + 2] = rnd() * 1800; sd[i] = rnd(); }
+    const g = new T.BufferGeometry(); g.setAttribute("position", new T.BufferAttribute(a, 3)); g.setAttribute("aS", new T.BufferAttribute(sd, 1));
+    lf = new T.Points(g, new T.ShaderMaterial({ transparent: true, depthWrite: false, blending: T.AdditiveBlending, uniforms: { uScroll: { value: 0 }, uK: { value: 0 }, uPx: { value: 1 } },
+      vertexShader: "attribute float aS;uniform float uScroll,uK,uPx;varying float vS,vA;void main(){vS=aS;vec3 p=position;float d=mod(position.z-uScroll,1800.);p.z=90.-d;vec4 mv=modelViewMatrix*vec4(p,1.);vA=uK*smoothstep(1780.,1250.,d)*step(aS,uK*1.15);gl_PointSize=uPx*clamp(380./max(-mv.z,1.),1.5,9.)*(.6+aS);gl_Position=projectionMatrix*mv;}",
+      fragmentShader: "varying float vS,vA;void main(){float d=length(gl_PointCoord-.5)*2.;float a=pow(max(1.-d,0.),2.)*vA;vec3 c=vS<.72?vec3(.96,.8,.52):vec3(.25,.82,1.);gl_FragColor=vec4(c*a*3.2,1.);}" }));
+    lf.frustumCulled = false; scene.add(lf);
+    for (let i = 0; i < 14; i++) { const x = (110 + rnd() * 420) * (i % 2 ? 1 : -1), h = 110 + rnd() * 190, b = beam(V3(x, 0, 0), V3(x, h, 0), 1.1, hdr(i % 3 ? GOLD : CYAN, 1.6), 0); b.userData.d = 150 + rnd() * 1500; scene.add(b); pil.push(b); }
+  }
   if (mode === "mijlpalen") {
     const yrs = [1997, 2016, 2020, 2022, 2024, 2026], U = 30; let d = 120;
     yrs.forEach((y, i) => {
@@ -650,12 +651,14 @@ function wPolder(mode) {
         const T1 = (total + 95) / 110; scroll = Math.min(t, T1) * 110; yaw = Math.PI * ease((t - T1 - .2) / 2.4);
         beacons.forEach((b, i) => { b.position.z = -(b.userData.d - scroll); labels[i].p.set(0, 16, b.position.z); labels[i].hide = yaw < 2.6; });
       }
-      if (go) { /* De opening: vier tellen gewoon, daarna verdubbelt het tempo tot de polder onder je door schiet. */
+      if (go) { /* De opening: één tel gewoon, dan verdubbelt het tempo, gaat het land aan en komt de zon op. */
         if (t < lastT) { run = 0; wkA = 0; } lastT = t;
-        const sp = Math.min(230, 7 * Math.pow(2, Math.max(0, t - 3) * 1.5)), k = ease((t - 3.7) / 3.6);
+        const sp = Math.min(260, 7 * Math.pow(2, Math.max(0, t - .6) * 2.6)), k = ease((t - .9) / 2.6);
         run += sp * c.dt; wkA += c.dt * .25 * Math.pow(sp / 7, .8); scroll = run;
-        cam.position.y = 7 + 36 * k; cam.fov = 52 + 16 * k; env.m.uniforms.uGlow.value.copy(gA).lerp(gB, k);
+        cam.position.y = 7 + 38 * k; cam.fov = 52 + 20 * k; env.m.uniforms.uGlow.value.copy(gA).lerp(gB, k); env.m.uniforms.uSun.value = k; gm.uniforms.uRefl.value.copy(rA).lerp(rB, k * .8);
         mills.forEach(m => { m.position.z = 60 - ((m.userData.d + 60 - scroll) % 1500 + 1500) % 1500; });
+        lf.material.uniforms.uScroll.value = run % 1800; lf.material.uniforms.uK.value = k; lf.material.uniforms.uPx.value = R.getPixelRatio();
+        pil.forEach(q => { q.position.z = 60 - ((q.userData.d + 60 - scroll) % 1700 + 1700) % 1700; q.material.opacity = .5 * ease((t - 1.6) / 2); });
       }
       gm.uniforms.uScroll.value.set(0, -scroll);
       const sw = Math.sin(t * .13) * .05 + c.mx * .06;

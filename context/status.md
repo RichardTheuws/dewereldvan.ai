@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-27 · **Versie**: 0.125.0 · **Branch**: `main`
+**Laatste update**: 2026-11-27 · **Versie**: 0.126.0 · **Branch**: `main`
 
+> **0.126.0** — Gek genoeg: de opening komt direct op stoom (zonsopkomst, lichtjes, lichtzuilen) en de knop
+> "Kopieer mijn zin" bij het geboortejaar is weg.
+>
 > **0.125.0** — Gek genoeg: nieuwe opening (de polder slaat op hol zodra de zin af is), de eerlijke kant als
 > de echte METR-metingen die na vandaag uitwaaieren, en de prompt die zichzelf uittypt en uitgroeit tot twaalf
 > live miniaturen van de eerdere werelden.

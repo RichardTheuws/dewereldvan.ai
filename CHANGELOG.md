@@ -3,6 +3,14 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.126.0] - 2026-11-27
+### Changed — Gek genoeg: opening direct op stoom, kopieerknop weg
+- De opening wacht niet meer: de tweede helft van de kop komt na één tel en de uitleg na ruim twee seconden
+  (was vijf). De polder versnelt meteen, de zon komt op, het raster kleurt goud, er gaan duizenden lichtjes aan
+  op het land en er schieten lichtzuilen voorbij.
+- De knop "Kopieer mijn zin" bij het geboortejaar is weg (feedback van Richard: geen deelbare of uitnodigende
+  inhoud). De berekening zelf blijft staan; delen kan op het slotscherm.
+
 ## [0.125.0] - 2026-11-27
 ### Changed — Gek genoeg: opening, de eerlijke kant en de prompt
 - **Opening**: het scherm begint met alleen "Doe maar gewoon," boven een rustige polder. Na een paar tellen komt de
