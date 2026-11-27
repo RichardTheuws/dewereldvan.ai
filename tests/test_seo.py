@@ -353,3 +353,17 @@ def test_gek_genoeg_opening_and_prompt_world(client):
     assert ".late,.scene.on .late{opacity:1;animation:none}" in html
     assert ".late{opacity:1;animation:none}</style></noscript>" in html
     assert 'id="prompt-src">"make a presentation on the future of AI' in html
+
+
+def test_gek_genoeg_mobile_guards(client):
+    """Mobiel (v0.127.0): tekstblokken mogen niet krimpen in de scrollende kolom (anders
+    schuift de uitkomst van de schuif over de volgende alinea), de schermvullende scenes
+    scrollen zelf (anders loopt de tekst onder de knoppenbalk), liggende telefoons krijgen
+    twee kolommen, en de balk wijkt voor de home-indicator."""
+    html = client.get("/gek-genoeg").text
+    assert ".copy>*{flex-shrink:0}" in html
+    assert '.scene[data-layout="full"] .copy{grid-row:1;padding-bottom:2vh;max-height:calc(100% - 4px);overflow-y:auto}' in html
+    assert "@media (max-height:520px) and (min-aspect-ratio:4/3)" in html
+    assert "env(safe-area-inset-bottom" in html
+    assert "function reveal(el)" in html and 'reveal($("#fold-out"))' in html
+    assert '<span class="only-touch">Veeg naar links' in html

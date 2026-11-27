@@ -5,8 +5,11 @@
 > "waar staan we"-waarheid; raakt het achter, dan misleidt het. Houd het kort —
 > details staan in `CHANGELOG.md`, de PRD's en de memory (zie pointers onderaan).
 
-**Laatste update**: 2026-11-27 · **Versie**: 0.126.0 · **Branch**: `main`
+**Laatste update**: 2026-11-27 · **Versie**: 0.127.0 · **Branch**: `main`
 
+> **0.127.0** — Gek genoeg mobiel: geen tekst meer over tekst of onder de balk, liggend twee kolommen,
+> vervaagde randen bij meer tekst, opgeruimde labels in de werelden, knoppen op duimmaat.
+>
 > **0.126.0** — Gek genoeg: de opening komt direct op stoom (zonsopkomst, lichtjes, lichtzuilen) en de knop
 > "Kopieer mijn zin" bij het geboortejaar is weg.
 >

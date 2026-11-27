@@ -59,23 +59,23 @@ body.cosmic{font-size:17px;line-height:1.55;font-weight:400;min-height:0;overflo
 
 /* kop en balk */
 .top{position:absolute;inset:0 0 auto;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:12px;
-  padding-block:14px 0;padding-left:var(--gut-l);padding-right:var(--gut-r)}
-.mark{font-family:var(--font-display);font-size:1.12rem;color:var(--text);text-decoration:none}
+  padding-block:max(8px,env(safe-area-inset-top,0px)) 0;padding-left:var(--gut-l);padding-right:var(--gut-r)}
+.mark{font-family:var(--font-display);font-size:1.12rem;color:var(--text);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
 .mark b{font-weight:500;color:var(--gold)}
-.gg-link{background:none;border:0;color:var(--muted);font:inherit;font-size:.92rem;cursor:pointer;padding:6px 2px;text-decoration:underline;text-underline-offset:4px}
+.gg-link{background:none;border:0;color:var(--muted);font:inherit;font-size:.92rem;cursor:pointer;padding:6px 2px;min-height:44px;text-decoration:underline;text-underline-offset:4px}
 .gg-link:hover{color:var(--text)}
 .bar{position:absolute;inset:auto 0 0;z-index:5;display:flex;align-items:center;gap:14px;
-  padding-block:10px 14px;padding-left:var(--gut-l);padding-right:var(--gut-r)}
+  padding-block:10px max(14px,env(safe-area-inset-bottom,0px));padding-left:var(--gut-l);padding-right:var(--gut-r)}
 .track{flex:1;min-width:0;height:2px;background:var(--gg-line);border-radius:2px;overflow:hidden}
 .track span{display:block;height:100%;width:0;background:var(--gold);transition:width .5s cubic-bezier(.2,.7,.2,1)}
 .count{font-family:var(--font-data);font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .gg-btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;border:1px solid var(--gg-line);background:rgba(21,18,58,.72);
-  color:var(--text);font:500 .98rem var(--font-ui);padding:10px 20px;cursor:pointer;text-decoration:none;
+  color:var(--text);font:500 .98rem var(--font-ui);padding:10px 20px;min-height:44px;cursor:pointer;text-decoration:none;
   transition:transform .18s,box-shadow .18s,border-color .18s;-webkit-tap-highlight-color:transparent;user-select:none}
 .gg-btn:hover{transform:translateY(-2px);box-shadow:0 10px 20px -10px rgba(0,0,0,.8);border-color:rgba(144,151,196,.6)}
 .gg-btn:active{transform:translateY(0)}
 .gg-btn--gold{background:linear-gradient(180deg,#fbe0ad,var(--gold));color:#1b1405;border-color:transparent;font-weight:500}
-.gg-btn--round{padding:10px;width:42px;height:42px;justify-content:center}
+.gg-btn--round{padding:10px;width:44px;height:44px;justify-content:center}
 .gg-btn[disabled]{opacity:.35;pointer-events:none}
 .gg-btn svg{width:16px;height:16px;flex:none}
 
@@ -88,7 +88,10 @@ body.cosmic{font-size:17px;line-height:1.55;font-weight:400;min-height:0;overflo
 .scene[data-layout="full"]::before{display:none}
 .scene.on{visibility:visible;opacity:1;transform:none;transition-delay:.12s,.12s,0s}
 .copy{position:relative;isolation:isolate;min-width:0;max-height:100%;overflow-y:auto;padding:4px clamp(0px,3vw,48px) 4px clamp(0px,4vw,72px);
-  display:flex;flex-direction:column;gap:14px;scrollbar-width:thin}
+  display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;overscroll-behavior:contain}
+.copy>*{flex-shrink:0}
+.copy.more{--fb:56px}.copy.less{--ft:36px}
+.copy.more,.copy.less{-webkit-mask-image:linear-gradient(transparent,#000 var(--ft,0px),#000 calc(100% - var(--fb,0px)),transparent);mask-image:linear-gradient(transparent,#000 var(--ft,0px),#000 calc(100% - var(--fb,0px)),transparent)}
 .stage{position:relative;min-width:0;height:100%;min-height:0}
 .scene[data-layout="full"]{grid-template-columns:minmax(0,1fr);align-items:end}
 .scene[data-layout="full"] .copy{max-width:54rem;padding-bottom:5vh;overflow:visible}
@@ -111,10 +114,10 @@ blockquote footer{font-family:var(--font-ui);font-size:.9rem;color:var(--muted);
 
 /* bediening */
 .seg{display:inline-flex;border:1px solid var(--gg-line);border-radius:999px;padding:3px;background:rgba(10,10,36,.7)}
-.seg button{border:0;background:none;color:var(--muted);font:500 .9rem var(--font-ui);padding:7px 14px;border-radius:999px;cursor:pointer}
+.seg button{border:0;background:none;color:var(--muted);font:500 .9rem var(--font-ui);padding:7px 14px;min-height:38px;border-radius:999px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--indigo);color:var(--text)}
 label.field{display:grid;gap:6px;font-size:.93rem;color:var(--muted);max-width:28em}
-.cosmic input[type=range],.cosmic input[type=range]:focus{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:none;margin:0;cursor:pointer;padding:0;border:0;border-radius:0;box-shadow:none}
+.cosmic input[type=range],.cosmic input[type=range]:focus{-webkit-appearance:none;appearance:none;width:100%;height:44px;touch-action:pan-y;background:none;margin:0;cursor:pointer;padding:0;border:0;border-radius:0;box-shadow:none}
 .cosmic input[type=range]:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}
 input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--gg-line);border-radius:2px}
 input[type=range]::-moz-range-track{height:2px;background:var(--gg-line);border-radius:2px}
@@ -142,11 +145,28 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   h2{font-size:clamp(1.6rem,7vw,2rem)}
   .out{min-height:0}
   .scene[data-layout="full"]{grid-template-rows:minmax(0,1fr);align-items:end}
-  .scene[data-layout="full"] .copy{grid-row:1;padding-bottom:2vh}
+  .scene[data-layout="full"] .copy{grid-row:1;padding-bottom:2vh;max-height:calc(100% - 4px);overflow-y:auto}
+  .scene[data-layout="full"] .copy::before{display:none}
+  .scene[data-layout="full"]::before{display:block}
   h1{font-size:clamp(2.1rem,9.4vw,3rem)}
   blockquote{font-size:1.08rem}
   .ms{gap:5px;font-size:.95rem}
 }
+@media (max-height:520px) and (min-aspect-ratio:4/3){
+  body.cosmic{font-size:14.5px;line-height:1.48}
+  .scene{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:none;gap:16px;align-items:center;padding-block:52px 62px}
+  .scene::before{inset:0 38% 0 0;background:linear-gradient(90deg,rgba(4,4,14,.9),rgba(4,4,14,.66) 70%,transparent)}
+  .scene .stage{grid-row:auto;grid-column:2}
+  .scene .copy{grid-row:auto;grid-column:1;max-height:100%;gap:8px;padding:2px 0}
+  .scene[data-layout="full"]{grid-template-columns:minmax(0,1fr);align-items:end}
+  .scene[data-layout="full"]::before{display:block;inset:0;background:linear-gradient(90deg,rgba(4,4,14,.88),rgba(4,4,14,.5) 65%,transparent)}
+  .scene[data-layout="full"] .copy{grid-column:1;max-width:40rem;max-height:100%;overflow-y:auto;padding-bottom:0}
+  h1{font-size:clamp(1.8rem,5.4vw,2.5rem)} h2{font-size:clamp(1.35rem,3.6vw,1.8rem)}
+  blockquote{font-size:1rem} .ms{gap:3px} .bar{padding-block:6px max(8px,env(safe-area-inset-bottom,0px))}
+  .gg-btn{padding:8px 16px}
+}
+.only-touch{display:none}
+@media (pointer:coarse){.only-touch{display:revert}.no-touch{display:none}}
 .late{opacity:0}
 .scene.on .late{animation:gg-late .6s var(--d,.9s) both}
 @keyframes gg-late{from{opacity:0}to{opacity:1}}
@@ -177,7 +197,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     <h1>Doe maar gewoon, <span class="late" id="late">dan doe je al <em>gek genoeg</em>.</span></h1>
     <p class="late" style="--d:2.3s">Zo zijn we opgevoed, en meestal werkt dat prima. Alleen gaan de komende jaren zo hard dat gewoon doen vanzelf een beetje gek wordt.</p>
     <p class="soft late" style="--d:2.8s">Je kijkt naar een nuchtere presentatie over de intelligentie-explosie, in vijftien schermen. Ze begon met een prompt die Frank Meeuwsen doorstuurde, en wat er toen gebeurde lees je aan het eind.</p>
-    <p class="soft late" style="--d:2.8s">Blader met de pijltjestoetsen, door te vegen of met de knop rechtsonder.</p>
+    <p class="soft late" style="--d:2.8s"><span class="no-touch">Blader met de pijltjestoetsen, door te vegen of met de knop rechtsonder.</span><span class="only-touch">Veeg naar links of tik op de knop rechtsonder.</span></p>
   </div>
 </section>
 
@@ -422,8 +442,14 @@ function go(n, silent) {
   $("#next-t").textContent = n === 0 ? "Begin" : n === scenes.length - 1 ? "Opnieuw" : "Verder";
   $("#fill").style.width = (n / (scenes.length - 1) * 100) + "%";
   $("#count").textContent = (n + 1) + " / " + scenes.length;
+  fade(scenes[n]);
   try { if (location.hash.slice(1) !== ids[n]) history.replaceState(null, "", "#" + ids[n]); } catch (e) {}
 }
+function fade(s) { const c = s && s.querySelector(".copy"); if (c) { c.classList.toggle("more", c.scrollHeight - c.scrollTop - c.clientHeight > 6); c.classList.toggle("less", c.scrollTop > 4); } }
+/* Klein scherm: de uitkomst van een knop of schuif valt soms onder de rand; schuif hem dan binnen de tekst in beeld. */
+function reveal(el) { const c = el.closest(".copy"); if (!c) return; const d = el.getBoundingClientRect().bottom - c.getBoundingClientRect().bottom + 60; if (d > 0) c.scrollTo({ top: c.scrollTop + d, behavior: GG.reduce ? "auto" : "smooth" }); }
+$$(".copy").forEach(c => c.addEventListener("scroll", () => fade(c.closest(".scene")), { passive: true }));
+addEventListener("resize", () => fade(scenes[cur]));
 const fwd = () => { if (cur < scenes.length - 1) go(cur + 1); }, prev = () => go(cur - 1);
 nextB.addEventListener("click", () => go(cur === scenes.length - 1 ? 0 : cur + 1)); prevB.addEventListener("click", prev);
 addEventListener("keydown", e => {
@@ -464,7 +490,7 @@ function chart() {
   const half = end % 1 ? "Medio " : "Begin ";
   $("#proj-out").innerHTML = `${half}<span class="num">${Math.floor(end)}</span>: tussen <strong>${human(proj(end, SLOW))}</strong> en <strong>${human(proj(end, FAST))}</strong> zelfstandig werk.`;
 }
-$("#proj").addEventListener("input", chart);
+$("#proj").addEventListener("input", () => { chart(); reveal($("#proj-out")); });
 const setScale = v => { GG.log = v; $("#sc-log").setAttribute("aria-pressed", v); $("#sc-lin").setAttribute("aria-pressed", !v); };
 $("#sc-log").addEventListener("click", () => setScale(true)); $("#sc-lin").addEventListener("click", () => setScale(false));
 
@@ -481,7 +507,7 @@ function foldText() {
   $("#fold-out").innerHTML = `<span class="num">${n}</span> keer gevouwen: <strong>${thick(mm)}</strong>. ${say}`;
   $("#fold").textContent = n >= 42 ? "Opnieuw" : "Vouw dubbel";
 }
-function fold() { GG.folds = GG.folds >= 42 ? 0 : GG.folds + 1; foldText(); }
+function fold() { GG.folds = GG.folds >= 42 ? 0 : GG.folds + 1; foldText(); reveal($("#fold-out")); }
 let holdT = null, holdI = null;
 const stopHold = () => { clearTimeout(holdT); clearInterval(holdI); holdT = holdI = null; };
 const fb = $("#fold");
@@ -497,19 +523,22 @@ function born() {
     : "Je hebt dan al AOW. Je maakt het mee vanaf de zijlijn, maar je maakt het mee.";
   $("#born-out").innerHTML = `<span class="num">${by}</span>. Je was <strong>${a}</strong> toen ChatGPT uitkwam. Loopt de lijn door, dan kan een AI tussen <span class="num">${y1}</span> en <span class="num">${y2}</span> een werkjaar zelfstandig aan. Jij bent dan <strong>${y1 - by} of ${y2 - by}</strong>. ${pension}`;
 }
-$("#born").addEventListener("input", born);
+$("#born").addEventListener("input", () => { born(); reveal($("#born-out")); });
 
 /* ---------- delen ---------- */
 const shareText = "Doe maar gewoon, dan doe je al gek genoeg. Een nuchtere presentatie over de intelligentie-explosie: " + URL0;
 $("#wa").href = "https://wa.me/?text=" + encodeURIComponent(shareText);
+const canShare = !!navigator.share && matchMedia("(pointer: coarse)").matches;
+if (canShare) $("#share").textContent = "Deel de link";
 $("#share").addEventListener("click", () => {
   const msg = $("#share-msg"), fail = () => { msg.textContent = URL0; };
-  if (navigator.share && matchMedia("(pointer: coarse)").matches) { navigator.share({ title: "Gek genoeg", text: "Een nuchtere presentatie over de intelligentie-explosie.", url: URL0 }).catch(() => {}); return; }
+  if (canShare) { navigator.share({ title: "Gek genoeg", text: "Een nuchtere presentatie over de intelligentie-explosie.", url: URL0 }).catch(() => {}); return; }
   try { navigator.clipboard.writeText(URL0).then(() => { msg.textContent = "Link gekopieerd."; }, fail); } catch (e) { fail(); }
 });
 
 /* ---------- start ---------- */
-chart(); foldText(); born();
+chart(); foldText(); born(); fade(scenes[0]);
+if (document.fonts) document.fonts.ready.then(() => fade(scenes[cur]));
 const first = ids.indexOf(location.hash.slice(1)); if (first > 0) go(first, true);
 })();
 {% endraw %}</script>
@@ -739,8 +768,10 @@ function wChart() {
       lines[i].position.y = lerp(lines[i].position.y, y, k); lines[i].visible = on; labels[i].p.y = lines[i].position.y; labels[i].hide = !on;
       if (labels[i].e.textContent !== txt && on) labels[i].e.textContent = txt;
     });
-    const last = D.length - 1; meas.p.set(bars[last].position.x - 1.2, H[last] + 1.4, 0);
-    dist = lerp(dist, c.fit(cam, 78, 40), .1);
+    const narrow = c.st.w < 520, last = D.length - 1;
+    if (narrow) { labels[2].hide = labels[4].hide = true; meas.a = "c"; meas.p.set(bars[last].position.x, H[last] + 2.4, 0); if (meas.e.textContent !== "gemeten") meas.e.textContent = "gemeten"; }
+    else { meas.a = "r"; meas.p.set(bars[last].position.x - 1.2, H[last] + 1.4, 0); if (meas.e.textContent !== "gemeten, november 2026") meas.e.textContent = "gemeten, november 2026"; }
+    dist = lerp(dist, c.fit(cam, narrow ? 96 : 78, 40), .1);
     cam.position.set(Math.sin(c.t * .1) * 5 + c.mx * 4 - 2, 19 + c.my * 2, dist); cam.lookAt(-2, 16.5, 0); env.follow(cam);
   } };
 }
@@ -772,7 +803,7 @@ function wFold() {
     cy = lerp(cy, Math.max(4, top), k); const alt = clamp(cy / (42 * U), 0, 1);
     env.m.uniforms.uHor.value.set("#5a3a8a").lerp(C("#04040e"), ease(alt * 1.6)); env.m.uniforms.uTop.value.set("#060a30").lerp(C("#020208"), ease(alt * 2));
     marks.forEach(m => { m.e.classList.toggle("gold", n >= m.l); if (m.obj.geometry && m.obj.geometry.type === "SphereGeometry") m.obj.rotation.y = c.t * .1; });
-    dist = lerp(dist, c.fit(cam, 30, 30), .1);
+    const fw = clamp(12 + top * .6, 12, 30); dist = lerp(dist, c.fit(cam, fw, fw), .1);
     cam.position.set(4 + Math.sin(c.t * .15) * 2.5 + c.mx * 2, cy + 3, dist); cam.lookAt(4.5, cy - 1.5, 0); env.follow(cam);
   } };
 }
@@ -823,8 +854,8 @@ vec3 c=vec3(.06,.06,.16);c=mix(c,vec3(.32,.26,.85)*(.6+.5*hash(id)),done*edge);c
   const wafer = new T.Mesh(new T.CircleGeometry(4.4, 64).rotateX(-Math.PI / 2), wm); wafer.position.copy(Wf); scene.add(wafer);
   const cage = new T.LineSegments(new T.EdgesGeometry(new T.BoxGeometry(27, 20, 9)), new T.LineBasicMaterial({ color: "#3a3f8a", transparent: true, opacity: .5 })); cage.position.set(-2, 1, 0); scene.add(cage);
   const o = new T.Object3D(); let dist = 50;
-  return { scene, cam, labels: [{ e: L("druppels tin"), p: V3(F.x + .8, 6.5, 0), a: "l" }, { e: L("laser"), p: V3(-7, .6, 8), a: "l" }, { e: L("plasma, 220.000 graden", "gold"), p: V3(F.x + .2, -1.6, 0), a: "c" }, { e: L("spiegels"), p: V3(M2.x + 2.6, M2.y + 1, 0), a: "l" }, { e: L("wafer"), p: V3(Wf.x + 5, Wf.y, 0), a: "l" }], update(c) {
-    const t = c.t, f = RM ? .5 : (t * 6) % 1, hit = RM ? .6 : Math.pow(1 - f, 3);
+  return { scene, cam, labels: [{ e: L("druppels tin"), p: V3(F.x - .8, 6.5, 0), a: "r" }, { e: L("laser"), p: V3(-7, .6, 8), a: "l" }, { e: L("plasma, 220.000 graden", "gold"), p: V3(F.x + .2, -1.6, 0), a: "c" }, { e: L("spiegels"), p: V3(M2.x + 2.6, M2.y + 1, 0), a: "l" }, { e: L("wafer"), p: V3(Wf.x + 5, Wf.y, 0), a: "l" }], update(c) {
+    const t = c.t, f = RM ? .5 : (t * 6) % 1, hit = RM ? .6 : Math.pow(1 - f, 3); this.labels[1].hide = c.st.w < 520;
     for (let i = 0; i < 26; i++) { const y = 8.6 - ((i + f) / 26) * 17.2; o.position.set(F.x, y, 0); o.scale.setScalar(y < 0 ? 0 : 1); o.updateMatrix(); drops.setMatrixAt(i, o.matrix); }
     drops.instanceMatrix.needsUpdate = true;
     flash.quaternion.copy(cam.quaternion); fl2.quaternion.copy(cam.quaternion); flash.material.uniforms.uK.value = .6 + hit * 2.4; fl2.material.uniforms.uK.value = .35 + hit * .7;

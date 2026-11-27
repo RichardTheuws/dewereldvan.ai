@@ -3,6 +3,24 @@
 Alle noemenswaardige wijzigingen aan dit project worden hier vastgelegd.
 Volgt [Keep a Changelog](https://keepachangelog.com/) en [SemVer](https://semver.org/).
 
+## [0.127.0] - 2026-11-27
+### Changed — Gek genoeg: mobiel doorgelicht en gerepareerd
+- **Tekst over tekst**: op de schermen met een schuif (de lijn, je geboortejaar) schoof de uitkomst over de
+  volgende alinea, doordat tekstblokken in de scrollende kolom mochten krimpen. Ze krimpen niet meer.
+- **Tekst onder de balk**: op kleine telefoons (iPhone SE, liggend) liep de opening en het slot onder de
+  knoppenbalk door. Die schermen scrollen nu zelf en krijgen dezelfde donkere onderkant als de rest.
+- **Liggend**: een telefoon dwars kreeg de staande opmaak met een wereld van een paar centimeter. Nu tekst links,
+  wereld rechts, compacter gezet.
+- **Je ziet wat er onder zit**: een tekstkolom die verder gaat vervaagt aan de onderkant (en aan de bovenkant
+  als je gescrold hebt). De uitkomst van vouwen, de lijn en je geboortejaar schuift vanzelf in beeld.
+- **Werelden op een smal scherm**: in de grafiek staan alleen minuut, uur, werkweek en werkjaar (geen gestapelde
+  labels meer, niets buiten beeld) en "gemeten" staat boven de laatste meting. Bij Veldhoven overlapten de labels:
+  "druppels tin" staat links, "laser" vervalt als het smal is. Bij het vouwen begint de camera dichtbij, zodat je
+  de krant ziet, en zoomt uit naarmate hij dikker wordt.
+- **Duimvriendelijk**: knoppen, links en schuiven minstens 44 pixels hoog, de balk wijkt voor de home-indicator,
+  de uitleg op de opening zegt op een telefoon "veeg of tik" in plaats van pijltjestoetsen, en de deelknop heet
+  "Deel de link" waar hij het deelmenu opent.
+
 ## [0.126.0] - 2026-11-27
 ### Changed — Gek genoeg: opening direct op stoom, kopieerknop weg
 - De opening wacht niet meer: de tweede helft van de kop komt na één tel en de uitleg na ruim twee seconden
